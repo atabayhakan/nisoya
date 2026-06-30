@@ -108,9 +108,10 @@
             <div>
                 <h3 class="text-sm font-semibold text-stone-900">Kurumsal</h3>
                 <ul class="mt-3 space-y-2 text-sm text-stone-500">
-                    <li><a href="{{ url('/hakkimizda') }}" class="hover:text-emerald-700">Hakkımızda</a></li>
-                    <li><a href="{{ url('/kosullar') }}" class="hover:text-emerald-700">Kullanım Koşulları</a></li>
-                    <li><a href="{{ url('/gizlilik') }}" class="hover:text-emerald-700">Gizlilik</a></li>
+                    @foreach (\App\Models\Page::navPages() as $navPage)
+                        <li><a href="{{ url('/'.$navPage->slug) }}" class="hover:text-emerald-700">{{ $navPage->title }}</a></li>
+                    @endforeach
+                    <li><a href="{{ route('pages.contact') }}" class="hover:text-emerald-700">İletişim</a></li>
                 </ul>
             </div>
         </div>

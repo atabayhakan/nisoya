@@ -12,7 +12,7 @@
             <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
                 <div class="text-2xl">🛟</div>
                 <h2 class="mt-2 font-semibold text-stone-800">Yardım</h2>
-                <p class="mt-1 text-sm text-stone-500">Sık sorulan sorulara <a href="{{ route('pages.faq') }}" class="text-emerald-700 hover:underline">SSS sayfasından</a> göz atabilirsin.</p>
+                <p class="mt-1 text-sm text-stone-500">Sık sorulan sorulara <a href="{{ url('/sss') }}" class="text-emerald-700 hover:underline">SSS sayfasından</a> göz atabilirsin.</p>
             </div>
         </div>
 

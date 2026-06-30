@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             ProductCategorySeeder::class,
             AdminUserSeeder::class,
             SiteSettingSeeder::class,
+            StaticPagesSeeder::class,
         ]);
     }
 }

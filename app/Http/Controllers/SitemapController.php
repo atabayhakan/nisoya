@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Listing;
+use App\Models\Page;
 use App\Models\User;
 use Illuminate\Http\Response;
 
@@ -15,9 +16,16 @@ class SitemapController extends Controller
             ['loc' => url('/'), 'priority' => '1.0'],
             ['loc' => route('listings.index'), 'priority' => '0.9'],
             ['loc' => route('pages.how'), 'priority' => '0.4'],
-            ['loc' => route('pages.about'), 'priority' => '0.3'],
-            ['loc' => route('pages.faq'), 'priority' => '0.3'],
+            ['loc' => route('pages.contact'), 'priority' => '0.3'],
         ];
+
+        foreach (Page::query()->published()->get() as $page) {
+            $urls[] = [
+                'loc' => url('/'.$page->slug),
+                'lastmod' => $page->updated_at?->toAtomString(),
+                'priority' => '0.3',
+            ];
+        }
 
         foreach (Category::query()->where('is_active', true)->get() as $category) {
             $urls[] = ['loc' => route('listings.category', $category->slug), 'priority' => '0.7'];

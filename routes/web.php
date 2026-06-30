@@ -9,6 +9,7 @@ use App\Http\Controllers\ListingController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileSettingsController;
@@ -29,13 +30,9 @@ Route::get('/uye/{user:username}', [ProfileController::class, 'show'])->name('pr
 // Herkese açık ilan detayı
 Route::get('/ilan/{listing}/{slug?}', [ListingController::class, 'show'])->name('listings.show');
 
-// Statik sayfalar
+// Statik sayfalar (işlevsel olanlar kodda kalır; kurumsal metinler yönetilebilir sayfalara taşındı)
 Route::get('/nasil-calisir', [PagesController::class, 'nasilCalisir'])->name('pages.how');
-Route::get('/hakkimizda', [PagesController::class, 'hakkimizda'])->name('pages.about');
 Route::get('/iletisim', [PagesController::class, 'iletisim'])->name('pages.contact');
-Route::get('/kosullar', [PagesController::class, 'kosullar'])->name('pages.terms');
-Route::get('/gizlilik', [PagesController::class, 'gizlilik'])->name('pages.privacy');
-Route::get('/sss', [PagesController::class, 'sss'])->name('pages.faq');
 
 // SEO  (robots.txt → public/robots.txt statik dosyası, nginx doğrudan sunar)
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
@@ -89,3 +86,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Yönetilebilir içerik sayfaları (catch-all — DİĞER TÜM ROTALARDAN SONRA olmalı)
+Route::get('/{slug}', [PageController::class, 'show'])
+    ->where('slug', '[a-z0-9\-]+')
+    ->name('pages.dynamic');
