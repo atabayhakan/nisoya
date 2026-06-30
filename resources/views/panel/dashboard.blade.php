@@ -4,6 +4,8 @@
         $cards = [
             ['ad' => 'İlanlarım', 'aciklama' => 'İlanlarını yönet', 'ikon' => '📋', 'url' => '/panel/ilanlarim'],
             ['ad' => 'Mesajlar', 'aciklama' => 'Gelen mesajların', 'ikon' => '💬', 'url' => '/panel/mesajlar'],
+            ['ad' => 'Bildirimler', 'aciklama' => 'Tüm bildirimlerin', 'ikon' => '🔔', 'url' => '/panel/bildirimler'],
+            ['ad' => 'Aramalarım', 'aciklama' => 'Kayıtlı aramalar', 'ikon' => '🔎', 'url' => '/panel/aramalarim'],
             ['ad' => 'Favorilerim', 'aciklama' => 'Kaydettiğin ilanlar', 'ikon' => '❤️', 'url' => '/panel/favorilerim'],
             ['ad' => 'Profilim', 'aciklama' => 'Bilgilerini düzenle', 'ikon' => '👤', 'url' => '/panel/profil'],
             ['ad' => 'İlanlara Göz At', 'aciklama' => 'Hizmet ara', 'ikon' => '🔍', 'url' => '/ilanlar'],

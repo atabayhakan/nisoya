@@ -21,7 +21,18 @@ class NewMessageNotification extends Notification implements ShouldQueue
     /** @return array<int, string> */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
+    }
+
+    /** @return array<string, mixed> */
+    public function toArray(object $notifiable): array
+    {
+        return [
+            'icon' => '💬',
+            'title' => $this->senderName.' sana mesaj gönderdi',
+            'body' => Str::limit($this->body, 80),
+            'url' => route('panel.messages.show', $this->conversationId),
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

@@ -54,6 +54,20 @@ class Listing extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        // İlan durumu (moderasyon) değişince sahibini bilgilendir.
+        static::updated(function (self $listing) {
+            if ($listing->wasChanged('status')) {
+                $listing->user?->notify(new \App\Notifications\ListingStatusNotification(
+                    $listing->title,
+                    $listing->status->getLabel(),
+                    route('listings.show', [$listing->id, $listing->slug]),
+                ));
+            }
+        });
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

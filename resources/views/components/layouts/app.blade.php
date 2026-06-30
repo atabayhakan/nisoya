@@ -33,6 +33,13 @@
 
             <div class="flex items-center gap-2">
                 @auth
+                    @php($unreadCount = auth()->user()->unreadNotifications()->count())
+                    <a href="{{ route('panel.notifications.index') }}" class="relative inline-flex rounded-lg p-2 text-base text-stone-600 hover:bg-stone-100" title="Bildirimler">
+                        🔔
+                        @if ($unreadCount)
+                            <span class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
+                        @endif
+                    </a>
                     <a href="{{ route('dashboard') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 sm:inline-block">Panelim</a>
                     <a href="{{ url('/panel/ilan/yeni') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">İlan Ver</a>
                     <form method="POST" action="{{ route('logout') }}" class="hidden sm:block">

@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Süresi dolan öne çıkan ilanları her gün normale döndür
 Schedule::command('listings:expire-featured')->daily();
+
+// Kayıtlı aramalara uyan yeni ilanlar için günlük uyarı e-postaları
+Schedule::command('alerts:saved-searches')->dailyAt('09:00');

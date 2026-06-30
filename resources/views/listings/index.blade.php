@@ -1,12 +1,29 @@
 <x-layouts.app :title="($activeCategory?->name ?? 'Tüm İlanlar').' — Nisoya'">
     <div class="mx-auto max-w-6xl px-4 py-8">
+        @if (session('status'))
+            <div class="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ session('status') }}</div>
+        @endif
+
         <div class="flex flex-wrap items-end justify-between gap-2">
             <div>
                 <h1 class="text-2xl font-bold text-stone-900">{{ $activeCategory?->name ?? 'Tüm İlanlar' }}</h1>
                 <p class="mt-1 text-sm text-stone-500">{{ $listings->total() }} ilan bulundu</p>
             </div>
-            <a href="{{ route('listings.map', $filters['tip'] ? ['tip' => $filters['tip']] : []) }}"
-               class="inline-flex items-center gap-1 rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">🗺️ Haritada gör</a>
+            <div class="flex items-center gap-2">
+                @auth
+                    <form method="POST" action="{{ route('saved-searches.store') }}">
+                        @csrf
+                        <input type="hidden" name="q" value="{{ $filters['q'] }}">
+                        <input type="hidden" name="kategori" value="{{ $filters['kategori'] }}">
+                        <input type="hidden" name="ulke" value="{{ $filters['ulke'] }}">
+                        <input type="hidden" name="sehir" value="{{ $filters['sehir'] }}">
+                        <input type="hidden" name="tip" value="{{ $filters['tip'] }}">
+                        <button type="submit" class="inline-flex items-center gap-1 rounded-lg border border-emerald-300 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50">🔔 Aramayı kaydet</button>
+                    </form>
+                @endauth
+                <a href="{{ route('listings.map', $filters['tip'] ? ['tip' => $filters['tip']] : []) }}"
+                   class="inline-flex items-center gap-1 rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">🗺️ Haritada gör</a>
+            </div>
         </div>
 
         <div class="mt-6 grid gap-8 lg:grid-cols-4">

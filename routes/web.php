@@ -7,12 +7,14 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileSettingsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\SavedSearchController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -49,6 +51,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::match(['put', 'patch'], '/panel/ilan/{listing}', [ListingController::class, 'update'])->name('panel.listings.update');
     Route::delete('/panel/ilan/{listing}', [ListingController::class, 'destroy'])->name('panel.listings.destroy');
     Route::post('/panel/ilan/{listing}/one-cikar', [FeatureController::class, 'store'])->name('panel.listings.feature');
+
+    // Bildirimler
+    Route::get('/panel/bildirimler', [NotificationController::class, 'index'])->name('panel.notifications.index');
+
+    // Kayıtlı aramalar
+    Route::get('/panel/aramalarim', [SavedSearchController::class, 'index'])->name('panel.saved-searches.index');
+    Route::post('/panel/arama-kaydet', [SavedSearchController::class, 'store'])->name('saved-searches.store');
+    Route::delete('/panel/aramalarim/{savedSearch}', [SavedSearchController::class, 'destroy'])->name('saved-searches.destroy');
 
     // Favoriler
     Route::get('/panel/favorilerim', [FavoriteController::class, 'index'])->name('panel.favorites.index');

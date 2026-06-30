@@ -73,6 +73,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(Favorite::class);
     }
 
+    public function savedSearches(): HasMany
+    {
+        return $this->hasMany(SavedSearch::class);
+    }
+
     public function favoriteListings(): BelongsToMany
     {
         return $this->belongsToMany(Listing::class, 'favorites')->withTimestamps();
