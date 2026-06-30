@@ -1,0 +1,108 @@
+<x-layouts.app :title="($activeCategory?->name ?? 'Tüm İlanlar').' — Nisoya'">
+    <div class="mx-auto max-w-6xl px-4 py-8">
+        <div class="flex flex-wrap items-end justify-between gap-2">
+            <div>
+                <h1 class="text-2xl font-bold text-stone-900">{{ $activeCategory?->name ?? 'Tüm İlanlar' }}</h1>
+                <p class="mt-1 text-sm text-stone-500">{{ $listings->total() }} ilan bulundu</p>
+            </div>
+            <a href="{{ route('listings.map', $filters['tip'] ? ['tip' => $filters['tip']] : []) }}"
+               class="inline-flex items-center gap-1 rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">🗺️ Haritada gör</a>
+        </div>
+
+        <div class="mt-6 grid gap-8 lg:grid-cols-4">
+            {{-- Filtreler --}}
+            <aside class="lg:col-span-1">
+                <form method="GET" action="{{ route('listings.index') }}" class="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                    <div>
+                        <label for="q" class="block text-sm font-medium text-stone-700">Ara</label>
+                        <input id="q" name="q" type="text" value="{{ $filters['q'] }}" placeholder="Anahtar kelime"
+                               class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                    </div>
+
+                    <div>
+                        <label for="tip" class="block text-sm font-medium text-stone-700">Tür</label>
+                        <select id="tip" name="tip" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <option value="">Tümü</option>
+                            <option value="hizmet" @selected($filters['tip'] === 'hizmet')>🧰 Hizmetler</option>
+                            <option value="urun" @selected($filters['tip'] === 'urun')>📦 Ürünler</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="kategori" class="block text-sm font-medium text-stone-700">Kategori</label>
+                        <select id="kategori" name="kategori" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <option value="">Tüm kategoriler</option>
+                            @foreach ($categories as $cat)
+                                <option value="{{ $cat->slug }}" @selected($filters['kategori'] === $cat->slug)>{{ $cat->icon }} {{ $cat->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="ulke" class="block text-sm font-medium text-stone-700">Ülke</label>
+                        <select id="ulke" name="ulke" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <option value="">Tüm ülkeler</option>
+                            @foreach ($countries as $country)
+                                <option value="{{ $country->code }}" @selected($filters['ulke'] === $country->code)>{{ $country->emoji }} {{ $country->name_tr }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="sehir" class="block text-sm font-medium text-stone-700">Şehir</label>
+                        <input id="sehir" name="sehir" type="text" value="{{ $filters['sehir'] }}"
+                               class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                    </div>
+
+                    <div>
+                        <span class="block text-sm font-medium text-stone-700">Fiyat aralığı</span>
+                        <div class="mt-1 flex items-center gap-2">
+                            <input name="min" type="number" min="0" value="{{ $filters['min'] }}" placeholder="En az" class="w-full rounded-lg border-stone-300 px-2 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <span class="text-stone-400">—</span>
+                            <input name="max" type="number" min="0" value="{{ $filters['max'] }}" placeholder="En çok" class="w-full rounded-lg border-stone-300 px-2 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                        </div>
+                    </div>
+
+                    <label class="flex items-center gap-2 text-sm text-stone-700">
+                        <input type="checkbox" name="uzaktan" value="1" @checked($filters['uzaktan']) class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500">
+                        Sadece uzaktan / online
+                    </label>
+
+                    <div>
+                        <label for="sirala" class="block text-sm font-medium text-stone-700">Sırala</label>
+                        <select id="sirala" name="sirala" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <option value="" @selected($filters['sirala'] === '')>En yeni</option>
+                            <option value="fiyat_artan" @selected($filters['sirala'] === 'fiyat_artan')>Fiyat (artan)</option>
+                            <option value="fiyat_azalan" @selected($filters['sirala'] === 'fiyat_azalan')>Fiyat (azalan)</option>
+                            <option value="populer" @selected($filters['sirala'] === 'populer')>En popüler</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-2 pt-1">
+                        <button type="submit" class="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">Filtrele</button>
+                        <a href="{{ route('listings.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-500 hover:bg-stone-100">Temizle</a>
+                    </div>
+                </form>
+            </aside>
+
+            {{-- Sonuçlar --}}
+            <main class="lg:col-span-3">
+                @if ($listings->isNotEmpty())
+                    <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                        @foreach ($listings as $listing)
+                            @include('partials.listing-card', ['listing' => $listing])
+                        @endforeach
+                    </div>
+                    <div class="mt-8">{{ $listings->links() }}</div>
+                @else
+                    <div class="rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center">
+                        <div class="text-4xl">🔍</div>
+                        <h2 class="mt-3 text-lg font-semibold text-stone-800">Sonuç bulunamadı</h2>
+                        <p class="mt-1 text-sm text-stone-500">Filtreleri değiştirmeyi veya temizlemeyi dene.</p>
+                        <a href="{{ route('listings.index') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">Tüm ilanları gör</a>
+                    </div>
+                @endif
+            </main>
+        </div>
+    </div>
+</x-layouts.app>

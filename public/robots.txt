@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /panel/
+Disallow: /yonetim/
+Sitemap: https://nisoya.com/sitemap.xml

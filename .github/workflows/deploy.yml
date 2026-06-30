@@ -1,0 +1,30 @@
+name: Deploy
+
+# main'e push olduğunda Hostinger VPS'e otomatik deploy.
+# Gerekli GitHub Secrets:
+#   SSH_HOST         -> 72.62.115.3
+#   SSH_USER         -> root  (veya sudo'lu deploy kullanıcısı)
+#   SSH_PRIVATE_KEY  -> deploy özel anahtarı (D:\nisoya-tools\deploy\nisoya_deploy içeriği)
+#
+# Tek seferlik sunucu hazırlığı (depo oluştuktan sonra):
+#   cd /var/www/nisoya && git init && git remote add origin <REPO_URL> \
+#     && git fetch origin && git checkout -f -b main origin/main
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sunucuda deploy çalıştır
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/nisoya
+            bash deploy/deploy.sh
