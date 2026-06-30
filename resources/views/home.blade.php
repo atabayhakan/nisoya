@@ -21,15 +21,9 @@
                            class="flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     <select name="ulke" class="rounded-xl border-0 bg-stone-50 px-4 py-3 text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         <option value="">Tüm ülkeler</option>
-                        <option value="DE">🇩🇪 Almanya</option>
-                        <option value="NL">🇳🇱 Hollanda</option>
-                        <option value="GB">🇬🇧 İngiltere</option>
-                        <option value="FR">🇫🇷 Fransa</option>
-                        <option value="AT">🇦🇹 Avusturya</option>
-                        <option value="BE">🇧🇪 Belçika</option>
-                        <option value="SE">🇸🇪 İsveç</option>
-                        <option value="CH">🇨🇭 İsviçre</option>
-                        <option value="US">🇺🇸 ABD</option>
+                        @foreach ($countries as $country)
+                            <option value="{{ $country->code }}">{{ $country->emoji }} {{ $country->name_tr }}</option>
+                        @endforeach
                     </select>
                     <button type="submit" class="rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700">
                         Ara

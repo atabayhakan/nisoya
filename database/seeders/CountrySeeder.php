@@ -28,6 +28,12 @@ class CountrySeeder extends Seeder
             ['IT', 'İtalya', '🇮🇹', 'EUR', 41.9028, 12.4964],
             ['ES', 'İspanya', '🇪🇸', 'EUR', 40.4168, -3.7038],
             ['PL', 'Polonya', '🇵🇱', 'PLN', 52.2297, 21.0122],
+            ['AZ', 'Azerbaycan', '🇦🇿', 'AZN', 40.4093, 49.8671],
+            ['KZ', 'Kazakistan', '🇰🇿', 'KZT', 43.2389, 76.8897],
+            ['KG', 'Kırgızistan', '🇰🇬', 'KGS', 42.8746, 74.5698],
+            ['UZ', 'Özbekistan', '🇺🇿', 'UZS', 41.2995, 69.2401],
+            ['TM', 'Türkmenistan', '🇹🇲', 'TMT', 37.9601, 58.3261],
+            ['RU', 'Rusya', '🇷🇺', 'RUB', 55.7558, 37.6173],
         ];
 
         foreach ($countries as $i => $c) {

@@ -21,6 +21,12 @@ class CurrencySeeder extends Seeder
             ['code' => 'CAD', 'name' => 'Kanada Doları', 'symbol' => 'C$'],
             ['code' => 'AUD', 'name' => 'Avustralya Doları', 'symbol' => 'A$'],
             ['code' => 'PLN', 'name' => 'Polonya Zlotisi', 'symbol' => 'zł'],
+            ['code' => 'RUB', 'name' => 'Rus Rublesi', 'symbol' => '₽'],
+            ['code' => 'KZT', 'name' => 'Kazak Tengesi', 'symbol' => '₸'],
+            ['code' => 'AZN', 'name' => 'Azerbaycan Manatı', 'symbol' => '₼'],
+            ['code' => 'UZS', 'name' => 'Özbek Somu', 'symbol' => 'soʻm'],
+            ['code' => 'KGS', 'name' => 'Kırgız Somu', 'symbol' => 'сом'],
+            ['code' => 'TMT', 'name' => 'Türkmen Manatı', 'symbol' => 'm'],
         ];
 
         foreach ($currencies as $i => $c) {
