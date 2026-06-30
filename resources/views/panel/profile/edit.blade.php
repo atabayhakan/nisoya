@@ -56,7 +56,8 @@
                 </div>
                 <div>
                     <label for="city" class="block text-sm font-medium text-stone-700">Şehir</label>
-                    <input id="city" name="city" type="text" value="{{ old('city', $user->city) }}" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                    <input id="city" name="city" type="text" value="{{ old('city', $user->city) }}" list="city-options" autocomplete="off" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                    @include('partials.city-datalist')
                 </div>
                 <div>
                     <label for="preferred_currency" class="block text-sm font-medium text-stone-700">Para birimi</label>

@@ -85,9 +85,10 @@
     </div>
     <div>
         <label for="city" class="block text-sm font-medium text-stone-700">Şehir <span class="text-stone-400">(ops.)</span></label>
-        <input id="city" name="city" type="text" value="{{ old('city', $listing?->city) }}"
+        <input id="city" name="city" type="text" value="{{ old('city', $listing?->city) }}" list="city-options" autocomplete="off"
                class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
         @error('city') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        @include('partials.city-datalist')
     </div>
 </div>
 
