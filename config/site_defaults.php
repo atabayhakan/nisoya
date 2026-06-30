@@ -1,0 +1,61 @@
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| Site içerik (metin) ayarları — tek kaynak
+|--------------------------------------------------------------------------
+| Buradaki her alan: hem seeder ile DB'ye yazılır, hem setting() için
+| varsayılan değerdir, hem de admin "İçerik" formunu otomatik üretir.
+| Yeni düzenlenebilir bir metin eklemek için tek satır eklemek yeter.
+*/
+
+return [
+
+    'groups' => [
+        'anasayfa' => 'Anasayfa',
+        'footer' => 'Alt Bilgi (Footer)',
+        'genel' => 'Genel',
+    ],
+
+    // key => [group, label, type (text|textarea), default]
+    'fields' => [
+
+        // --- Genel ---
+        'genel.site_adi' => ['group' => 'genel', 'label' => 'Site adı', 'type' => 'text', 'default' => 'Nisoya'],
+        'genel.slogan' => ['group' => 'genel', 'label' => 'Slogan', 'type' => 'text', 'default' => 'Ne İş Olursa Yaparım'],
+
+        // --- Anasayfa: Hero ---
+        'home.hero_badge' => ['group' => 'anasayfa', 'label' => 'Hero rozet metni', 'type' => 'text', 'default' => '🌍 Yurt dışındaki Türkler için'],
+        'home.hero_satir1' => ['group' => 'anasayfa', 'label' => 'Başlık — 1. satır', 'type' => 'text', 'default' => 'Yeteneğini paraya dönüştür,'],
+        'home.hero_vurgu' => ['group' => 'anasayfa', 'label' => 'Başlık — vurgulu kısım', 'type' => 'text', 'default' => 'kendi insanından'],
+        'home.hero_satir2' => ['group' => 'anasayfa', 'label' => 'Başlık — vurgudan sonrası', 'type' => 'text', 'default' => 'hizmet al'],
+        'home.hero_aciklama' => ['group' => 'anasayfa', 'label' => 'Hero açıklama', 'type' => 'textarea', 'default' => "İngilizce ders mi veriyorsun, taşınmada mı yardım ediyorsun, ev yemeği mi yapıyorsun? Nisoya'da yeteneğini ilan et; bulunduğun ülkedeki Türklerle güvenle buluş."],
+        'home.arama_placeholder' => ['group' => 'anasayfa', 'label' => 'Arama kutusu metni', 'type' => 'text', 'default' => 'Ne arıyorsun? (ör. İngilizce öğretmeni)'],
+        'home.populer_metin' => ['group' => 'anasayfa', 'label' => 'Popüler aramalar satırı', 'type' => 'text', 'default' => 'Popüler: dil dersi · taşınma · ev yemeği · web tasarım · tercüme'],
+
+        // --- Anasayfa: Değer önerileri ---
+        'home.deger1_baslik' => ['group' => 'anasayfa', 'label' => 'Değer 1 — başlık', 'type' => 'text', 'default' => 'Tamamen Türkçe'],
+        'home.deger1_metin' => ['group' => 'anasayfa', 'label' => 'Değer 1 — metin', 'type' => 'text', 'default' => 'Kendi dilinde, kendi insanınla.'],
+        'home.deger2_baslik' => ['group' => 'anasayfa', 'label' => 'Değer 2 — başlık', 'type' => 'text', 'default' => 'Güvenli topluluk'],
+        'home.deger2_metin' => ['group' => 'anasayfa', 'label' => 'Değer 2 — metin', 'type' => 'text', 'default' => 'Değerlendirme ve doğrulanmış üyeler.'],
+        'home.deger3_baslik' => ['group' => 'anasayfa', 'label' => 'Değer 3 — başlık', 'type' => 'text', 'default' => 'Ücretsiz ilan'],
+        'home.deger3_metin' => ['group' => 'anasayfa', 'label' => 'Değer 3 — metin', 'type' => 'text', 'default' => 'İlan vermek tamamen ücretsiz.'],
+
+        // --- Anasayfa: Nasıl çalışır ---
+        'home.nasil_baslik' => ['group' => 'anasayfa', 'label' => 'Nasıl çalışır — başlık', 'type' => 'text', 'default' => 'Nasıl çalışır?'],
+        'home.adim1_baslik' => ['group' => 'anasayfa', 'label' => 'Adım 1 — başlık', 'type' => 'text', 'default' => 'Ücretsiz kayıt ol'],
+        'home.adim1_metin' => ['group' => 'anasayfa', 'label' => 'Adım 1 — metin', 'type' => 'textarea', 'default' => 'Birkaç dakikada hesabını oluştur, bulunduğun ülke ve şehri seç.'],
+        'home.adim2_baslik' => ['group' => 'anasayfa', 'label' => 'Adım 2 — başlık', 'type' => 'text', 'default' => 'İlanını ver veya ara'],
+        'home.adim2_metin' => ['group' => 'anasayfa', 'label' => 'Adım 2 — metin', 'type' => 'textarea', 'default' => 'Yeteneğini/hizmetini ilan et ya da ihtiyacın olan hizmeti ara.'],
+        'home.adim3_baslik' => ['group' => 'anasayfa', 'label' => 'Adım 3 — başlık', 'type' => 'text', 'default' => 'Mesajlaş, anlaş'],
+        'home.adim3_metin' => ['group' => 'anasayfa', 'label' => 'Adım 3 — metin', 'type' => 'textarea', 'default' => 'Karşı tarafla mesajlaş, güvenle anlaş. Ödeme aranızda.'],
+
+        // --- Anasayfa: CTA ---
+        'home.cta_baslik' => ['group' => 'anasayfa', 'label' => 'CTA — başlık', 'type' => 'text', 'default' => 'Bir yeteneğin mutlaka vardır.'],
+        'home.cta_metin' => ['group' => 'anasayfa', 'label' => 'CTA — metin', 'type' => 'text', 'default' => 'Hadi onu paraya dönüştür. İlan vermek tamamen ücretsiz.'],
+        'home.cta_buton' => ['group' => 'anasayfa', 'label' => 'CTA — buton', 'type' => 'text', 'default' => 'Hemen Başla'],
+
+        // --- Footer ---
+        'footer.aciklama' => ['group' => 'footer', 'label' => 'Footer açıklama', 'type' => 'textarea', 'default' => 'Ne İş Olursa Yaparım. Yurt dışındaki Türklerin kendi aralarında yetenek ve hizmet pazaryeri.'],
+    ],
+];

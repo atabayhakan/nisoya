@@ -4,20 +4,19 @@
         <div class="mx-auto max-w-6xl px-4 py-16 sm:py-24">
             <div class="mx-auto max-w-3xl text-center">
                 <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                    🌍 Yurt dışındaki Türkler için
+                    {{ setting('home.hero_badge') }}
                 </span>
                 <h1 class="mt-5 text-4xl font-extrabold tracking-tight text-stone-900 sm:text-5xl">
-                    Yeteneğini paraya dönüştür,<br>
-                    <span class="text-emerald-600">kendi insanından</span> hizmet al
+                    {{ setting('home.hero_satir1') }}<br>
+                    <span class="text-emerald-600">{{ setting('home.hero_vurgu') }}</span> {{ setting('home.hero_satir2') }}
                 </h1>
                 <p class="mx-auto mt-5 max-w-2xl text-lg text-stone-600">
-                    İngilizce ders mi veriyorsun, taşınmada mı yardım ediyorsun, ev yemeği mi yapıyorsun?
-                    Nisoya'da yeteneğini ilan et; bulunduğun ülkedeki Türklerle güvenle buluş.
+                    {{ setting('home.hero_aciklama') }}
                 </p>
 
                 {{-- Arama kutusu (M4'te işlevsel olacak) --}}
                 <form action="{{ url('/ilanlar') }}" method="GET" class="mx-auto mt-8 flex max-w-2xl flex-col gap-2 rounded-2xl bg-white p-2 shadow-lg ring-1 ring-stone-200 sm:flex-row">
-                    <input type="text" name="q" placeholder="Ne arıyorsun? (ör. İngilizce öğretmeni)"
+                    <input type="text" name="q" placeholder="{{ setting('home.arama_placeholder') }}"
                            class="flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     <select name="ulke" class="rounded-xl border-0 bg-stone-50 px-4 py-3 text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         <option value="">Tüm ülkeler</option>
@@ -29,7 +28,7 @@
                         Ara
                     </button>
                 </form>
-                <p class="mt-3 text-sm text-stone-400">Popüler: dil dersi · taşınma · ev yemeği · web tasarım · tercüme</p>
+                <p class="mt-3 text-sm text-stone-400">{{ setting('home.populer_metin') }}</p>
             </div>
         </div>
     </section>
@@ -41,22 +40,22 @@
                 <div class="flex items-start gap-3">
                     <span class="text-2xl">🇹🇷</span>
                     <div>
-                        <h3 class="text-sm font-semibold text-stone-900">Tamamen Türkçe</h3>
-                        <p class="mt-0.5 text-sm text-stone-500">Kendi dilinde, kendi insanınla.</p>
+                        <h3 class="text-sm font-semibold text-stone-900">{{ setting('home.deger1_baslik') }}</h3>
+                        <p class="mt-0.5 text-sm text-stone-500">{{ setting('home.deger1_metin') }}</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-3">
                     <span class="text-2xl">🔒</span>
                     <div>
-                        <h3 class="text-sm font-semibold text-stone-900">Güvenli topluluk</h3>
-                        <p class="mt-0.5 text-sm text-stone-500">Değerlendirme ve doğrulanmış üyeler.</p>
+                        <h3 class="text-sm font-semibold text-stone-900">{{ setting('home.deger2_baslik') }}</h3>
+                        <p class="mt-0.5 text-sm text-stone-500">{{ setting('home.deger2_metin') }}</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-3">
                     <span class="text-2xl">💸</span>
                     <div>
-                        <h3 class="text-sm font-semibold text-stone-900">Ücretsiz ilan</h3>
-                        <p class="mt-0.5 text-sm text-stone-500">İlan vermek tamamen ücretsiz.</p>
+                        <h3 class="text-sm font-semibold text-stone-900">{{ setting('home.deger3_baslik') }}</h3>
+                        <p class="mt-0.5 text-sm text-stone-500">{{ setting('home.deger3_metin') }}</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-3">
@@ -132,13 +131,13 @@
     {{-- Nasıl çalışır --}}
     <section class="bg-white py-14">
         <div class="mx-auto max-w-6xl px-4">
-            <h2 class="text-center text-2xl font-bold text-stone-900">Nasıl çalışır?</h2>
+            <h2 class="text-center text-2xl font-bold text-stone-900">{{ setting('home.nasil_baslik') }}</h2>
             <div class="mt-10 grid gap-8 md:grid-cols-3">
                 @php
                     $adimlar = [
-                        ['no' => '1', 'baslik' => 'Ücretsiz kayıt ol', 'metin' => 'Birkaç dakikada hesabını oluştur, bulunduğun ülke ve şehri seç.'],
-                        ['no' => '2', 'baslik' => 'İlanını ver veya ara', 'metin' => 'Yeteneğini/hizmetini ilan et ya da ihtiyacın olan hizmeti ara.'],
-                        ['no' => '3', 'baslik' => 'Mesajlaş, anlaş', 'metin' => 'Karşı tarafla mesajlaş, güvenle anlaş. Ödeme aranızda.'],
+                        ['no' => '1', 'baslik' => setting('home.adim1_baslik'), 'metin' => setting('home.adim1_metin')],
+                        ['no' => '2', 'baslik' => setting('home.adim2_baslik'), 'metin' => setting('home.adim2_metin')],
+                        ['no' => '3', 'baslik' => setting('home.adim3_baslik'), 'metin' => setting('home.adim3_metin')],
                     ];
                 @endphp
                 @foreach ($adimlar as $a)
@@ -155,9 +154,9 @@
     {{-- CTA --}}
     <section class="mx-auto max-w-6xl px-4 py-14">
         <div class="rounded-3xl bg-emerald-600 px-6 py-12 text-center text-white sm:px-12">
-            <h2 class="text-2xl font-bold sm:text-3xl">Bir yeteneğin mutlaka vardır.</h2>
-            <p class="mx-auto mt-3 max-w-xl text-emerald-50">Hadi onu paraya dönüştür. İlan vermek tamamen ücretsiz.</p>
-            <a href="{{ url('/kayit') }}" class="mt-6 inline-block rounded-xl bg-white px-6 py-3 font-semibold text-emerald-700 transition hover:bg-emerald-50">Hemen Başla</a>
+            <h2 class="text-2xl font-bold sm:text-3xl">{{ setting('home.cta_baslik') }}</h2>
+            <p class="mx-auto mt-3 max-w-xl text-emerald-50">{{ setting('home.cta_metin') }}</p>
+            <a href="{{ url('/kayit') }}" class="mt-6 inline-block rounded-xl bg-white px-6 py-3 font-semibold text-emerald-700 transition hover:bg-emerald-50">{{ setting('home.cta_buton') }}</a>
         </div>
     </section>
 </x-layouts.app>

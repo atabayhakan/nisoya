@@ -28,7 +28,7 @@
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
             <a href="{{ url('/') }}" class="flex items-center gap-2">
                 <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-600 text-lg">🧰</span>
-                <span class="text-xl font-bold tracking-tight text-stone-900">Nisoya</span>
+                <span class="text-xl font-bold tracking-tight text-stone-900">{{ setting('genel.site_adi') }}</span>
             </a>
 
             <nav class="hidden items-center gap-6 text-sm font-medium text-stone-600 md:flex">
@@ -85,9 +85,9 @@
             <div>
                 <div class="flex items-center gap-2">
                     <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-base">🧰</span>
-                    <span class="text-lg font-bold text-stone-900">Nisoya</span>
+                    <span class="text-lg font-bold text-stone-900">{{ setting('genel.site_adi') }}</span>
                 </div>
-                <p class="mt-3 text-sm text-stone-500">Ne İş Olursa Yaparım. Yurt dışındaki Türklerin kendi aralarında yetenek ve hizmet pazaryeri.</p>
+                <p class="mt-3 text-sm text-stone-500">{{ setting('footer.aciklama') }}</p>
             </div>
             <div>
                 <h3 class="text-sm font-semibold text-stone-900">Keşfet</h3>
