@@ -13,6 +13,9 @@
     <meta property="og:type" content="website">
     <meta property="og:locale" content="tr_TR">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#059669">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-stone-50 text-stone-800 antialiased flex flex-col">
@@ -111,5 +114,11 @@
             <p class="mx-auto max-w-6xl px-4 text-xs text-stone-400">© {{ date('Y') }} Nisoya. Tüm hakları saklıdır.</p>
         </div>
     </footer>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+        }
+    </script>
 </body>
 </html>

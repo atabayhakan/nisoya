@@ -39,6 +39,9 @@ Route::get('/sss', [PagesController::class, 'sss'])->name('pages.faq');
 // SEO  (robots.txt → public/robots.txt statik dosyası, nginx doğrudan sunar)
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
+// PWA offline yedek sayfası
+Route::view('/offline', 'offline')->name('offline');
+
 // Üye paneli (giriş + e-posta doğrulaması gerekli)
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('/panel', 'panel.dashboard')->name('dashboard');
