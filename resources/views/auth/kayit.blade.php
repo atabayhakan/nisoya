@@ -4,6 +4,8 @@
 
     <form method="POST" action="{{ route('register') }}" class="mt-6 space-y-4">
         @csrf
+        {{-- honeypot --}}
+        <div class="hidden" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
 
         <div>
             <label for="name" class="block text-sm font-medium text-stone-700">Ad Soyad</label>

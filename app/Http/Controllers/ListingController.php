@@ -11,6 +11,7 @@ use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Listing;
 use App\Services\GeocodingService;
+use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -195,7 +196,7 @@ class ListingController extends Controller
         $order = (int) $listing->images()->max('sort_order');
 
         foreach ($request->file('images') as $file) {
-            $path = $file->store('listings', 'public');
+            $path = app(ImageService::class)->storeOptimized($file, 'listings');
             $order++;
 
             $listing->images()->create([

@@ -7,6 +7,7 @@
 @endphp
 
 <input type="hidden" name="type" value="{{ $type ?? 'hizmet' }}">
+<div class="hidden" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
 
 <div>
     <label for="title" class="block text-sm font-medium text-stone-700">Başlık</label>

@@ -35,6 +35,7 @@ class RegisteredUserController extends Controller
             'city' => ['nullable', 'string', 'max:255'],
             'preferred_currency' => ['required', 'string', 'exists:currencies,code'],
             'terms' => ['accepted'],
+            'website' => ['prohibited'], // honeypot: botlar doldurur, gerçek kullanıcı boş bırakır
         ], attributes: [
             'name' => 'ad soyad',
             'email' => 'e-posta',

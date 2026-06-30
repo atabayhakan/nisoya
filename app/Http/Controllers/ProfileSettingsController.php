@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Country;
 use App\Models\Currency;
+use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -44,7 +45,7 @@ class ProfileSettingsController extends Controller
             if ($user->avatar_path) {
                 Storage::disk('public')->delete($user->avatar_path);
             }
-            $data['avatar_path'] = $request->file('avatar')->store('avatars', 'public');
+            $data['avatar_path'] = app(ImageService::class)->storeOptimized($request->file('avatar'), 'avatars', 600, 85);
         }
 
         unset($data['avatar']);

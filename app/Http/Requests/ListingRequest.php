@@ -32,6 +32,7 @@ class ListingRequest extends FormRequest
             'stock' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'images' => ['nullable', 'array', 'max:8'],
             'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'website' => ['prohibited'], // honeypot
         ];
     }
 

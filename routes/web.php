@@ -46,34 +46,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // İlan yönetimi
     Route::get('/panel/ilanlarim', [ListingController::class, 'index'])->name('panel.listings.index');
     Route::get('/panel/ilan/yeni', [ListingController::class, 'create'])->name('panel.listings.create');
-    Route::post('/panel/ilan', [ListingController::class, 'store'])->name('panel.listings.store');
+    Route::post('/panel/ilan', [ListingController::class, 'store'])->name('panel.listings.store')->middleware('throttle:12,1');
     Route::get('/panel/ilan/{listing}/duzenle', [ListingController::class, 'edit'])->name('panel.listings.edit');
     Route::match(['put', 'patch'], '/panel/ilan/{listing}', [ListingController::class, 'update'])->name('panel.listings.update');
     Route::delete('/panel/ilan/{listing}', [ListingController::class, 'destroy'])->name('panel.listings.destroy');
-    Route::post('/panel/ilan/{listing}/one-cikar', [FeatureController::class, 'store'])->name('panel.listings.feature');
+    Route::post('/panel/ilan/{listing}/one-cikar', [FeatureController::class, 'store'])->name('panel.listings.feature')->middleware('throttle:10,1');
 
     // Bildirimler
     Route::get('/panel/bildirimler', [NotificationController::class, 'index'])->name('panel.notifications.index');
 
     // Kayıtlı aramalar
     Route::get('/panel/aramalarim', [SavedSearchController::class, 'index'])->name('panel.saved-searches.index');
-    Route::post('/panel/arama-kaydet', [SavedSearchController::class, 'store'])->name('saved-searches.store');
+    Route::post('/panel/arama-kaydet', [SavedSearchController::class, 'store'])->name('saved-searches.store')->middleware('throttle:20,1');
     Route::delete('/panel/aramalarim/{savedSearch}', [SavedSearchController::class, 'destroy'])->name('saved-searches.destroy');
 
     // Favoriler
     Route::get('/panel/favorilerim', [FavoriteController::class, 'index'])->name('panel.favorites.index');
-    Route::post('/favori/{listing}', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+    Route::post('/favori/{listing}', [FavoriteController::class, 'toggle'])->name('favorites.toggle')->middleware('throttle:60,1');
 
     // Mesajlaşma
     Route::get('/panel/mesajlar', [MessageController::class, 'index'])->name('panel.messages.index');
     Route::get('/panel/mesajlar/{conversation}', [MessageController::class, 'show'])->name('panel.messages.show');
     Route::get('/panel/mesajlar/{conversation}/akis', [MessageController::class, 'stream'])->name('panel.messages.stream');
-    Route::post('/panel/mesajlar/{conversation}', [MessageController::class, 'store'])->name('panel.messages.store');
-    Route::post('/ilan/{listing}/mesaj', [MessageController::class, 'start'])->name('messages.start');
+    Route::post('/panel/mesajlar/{conversation}', [MessageController::class, 'store'])->name('panel.messages.store')->middleware('throttle:40,1');
+    Route::post('/ilan/{listing}/mesaj', [MessageController::class, 'start'])->name('messages.start')->middleware('throttle:20,1');
 
     // Değerlendirme & şikayet
-    Route::post('/uye/{user:username}/degerlendir', [ReviewController::class, 'store'])->name('reviews.store');
-    Route::post('/ilan/{listing}/sikayet', [ReportController::class, 'store'])->name('reports.store');
+    Route::post('/uye/{user:username}/degerlendir', [ReviewController::class, 'store'])->name('reviews.store')->middleware('throttle:10,1');
+    Route::post('/ilan/{listing}/sikayet', [ReportController::class, 'store'])->name('reports.store')->middleware('throttle:10,1');
 
     // Profil ayarları
     Route::get('/panel/profil', [ProfileSettingsController::class, 'edit'])->name('panel.profile.edit');

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
     Route::get('kayit', [RegisteredUserController::class, 'create'])->name('register');
-    Route::post('kayit', [RegisteredUserController::class, 'store']);
+    Route::post('kayit', [RegisteredUserController::class, 'store'])->middleware('throttle:5,1');
 
     Route::get('giris', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('giris', [AuthenticatedSessionController::class, 'store']);
