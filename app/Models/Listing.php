@@ -94,6 +94,17 @@ class Listing extends Model
         return $this->hasMany(Favorite::class);
     }
 
+    public function featureRequests(): HasMany
+    {
+        return $this->hasMany(FeatureRequest::class);
+    }
+
+    /** İlan şu an gerçekten öne çıkan mı (süre dolmamış). */
+    public function isCurrentlyFeatured(): bool
+    {
+        return $this->is_featured && (is_null($this->featured_until) || $this->featured_until->isFuture());
+    }
+
     /** Yalnızca yayında olan (aktif) ilanlar. */
     public function scopeActive($query)
     {

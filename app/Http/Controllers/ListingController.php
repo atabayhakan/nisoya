@@ -25,6 +25,7 @@ class ListingController extends Controller
     {
         $listings = $request->user()->listings()
             ->with('coverImage')
+            ->withExists(['featureRequests as has_pending_feature' => fn ($q) => $q->where('status', 'beklemede')])
             ->latest()
             ->paginate(12);
 

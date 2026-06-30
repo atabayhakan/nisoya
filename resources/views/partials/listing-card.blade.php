@@ -12,6 +12,9 @@
     </div>
     <div class="p-4">
         <div class="flex flex-wrap items-center gap-1.5 text-xs">
+            @if ($listing->isCurrentlyFeatured())
+                <span class="rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-700">⭐ Öne çıkan</span>
+            @endif
             @if ($listing->category)
                 <span class="rounded-full bg-stone-100 px-2 py-0.5 text-stone-500">{{ $listing->category->name }}</span>
             @endif

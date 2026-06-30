@@ -40,6 +40,9 @@
                 <h1 class="mt-6 text-2xl font-bold text-stone-900">{{ $listing->title }}</h1>
 
                 <div class="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                    @if ($listing->isCurrentlyFeatured())
+                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-700">⭐ Öne çıkan</span>
+                    @endif
                     @if ($listing->country)
                         <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-3 py-1 text-stone-600">
                             {{ $listing->country->emoji }} @if ($listing->city){{ $listing->city }}, @endif{{ $listing->country->name_tr }}

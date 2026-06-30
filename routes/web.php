@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\MapController;
@@ -47,6 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/panel/ilan/{listing}/duzenle', [ListingController::class, 'edit'])->name('panel.listings.edit');
     Route::match(['put', 'patch'], '/panel/ilan/{listing}', [ListingController::class, 'update'])->name('panel.listings.update');
     Route::delete('/panel/ilan/{listing}', [ListingController::class, 'destroy'])->name('panel.listings.destroy');
+    Route::post('/panel/ilan/{listing}/one-cikar', [FeatureController::class, 'store'])->name('panel.listings.feature');
 
     // Favoriler
     Route::get('/panel/favorilerim', [FavoriteController::class, 'index'])->name('panel.favorites.index');

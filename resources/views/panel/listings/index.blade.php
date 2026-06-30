@@ -32,7 +32,21 @@
                         @if ($listing->price !== null){{ number_format((float) $listing->price, 2) }} {{ $listing->currency }} <span class="text-stone-400">{{ $listing->price_unit->suffix() }}</span>@else Görüşülür @endif
                     </p>
                 </div>
-                <div class="flex shrink-0 items-center gap-2">
+                <div class="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                    @if ($listing->isCurrentlyFeatured())
+                        <span class="rounded-lg bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">⭐ Öne çıkan</span>
+                    @elseif ($listing->has_pending_feature)
+                        <span class="rounded-lg bg-stone-100 px-2 py-1 text-xs text-stone-500">⏳ İncelemede</span>
+                    @elseif ($listing->status->value === 'aktif')
+                        <form method="POST" action="{{ route('panel.listings.feature', $listing) }}" class="flex items-center gap-1">
+                            @csrf
+                            <select name="days" class="rounded-lg border-stone-300 py-1 pl-2 pr-7 text-xs focus:border-amber-500 focus:ring-amber-500">
+                                <option value="7">7 gün</option>
+                                <option value="30">30 gün</option>
+                            </select>
+                            <button type="submit" class="rounded-lg border border-amber-300 px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-50">⭐ Öne çıkar</button>
+                        </form>
+                    @endif
                     <a href="{{ route('panel.listings.edit', $listing) }}" class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-50">Düzenle</a>
                 </div>
             </div>
