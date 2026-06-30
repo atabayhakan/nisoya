@@ -19,7 +19,9 @@ class CityTest extends TestCase
         $this->assertDatabaseHas('cities', ['country_code' => 'AZ', 'name' => 'Bakü']);
         $this->assertDatabaseHas('cities', ['country_code' => 'RU', 'name' => 'Moskova']);
         $this->assertDatabaseHas('cities', ['country_code' => 'KZ', 'name' => 'Almatı']);
-        $this->assertSame(12, \App\Models\City::count());
+        $this->assertDatabaseHas('cities', ['country_code' => 'DE', 'name' => 'Berlin']);
+        $this->assertDatabaseHas('cities', ['country_code' => 'GB', 'name' => 'Londra']);
+        $this->assertSame(44, \App\Models\City::count());
     }
 
     public function test_registration_page_includes_city_suggestions(): void
