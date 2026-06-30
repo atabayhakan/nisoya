@@ -34,6 +34,42 @@
         </div>
     </section>
 
+    {{-- Değer önerileri + istatistik şeridi --}}
+    <section class="border-y border-stone-200 bg-white">
+        <div class="mx-auto max-w-6xl px-4 py-8">
+            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="flex items-start gap-3">
+                    <span class="text-2xl">🇹🇷</span>
+                    <div>
+                        <h3 class="text-sm font-semibold text-stone-900">Tamamen Türkçe</h3>
+                        <p class="mt-0.5 text-sm text-stone-500">Kendi dilinde, kendi insanınla.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <span class="text-2xl">🔒</span>
+                    <div>
+                        <h3 class="text-sm font-semibold text-stone-900">Güvenli topluluk</h3>
+                        <p class="mt-0.5 text-sm text-stone-500">Değerlendirme ve doğrulanmış üyeler.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <span class="text-2xl">💸</span>
+                    <div>
+                        <h3 class="text-sm font-semibold text-stone-900">Ücretsiz ilan</h3>
+                        <p class="mt-0.5 text-sm text-stone-500">İlan vermek tamamen ücretsiz.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <span class="text-2xl">🌍</span>
+                    <div>
+                        <h3 class="text-sm font-semibold text-stone-900">{{ $stats['countries'] }} ülke · {{ $stats['cities'] }} şehir</h3>
+                        <p class="mt-0.5 text-sm text-stone-500">{{ $stats['categories'] }} kategoride hizmet ve ürün.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     {{-- Kategoriler --}}
     <section class="mx-auto max-w-6xl px-4 py-14">
         <div class="flex items-end justify-between">
@@ -51,22 +87,47 @@
         </div>
     </section>
 
+    {{-- Popüler ülkeler --}}
+    @if ($countries->isNotEmpty())
+        <section class="mx-auto max-w-6xl px-4 pb-2">
+            <h2 class="text-2xl font-bold text-stone-900">Ülkeler</h2>
+            <div class="mt-5 flex flex-wrap gap-2">
+                @foreach ($countries as $country)
+                    <a href="{{ url('/ilanlar') }}?ulke={{ $country->code }}"
+                       class="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:text-emerald-700 hover:shadow-md">
+                        <span>{{ $country->emoji }}</span>
+                        <span>{{ $country->name_tr }}</span>
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     {{-- Yeni ilanlar --}}
-    @if ($latestListings->isNotEmpty())
-        <section class="bg-white py-14">
-            <div class="mx-auto max-w-6xl px-4">
-                <div class="flex items-end justify-between">
-                    <h2 class="text-2xl font-bold text-stone-900">Yeni ilanlar</h2>
-                    <a href="{{ route('listings.index') }}" class="text-sm font-medium text-emerald-700 hover:underline">Tümünü gör →</a>
-                </div>
+    <section class="mt-14 bg-white py-14">
+        <div class="mx-auto max-w-6xl px-4">
+            <div class="flex items-end justify-between">
+                <h2 class="text-2xl font-bold text-stone-900">Yeni ilanlar</h2>
+                <a href="{{ route('listings.index') }}" class="text-sm font-medium text-emerald-700 hover:underline">Tümünü gör →</a>
+            </div>
+            @if ($latestListings->isNotEmpty())
                 <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ($latestListings as $listing)
                         @include('partials.listing-card', ['listing' => $listing])
                     @endforeach
                 </div>
-            </div>
-        </section>
-    @endif
+            @else
+                <div class="mt-6 rounded-3xl border border-dashed border-emerald-300 bg-emerald-50/50 px-6 py-14 text-center">
+                    <div class="text-4xl">🚀</div>
+                    <h3 class="mt-4 text-xl font-bold text-stone-900">Burada ilk ilan senin olsun</h3>
+                    <p class="mx-auto mt-2 max-w-md text-sm text-stone-600">
+                        Nisoya yeni açıldı. İlk ilanı vererek bulunduğun ülkedeki Türklere yeteneğini duyur.
+                    </p>
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="mt-6 inline-block rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700">İlk ilanı sen ver</a>
+                </div>
+            @endif
+        </div>
+    </section>
 
     {{-- Nasıl çalışır --}}
     <section class="bg-white py-14">

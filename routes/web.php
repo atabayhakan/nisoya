@@ -4,6 +4,7 @@ use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InviteController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\MessageController;
@@ -57,6 +58,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Bildirimler
     Route::get('/panel/bildirimler', [NotificationController::class, 'index'])->name('panel.notifications.index');
+
+    // Davet / referans
+    Route::get('/panel/davet', [InviteController::class, 'index'])->name('panel.invite');
 
     // Kayıtlı aramalar
     Route::get('/panel/aramalarim', [SavedSearchController::class, 'index'])->name('panel.saved-searches.index');

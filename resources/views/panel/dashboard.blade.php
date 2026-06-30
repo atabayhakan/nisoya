@@ -8,6 +8,7 @@
             ['ad' => 'Aramalarım', 'aciklama' => 'Kayıtlı aramalar', 'ikon' => '🔎', 'url' => '/panel/aramalarim'],
             ['ad' => 'Favorilerim', 'aciklama' => 'Kaydettiğin ilanlar', 'ikon' => '❤️', 'url' => '/panel/favorilerim'],
             ['ad' => 'Profilim', 'aciklama' => 'Bilgilerini düzenle', 'ikon' => '👤', 'url' => '/panel/profil'],
+            ['ad' => 'Arkadaşını Davet Et', 'aciklama' => 'Davet bağlantını paylaş', 'ikon' => '🎁', 'url' => '/panel/davet'],
             ['ad' => 'İlanlara Göz At', 'aciklama' => 'Hizmet ara', 'ikon' => '🔍', 'url' => '/ilanlar'],
         ];
     @endphp

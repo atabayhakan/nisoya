@@ -1,4 +1,4 @@
-<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)">
+<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null">
     <div class="mx-auto max-w-5xl px-4 py-8">
         @if (session('status'))
             <div class="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ session('status') }}</div>
@@ -120,6 +120,11 @@
                                     </form>
                                 @endunless
                             @endauth
+                        </div>
+
+                        <div class="mt-4 border-t border-stone-100 pt-3">
+                            <p class="mb-2 text-xs font-medium text-stone-500">Bu ilanı paylaş</p>
+                            @include('partials.share-buttons', ['shareUrl' => route('listings.show', [$listing, $listing->slug]), 'shareText' => $listing->title])
                         </div>
                     </div>
 

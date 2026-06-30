@@ -9,10 +9,12 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
@@ -36,6 +38,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'last_seen_at',
         'provider',
         'provider_id',
+        'referral_code',
+        'referred_by',
     ];
 
     protected $hidden = [
@@ -53,6 +57,32 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'role' => UserRole::class,
             'status' => UserStatus::class,
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // Her yeni kullanıcıya benzersiz bir davet kodu üret.
+        static::creating(function (User $user) {
+            if (empty($user->referral_code)) {
+                $user->referral_code = static::generateReferralCode();
+            }
+        });
+    }
+
+    /** Çakışmayan, okunabilir bir davet kodu üretir. */
+    public static function generateReferralCode(): string
+    {
+        do {
+            $code = Str::upper(Str::random(8));
+        } while (static::query()->where('referral_code', $code)->exists());
+
+        return $code;
+    }
+
+    /** Bu kullanıcının paylaşacağı davet bağlantısı. */
+    public function referralUrl(): string
+    {
+        return url('/kayit').'?ref='.$this->referral_code;
     }
 
     /** Filament yönetim paneline erişim kontrolü. */
@@ -98,5 +128,17 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function reviewsGiven(): HasMany
     {
         return $this->hasMany(Review::class, 'reviewer_id');
+    }
+
+    /** Bu kullanıcıyı davet eden kişi. */
+    public function referrer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'referred_by');
+    }
+
+    /** Bu kullanıcının davet ettiği kişiler. */
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(User::class, 'referred_by');
     }
 }

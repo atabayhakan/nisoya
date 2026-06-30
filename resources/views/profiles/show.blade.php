@@ -30,6 +30,10 @@
                     <div class="text-xs text-stone-500">aktif ilan</div>
                 </div>
             </div>
+
+            <div class="mt-4 border-t border-stone-100 pt-3">
+                @include('partials.share-buttons', ['shareUrl' => route('profiles.show', $user->username), 'shareText' => $user->name.' — Nisoya'])
+            </div>
         </div>
 
         {{-- İlanları --}}

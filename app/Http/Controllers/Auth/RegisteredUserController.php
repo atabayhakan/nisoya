@@ -17,8 +17,14 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
-    public function create(): View
+    public function create(Request $request): View
     {
+        // Davet bağlantısıyla (?ref=KOD) gelindiyse kodu oturumda sakla;
+        // kayıt POST'unda davet edeni eşleştirmek için kullanılacak.
+        if ($ref = $request->query('ref')) {
+            $request->session()->put('referral_code', $ref);
+        }
+
         return view('auth.kayit', [
             'countries' => Country::query()->where('is_active', true)->orderBy('sort_order')->get(),
             'currencies' => Currency::query()->where('is_active', true)->orderBy('sort_order')->get(),
@@ -54,6 +60,7 @@ class RegisteredUserController extends Controller
             'country_code' => $validated['country_code'],
             'city' => $validated['city'] ?? null,
             'preferred_currency' => $validated['preferred_currency'],
+            'referred_by' => $this->resolveReferrerId($request),
         ]);
 
         event(new Registered($user));
@@ -61,6 +68,18 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect()->route('dashboard');
+    }
+
+    /** Oturumdaki davet kodundan davet eden kullanıcının id'sini çözer. */
+    protected function resolveReferrerId(Request $request): ?int
+    {
+        $code = $request->session()->pull('referral_code');
+
+        if (! $code) {
+            return null;
+        }
+
+        return User::query()->where('referral_code', $code)->value('id');
     }
 
     /** İsimden benzersiz kullanıcı adı üretir. */

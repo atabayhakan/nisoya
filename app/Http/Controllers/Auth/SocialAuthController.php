@@ -50,6 +50,7 @@ class SocialAuthController extends Controller
                 'provider' => $provider,
                 'provider_id' => $social->getId(),
                 'preferred_currency' => 'EUR',
+                'referred_by' => $this->resolveReferrerId(),
             ]);
         }
 
@@ -64,6 +65,18 @@ class SocialAuthController extends Controller
             in_array($provider, self::PROVIDERS, true) && config("services.{$provider}.client_id"),
             404,
         );
+    }
+
+    /** Oturumdaki davet kodundan davet eden kullanıcının id'sini çözer. */
+    private function resolveReferrerId(): ?int
+    {
+        $code = session()->pull('referral_code');
+
+        if (! $code) {
+            return null;
+        }
+
+        return User::query()->where('referral_code', $code)->value('id');
     }
 
     private function uniqueUsername(string $name): string

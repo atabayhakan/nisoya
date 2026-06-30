@@ -12,6 +12,10 @@
     <meta property="og:description" content="{{ $description ?? 'Yurt dışındaki Türklerin yetenek ve hizmet pazaryeri.' }}">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="tr_TR">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ $ogImage ?? asset('og.png') }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="{{ $ogImage ?? asset('og.png') }}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#059669">
