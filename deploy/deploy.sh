@@ -26,9 +26,10 @@ php artisan route:cache
 php artisan view:cache
 php artisan storage:link || true
 
-echo "→ Kuyruk işçisi yeniden başlatılıyor..."
+echo "→ Kuyruk işçisi nazikçe yeniden başlatılıyor (bloklamaz)..."
 php artisan queue:restart || true
-sudo supervisorctl restart nisoya-worker:* || true
+# Not: 'supervisorctl restart' KULLANMA — worker stop'u beklerken takılabilir.
+# queue:restart sinyaliyle worker bir sonraki döngüde yeni kodu yükler.
 
 echo "→ Yayına alınıyor..."
 php artisan up
