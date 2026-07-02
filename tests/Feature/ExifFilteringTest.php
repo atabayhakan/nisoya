@@ -291,4 +291,41 @@ class ExifFilteringTest extends TestCase
 
         $this->assertSame(2, $turkeyImages);
     }
+
+    /**
+     * reverseLocationLabel bir zamanlar düz bir public metottu; Filament'in
+     * TextColumn::make('reverseLocationLabel') property erişimiyle state
+     * çözümlemesi, Eloquent tarafından "ilişki metodu" sanılıp LogicException
+     * fırlatıyor ve tüm admin görseller sayfasını çökertiyordu. Bu test
+     * sayfanın gerçekten render edildiğini (500 değil) doğrular.
+     */
+    public function test_admin_listing_images_page_renders_with_reverse_location(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'email_verified_at' => now(),
+        ]);
+        $user = User::factory()->create();
+        $listing = Listing::factory()->create([
+            'user_id' => $user->id,
+            'category_id' => Category::first()->id,
+            'status' => ListingStatus::Aktif,
+        ]);
+
+        ListingImage::create([
+            'listing_id' => $listing->id,
+            'path' => 'listings/test-berlin.jpg',
+            'had_gps' => true,
+            'gps_lat' => 52.52,
+            'gps_lng' => 13.405,
+            'reverse_city' => 'Berlin',
+            'reverse_country_name' => 'Almanya',
+            'reverse_geocoded_at' => now(),
+        ]);
+
+        $response = $this->actingAs($admin)->get('/yonetim/listing-images');
+
+        $response->assertOk();
+        $response->assertSee('Berlin, Almanya');
+    }
 }

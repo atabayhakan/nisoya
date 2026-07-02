@@ -81,7 +81,7 @@ class ExifMapController extends Controller
                         'country_name' => $img->reverse_country_name,
                         'city' => $img->reverse_city,
                         'state' => $img->reverse_state,
-                        'label' => $img->reverseLocationLabel(),
+                        'label' => $img->reverseLocationLabel,
                     ],
                     'uploaded_at' => $img->created_at?->toIso8601String(),
                 ];

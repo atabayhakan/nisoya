@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\City;
+use App\Models\ListingImage;
 use App\Models\User;
+use App\Observers\ListingImageObserver;
 use App\Observers\UserObserver;
 use App\Support\Settings;
 use Illuminate\Support\Facades\Config;
@@ -22,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Kullanıcı banlandığında aktif ilanları otomatik pasif yap.
         User::observe(\App\Observers\UserObserver::class);
+
+        // Görsel kaydı silindiğinde thumb/medium/large dosyalarını da temizle.
+        ListingImage::observe(ListingImageObserver::class);
 
         // Şehir önerilerini (ülkeye göre) ilgili formlara paylaş.
         View::composer([

@@ -222,13 +222,13 @@ class ReverseGeocodingTest extends TestCase
             'reverse_city' => 'İstanbul',
             'reverse_country_name' => 'Türkiye',
         ]);
-        $this->assertSame('İstanbul, Türkiye', $image->reverseLocationLabel());
+        $this->assertSame('İstanbul, Türkiye', $image->reverseLocationLabel);
 
         $image = new ListingImage(['reverse_country_name' => 'Türkiye']);
-        $this->assertSame('Türkiye', $image->reverseLocationLabel());
+        $this->assertSame('Türkiye', $image->reverseLocationLabel);
 
         $image = new ListingImage([]);
-        $this->assertNull($image->reverseLocationLabel());
+        $this->assertNull($image->reverseLocationLabel);
     }
 
     public function test_in_city_scope(): void

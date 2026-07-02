@@ -2,14 +2,17 @@
 
 namespace App\Filament\Resources\ListingImages;
 
-use App\Filament\Actions\DeleteListingImageAction;
 use App\Filament\Resources\ListingImages\Pages\ListListingImages;
 use App\Filament\Resources\ListingImages\Pages\ViewListingImage;
 use App\Filament\Resources\Listings\Infolists\ListingImageInfolist;
 use App\Models\ListingImage;
-use App\Services\ImageService;
 use BackedEnum;
-use Filament\Infolists\Infolist;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -279,9 +282,10 @@ class ListingImageResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
+                ViewAction::make()
                     ->label('EXIF Detay'),
-                Tables\Actions\Action::make('redact_gps')
+                DeleteAction::make(),
+                Action::make('redact_gps')
                     ->label('GPS Bilgisini Sil')
                     ->icon('heroicon-o-map-pin')
                     ->color('warning')
@@ -314,8 +318,8 @@ class ListingImageResource extends Resource
                     }),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('redact_gps_bulk')
+                BulkActionGroup::make([
+                    BulkAction::make('redact_gps_bulk')
                         ->label('GPS bilgilerini sil (KVKK)')
                         ->icon('heroicon-o-map-pin')
                         ->color('warning')
@@ -345,7 +349,7 @@ class ListingImageResource extends Resource
                                 ->send();
                         }),
 
-                    Tables\Actions\BulkAction::make('notify_users_gps')
+                    BulkAction::make('notify_users_gps')
                         ->label('Kullanıcıları uyar (GPS)')
                         ->icon('heroicon-o-envelope')
                         ->color('info')
@@ -355,10 +359,15 @@ class ListingImageResource extends Resource
                         ->action(function ($records) {
                             $count = 0;
                             foreach ($records as $record) {
-                                if (! $record->had_gps || ! $record->listing) {
+                                if (! $record->had_gps || ! $record->listing?->user) {
                                     continue;
                                 }
-                                // Gerçek e-posta gönderimi yerine audit log
+
+                                $record->listing->user->notify(new \App\Notifications\GpsPrivacyNotification(
+                                    listingId: $record->listing->id,
+                                    listingTitle: $record->listing->title,
+                                ));
+
                                 activity('image')
                                     ->performedOn($record)
                                     ->causedBy(auth()->user())
@@ -367,12 +376,12 @@ class ListingImageResource extends Resource
                                 $count++;
                             }
                             Notification::make()
-                                ->title("{$count} kullanıcıya uyarı gönderildi (audit)")
+                                ->title("{$count} kullanıcıya uyarı gönderildi")
                                 ->success()
                                 ->send();
                         }),
 
-                    Tables\Actions\DeleteBulkAction::make(),
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

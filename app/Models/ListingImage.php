@@ -367,14 +367,24 @@ class ListingImage extends Model
 
     /**
      * Konum bilgisi: "İstanbul, Türkiye" gibi okunabilir string.
+     *
+     * Eloquent attribute accessor olarak tanımlı — düz bir public metot
+     * olsaydı, property erişimi (`$image->reverseLocationLabel` veya
+     * Filament'in TextColumn::make('reverseLocationLabel') gibi state
+     * çözümlemeleri) Eloquent tarafından "relationship metodu" sanılıp
+     * LogicException fırlatırdı (bkz. Model::getRelationshipFromMethod).
      */
-    public function reverseLocationLabel(): ?string
+    protected function reverseLocationLabel(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        $parts = array_filter([
-            $this->reverse_city,
-            $this->reverse_country_name,
-        ]);
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: function () {
+                $parts = array_filter([
+                    $this->reverse_city,
+                    $this->reverse_country_name,
+                ]);
 
-        return $parts ? implode(', ', $parts) : null;
+                return $parts ? implode(', ', $parts) : null;
+            },
+        );
     }
 }
