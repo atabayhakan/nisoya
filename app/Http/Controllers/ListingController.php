@@ -6,6 +6,7 @@ use App\Enums\ListingStatus;
 use App\Enums\ListingType;
 use App\Enums\PriceUnit;
 use App\Http\Requests\ListingRequest;
+use App\Jobs\ProcessListingImage;
 use App\Models\Category;
 use App\Models\Country;
 use App\Models\Currency;
@@ -194,68 +195,28 @@ class ListingController extends Controller
             return;
         }
 
-        $imageService = app(ImageService::class);
+        // Ağır iş (EXIF çıkarma + 3 varyant üretimi) HTTP isteği içinde değil,
+        // kuyruk worker'ında yapılır — 1 vCPU'luk üretim sunucusunda çoklu
+        // görselli bir ilan yüklemesinin isteği bloke etmesini önler.
+        // Ham dosya, işlenene kadar hiçbir zaman public diske yazılmaz
+        // (gizlilik: EXIF/GPS temizlenmeden hiçbir görsel yayınlanmaz).
         $hasCover = $listing->images()->where('is_cover', true)->exists();
         $order = (int) $listing->images()->max('sort_order');
-        $failed = 0;
 
         foreach ($request->file('images') as $file) {
-            try {
-                $result = $imageService->storeOptimized($file, 'listings');
-            } catch (\RuntimeException) {
-                // Gizlilik: işlenemeyen (dolayısıyla EXIF/GPS'i temizlenemeyen)
-                // görsel asla yayınlanmaz — bu dosyayı atla, diğerlerine devam et.
-                $failed++;
-
-                continue;
-            }
+            $rawPath = $file->store('pending-listing-images', 'local');
             $order++;
 
-            $image = $listing->images()->create([
-                'path' => $result['large'],
-                'path_thumb' => $result['thumb'],
-                'path_medium' => $result['medium'],
-                'path_large' => $result['large'],
-                'width' => $result['original_dimensions']['width'],
-                'height' => $result['original_dimensions']['height'],
-                'exif_metadata' => $result['exif_metadata'],
-                'had_gps' => $result['had_gps'],
-                'has_sensitive_exif' => $result['has_sensitive_exif'] ?? false,
-                'gps_lat' => $result['gps_lat'] ?? null,
-                'gps_lng' => $result['gps_lng'] ?? null,
-                'sort_order' => $order,
-                'is_cover' => ! $hasCover,
-            ]);
-
-            // Boyut bilgisi (varsa)
-            try {
-                $image->update([
-                    'size_bytes' => \Storage::disk('public')->size($image->path_large ?? $image->path),
-                ]);
-            } catch (\Throwable) {
-                // ignore — boyut okunamazsa devam et
-            }
-
-            // EXIF audit logu: kullanıcı GPS verisi içeren görsel yüklediyse kaydet
-            if ($result['had_gps']) {
-                activity('image')
-                    ->performedOn($image)
-                    ->causedBy($request->user())
-                    ->withProperties([
-                        'listing_id' => $listing->id,
-                        'had_gps' => true,
-                        'orientation_corrected' => $result['orientation_corrected'],
-                    ])
-                    ->log('GPS içeren görsel yüklendi (EXIF temizlendi)');
-            }
+            ProcessListingImage::dispatch(
+                listingId: $listing->id,
+                rawPath: $rawPath,
+                rawDisk: 'local',
+                sortOrder: $order,
+                isCover: ! $hasCover,
+                causerId: $request->user()?->id,
+            );
 
             $hasCover = true;
-        }
-
-        if ($failed > 0) {
-            session()->flash('image_warning', $failed === 1
-                ? 'Bir görsel işlenemediği için yüklenmedi. Diğer görseller kaydedildi.'
-                : "{$failed} görsel işlenemediği için yüklenmedi. Diğer görseller kaydedildi.");
         }
     }
 

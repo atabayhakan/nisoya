@@ -62,10 +62,36 @@ class ImageService
      */
     public function storeOptimized(UploadedFile $file, string $dir, int $maxWidth = 1600, int $quality = self::DEFAULT_QUALITY): array
     {
+        return $this->processImage($file->getRealPath(), $dir, $maxWidth, $quality);
+    }
+
+    /**
+     * storeOptimized() ile aynı işleme mantığı, ancak zaten diskte duran bir
+     * dosya path'inden çalışır. Kuyruklanmış görsel işleme (ProcessListingImage
+     * job'ı) tarafından kullanılır — kaynak dosya bir UploadedFile değil,
+     * geçici/özel diskteki ham yükleme.
+     *
+     * @return array{
+     *     thumb: string,
+     *     medium: string,
+     *     large: string,
+     *     orientation_corrected: bool,
+     *     original_dimensions: array{width: int, height: int},
+     *     exif_metadata: array<string, mixed>,
+     *     had_gps: bool
+     * }
+     */
+    public function storeOptimizedFromPath(string $realPath, string $dir, int $maxWidth = 1600, int $quality = self::DEFAULT_QUALITY): array
+    {
+        return $this->processImage($realPath, $dir, $maxWidth, $quality);
+    }
+
+    private function processImage(string $realPath, string $dir, int $maxWidth, int $quality): array
+    {
         $manager = new ImageManager(new Driver);
 
         try {
-            $image = $manager->decode($file->getRealPath());
+            $image = $manager->decode($realPath);
 
             // 1. EXIF metadata'sını orijinalden oku (orientation uygulanmadan)
             $rawExif = $image->exif()->toArray();
