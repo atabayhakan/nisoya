@@ -10,7 +10,7 @@
 <div
     x-data="donationModal()"
     @keydown.escape.window="open = false"
-    x-init="checkThanks()"
+    x-init="init()"
     x-cloak
 >
     {{-- Teşekkür banner'ı: PayPal/IPC dönüşünde ?status=thanks gelirse göster --}}
@@ -38,18 +38,31 @@
         </div>
     </div>
 
-    {{-- Trigger: Footer'daki Bağış butonu tetikler --}}
-    <div class="fixed bottom-4 right-4 z-40">
+    {{-- Trigger: küçük, köşeye yakın; formların/butonların üzerine binmemesi için
+         kapatılabilir (× kalıcı olarak gizler) ve panel (asıl site kullanımı)
+         sayfalarında hiç render edilmez, bkz. layouts/app.blade.php --}}
+    <div
+        x-show="!dismissed"
+        x-transition.opacity
+        class="fixed bottom-4 right-4 z-40 flex items-center gap-1"
+    >
         <button
             type="button"
             @click="open = true"
-            class="group inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-2.5 text-sm font-semibold text-amber-950 shadow-lg ring-1 ring-amber-500/50 transition hover:scale-105 hover:bg-amber-300"
+            class="group inline-flex items-center gap-1.5 rounded-full bg-amber-400 px-3 py-2 text-xs font-semibold text-amber-950 shadow-lg ring-1 ring-amber-500/50 transition hover:scale-105 hover:bg-amber-300 sm:px-4 sm:py-2.5 sm:text-sm"
             aria-label="Bağış yap"
             title="Nisoya'ya bağış yap"
         >
             <span aria-hidden="true">💛</span>
-            <span>Destek Ol</span>
+            <span class="hidden sm:inline">Destek Ol</span>
         </button>
+        <button
+            type="button"
+            @click="dismiss()"
+            class="grid h-5 w-5 place-items-center rounded-full bg-stone-900/40 text-xs text-white shadow transition hover:bg-stone-900/70"
+            aria-label="Bu butonu kalıcı olarak gizle"
+            title="Kalıcı olarak gizle"
+        >×</button>
     </div>
 
     {{-- Modal --}}
@@ -155,7 +168,18 @@
         return {
             open: false,
             showThanks: false,
-            init() {},
+            dismissed: false,
+            KEY: 'nisoya_donation_dismissed',
+            init() {
+                try {
+                    this.dismissed = localStorage.getItem(this.KEY) === '1';
+                } catch (e) {}
+                this.checkThanks();
+            },
+            dismiss() {
+                this.dismissed = true;
+                try { localStorage.setItem(this.KEY, '1'); } catch (e) {}
+            },
             checkThanks() {
                 try {
                     const url = new URL(window.location.href);

@@ -196,8 +196,13 @@
     {{-- Çerez onayı banner'ı (AdSense + Analytics için) --}}
     <x-cookie-consent />
 
-    {{-- Bağış modalı + FAB (Nisoya ücretsiz kalır) --}}
-    <x-donation-modal />
+    {{-- Bağış modalı + FAB (Nisoya ücretsiz kalır). Panel sayfalarında
+         (form doldurma, ilan yönetimi, mesajlaşma vb. asıl site kullanımı)
+         gösterilmez — orada mobilde form/aksiyon butonlarının üzerine
+         binip kullanımı engelliyordu. --}}
+    @unless (request()->is('panel*'))
+        <x-donation-modal />
+    @endunless
 
     <script>
         if ('serviceWorker' in navigator) {
