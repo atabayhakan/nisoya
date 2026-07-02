@@ -10,3 +10,8 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* Alpine.js henüz başlamadan önce x-cloak'lı elemanları gizle (FOUC önleme). */
+[x-cloak] {
+    display: none !important;
+}
