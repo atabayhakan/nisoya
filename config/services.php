@@ -35,16 +35,50 @@ return [
         ],
     ],
 
-    'google' => [
-        'client_id' => env('GOOGLE_CLIENT_ID'),
-        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => env('GOOGLE_REDIRECT_URI', '/giris/google/callback'),
+    /*
+    |--------------------------------------------------------------------------
+    | Google AdSense & Analytics
+    |--------------------------------------------------------------------------
+    | Bu sistem gelirini AdSense reklamlarından elde eder ve Analytics ile
+    | ölçüm yapar. Kimlikler .env'den okunur; boşsa script'ler hiç yüklenmez.
+    */
+
+    'adsense' => [
+        'enabled' => (bool) env('ADSENSE_ENABLED', false),
+        'publisher_id' => env('ADSENSE_PUBLISHER_ID'),       // ca-pub-XXXXXXXXXXXXXXXX
+        'auto_ads_code' => env('ADSENSE_AUTO_ADS_CODE'),     // tam <script> içeriği (admin panelden)
     ],
 
-    'facebook' => [
-        'client_id' => env('FACEBOOK_CLIENT_ID'),
-        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
-        'redirect' => env('FACEBOOK_REDIRECT_URI', '/giris/facebook/callback'),
+    'analytics' => [
+        'enabled' => (bool) env('ANALYTICS_ENABLED', false),
+        'measurement_id' => env('ANALYTICS_MEASUREMENT_ID'), // G-XXXXXXXXXX
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Bağış (Donation)
+    |--------------------------------------------------------------------------
+    | Sistem uzun süre ücretsiz hizmet verir. Gelir yalnızca AdSense + bağış
+    | ile sağlanır. PayPal.me linki ve IBAN admin panelden yönetilir.
+    */
+
+    'donation' => [
+        'paypal_me' => env('DONATION_PAYPAL_ME'),    // örn: paypal.me/nisoya
+        'iban' => env('DONATION_IBAN'),              // TR ile başlayan IBAN
+        'iban_owner' => env('DONATION_IBAN_OWNER'),  // Hesap sahibi adı
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reverse Geocoding (GPS → adres)
+    |--------------------------------------------------------------------------
+    | Görsel EXIF'inden çıkarılan GPS koordinatlarından şehir/ülke tespiti.
+    | Nominatim (OpenStreetMap) ücretsiz API'sini kullanır; rate limit 1 req/s.
+    | Test ortamında otomatik devre dışı.
+    */
+    'reverse_geocoding' => [
+        'enabled' => (bool) env('REVERSE_GEOCODING_ENABLED', true),
+        'cache_days' => (int) env('REVERSE_GEOCODING_CACHE_DAYS', 30),
     ],
 
 ];

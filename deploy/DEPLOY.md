@@ -47,18 +47,31 @@ cd nisoya
 ## 4. Uygulama yapılandırması
 ```bash
 cp deploy/.env.production.example .env
-# .env içini doldur (DB_PASSWORD, APP_URL, MAIL_*)
+# .env içini doldur (DB_PASSWORD, APP_URL, MAIL_*, ADSENSE_*, ANALYTICS_*, DONATION_*, REVERSE_GEOCODING_*)
 composer install --no-dev --optimize-autoloader
 npm ci && npm run build
 php artisan key:generate
 php artisan migrate --force
-php artisan db:seed --class=Database\\Seeders\\CurrencySeeder
-php artisan db:seed --class=Database\\Seeders\\CountrySeeder
-php artisan db:seed --class=Database\\Seeders\\CategorySeeder
-php artisan db:seed --class=Database\\Seeders\\AdminUserSeeder   # admin@nisoya.test — sonra şifre değiştir!
+php artisan db:seed --class=Database\\Seeders\CurrencySeeder
+php artisan db:seed --class=Database\\Seeders\CountrySeeder
+php artisan db:seed --class=Database\\Seeders\CategorySeeder
+php artisan db:seed --class=Database\\Seeders\AdminUserSeeder   # admin@nisoya.test — sonra şifre değiştir!
 php artisan storage:link
 php artisan config:cache && php artisan route:cache && php artisan view:cache
 sudo chown -R www-data:www-data storage bootstrap/cache
+```
+
+## 4.5. İlk seferde çalıştırılması gereken komutlar
+```bash
+# Tüm GPS'li görseller için şehir/ülke tespiti (~1.1 sn/görsel, 100 görsel = ~2 dk)
+php artisan images:reverse-geocode
+
+# Activity log tablosu otomatik migrate ile oluştu; geriye uyumluluk için eski
+# ilan görsellerini yeniden işle (EXIF orientation + metadata temizliği):
+php artisan images:reprocess
+
+# Spam temizliği (gerekirse)
+php artisan activitylog:clean   # Eski activity log'ları temizler
 ```
 
 ## 5. Nginx
@@ -77,10 +90,19 @@ sudo certbot --nginx -d nisoya.com -d www.nisoya.com
 ## 7. Kuyruk işçisi (Supervisor)
 ```bash
 sudo cp deploy/supervisor-nisoya-worker.conf /etc/supervisor/conf.d/nisoya-worker.conf
-sudo supervisorctl reread && sudo supervisorctl update && sudo supervisorctl start nisoya-worker:*
+sudo supervisorctl reread && sudo supervisorctl update
+sudo supervisorctl start nisoya-worker:*
+sudo supervisorctl start nisoya-schedule:*
+# İki iş programı başlar:
+#   - nisoya-worker:* (queue:work) — e-posta, bildirim, EXIF işleme
+#   - nisoya-schedule:* (schedule:run) — reverse-geocode, expire-featured, saved-search alerts
+sudo supervisorctl status
 ```
 
 ## 8. Zamanlayıcı (cron)
+Supervisor `nisoya-schedule` zaten `schedule:run` çağrısını her dakika yapar. Ek cron gerekmez.
+
+Alternatif (supervisor yerine cron isteyenler için):
 ```bash
 sudo crontab -u www-data -e
 # Ekle:
@@ -89,15 +111,113 @@ sudo crontab -u www-data -e
 
 ## 9. Yedekleme (günlük cron)
 ```bash
-# DB dump + storage yedeği — /etc/cron.daily/nisoya-backup
-mysqldump nisoya | gzip > /var/backups/nisoya-$(date +\%F).sql.gz
-tar czf /var/backups/nisoya-storage-$(date +\%F).tar.gz /var/www/nisoya/storage/app/public
+sudo tee /etc/cron.daily/nisoya-backup > /dev/null <<'EOF'
+#!/bin/bash
+set -e
+BACKUP_DIR=/var/backups/nisoya
+mkdir -p $BACKUP_DIR
+TS=$(date +%F)
+# Veritabanı
+mysqldump nisoya | gzip > $BACKUP_DIR/nisoya-db-$TS.sql.gz
+# Storage (yüklenen görseller)
+tar czf $BACKUP_DIR/nisoya-storage-$TS.tar.gz -C /var/www/nisoya storage/app/public
+# 14 günden eski yedekleri sil
+find $BACKUP_DIR -name 'nisoya-*' -mtime +14 -delete
+EOF
+sudo chmod +x /etc/cron.daily/nisoya-backup
+```
+
+Yedek doğrulama:
+```bash
+# Manuel test
+sudo /etc/cron.daily/nisoya-backup
+ls -la /var/backups/nisoya/
+# DB geri yükleme testi
+zcat /var/backups/nisoya/nisoya-db-2026-07-02.sql.gz | mysql -u root -p nisoya_test
 ```
 
 ## 10. Sonraki deploylar
 ```bash
 cd /var/www/nisoya && bash deploy/deploy.sh
 ```
+
+## 11. CI/CD (GitHub Actions → SSH)
+
+`.github/workflows/deploy.yml` zaten `main` push'unda VPS'e SSH ile deploy yapar.
+
+**GitHub Secrets** (repo → Settings → Secrets):
+- `SSH_HOST` — VPS IP (örn. `72.62.115.3`)
+- `SSH_USER` — SSH kullanıcısı (`root` veya `deployer`)
+- `SSH_PRIVATE_KEY` — deploy anahtarı (sunucuda `~/.ssh/authorized_keys`)
+
+**Ön koşul:** Sunucuda bir kez:
+```bash
+sudo mkdir -p /var/www/nisoya
+sudo chown deployer:deployer /var/www/nisoya
+cd /var/www/nisoya
+git clone git@github.com:KULLANICI/nisoya.git .
+```
+
+Deploy otomatik tetiklenir:
+1. `git push origin main`
+2. GitHub Actions → test + build + SSH deploy
+3. Sunucuda `bash deploy/deploy.sh` çalışır (smoke test dahil)
+4. Slack/Discord'a bildirim (opsiyonel)
+
+## 12. Monitoring (Uptime + Health)
+
+**Ücretsiz uptime monitoring:**
+- UptimeRobot.com → `https://nisoya.com/health` (HTTP 200 beklenecek)
+- BetterStack.com → aynı şekilde
+- Her 5 dakikada bir ping; 5xx yanıt → SMS/e-posta uyarısı
+
+**Admin dashboard widget'ları** (otomatik):
+- `/yonetim` → DB latency, cache, queue, storage durumu
+- GPS'li görseller (gizlilik uyarıları)
+- Toplam kullanıcı/ilan/mesaj istatistikleri
+
+**Log monitoring:**
+```bash
+# Laravel logları
+tail -f /var/www/nisoya/storage/logs/laravel-*.log | grep -E "ERROR|CRITICAL"
+
+# Nginx access log (son istekler)
+sudo tail -f /var/log/nginx/access.log | grep -E "500|502|503|504"
+
+# Fail2ban (brute force koruması)
+sudo fail2ban-client status sshd
+```
+
+## 13. Performans optimizasyonları (post-deploy)
+
+```bash
+# PHP OPcache ayarı (/etc/php/8.3/fpm/php.ini)
+opcache.enable=1
+opcache.memory_consumption=256
+opcache.max_accelerated_files=20000
+opcache.validate_timestamps=0  # production'da kapalı
+
+# MySQL slow query log
+SET GLOBAL slow_query_log = 'ON';
+SET GLOBAL long_query_time = 1;
+
+# Redis monitoring
+redis-cli INFO memory
+redis-cli Info stats
+```
+
+## 14. Sorun giderme (Troubleshooting)
+
+| Sorun | Çözüm |
+|-------|-------|
+| 500 Internal Server Error | `tail -50 storage/logs/laravel.log` |
+| Service Worker (PWA) güncellenmiyor | `location = /sw.js` no-cache zaten ayarlı; gerekirse tarayıcı cache temizle |
+| Görseller yüklenmiyor | `php artisan storage:link` + `chown -R www-data storage` |
+| Queue çalışmıyor | `supervisorctl status` + `tail worker.log` |
+| 419 CSRF hatası | APP_KEY aynı mı kontrol et, session driver çalışıyor mu |
+| Tailwind v4 dark mode çalışmıyor | `npm run build` çalıştır, `app.css` build edilmiş mi kontrol et |
+| EXIF haritası boş | `php artisan images:reverse-geocode` çalıştır, Nominatim rate limit (1.1 sn) |
+| AdSense reklamları görünmüyor | `.env`'de `ADSENSE_ENABLED=true` + `ADSENSE_PUBLISHER_ID` ayarlı mı |
 
 ## Güvenlik kontrol listesi
 - [ ] `APP_DEBUG=false`, `APP_ENV=production`
@@ -106,3 +226,7 @@ cd /var/www/nisoya && bash deploy/deploy.sh
 - [ ] SSH parola yerine anahtar (öneri), root login kapalı
 - [ ] MySQL yalnızca 127.0.0.1
 - [ ] Düzenli yedek doğrulandı
+- [ ] HTTPS (Let's Encrypt) aktif
+- [ ] HSTS header aktif
+- [ ] Fail2ban çalışıyor
+- [ ] .env dosyası .gitignore'da ve yedeklenmiyor

@@ -11,11 +11,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Listing extends Model
 {
     /** @use HasFactory<\Database\Factories\ListingFactory> */
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'user_id',
@@ -123,5 +125,15 @@ class Listing extends Model
     public function scopeActive($query)
     {
         return $query->where('status', ListingStatus::Aktif->value);
+    }
+
+    /** Activity log: status + featured değişikliklerini logla. */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['status', 'is_featured', 'featured_until', 'is_remote', 'stock', 'price'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $eventName) => "İlan {$eventName}");
     }
 }

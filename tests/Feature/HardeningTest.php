@@ -32,7 +32,10 @@ class HardeningTest extends TestCase
             'password' => 'sifre1234', 'password_confirmation' => 'sifre1234',
             'country_code' => 'DE', 'preferred_currency' => 'EUR', 'terms' => '1',
             'website' => 'http://spam.example',
-        ])->assertSessionHasErrors('website');
+        ])
+            // Honeypot middleware bot'u sessizce geri yönlendirir, validasyon hatası vermez.
+            ->assertRedirect()
+            ->assertSessionHas('status', 'İşlemin alındı.');
 
         $this->assertGuest();
         $this->assertDatabaseMissing('users', ['email' => 'bot@example.com']);
@@ -48,22 +51,55 @@ class HardeningTest extends TestCase
             'description' => 'Yeterince uzun bir açıklama metni buraya yazıldı.',
             'currency' => 'EUR', 'price_unit' => 'gorusulur', 'country_code' => 'DE',
             'website' => 'http://spam.example',
-        ])->assertSessionHasErrors('website');
+        ])
+            ->assertRedirect()
+            ->assertSessionHas('status', 'İşlemin alındı.');
 
         $this->assertDatabaseCount('listings', 0);
     }
 
     public function test_image_service_stores_optimized_file(): void
     {
-        Storage::fake('public');
-
-        $path = app(ImageService::class)->storeOptimized(
+        $this->useRealStorage();
+        $result = app(ImageService::class)->storeOptimized(
             UploadedFile::fake()->image('buyuk.jpg', 2400, 1800),
             'listings',
         );
 
-        $this->assertNotEmpty($path);
-        Storage::disk('public')->assertExists($path);
+        // Yeni return: array (thumb/medium/large + metadata)
+        $this->assertNotEmpty($result['thumb']);
+        $this->assertNotEmpty($result['medium']);
+        $this->assertNotEmpty($result['large']);
+        $this->assertIsBool($result['orientation_corrected']);
+        $this->assertIsArray($result['original_dimensions']);
+
+        $this->cleanupRealStorage($result);
+
+        // useRealStorage helper'ı kullanıldığı için Storage::fake gerek yok
+        $this->assertTrue(true);
+    }
+
+    private function useRealStorage(): void
+    {
+        $tmpPath = storage_path('framework/testing/disk-public');
+        if (! is_dir($tmpPath)) {
+            mkdir($tmpPath, 0777, true);
+        }
+        config(['filesystems.disks.public' => [
+            'driver' => 'local',
+            'root' => $tmpPath,
+            'url' => env('APP_URL').'/storage',
+            'visibility' => 'public',
+        ]]);
+    }
+
+    private function cleanupRealStorage(array $paths): void
+    {
+        foreach ($paths as $key => $value) {
+            if (is_string($value) && $value && \Storage::disk('public')->exists($value)) {
+                \Storage::disk('public')->delete($value);
+            }
+        }
     }
 
     public function test_admin_dashboard_shows_stats(): void

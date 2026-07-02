@@ -15,11 +15,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, LogsActivity;
 
     protected $fillable = [
         'name',
@@ -36,10 +38,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'is_verified',
         'status',
         'last_seen_at',
-        'provider',
-        'provider_id',
         'referral_code',
         'referred_by',
+        'two_factor_secret',
+        'two_factor_confirmed_at',
+        'two_factor_recovery_codes',
     ];
 
     protected $hidden = [
@@ -88,7 +91,21 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     /** Filament yönetim paneline erişim kontrolü. */
     public function canAccessPanel(Panel $panel): bool
     {
+        if ($this->status === UserStatus::Silinmis) {
+            return false;
+        }
+
         return $this->role?->canAccessAdminPanel() ?? false;
+    }
+
+    /** Activity log: yalnızca önemli alan değişikliklerini logla. */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['status', 'role', 'is_verified', 'email'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $eventName) => "Kullanıcı {$eventName}");
     }
 
     // İlişkiler

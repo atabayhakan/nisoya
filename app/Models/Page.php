@@ -17,6 +17,7 @@ class Page extends Model
         'ilanlar', 'ilan', 'harita', 'uye', 'nasil-calisir', 'iletisim',
         'giris', 'kayit', 'cikis', 'sifremi-unuttum', 'sifre-sifirla', 'eposta-dogrula',
         'panel', 'yonetim', 'favori', 'sitemap.xml', 'robots.txt', 'offline',
+        'cerez-politikasi', 'cerez-tercihleri', 'kullanim-kosullari',
     ];
 
     protected $fillable = [

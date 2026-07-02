@@ -10,6 +10,7 @@
 
     <form method="POST" action="{{ route('password.email') }}" class="mt-6 space-y-4">
         @csrf
+        @include('partials.honeypot')
 
         <div>
             <label for="email" class="block text-sm font-medium text-stone-700">E-posta</label>

@@ -18,59 +18,122 @@
     <meta name="twitter:image" content="{{ $ogImage ?? asset('og.png') }}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
     <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#059669">
+    <meta name="theme-color" content="#059669" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0c0a09" media="(prefers-color-scheme: dark)">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
+
+    {{-- Tema başlatma (FOUC önleme: head içinde inline çalışmalı) --}}
+    <x-theme-init />
+
+    {{-- DNS prefetch / preconnect: AdSense + Analytics için bağlantı kurulumunu erkenden başlat --}}
+    <link rel="dns-prefetch" href="//pagead2.googlesyndication.com">
+    <link rel="dns-prefetch" href="//www.googletagmanager.com">
+    <link rel="dns-prefetch" href="//googleads.g.doubleclick.net">
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+    <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
+
+    {{-- JSON-LD: WebSite + Organization (SEO + AdSense kalite) --}}
+    <x-json-ld type="WebSite" :data="[
+        'name' => setting('genel.site_adi'),
+        'alternateName' => 'Nisoya',
+        'url' => url('/'),
+        'description' => setting('footer.aciklama'),
+        'inLanguage' => 'tr-TR',
+        'potentialAction' => [
+            '@type' => 'SearchAction',
+            'target' => [
+                '@type' => 'EntryPoint',
+                'urlTemplate' => route('listings.index').'?q={search_term_string}',
+            ],
+            'query-input' => 'required name=search_term_string',
+        ],
+    ]" />
+    <x-json-ld type="Organization" :data="[
+        'name' => setting('genel.site_adi'),
+        'url' => url('/'),
+        'logo' => asset('icons/icon-192.png'),
+        'description' => setting('footer.aciklama'),
+    ]" />
+
+    {{-- Google AdSense doğrulama meta etiketi (yayıncı id .env / admin panelden) --}}
+    @if (config('services.adsense.enabled') && config('services.adsense.publisher_id'))
+        <meta name="google-adsense-account" content="{{ config('services.adsense.publisher_id') }}">
+    @endif
+
+    {{-- Google Analytics 4 — yalnızca analytics etkinse ve ölçüm id varsa --}}
+    @if (config('services.analytics.enabled') && config('services.analytics.measurement_id'))
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ config('services.analytics.measurement_id') }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', @json(config('services.analytics.measurement_id')), { anonymize_ip: true });
+        </script>
+    @endif
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-stone-50 text-stone-800 antialiased flex flex-col">
+<body class="min-h-screen bg-stone-50 text-stone-800 antialiased flex flex-col dark:bg-stone-950 dark:text-stone-200">
     {{-- Üst menü --}}
-    <header class="sticky top-0 z-30 border-b border-stone-200 bg-white/90 backdrop-blur">
+    <header class="sticky top-0 z-30 border-b border-stone-200 bg-white/90 backdrop-blur dark:border-stone-800 dark:bg-stone-900/90">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
             <a href="{{ url('/') }}" class="flex items-center gap-2">
-                <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-600 text-lg">🧰</span>
-                <span class="text-xl font-bold tracking-tight text-stone-900">{{ setting('genel.site_adi') }}</span>
+                <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-600 text-lg dark:bg-emerald-500">🧰</span>
+                <span class="text-xl font-bold tracking-tight text-stone-900 dark:text-stone-50">{{ setting('genel.site_adi') }}</span>
             </a>
 
-            <nav class="hidden items-center gap-6 text-sm font-medium text-stone-600 md:flex">
-                <a href="{{ route('listings.index') }}" class="hover:text-emerald-700">İlanlar</a>
-                <a href="{{ route('listings.map') }}" class="hover:text-emerald-700">Harita</a>
-                <a href="{{ route('listings.index') }}" class="hover:text-emerald-700">Kategoriler</a>
-                <a href="{{ route('pages.how') }}" class="hover:text-emerald-700">Nasıl Çalışır?</a>
+            <nav class="hidden items-center gap-6 text-sm font-medium text-stone-600 md:flex dark:text-stone-300">
+                <a href="{{ route('listings.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İlanlar</a>
+                <a href="{{ route('listings.map') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Harita</a>
+                <a href="{{ route('listings.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Kategoriler</a>
+                <a href="{{ route('pages.how') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a>
             </nav>
 
             <div class="flex items-center gap-2">
+                {{-- Dark mode toggle --}}
+                <button
+                    type="button"
+                    onclick="window.toggleTheme && window.toggleTheme()"
+                    class="inline-flex rounded-lg p-2 text-base text-stone-600 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+                    title="Temayı değiştir"
+                    aria-label="Karanlık/aydınlık tema değiştir"
+                >
+                    <span class="dark:hidden">🌙</span>
+                    <span class="hidden dark:inline">☀️</span>
+                </button>
+
                 @auth
                     @php($unreadCount = auth()->user()->unreadNotifications()->count())
-                    <a href="{{ route('panel.notifications.index') }}" class="relative inline-flex rounded-lg p-2 text-base text-stone-600 hover:bg-stone-100" title="Bildirimler">
+                    <a href="{{ route('panel.notifications.index') }}" class="relative inline-flex rounded-lg p-2 text-base text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800" title="Bildirimler">
                         🔔
                         @if ($unreadCount)
                             <span class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
                         @endif
                     </a>
-                    <a href="{{ route('dashboard') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 sm:inline-block">Panelim</a>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">İlan Ver</a>
+                    <a href="{{ route('dashboard') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 sm:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Panelim</a>
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
                     <form method="POST" action="{{ route('logout') }}" class="hidden sm:block">
                         @csrf
-                        <button type="submit" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-500 hover:bg-stone-100">Çıkış</button>
+                        <button type="submit" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Çıkış</button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 sm:inline-block">Giriş</a>
-                    <a href="{{ route('register') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 sm:inline-block">Kayıt</a>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">İlan Ver</a>
+                    <a href="{{ route('login') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 sm:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Giriş</a>
+                    <a href="{{ route('register') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 sm:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Kayıt</a>
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
                 @endauth
             </div>
         </div>
 
         {{-- Mobil gezinme --}}
-        <nav class="flex items-center gap-5 overflow-x-auto border-t border-stone-100 px-4 py-2 text-sm font-medium text-stone-600 md:hidden">
-            <a href="{{ route('listings.index') }}" class="whitespace-nowrap hover:text-emerald-700">İlanlar</a>
-            <a href="{{ route('listings.map') }}" class="whitespace-nowrap hover:text-emerald-700">Harita</a>
-            <a href="{{ route('pages.how') }}" class="whitespace-nowrap hover:text-emerald-700">Nasıl Çalışır?</a>
+        <nav class="flex items-center gap-5 overflow-x-auto border-t border-stone-100 px-4 py-2 text-sm font-medium text-stone-600 md:hidden dark:border-stone-800 dark:text-stone-300">
+            <a href="{{ route('listings.index') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">İlanlar</a>
+            <a href="{{ route('listings.map') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">Harita</a>
+            <a href="{{ route('pages.how') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a>
             @guest
-                <a href="{{ route('login') }}" class="whitespace-nowrap hover:text-emerald-700">Giriş</a>
-                <a href="{{ route('register') }}" class="whitespace-nowrap hover:text-emerald-700">Kayıt</a>
+                <a href="{{ route('login') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">Giriş</a>
+                <a href="{{ route('register') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">Kayıt</a>
             @else
-                <a href="{{ route('dashboard') }}" class="whitespace-nowrap hover:text-emerald-700">Panelim</a>
+                <a href="{{ route('dashboard') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">Panelim</a>
             @endguest
         </nav>
     </header>
@@ -80,45 +143,61 @@
     </main>
 
     {{-- Alt bilgi --}}
-    <footer class="mt-16 border-t border-stone-200 bg-white">
+    <footer class="mt-16 border-t border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
         <div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 md:grid-cols-4">
             <div>
                 <div class="flex items-center gap-2">
-                    <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-base">🧰</span>
-                    <span class="text-lg font-bold text-stone-900">{{ setting('genel.site_adi') }}</span>
+                    <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-base dark:bg-emerald-500">🧰</span>
+                    <span class="text-lg font-bold text-stone-900 dark:text-stone-50">{{ setting('genel.site_adi') }}</span>
                 </div>
-                <p class="mt-3 text-sm text-stone-500">{{ setting('footer.aciklama') }}</p>
+                <p class="mt-3 text-sm text-stone-500 dark:text-stone-400">{{ setting('footer.aciklama') }}</p>
             </div>
             <div>
-                <h3 class="text-sm font-semibold text-stone-900">Keşfet</h3>
-                <ul class="mt-3 space-y-2 text-sm text-stone-500">
-                    <li><a href="{{ url('/ilanlar') }}" class="hover:text-emerald-700">Tüm İlanlar</a></li>
-                    <li><a href="{{ route('listings.index') }}" class="hover:text-emerald-700">Kategoriler</a></li>
-                    <li><a href="{{ url('/nasil-calisir') }}" class="hover:text-emerald-700">Nasıl Çalışır?</a></li>
+                <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">Keşfet</h3>
+                <ul class="mt-3 space-y-2 text-sm text-stone-500 dark:text-stone-400">
+                    <li><a href="{{ url('/ilanlar') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Tüm İlanlar</a></li>
+                    <li><a href="{{ route('listings.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Kategoriler</a></li>
+                    <li><a href="{{ url('/nasil-calisir') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a></li>
                 </ul>
             </div>
             <div>
-                <h3 class="text-sm font-semibold text-stone-900">Hesap</h3>
-                <ul class="mt-3 space-y-2 text-sm text-stone-500">
-                    <li><a href="{{ url('/giris') }}" class="hover:text-emerald-700">Giriş Yap</a></li>
-                    <li><a href="{{ url('/kayit') }}" class="hover:text-emerald-700">Kayıt Ol</a></li>
-                    <li><a href="{{ url('/panel/ilan/yeni') }}" class="hover:text-emerald-700">İlan Ver</a></li>
+                <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">Hesap</h3>
+                <ul class="mt-3 space-y-2 text-sm text-stone-500 dark:text-stone-400">
+                    <li><a href="{{ url('/giris') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Giriş Yap</a></li>
+                    <li><a href="{{ url('/kayit') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Kayıt Ol</a></li>
+                    <li><a href="{{ url('/panel/ilan/yeni') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İlan Ver</a></li>
                 </ul>
             </div>
             <div>
-                <h3 class="text-sm font-semibold text-stone-900">Kurumsal</h3>
-                <ul class="mt-3 space-y-2 text-sm text-stone-500">
+                <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">Kurumsal</h3>
+                <ul class="mt-3 space-y-2 text-sm text-stone-500 dark:text-stone-400">
                     @foreach (\App\Models\Page::navPages() as $navPage)
-                        <li><a href="{{ url('/'.$navPage->slug) }}" class="hover:text-emerald-700">{{ $navPage->title }}</a></li>
+                        <li><a href="{{ url('/'.$navPage->slug) }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">{{ $navPage->title }}</a></li>
                     @endforeach
-                    <li><a href="{{ route('pages.contact') }}" class="hover:text-emerald-700">İletişim</a></li>
+                    <li><a href="{{ route('pages.contact') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İletişim</a></li>
+                    <li><a href="/cerez-tercihleri" class="hover:text-emerald-700 dark:hover:text-emerald-400">Çerez Tercihleri</a></li>
                 </ul>
             </div>
         </div>
-        <div class="border-t border-stone-100 py-4">
-            <p class="mx-auto max-w-6xl px-4 text-xs text-stone-400">© {{ date('Y') }} Nisoya. Tüm hakları saklıdır.</p>
+        <div class="border-t border-stone-100 py-4 dark:border-stone-800">
+            <p class="mx-auto max-w-6xl px-4 text-center text-xs text-stone-400 dark:text-stone-500">
+                © {{ date('Y') }} Nisoya. Tüm hakları saklıdır.
+                <span class="mx-2 text-stone-300 dark:text-stone-600">·</span>
+                Hizmet ücretsizdir. 💛
+            </p>
         </div>
     </footer>
+
+    {{-- Google AdSense Auto Ads — kullanıcı çerez onayı verdikten sonra yüklenir --}}
+    @if (config('services.adsense.enabled') && config('services.adsense.publisher_id'))
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ config('services.adsense.publisher_id') }}" crossorigin="anonymous" data-consent="ads"></script>
+    @endif
+
+    {{-- Çerez onayı banner'ı (AdSense + Analytics için) --}}
+    <x-cookie-consent />
+
+    {{-- Bağış modalı + FAB (Nisoya ücretsiz kalır) --}}
+    <x-donation-modal />
 
     <script>
         if ('serviceWorker' in navigator) {

@@ -4,8 +4,7 @@
 
     <form method="POST" action="{{ route('register') }}" class="mt-6 space-y-4">
         @csrf
-        {{-- honeypot --}}
-        <div class="hidden" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+        @include('partials.honeypot')
 
         <div>
             <label for="name" class="block text-sm font-medium text-stone-700">Ad Soyad</label>
@@ -81,8 +80,6 @@
             Kayıt Ol
         </button>
     </form>
-
-    @include('auth.partials.social')
 
     <p class="mt-6 text-center text-sm text-stone-500">
         Zaten hesabın var mı?

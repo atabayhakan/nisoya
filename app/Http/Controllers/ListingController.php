@@ -103,11 +103,12 @@ class ListingController extends Controller
             'stock' => $listing->type->value === 'urun' ? ($data['stock'] ?? null) : null,
         ]);
 
-        // İşaretlenen görselleri sil
+        // İşaretlenen görselleri sil (tüm varyantlarıyla)
+        $imageService = app(ImageService::class);
         foreach ((array) $request->input('delete_images', []) as $imageId) {
             $image = $listing->images()->find($imageId);
             if ($image) {
-                Storage::disk('public')->delete($image->path);
+                $imageService->deleteVariants($image->variantPaths());
                 $image->delete();
             }
         }
@@ -123,8 +124,9 @@ class ListingController extends Controller
     {
         Gate::authorize('delete', $listing);
 
+        $imageService = app(ImageService::class);
         foreach ($listing->images as $image) {
-            Storage::disk('public')->delete($image->path);
+            $imageService->deleteVariants($image->variantPaths());
         }
 
         $listing->delete(); // listing_images cascade ile silinir
@@ -192,20 +194,68 @@ class ListingController extends Controller
             return;
         }
 
+        $imageService = app(ImageService::class);
         $hasCover = $listing->images()->where('is_cover', true)->exists();
         $order = (int) $listing->images()->max('sort_order');
+        $failed = 0;
 
         foreach ($request->file('images') as $file) {
-            $path = app(ImageService::class)->storeOptimized($file, 'listings');
+            try {
+                $result = $imageService->storeOptimized($file, 'listings');
+            } catch (\RuntimeException) {
+                // Gizlilik: işlenemeyen (dolayısıyla EXIF/GPS'i temizlenemeyen)
+                // görsel asla yayınlanmaz — bu dosyayı atla, diğerlerine devam et.
+                $failed++;
+
+                continue;
+            }
             $order++;
 
-            $listing->images()->create([
-                'path' => $path,
+            $image = $listing->images()->create([
+                'path' => $result['large'],
+                'path_thumb' => $result['thumb'],
+                'path_medium' => $result['medium'],
+                'path_large' => $result['large'],
+                'width' => $result['original_dimensions']['width'],
+                'height' => $result['original_dimensions']['height'],
+                'exif_metadata' => $result['exif_metadata'],
+                'had_gps' => $result['had_gps'],
+                'has_sensitive_exif' => $result['has_sensitive_exif'] ?? false,
+                'gps_lat' => $result['gps_lat'] ?? null,
+                'gps_lng' => $result['gps_lng'] ?? null,
                 'sort_order' => $order,
                 'is_cover' => ! $hasCover,
             ]);
 
+            // Boyut bilgisi (varsa)
+            try {
+                $image->update([
+                    'size_bytes' => \Storage::disk('public')->size($image->path_large ?? $image->path),
+                ]);
+            } catch (\Throwable) {
+                // ignore — boyut okunamazsa devam et
+            }
+
+            // EXIF audit logu: kullanıcı GPS verisi içeren görsel yüklediyse kaydet
+            if ($result['had_gps']) {
+                activity('image')
+                    ->performedOn($image)
+                    ->causedBy($request->user())
+                    ->withProperties([
+                        'listing_id' => $listing->id,
+                        'had_gps' => true,
+                        'orientation_corrected' => $result['orientation_corrected'],
+                    ])
+                    ->log('GPS içeren görsel yüklendi (EXIF temizlendi)');
+            }
+
             $hasCover = true;
+        }
+
+        if ($failed > 0) {
+            session()->flash('image_warning', $failed === 1
+                ? 'Bir görsel işlenemediği için yüklenmedi. Diğer görseller kaydedildi.'
+                : "{$failed} görsel işlenemediği için yüklenmedi. Diğer görseller kaydedildi.");
         }
     }
 

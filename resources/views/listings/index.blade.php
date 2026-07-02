@@ -104,6 +104,11 @@
 
             {{-- Sonuçlar --}}
             <main class="lg:col-span-3">
+                {{-- Reklam: liste üstü --}}
+                <div class="mb-4">
+                    <x-ad-slot slot="2222222222" format="horizontal" />
+                </div>
+
                 @if ($listings->isNotEmpty())
                     <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                         @foreach ($listings as $listing)

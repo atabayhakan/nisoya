@@ -17,6 +17,8 @@ class SitemapController extends Controller
             ['loc' => route('listings.index'), 'priority' => '0.9'],
             ['loc' => route('pages.how'), 'priority' => '0.4'],
             ['loc' => route('pages.contact'), 'priority' => '0.3'],
+            // '/gizlilik' artık CMS'teki bir Page kaydı — aşağıdaki döngüden gelir, burada tekrar eklenmez.
+            ['loc' => url('/cerez-tercihleri'), 'priority' => '0.2'],
         ];
 
         foreach (Page::query()->published()->get() as $page) {

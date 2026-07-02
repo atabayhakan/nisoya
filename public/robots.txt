@@ -2,4 +2,15 @@ User-agent: *
 Allow: /
 Disallow: /panel/
 Disallow: /yonetim/
+Disallow: /favori/
 Sitemap: https://nisoya.com/sitemap.xml
+
+# Google AdSense & Analytics botları
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: AdsBot-Google
+Allow: /

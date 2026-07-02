@@ -15,6 +15,8 @@ return [
         'anasayfa' => 'Anasayfa',
         'footer' => 'Alt Bilgi (Footer)',
         'genel' => 'Genel',
+        'reklam' => 'Reklam & Analiz',
+        'bagis' => 'Bağış',
     ],
 
     // key => [group, label, type (text|textarea), default]
@@ -57,5 +59,17 @@ return [
 
         // --- Footer ---
         'footer.aciklama' => ['group' => 'footer', 'label' => 'Footer açıklama', 'type' => 'textarea', 'default' => 'Ne İş Olursa Yaparım. Yurt dışındaki Türklerin kendi aralarında yetenek ve hizmet pazaryeri.'],
+
+        // --- Reklam & Analiz ---
+        'reklam.adsense_publisher' => ['group' => 'reklam', 'label' => 'AdSense Yayıncı ID (ca-pub-...)', 'type' => 'text', 'default' => ''],
+        'reklam.analytics_measurement_id' => ['group' => 'reklam', 'label' => 'Google Analytics Ölçüm ID (G-XXXXXXXXXX)', 'type' => 'text', 'default' => ''],
+        'reklam.adsense_aciklama' => ['group' => 'reklam', 'label' => 'Reklam alanı bilgilendirme metni (opsiyonel)', 'type' => 'textarea', 'default' => 'Sitemiz gelirini Google AdSense reklamlarından elde eder. Reklamlar, ilan veren kişilerin masraflarını karşılamamıza ve hizmeti ücretsiz sunmamıza yardımcı olur.'],
+
+        // --- Bağış ---
+        'bagis.baslik' => ['group' => 'bagis', 'label' => 'Bağış başlığı', 'type' => 'text', 'default' => 'Nisoya ücretsiz kalacak'],
+        'bagis.metin' => ['group' => 'bagis', 'label' => 'Bağış açıklaması', 'type' => 'textarea', 'default' => "Nisoya tamamen ücretsiz bir hizmettir. Sunucu, alan adı ve bakım giderlerini karşılamak için bağışlarınız bize güç verir. İstediğiniz yöntemi seçebilirsiniz:"],
+        'bagis.paypal_me' => ['group' => 'bagis', 'label' => 'PayPal.me bağlantısı (örn: paypal.me/nisoya)', 'type' => 'text', 'default' => ''],
+        'bagis.iban' => ['group' => 'bagis', 'label' => 'IBAN (TR ile başlayan)', 'type' => 'text', 'default' => ''],
+        'bagis.iban_sahibi' => ['group' => 'bagis', 'label' => 'IBAN hesap sahibi', 'type' => 'text', 'default' => ''],
     ],
 ];

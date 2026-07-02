@@ -38,8 +38,6 @@
         </button>
     </form>
 
-    @include('auth.partials.social')
-
     <p class="mt-6 text-center text-sm text-stone-500">
         Hesabın yok mu?
         <a href="{{ route('register') }}" class="font-medium text-emerald-700 hover:underline">Kayıt ol</a>

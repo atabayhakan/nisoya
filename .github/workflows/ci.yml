@@ -1,0 +1,103 @@
+name: CI
+
+# main'e push ve pull request'lerde çalışır.
+# Kontroller: composer install, PHPUnit, npm build, PHP syntax, Laravel Pint.
+# Deploy workflow'u (.github/workflows/deploy.yml) main push'unda deploy yapar;
+# CI ayrı tutulmuştur çünkü deploy VPS'te çalışır ve test'e gerek kalmadan tetiklenir.
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+
+    services:
+      # MySQL test ortamı (varsa). SQLite kullanılırsa gerek yok ama cache/queue
+      # testleri için gerçek DB daha sağlıklı.
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: nisoya_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: PHP kurulumu
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, bcmath, gd, intl, pdo_mysql, sqlite, pdo_sqlite, zip
+          coverage: none
+
+      - name: Composer bağımlılıkları
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: NPM kurulumu + build
+        run: |
+          npm ci --ignore-scripts || npm install --ignore-scripts
+          npm run build
+
+      - name: .env hazırla
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: PHPUnit (SQLite, in-memory)
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+        run: php artisan test --parallel
+
+      - name: PHP syntax kontrolü (Laravel Pint)
+        run: vendor/bin/pint --test
+
+  static-analysis:
+    name: Static Analysis (PHPStan)
+    runs-on: ubuntu-latest
+    continue-on-error: true  # baseline eklenene kadar opsiyonel
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+      - name: Composer install
+        run: composer install --prefer-dist --no-interaction
+      - name: PHPStan level 5
+        run: |
+          composer require --dev larastan/larastan --no-interaction --no-progress
+          vendor/bin/phpstan analyse --level=5 app/ --memory-limit=2G
+
+  npm-audit:
+    name: NPM Audit
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm audit --audit-level=high
+
+  composer-audit:
+    name: Composer Audit
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+      - run: |
+          composer install --prefer-dist --no-interaction
+          composer audit --no-dev

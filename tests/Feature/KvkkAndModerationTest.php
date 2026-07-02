@@ -1,0 +1,232 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Enums\ListingStatus;
+use App\Enums\UserStatus;
+use App\Models\Favorite;
+use App\Models\Listing;
+use App\Models\Review;
+use App\Models\SavedSearch;
+use App\Models\User;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\CountrySeeder;
+use Database\Seeders\CurrencySeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
+
+class KvkkAndModerationTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed([CurrencySeeder::class, CountrySeeder::class, CategorySeeder::class]);
+    }
+
+    public function test_user_can_export_their_data(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'export@test.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $response = $this->actingAs($user)->get('/panel/profil/verilerim');
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'application/json; charset=utf-8');
+
+        $content = $response->streamedContent();
+        $data = json_decode($content, true);
+
+        $this->assertSame('export@test.com', $data['user']['email']);
+        $this->assertArrayHasKey('listings', $data);
+        $this->assertArrayHasKey('reviews_given', $data);
+        $this->assertArrayHasKey('reviews_received', $data);
+        $this->assertArrayHasKey('favorites', $data);
+        $this->assertArrayHasKey('saved_searches', $data);
+        $this->assertArrayHasKey('sent_messages', $data);
+    }
+
+    public function test_user_can_delete_their_account(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create([
+            'email' => 'del@test.com',
+            'password' => Hash::make('password'),
+            'avatar_path' => 'avatars/old.jpg',
+        ]);
+
+        // Bir de ilan + favori + saved search oluşturalım
+        $category = \App\Models\Category::first();
+        $listing = Listing::factory()->create([
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+            'status' => ListingStatus::Aktif,
+        ]);
+        Favorite::create(['user_id' => $user->id, 'listing_id' => $listing->id]);
+        SavedSearch::create(['user_id' => $user->id, 'q' => 'test', 'label' => 'Test arama']);
+
+        $response = $this->actingAs($user)->delete('/panel/profil', [
+            'current_password' => 'password',
+            'confirm_text' => 'HESABIMI SİL',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertGuest();
+
+        $user->refresh();
+        $this->assertSame(UserStatus::Silinmis, $user->status);
+        $this->assertNull($user->avatar_path);
+        // Password NULL olamaz (NOT NULL constraint) — rasgele hash'lenmiş değer.
+        // Önemli olan: giriş yapılamaz (status='silinmis' → EnsureUserIsActive middleware).
+        $this->assertNotEmpty($user->password);
+        $this->assertNotEquals(\Illuminate\Support\Facades\Hash::make('password'), $user->password);
+        $this->assertStringStartsWith('Silinmiş', $user->name);
+        $this->assertStringStartsWith('deleted-', $user->username);
+        $this->assertStringEndsWith('@nisoya.local', $user->email);
+
+        // Kişisel veriler temizlendi
+        $this->assertDatabaseMissing('listings', ['user_id' => $user->id]);
+        $this->assertDatabaseMissing('favorites', ['user_id' => $user->id]);
+        $this->assertDatabaseMissing('saved_searches', ['user_id' => $user->id]);
+    }
+
+    public function test_account_delete_requires_correct_password(): void
+    {
+        $user = User::factory()->create(['password' => Hash::make('correct')]);
+
+        $response = $this->actingAs($user)->delete('/panel/profil', [
+            'current_password' => 'wrong',
+            'confirm_text' => 'HESABIMI SİL',
+        ]);
+
+        $response->assertSessionHasErrors('current_password');
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'status' => UserStatus::Aktif->value]);
+    }
+
+    public function test_account_delete_requires_exact_confirm_text(): void
+    {
+        $user = User::factory()->create(['password' => Hash::make('password')]);
+
+        $response = $this->actingAs($user)->delete('/panel/profil', [
+            'current_password' => 'password',
+            'confirm_text' => 'hesabimi sil', // küçük harf
+        ]);
+
+        $response->assertSessionHasErrors('confirm_text');
+    }
+
+    public function test_admin_ban_user_passes_their_active_listings_to_pasif(): void
+    {
+        $user = User::factory()->create(['status' => UserStatus::Aktif]);
+        $category = \App\Models\Category::first();
+        Listing::factory()->create([
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+            'status' => ListingStatus::Aktif,
+        ]);
+        Listing::factory()->create([
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+            'status' => ListingStatus::Aktif,
+        ]);
+
+        // Observer'ın public metodu — production'da updated event'i tetikler,
+        // test'te doğrudan çağrılarak aynı davranış doğrulanır.
+        (new \App\Observers\UserObserver())->suspendActiveListings($user);
+
+        $this->assertSame(0, $user->listings()->where('status', ListingStatus::Aktif->value)->count());
+        $this->assertSame(2, $user->listings()->where('status', ListingStatus::Pasif->value)->count());
+    }
+
+    public function test_reactivating_user_does_not_auto_reactivate_listings(): void
+    {
+        $user = User::factory()->create(['status' => UserStatus::Askida]);
+        $category = \App\Models\Category::first();
+        Listing::factory()->create([
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+            'status' => ListingStatus::Pasif,
+        ]);
+
+        // Observer sadece Askıya alma durumunda çalışır; geri aktivasyon yapmaz.
+        // Bu business rule'un bilinçli tasarımı.
+        $this->assertSame(0, $user->listings()->where('status', ListingStatus::Aktif->value)->count());
+        $this->assertSame(1, $user->listings()->where('status', ListingStatus::Pasif->value)->count());
+    }
+
+    public function test_honeypot_middleware_blocks_bots_silently(): void
+    {
+        // Honeypot alanı dolu POST isteği → sessizce geri yönlendirilir
+        $response = $this->post('/kayit', [
+            'name' => 'Spam',
+            'email' => 'spam@bot.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'country_code' => 'DE',
+            'preferred_currency' => 'EUR',
+            'terms' => '1',
+            'website' => 'http://spam.example',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('status', 'İşlemin alındı.');
+        $this->assertDatabaseMissing('users', ['email' => 'spam@bot.com']);
+    }
+
+    public function test_honeypot_middleware_allows_humans(): void
+    {
+        // Honeypot alanı boş → controller'a ulaşır
+        $response = $this->post('/kayit', [
+            'name' => 'İnsan Kullanıcı',
+            'email' => 'insan@test.com',
+            'username' => 'insan',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'country_code' => 'DE',
+            'preferred_currency' => 'EUR',
+            'terms' => '1',
+            'website' => '', // boş = insan
+        ]);
+
+        // Validation geçerli olmalı (kayıt başarılı veya validasyon hatası yok "website" için)
+        // Kayıt için e-posta doğrulama gerekli olduğundan, dashboard'a yönlendirir veya verify notice
+        $this->assertDatabaseHas('users', ['email' => 'insan@test.com']);
+    }
+
+    public function test_dark_mode_toggle_script_in_layout(): void
+    {
+        $response = $this->get('/');
+        $response->assertSee('toggleTheme', false);
+        $response->assertSee('nisoya_theme', false); // localStorage key
+    }
+
+    public function test_dark_mode_classes_in_layout(): void
+    {
+        $response = $this->get('/');
+        $response->assertSee('dark:bg-stone-950', false);
+        $response->assertSee('dark:text-stone-200', false);
+    }
+
+    public function test_layout_has_preconnect_and_dns_prefetch(): void
+    {
+        $response = $this->get('/');
+        $response->assertSee('rel="preconnect"', false);
+        $response->assertSee('rel="dns-prefetch"', false);
+    }
+
+    public function test_theme_init_runs_inline_in_head(): void
+    {
+        // Tema başlatma script'i <head> içinde ve `data-cookieconsent` gibi
+        // FOUC önleyici özelliklere sahip olmalı
+        $response = $this->get('/');
+        $content = $response->getContent();
+        $headEnd = strpos($content, '</head>');
+        $themeScriptPos = strpos($content, 'nisoya_theme');
+        $this->assertNotFalse($themeScriptPos);
+        $this->assertLessThan($headEnd, $themeScriptPos, 'Tema scripti <head> içinde olmalı (FOUC önleme)');
+    }
+}

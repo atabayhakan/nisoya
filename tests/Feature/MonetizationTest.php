@@ -1,0 +1,207 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Listing;
+use App\Models\User;
+use App\Support\Settings;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\CountrySeeder;
+use Database\Seeders\CurrencySeeder;
+use Database\Seeders\ProductCategorySeeder;
+use Database\Seeders\SiteSettingSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class MonetizationTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Settings::forget();
+    }
+
+    protected function seedBaseData(): void
+    {
+        $this->seed([
+            CurrencySeeder::class,
+            CountrySeeder::class,
+            CategorySeeder::class,
+            ProductCategorySeeder::class,
+            SiteSettingSeeder::class,
+        ]);
+    }
+
+    public function test_gizlilik_sayfasi_aciliyor(): void
+    {
+        // Gizlilik sayfası Faz B'de CMS'e (pages tablosu) taşındı.
+        $this->seed(\Database\Seeders\StaticPagesSeeder::class);
+
+        $this->get('/gizlilik')->assertOk()->assertSee('Gizlilik Politikası');
+    }
+
+    public function test_cerez_tercihleri_sayfasi_aciliyor(): void
+    {
+        $this->get('/cerez-tercihleri')->assertOk()
+            ->assertSee('Çerez Tercihleri')
+            ->assertSee('Zorunlu çerezler')
+            ->assertSee('Analitik çerezleri')
+            ->assertSee('Reklam çerezleri');
+    }
+
+    public function test_layout_adsense_devre_disiyken_reklam_gostermez(): void
+    {
+        $this->seedBaseData();
+
+        $response = $this->get('/')->assertOk();
+        // AdSense script tag'ı (data-ad-client ile başlayan) yüklenmemeli
+        $response->assertDontSee('adsbygoogle.js', false);
+        $response->assertDontSee('ca-pub-', false);
+    }
+
+    public function test_layout_adsense_aktifken_script_yukler(): void
+    {
+        $this->seedBaseData();
+
+        Settings::setMany([
+            'reklam.adsense_publisher' => 'ca-pub-1234567890123456',
+        ]);
+        Settings::forget();
+
+        // Config'i de manuel override et (AppServiceProvider test'te sadece tablo varsa çalışır,
+        // fakat Settings::all() cache'i nedeniyle değeri de set edelim)
+        config(['services.adsense.publisher_id' => 'ca-pub-1234567890123456']);
+        config(['services.adsense.enabled' => true]);
+
+        $response = $this->get('/')->assertOk();
+        $response->assertSee('ca-pub-1234567890123456', false);
+        $response->assertSee('adsbygoogle.js', false);
+    }
+
+    public function test_layout_analytics_aktifken_gtag_yukler(): void
+    {
+        $this->seedBaseData();
+
+        Settings::setMany([
+            'reklam.analytics_measurement_id' => 'G-TESTID1234',
+        ]);
+        Settings::forget();
+
+        config(['services.analytics.measurement_id' => 'G-TESTID1234']);
+        config(['services.analytics.enabled' => true]);
+
+        $response = $this->get('/')->assertOk();
+        $response->assertSee('G-TESTID1234', false);
+        $response->assertSee('gtag/js', false);
+    }
+
+    public function test_donation_modal_bileseni_placeholder_gorunur(): void
+    {
+        $this->seedBaseData();
+
+        $response = $this->get('/')->assertOk();
+        $response->assertSee('Destek Ol');
+        $response->assertSee('donationModal', false);
+    }
+
+    public function test_donation_modal_paypal_ve_iban_gorunur(): void
+    {
+        $this->seedBaseData();
+
+        Settings::setMany([
+            'bagis.paypal_me' => 'paypal.me/nisoyatest',
+            'bagis.iban' => 'TR12 3456 7890 1234 5678 9012 34',
+            'bagis.iban_sahibi' => 'Nisoya Test',
+        ]);
+
+        $response = $this->get('/')->assertOk();
+        $response->assertSee('paypal.me/nisoyatest');
+        $response->assertSee('TR12 3456 7890 1234 5678 9012 34');
+        $response->assertSee('Nisoya Test');
+    }
+
+    public function test_json_ld_websites_chema_ekleniyor(): void
+    {
+        $this->seedBaseData();
+
+        $response = $this->get('/')->assertOk();
+        $response->assertSee('"@type": "WebSite"', false);
+        $response->assertSee('"@type": "Organization"', false);
+        $response->assertSee('"@context": "https://schema.org"', false);
+    }
+
+    public function test_json_ld_listing_showda_product_olarak_cikar(): void
+    {
+        $this->seedBaseData();
+
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $category = \App\Models\Category::first();
+        $listing = Listing::factory()->create([
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+            'type' => 'urun',
+            'status' => 'aktif',
+            'price' => 100,
+            'currency' => 'EUR',
+            'country_code' => 'DE',
+            'city' => 'Berlin',
+            'stock' => 5,
+        ]);
+
+        $response = $this->get(route('listings.show', $listing))->assertOk();
+        $response->assertSee('"@type": "Product"', false);
+        $response->assertSee('"@type": "BreadcrumbList"', false);
+        $response->assertSee('InStock', false);
+    }
+
+    public function test_json_ld_listing_showda_service_olarak_cikar(): void
+    {
+        $this->seedBaseData();
+
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $category = \App\Models\Category::first();
+        $listing = Listing::factory()->create([
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+            'type' => 'hizmet',
+            'status' => 'aktif',
+            'price' => 50,
+            'currency' => 'EUR',
+            'country_code' => 'DE',
+            'city' => 'Berlin',
+        ]);
+
+        $response = $this->get(route('listings.show', $listing))->assertOk();
+        $response->assertSee('"@type": "Service"', false);
+    }
+
+    public function test_preconnect_ve_dns_prefetch_layoutta_var(): void
+    {
+        $this->seedBaseData();
+
+        $response = $this->get('/')->assertOk();
+        $response->assertSee('rel="dns-prefetch"', false);
+        $response->assertSee('rel="preconnect"', false);
+        $response->assertSee('googletagmanager.com', false);
+        $response->assertSee('googlesyndication.com', false);
+    }
+
+    public function test_robots_txt_adsense_botlarina_izin_veriyor(): void
+    {
+        $content = file_get_contents(public_path('robots.txt'));
+        $this->assertStringContainsString('Mediapartners-Google', $content);
+        $this->assertStringContainsString('AdsBot-Google', $content);
+    }
+
+    public function test_sitemap_gizlilik_ve_cerez_tercihlerini_icerir(): void
+    {
+        $this->seedBaseData();
+        $this->seed(\Database\Seeders\StaticPagesSeeder::class);
+
+        $response = $this->get('/sitemap.xml')->assertOk();
+        $this->assertStringContainsString('/gizlilik', $response->getContent());
+        $this->assertStringContainsString('/cerez-tercihleri', $response->getContent());
+    }
+}

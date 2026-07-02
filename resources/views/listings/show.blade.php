@@ -1,4 +1,47 @@
 <x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null">
+    {{-- JSON-LD: BreadcrumbList --}}
+    <x-json-ld type="BreadcrumbList" :data="[
+        'itemListElement' => [
+            ['@type' => 'ListItem', 'position' => 1, 'name' => 'İlanlar', 'item' => url('/ilanlar')],
+            ['@type' => 'ListItem', 'position' => 2, 'name' => $listing->category?->name ?? 'Genel', 'item' => $listing->category ? url('/ilanlar/kategori/'.$listing->category->slug) : url('/ilanlar')],
+            ['@type' => 'ListItem', 'position' => 3, 'name' => $listing->title, 'item' => url()->current()],
+        ],
+    ]" />
+
+    {{-- JSON-LD: Service veya Product --}}
+    @if ($listing->type->value === 'urun')
+        <x-json-ld type="Product" :data="[
+            'name' => $listing->title,
+            'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
+            'image' => $listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null,
+            'offers' => [
+                '@type' => 'Offer',
+                'price' => $listing->price ?? 0,
+                'priceCurrency' => $listing->currency,
+                'availability' => ($listing->stock && $listing->stock > 0) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            ],
+        ]" />
+    @else
+        <x-json-ld type="Service" :data="[
+            'name' => $listing->title,
+            'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
+            'image' => $listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null,
+            'provider' => [
+                '@type' => 'Person',
+                'name' => $listing->user->name,
+            ],
+            'areaServed' => $listing->country ? [
+                '@type' => 'Country',
+                'name' => $listing->country->name_tr,
+            ] : null,
+            'offers' => $listing->price ? [
+                '@type' => 'Offer',
+                'price' => $listing->price,
+                'priceCurrency' => $listing->currency,
+            ] : null,
+        ]" />
+    @endif
+
     <div class="mx-auto max-w-5xl px-4 py-8">
         @if (session('status'))
             <div class="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ session('status') }}</div>
@@ -24,12 +67,34 @@
             <div class="lg:col-span-2">
                 @if ($listing->images->isNotEmpty())
                     <div class="overflow-hidden rounded-2xl bg-stone-100">
-                        <img src="{{ Storage::url(($listing->coverImage ?? $listing->images->first())->path) }}" alt="{{ $listing->title }}" class="max-h-[420px] w-full object-cover">
+                        @php
+                            $hero = $listing->coverImage ?? $listing->images->first();
+                            $heroSrcset = $hero->srcset();
+                            $heroLarge = $heroSrcset['large'] ?? Storage::url($hero->path);
+                            $heroMedium = $heroSrcset['medium'] ?? Storage::url($hero->path);
+                        @endphp
+                        <img src="{{ $heroLarge }}"
+                             srcset="{{ $heroMedium }} 800w, {{ $heroLarge }} 1600w"
+                             sizes="(min-width: 1024px) 800px, 100vw"
+                             alt="{{ $listing->title }}"
+                             width="800"
+                             height="420"
+                             fetchpriority="high"
+                             class="max-h-[420px] w-full object-cover">
                     </div>
                     @if ($listing->images->count() > 1)
                         <div class="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-5">
                             @foreach ($listing->images as $image)
-                                <img src="{{ Storage::url($image->path) }}" alt="" class="aspect-square w-full rounded-lg object-cover">
+                                @php $thumb = $image->url('thumb') ?? Storage::url($image->path); @endphp
+                                <img src="{{ $thumb }}"
+                                     srcset="{{ ($image->url('thumb') ?? Storage::url($image->path)) }} 300w, {{ ($image->url('medium') ?? Storage::url($image->path)) }} 800w"
+                                     sizes="120px"
+                                     alt=""
+                                     width="120"
+                                     height="120"
+                                     loading="lazy"
+                                     decoding="async"
+                                     class="aspect-square w-full rounded-lg object-cover">
                             @endforeach
                         </div>
                     @endif
@@ -153,6 +218,9 @@
                             Nisoya bir ilan ve iletişim platformudur; ödeme ve anlaşma taraflar arasındadır.
                         </p>
                     </div>
+
+                    {{-- Reklam: sidebar alt --}}
+                    <x-ad-slot slot="3333333333" format="rectangle" />
                 </div>
             </div>
         </div>
