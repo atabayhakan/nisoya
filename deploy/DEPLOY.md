@@ -191,6 +191,14 @@ sudo fail2ban-client status sshd
 ## 13. Performans optimizasyonları (post-deploy)
 
 ```bash
+# Görsel yükleme limitleri (/etc/php/8.3/fpm/php.ini) — uygulama görsel başına
+# 4MB'a kadar izin veriyor (ListingRequest), stok php.ini varsayılanı (2M) bunun
+# altında kaldığı için ayarlanmazsa "Görsel yüklenemedi." hatası verir.
+upload_max_filesize=5M
+post_max_size=40M            # 8 görsel × 5M
+# Ardından: sudo systemctl reload php8.3-fpm
+# nginx client_max_body_size da post_max_size'ı karşılamalı (bkz. nginx-nisoya.conf).
+
 # PHP OPcache ayarı (/etc/php/8.3/fpm/php.ini)
 opcache.enable=1
 opcache.memory_consumption=256
