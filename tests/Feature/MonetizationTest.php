@@ -97,6 +97,58 @@ class MonetizationTest extends TestCase
         $response->assertSee('gtag/js', false);
     }
 
+    public function test_adsense_auto_ads_kodu_temel_script_yerine_kullanilir(): void
+    {
+        $this->seedBaseData();
+
+        config(['services.adsense.publisher_id' => 'ca-pub-1234567890123456']);
+        config(['services.adsense.enabled' => true]);
+        config(['services.adsense.auto_ads_code' => '<script data-test-marker="OZEL-AUTO-ADS-KODU"></script>']);
+
+        $response = $this->get('/')->assertOk();
+        $response->assertSee('OZEL-AUTO-ADS-KODU', false);
+        // Auto ads kodu varken temel script tag'ı ayrıca eklenmemeli (çift yükleme olmasın)
+        $response->assertDontSee('pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=', false);
+    }
+
+    public function test_analytics_ozel_kodu_gtagdan_sonra_render_edilir(): void
+    {
+        $this->seedBaseData();
+
+        config(['services.analytics.measurement_id' => 'G-TESTID1234']);
+        config(['services.analytics.enabled' => true]);
+        config(['services.analytics.custom_code' => '<script data-test-marker="OZEL-ANALYTICS-KODU"></script>']);
+
+        $response = $this->get('/')->assertOk();
+        $response->assertSee('OZEL-ANALYTICS-KODU', false);
+    }
+
+    public function test_header_ve_footer_ozel_kodu_sayfaya_enjekte_edilir(): void
+    {
+        $this->seedBaseData();
+
+        config(['services.custom_head_code' => '<meta name="ozel-test-head" content="1">']);
+        config(['services.custom_footer_code' => '<script data-test-marker="OZEL-FOOTER-KODU"></script>']);
+
+        $response = $this->get('/')->assertOk();
+        $response->assertSee('ozel-test-head', false);
+        $response->assertSee('OZEL-FOOTER-KODU', false);
+    }
+
+    public function test_footer_telif_metni_ve_sosyal_medya_linkleri_gorunur(): void
+    {
+        $this->seedBaseData();
+
+        Settings::setMany([
+            'footer.telif_metni' => 'Test Şirketi A.Ş. Tüm hakları saklıdır.',
+            'footer.sosyal_instagram' => 'https://instagram.com/nisoya',
+        ]);
+
+        $response = $this->get('/')->assertOk();
+        $response->assertSee('Test Şirketi A.Ş. Tüm hakları saklıdır.');
+        $response->assertSee('https://instagram.com/nisoya', false);
+    }
+
     public function test_donation_modal_bileseni_placeholder_gorunur(): void
     {
         $this->seedBaseData();

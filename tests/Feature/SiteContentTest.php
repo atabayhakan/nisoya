@@ -104,4 +104,28 @@ class SiteContentTest extends TestCase
             ->assertSee('ÖZELVURGU123')
             ->assertSee('ŞİMDİKATIL');
     }
+
+    /**
+     * AppServiceProvider::mergeRuntimeConfig() DB'deki kod alanlarını
+     * gerçekten config()'e yazıyor mu — manuel config() override'ı olmadan,
+     * provider'ın kendi mantığı üzerinden (uygulama her istekte yeniden
+     * boot olduğu için ayrı bir request ile doğrulanır).
+     */
+    public function test_merge_runtime_config_reads_code_fields_from_db(): void
+    {
+        $this->seed([CurrencySeeder::class, CountrySeeder::class, CategorySeeder::class, SiteSettingSeeder::class]);
+
+        Settings::setMany([
+            'header.ozel_kod' => '<meta name="merge-test-head" content="1">',
+            'footer.ozel_kod' => '<script data-test-marker="MERGE-TEST-FOOTER"></script>',
+            'reklam.analytics_ozel_kod' => '<script data-test-marker="MERGE-TEST-ANALYTICS"></script>',
+        ]);
+
+        // Provider'ı yeniden boot ettirerek gerçek merge mantığını tetikle.
+        $this->app->register(\App\Providers\AppServiceProvider::class, force: true);
+
+        $this->assertSame('<meta name="merge-test-head" content="1">', config('services.custom_head_code'));
+        $this->assertSame('<script data-test-marker="MERGE-TEST-FOOTER"></script>', config('services.custom_footer_code'));
+        $this->assertSame('<script data-test-marker="MERGE-TEST-ANALYTICS"></script>', config('services.analytics.custom_code'));
+    }
 }

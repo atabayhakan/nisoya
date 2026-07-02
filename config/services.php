@@ -46,13 +46,20 @@ return [
     'adsense' => [
         'enabled' => (bool) env('ADSENSE_ENABLED', false),
         'publisher_id' => env('ADSENSE_PUBLISHER_ID'),       // ca-pub-XXXXXXXXXXXXXXXX
-        'auto_ads_code' => env('ADSENSE_AUTO_ADS_CODE'),     // tam <script> içeriği (admin panelden)
+        'auto_ads_code' => env('ADSENSE_AUTO_ADS_CODE'),     // tam <script> içeriği (admin panelden — Site Yönetimi → İçerik)
     ],
 
     'analytics' => [
         'enabled' => (bool) env('ANALYTICS_ENABLED', false),
         'measurement_id' => env('ANALYTICS_MEASUREMENT_ID'), // G-XXXXXXXXXX
+        'custom_code' => null,                                // admin panelden — Site Yönetimi → İçerik
     ],
+
+    // Admin panelden (Site Yönetimi → İçerik) yönetilen ham HTML/JS enjeksiyon
+    // noktaları — </head> ve </body> öncesi. Varsayılan boş; sadece DB'de
+    // değer varsa AppServiceProvider::mergeRuntimeConfig() doldurur.
+    'custom_head_code' => null,
+    'custom_footer_code' => null,
 
     /*
     |--------------------------------------------------------------------------

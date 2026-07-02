@@ -13,6 +13,7 @@ return [
 
     'groups' => [
         'anasayfa' => 'Anasayfa',
+        'header' => 'Üst Menü (Header)',
         'footer' => 'Alt Bilgi (Footer)',
         'genel' => 'Genel',
         'reklam' => 'Reklam & Analiz',
@@ -57,12 +58,22 @@ return [
         'home.cta_metin' => ['group' => 'anasayfa', 'label' => 'CTA — metin', 'type' => 'text', 'default' => 'Hadi onu paraya dönüştür. İlan vermek tamamen ücretsiz.'],
         'home.cta_buton' => ['group' => 'anasayfa', 'label' => 'CTA — buton', 'type' => 'text', 'default' => 'Hemen Başla'],
 
+        // --- Üst Menü (Header) ---
+        'header.ozel_kod' => ['group' => 'header', 'label' => 'Header özel kod (</head> öncesi)', 'type' => 'code', 'default' => ''],
+
         // --- Footer ---
         'footer.aciklama' => ['group' => 'footer', 'label' => 'Footer açıklama', 'type' => 'textarea', 'default' => 'Ne İş Olursa Yaparım. Yurt dışındaki Türklerin kendi aralarında yetenek ve hizmet pazaryeri.'],
+        'footer.telif_metni' => ['group' => 'footer', 'label' => 'Telif hakkı metni (yıl otomatik eklenir)', 'type' => 'text', 'default' => 'Nisoya. Tüm hakları saklıdır.'],
+        'footer.sosyal_instagram' => ['group' => 'footer', 'label' => 'Instagram bağlantısı', 'type' => 'text', 'default' => ''],
+        'footer.sosyal_facebook' => ['group' => 'footer', 'label' => 'Facebook bağlantısı', 'type' => 'text', 'default' => ''],
+        'footer.sosyal_whatsapp' => ['group' => 'footer', 'label' => 'WhatsApp bağlantısı (örn: wa.me/49...)', 'type' => 'text', 'default' => ''],
+        'footer.ozel_kod' => ['group' => 'footer', 'label' => 'Footer özel kod (</body> öncesi)', 'type' => 'code', 'default' => ''],
 
         // --- Reklam & Analiz ---
         'reklam.adsense_publisher' => ['group' => 'reklam', 'label' => 'AdSense Yayıncı ID (ca-pub-...)', 'type' => 'text', 'default' => ''],
+        'reklam.adsense_auto_ads_kod' => ['group' => 'reklam', 'label' => 'AdSense Auto Ads kodu (opsiyonel — AdSense hesabından kopyala)', 'type' => 'code', 'default' => ''],
         'reklam.analytics_measurement_id' => ['group' => 'reklam', 'label' => 'Google Analytics Ölçüm ID (G-XXXXXXXXXX)', 'type' => 'text', 'default' => ''],
+        'reklam.analytics_ozel_kod' => ['group' => 'reklam', 'label' => 'Analytics/başka bir ölçüm aracı için özel kod (opsiyonel)', 'type' => 'code', 'default' => ''],
         'reklam.adsense_aciklama' => ['group' => 'reklam', 'label' => 'Reklam alanı bilgilendirme metni (opsiyonel)', 'type' => 'textarea', 'default' => 'Sitemiz gelirini Google AdSense reklamlarından elde eder. Reklamlar, ilan veren kişilerin masraflarını karşılamamıza ve hizmeti ücretsiz sunmamıza yardımcı olur.'],
 
         // --- Bağış ---

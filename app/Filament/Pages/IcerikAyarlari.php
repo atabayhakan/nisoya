@@ -59,14 +59,20 @@ class IcerikAyarlari extends Page
                 }
 
                 $name = static::toField($key);
+                $type = $meta['type'] ?? 'text';
 
-                $component = ($meta['type'] ?? 'text') === 'textarea'
-                    ? Textarea::make($name)->rows(3)
-                    : TextInput::make($name);
+                $component = match ($type) {
+                    'code' => Textarea::make($name)
+                        ->rows(8)
+                        ->maxLength(20000)
+                        ->extraInputAttributes(['class' => 'font-mono text-xs', 'spellcheck' => 'false'])
+                        ->helperText('⚠️ Buraya yapıştırılan kod sayfaya olduğu gibi eklenir (HTML/JavaScript). Yalnızca güvendiğin kaynaklardan (ör. Google AdSense/Analytics panelinden) kopyaladığın kodu ekle.')
+                        ->columnSpanFull(),
+                    'textarea' => Textarea::make($name)->rows(3)->maxLength(2000),
+                    default => TextInput::make($name)->maxLength(2000),
+                };
 
-                $components[] = $component
-                    ->label($meta['label'] ?? $key)
-                    ->maxLength(2000);
+                $components[] = $component->label($meta['label'] ?? $key);
             }
 
             if ($components !== []) {

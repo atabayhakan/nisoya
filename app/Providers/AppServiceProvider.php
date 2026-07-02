@@ -59,17 +59,25 @@ class AppServiceProvider extends ServiceProvider
     {
         // Yayıncı ID: DB > env
         $adsensePublisher = Settings::get('reklam.adsense_publisher') ?: env('ADSENSE_PUBLISHER_ID');
+        $adsenseAutoAdsCode = Settings::get('reklam.adsense_auto_ads_kod') ?: env('ADSENSE_AUTO_ADS_CODE');
         $analyticsId = Settings::get('reklam.analytics_measurement_id') ?: env('ANALYTICS_MEASUREMENT_ID');
+        $analyticsCustomCode = Settings::get('reklam.analytics_ozel_kod');
         $paypal = Settings::get('bagis.paypal_me') ?: env('DONATION_PAYPAL_ME');
         $iban = Settings::get('bagis.iban') ?: env('DONATION_IBAN');
         $ibanOwner = Settings::get('bagis.iban_sahibi') ?: env('DONATION_IBAN_OWNER');
+        $headerCustomCode = Settings::get('header.ozel_kod');
+        $footerCustomCode = Settings::get('footer.ozel_kod');
 
         // Config'i override et (env'den bağımsız)
         Config::set('services.adsense.publisher_id', $adsensePublisher ?: null);
+        Config::set('services.adsense.auto_ads_code', $adsenseAutoAdsCode ?: null);
         Config::set('services.analytics.measurement_id', $analyticsId ?: null);
+        Config::set('services.analytics.custom_code', $analyticsCustomCode ?: null);
         Config::set('services.donation.paypal_me', $paypal ?: null);
         Config::set('services.donation.iban', $iban ?: null);
         Config::set('services.donation.iban_owner', $ibanOwner ?: null);
+        Config::set('services.custom_head_code', $headerCustomCode ?: null);
+        Config::set('services.custom_footer_code', $footerCustomCode ?: null);
 
         // Yayıncı ID mevcutsa AdSense'i etkin say (env'den bağımsız)
         if ($adsensePublisher) {

@@ -69,9 +69,18 @@
             gtag('js', new Date());
             gtag('config', @json(config('services.analytics.measurement_id')), { anonymize_ip: true });
         </script>
+        {{-- Analytics özel kodu (admin panelden — Site Yönetimi → İçerik) --}}
+        @if (config('services.analytics.custom_code'))
+            {!! config('services.analytics.custom_code') !!}
+        @endif
     @endif
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- Header özel kodu (admin panelden — Site Yönetimi → İçerik) --}}
+    @if (config('services.custom_head_code'))
+        {!! config('services.custom_head_code') !!}
+    @endif
 </head>
 <body class="min-h-screen bg-stone-50 text-stone-800 antialiased flex flex-col dark:bg-stone-950 dark:text-stone-200">
     {{-- Üst menü --}}
@@ -151,6 +160,19 @@
                     <span class="text-lg font-bold text-stone-900 dark:text-stone-50">{{ setting('genel.site_adi') }}</span>
                 </div>
                 <p class="mt-3 text-sm text-stone-500 dark:text-stone-400">{{ setting('footer.aciklama') }}</p>
+                @if (setting('footer.sosyal_instagram') || setting('footer.sosyal_facebook') || setting('footer.sosyal_whatsapp'))
+                    <div class="mt-4 flex items-center gap-3 text-stone-400 dark:text-stone-500">
+                        @if (setting('footer.sosyal_instagram'))
+                            <a href="{{ setting('footer.sosyal_instagram') }}" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-700 dark:hover:text-emerald-400" aria-label="Instagram">📷</a>
+                        @endif
+                        @if (setting('footer.sosyal_facebook'))
+                            <a href="{{ setting('footer.sosyal_facebook') }}" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-700 dark:hover:text-emerald-400" aria-label="Facebook">📘</a>
+                        @endif
+                        @if (setting('footer.sosyal_whatsapp'))
+                            <a href="{{ setting('footer.sosyal_whatsapp') }}" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-700 dark:hover:text-emerald-400" aria-label="WhatsApp">💬</a>
+                        @endif
+                    </div>
+                @endif
             </div>
             <div>
                 <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">Keşfet</h3>
@@ -181,16 +203,27 @@
         </div>
         <div class="border-t border-stone-100 py-4 dark:border-stone-800">
             <p class="mx-auto max-w-6xl px-4 text-center text-xs text-stone-400 dark:text-stone-500">
-                © {{ date('Y') }} Nisoya. Tüm hakları saklıdır.
+                © {{ date('Y') }} {{ setting('footer.telif_metni') }}
                 <span class="mx-2 text-stone-300 dark:text-stone-600">·</span>
                 Hizmet ücretsizdir. 💛
             </p>
         </div>
     </footer>
 
-    {{-- Google AdSense Auto Ads — kullanıcı çerez onayı verdikten sonra yüklenir --}}
+    {{-- Footer özel kodu (admin panelden — Site Yönetimi → İçerik) --}}
+    @if (config('services.custom_footer_code'))
+        {!! config('services.custom_footer_code') !!}
+    @endif
+
+    {{-- Google AdSense Auto Ads — kullanıcı çerez onayı verdikten sonra yüklenir.
+         Admin panelden Auto Ads kodu girildiyse onu kullan (adsbygoogle.js'i
+         zaten kendi içinde yükler); yoksa temel script'e düş. --}}
     @if (config('services.adsense.enabled') && config('services.adsense.publisher_id'))
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ config('services.adsense.publisher_id') }}" crossorigin="anonymous" data-consent="ads"></script>
+        @if (config('services.adsense.auto_ads_code'))
+            {!! config('services.adsense.auto_ads_code') !!}
+        @else
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ config('services.adsense.publisher_id') }}" crossorigin="anonymous" data-consent="ads"></script>
+        @endif
     @endif
 
     {{-- Çerez onayı banner'ı (AdSense + Analytics için) --}}
