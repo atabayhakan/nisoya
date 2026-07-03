@@ -11,7 +11,7 @@ class CategoryIconTest extends TestCase
     {
         $this->assertSame('academic-cap', CategoryIcon::heroicon('📚'));
         $this->assertSame('wrench-screwdriver', CategoryIcon::heroicon('🔧'));
-        $this->assertSame('exclamation-triangle', CategoryIcon::heroicon('🚨'));
+        $this->assertSame('lifebuoy', CategoryIcon::heroicon('🚨'));
     }
 
     public function test_falls_back_to_generic_icon_for_unknown_emoji(): void

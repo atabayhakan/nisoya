@@ -13,7 +13,7 @@ namespace App\Support;
 class CategoryIcon
 {
     private const MAP = [
-        '🚨' => 'exclamation-triangle',
+        '🚨' => 'lifebuoy',
         '➕' => 'plus-circle',
         '🔑' => 'key',
         '📚' => 'academic-cap',

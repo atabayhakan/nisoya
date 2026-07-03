@@ -9,7 +9,7 @@
             aria-label="Acil yardım — hızlı erişim"
             title="Acil yardım — hızlı erişim"
         >
-            <x-heroicon-s-exclamation-triangle class="h-4 w-4" />
+            <x-heroicon-s-lifebuoy class="h-4 w-4" />
             <span class="hidden sm:inline">Acil</span>
         </button>
 
@@ -31,7 +31,7 @@
                 <div class="flex items-start justify-between gap-4 border-b border-rose-100 bg-rose-50 px-5 py-4 dark:border-rose-900/40 dark:bg-rose-950/30">
                     <div class="flex items-center gap-3">
                         <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-rose-600 text-white dark:bg-rose-500">
-                            <x-heroicon-s-exclamation-triangle class="h-5 w-5" />
+                            <x-heroicon-s-lifebuoy class="h-5 w-5" />
                         </span>
                         <div>
                             <h2 id="emergency-title" class="text-lg font-bold text-rose-900 dark:text-rose-200">Acil Yardım</h2>
