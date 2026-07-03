@@ -70,6 +70,31 @@
                 </div>
             </div>
 
+            @php
+                $selectedPaymentMethods = old('payment_methods', $user->payment_methods?->map(fn ($m) => $m->value)->all() ?? []);
+                $suggestedValues = array_map(fn ($m) => $m->value, $suggestedPaymentMethods);
+            @endphp
+            <div>
+                <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">Ödeme yöntemlerin <span class="text-stone-400">(ops.)</span></label>
+                <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                    Nisoya ödemeleri işlemez — burada seçtiklerin sadece diğer üyelere "bu yöntemlerle ödeme kabul ediyorum" bilgisini gösterir. Ülkene göre önerilen yöntemler işaretli.
+                </p>
+                <div class="mt-2 flex flex-wrap gap-2">
+                    @foreach ($paymentMethods as $method)
+                        @php($isSuggested = in_array($method->value, $suggestedValues, true))
+                        <label class="flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition {{ in_array($method->value, $selectedPaymentMethods, true) ? 'border-emerald-500 bg-emerald-50 text-emerald-800 dark:border-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-200' : 'border-stone-300 text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800' }}">
+                            <input type="checkbox" name="payment_methods[]" value="{{ $method->value }}" @checked(in_array($method->value, $selectedPaymentMethods, true)) class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600">
+                            <span aria-hidden="true">{{ $method->icon() }}</span>
+                            {{ $method->getLabel() }}
+                            @if ($isSuggested)
+                                <span class="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">Önerilen</span>
+                            @endif
+                        </label>
+                    @endforeach
+                </div>
+                @error('payment_methods') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
             <button type="submit" class="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Profili Kaydet</button>
         </form>
 

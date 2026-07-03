@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PaymentMethod;
 use App\Enums\UserStatus;
 use App\Models\Country;
 use App\Models\Currency;
@@ -29,6 +30,8 @@ class ProfileSettingsController extends Controller
             'user' => $request->user(),
             'countries' => Country::query()->where('is_active', true)->orderBy('sort_order')->get(),
             'currencies' => Currency::query()->where('is_active', true)->orderBy('sort_order')->get(),
+            'paymentMethods' => PaymentMethod::cases(),
+            'suggestedPaymentMethods' => PaymentMethod::suggestedFor($request->user()->country_code),
         ]);
     }
 
@@ -44,10 +47,15 @@ class ProfileSettingsController extends Controller
             'city' => ['nullable', 'string', 'max:255'],
             'preferred_currency' => ['required', 'exists:currencies,code'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'payment_methods' => ['nullable', 'array'],
+            'payment_methods.*' => ['string', Rule::enum(PaymentMethod::class)],
         ], attributes: [
             'name' => 'ad soyad', 'username' => 'kullanıcı adı', 'bio' => 'hakkında',
             'country_code' => 'ülke', 'city' => 'şehir', 'preferred_currency' => 'para birimi', 'avatar' => 'profil fotoğrafı',
+            'payment_methods' => 'ödeme yöntemleri',
         ]);
+
+        $data['payment_methods'] = $data['payment_methods'] ?? [];
 
         if ($request->hasFile('avatar')) {
             // Avatar için sadece tek varyant (400x400, orijinal aspect ratio korunur)
@@ -151,6 +159,7 @@ class ProfileSettingsController extends Controller
                 'avatar_path' => null,
                 'bio' => null,
                 'city' => null,
+                'payment_methods' => null,
                 'remember_token' => null,
                 'status' => UserStatus::Silinmis,
                 'referral_code' => null,
@@ -185,6 +194,7 @@ class ProfileSettingsController extends Controller
                 'country_code' => $user->country_code,
                 'city' => $user->city,
                 'bio' => $user->bio,
+                'payment_methods' => $user->payment_methods?->map(fn ($m) => $m->value)->values()->all() ?? [],
                 'role' => $user->role?->value,
                 'is_verified' => $user->is_verified,
                 'status' => $user->status?->value,

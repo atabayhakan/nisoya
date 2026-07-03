@@ -22,7 +22,20 @@
             </div>
         </div>
 
-        <div class="mt-10 rounded-2xl bg-emerald-50 p-6 text-center">
+        <div class="mt-10 rounded-2xl border border-amber-200 bg-amber-50 p-6">
+            <h2 class="text-lg font-bold text-amber-900">💳 Ödeme nasıl yapılır?</h2>
+            <p class="mt-2 text-sm text-amber-800">
+                Nisoya bir ilan ve iletişim platformudur — ödemeyi biz almıyor, aracılık etmiyoruz. Anlaştığın kişiyle ödeme yöntemini kendin belirlersin. Üye profillerinde "Kabul ettiği ödeme yöntemleri" rozetlerini görebilirsin (IBAN/banka havalesi, Kaspi, Click, Payme, MBANK, Zelle, Venmo, PayPal, nakit gibi — bulunduğun ülkeye göre değişir).
+            </p>
+            <ul class="mt-3 space-y-1.5 text-sm text-amber-800">
+                <li>• Hizmet tamamlanmadan tüm ücreti peşin ödemekten kaçın; mümkünse iş bitince veya kısım kısım öde.</li>
+                <li>• İlk defa çalıştığın biriyle büyük tutarlarda temkinli ol, önce küçük bir işle güven oluştur.</li>
+                <li>• Elden teslimde, mümkünse halka açık/güvenli bir yerde buluş.</li>
+                <li>• Şüpheli bir durum sezersen ilanı veya kullanıcıyı "şikayet et" ile bize bildir.</li>
+            </ul>
+        </div>
+
+        <div class="mt-8 rounded-2xl bg-emerald-50 p-6 text-center">
             <h2 class="text-lg font-bold text-stone-900">Güven önce gelir</h2>
             <p class="mt-2 text-sm text-stone-600">Profil doğrulaması, değerlendirme/puan ve şikayet sistemiyle topluluğu güvende tutuyoruz. Şüpheli bir ilan görürsen "şikayet et" ile bize bildir.</p>
             <a href="{{ route('register') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-6 py-2.5 font-semibold text-white hover:bg-emerald-700">Ücretsiz Başla</a>

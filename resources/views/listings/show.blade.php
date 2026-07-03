@@ -213,6 +213,15 @@
                                 @endif
                             </div>
                         </div>
+                        @if ($listing->user->payment_methods && $listing->user->payment_methods->isNotEmpty())
+                            <div class="mt-3 flex flex-wrap items-center gap-1.5">
+                                @foreach ($listing->user->payment_methods as $method)
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600" title="{{ $method->getLabel() }}">
+                                        <span aria-hidden="true">{{ $method->icon() }}</span>{{ $method->getLabel() }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
                         <a href="{{ route('profiles.show', $listing->user->username) }}" class="mt-3 block text-sm font-medium text-emerald-700 hover:underline">Profili ve değerlendirmeleri gör →</a>
                         <p class="mt-3 text-xs text-stone-400">
                             Nisoya bir ilan ve iletişim platformudur; ödeme ve anlaşma taraflar arasındadır.

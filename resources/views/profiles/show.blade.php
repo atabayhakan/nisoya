@@ -24,6 +24,16 @@
                     @if ($user->bio)
                         <p class="mt-2 text-sm text-stone-600">{{ $user->bio }}</p>
                     @endif
+                    @if ($user->payment_methods && $user->payment_methods->isNotEmpty())
+                        <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                            <span class="text-xs text-stone-400">Kabul ettiği ödeme yöntemleri:</span>
+                            @foreach ($user->payment_methods as $method)
+                                <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600" title="{{ $method->getLabel() }}">
+                                    <span aria-hidden="true">{{ $method->icon() }}</span>{{ $method->getLabel() }}
+                                </span>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
                 <div class="text-center">
                     <div class="text-2xl font-bold text-stone-900">{{ $listings->total() }}</div>
