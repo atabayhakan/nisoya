@@ -61,6 +61,17 @@ class Conversation extends Model
         ]);
     }
 
+    /** İki kullanıcı arasında (hangi ilan için olursa olsun) daha önce mesajlaşma olmuş mu? */
+    public static function existsBetween(int $userId, int $otherId): bool
+    {
+        return static::query()
+            ->where(function ($q) use ($userId, $otherId) {
+                $q->where(['user_one_id' => $userId, 'user_two_id' => $otherId])
+                    ->orWhere(['user_one_id' => $otherId, 'user_two_id' => $userId]);
+            })
+            ->exists();
+    }
+
     public function isParticipant(User $user): bool
     {
         return in_array($user->id, [$this->user_one_id, $this->user_two_id], true);

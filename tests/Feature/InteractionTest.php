@@ -111,6 +111,7 @@ class InteractionTest extends TestCase
     {
         $seller = User::factory()->create();
         $reviewer = User::factory()->create();
+        Conversation::create(['user_one_id' => $reviewer->id, 'user_two_id' => $seller->id, 'last_message_at' => now()]);
 
         $this->actingAs($reviewer)
             ->post("/uye/{$seller->username}/degerlendir", ['rating' => 5, 'comment' => 'Çok memnun kaldım.'])
@@ -123,6 +124,7 @@ class InteractionTest extends TestCase
     {
         $seller = User::factory()->create();
         $reviewer = User::factory()->create();
+        Conversation::create(['user_one_id' => $reviewer->id, 'user_two_id' => $seller->id, 'last_message_at' => now()]);
         Review::create(['reviewee_id' => $seller->id, 'reviewer_id' => $reviewer->id, 'rating' => 5, 'status' => 'yayinda']);
 
         $this->actingAs($reviewer)->post("/uye/{$seller->username}/degerlendir", ['rating' => 3]);
@@ -135,6 +137,37 @@ class InteractionTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user)->post("/uye/{$user->username}/degerlendir", ['rating' => 5])->assertForbidden();
+    }
+
+    public function test_user_cannot_review_without_prior_contact(): void
+    {
+        $seller = User::factory()->create();
+        $reviewer = User::factory()->create();
+
+        $this->actingAs($reviewer)
+            ->post("/uye/{$seller->username}/degerlendir", ['rating' => 5])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('reviews', 0);
+    }
+
+    public function test_review_form_only_shown_after_contact(): void
+    {
+        $seller = User::factory()->create();
+        $strangerVisitor = User::factory()->create();
+
+        $this->actingAs($strangerVisitor)
+            ->get("/uye/{$seller->username}")
+            ->assertOk()
+            ->assertDontSee('Deneyimini paylaş')
+            ->assertSee('önce kendisiyle iletişime geçmiş olman gerekir');
+
+        Conversation::create(['user_one_id' => $strangerVisitor->id, 'user_two_id' => $seller->id, 'last_message_at' => now()]);
+
+        $this->actingAs($strangerVisitor)
+            ->get("/uye/{$seller->username}")
+            ->assertOk()
+            ->assertSee('Deneyimini paylaş');
     }
 
     // --- Şikayet ---

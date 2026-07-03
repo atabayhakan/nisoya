@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Conversation;
 use App\Models\Review;
 use App\Models\User;
 use App\Notifications\NewReviewNotification;
@@ -16,6 +17,15 @@ class ReviewController extends Controller
         $reviewer = $request->user();
 
         abort_if($reviewer->id === $user->id, 403, 'Kendini değerlendiremezsin.');
+
+        // Değerlendirme yalnızca gerçekten iletişime geçilmiş (dolayısıyla hizmet/alışveriş
+        // süreci başlamış) kullanıcılar için bırakılabilir — platformda henüz sipariş/işlem
+        // kaydı olmadığından mesajlaşma geçmişi bunun için elimizdeki en güvenilir sinyal.
+        abort_unless(
+            Conversation::existsBetween($reviewer->id, $user->id),
+            403,
+            'Bu kullanıcıyı değerlendirebilmek için önce kendisiyle iletişime geçmiş (mesajlaşmış) olman gerekir.'
+        );
 
         $data = $request->validate([
             'rating' => ['required', 'integer', 'between:1,5'],

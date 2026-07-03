@@ -34,6 +34,8 @@ class ProductListingTest extends TestCase
         $this->assertContains(PriceUnit::Adet, PriceUnit::forType('urun'));
         $this->assertNotContains(PriceUnit::Saatlik, PriceUnit::forType('urun'));
         $this->assertContains(PriceUnit::Saatlik, PriceUnit::forType('hizmet'));
+        $this->assertContains(PriceUnit::Kilogram, PriceUnit::forType('hizmet'));
+        $this->assertNotContains(PriceUnit::Kilogram, PriceUnit::forType('urun'));
     }
 
     public function test_product_create_form_loads(): void

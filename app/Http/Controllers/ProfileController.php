@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserStatus;
+use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\View\View;
 
@@ -27,7 +28,12 @@ class ProfileController extends Controller
         $myReview = auth()->check()
             ? $reviews->firstWhere('reviewer_id', auth()->id())
             : null;
+        // Değerlendirme yalnızca daha önce iletişime geçmiş (mesajlaşmış) kullanıcılar
+        // için açılır — bkz. ReviewController::store().
+        $canReview = auth()->check()
+            && auth()->id() !== $user->id
+            && Conversation::existsBetween(auth()->id(), $user->id);
 
-        return view('profiles.show', compact('user', 'listings', 'reviews', 'rating', 'myReview'));
+        return view('profiles.show', compact('user', 'listings', 'reviews', 'rating', 'myReview', 'canReview'));
     }
 }

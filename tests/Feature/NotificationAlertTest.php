@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Conversation;
 use App\Models\Listing;
 use App\Models\SavedSearch;
 use App\Models\User;
@@ -32,6 +33,7 @@ class NotificationAlertTest extends TestCase
         Notification::fake();
         $seller = User::factory()->create();
         $reviewer = User::factory()->create();
+        Conversation::create(['user_one_id' => $reviewer->id, 'user_two_id' => $seller->id, 'last_message_at' => now()]);
 
         $this->actingAs($reviewer)->post("/uye/{$seller->username}/degerlendir", ['rating' => 5]);
 

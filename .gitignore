@@ -22,6 +22,7 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/debugbar
 /vendor
 /database/database.sqlite
 /database/database.sqlite-*

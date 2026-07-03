@@ -64,7 +64,7 @@
             @endif
 
             @auth
-                @if (auth()->id() !== $user->id)
+                @if ($canReview)
                     <form method="POST" action="{{ route('reviews.store', $user->username) }}" class="mt-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
                         @csrf
                         <p class="text-sm font-medium text-stone-700">{{ $myReview ? 'Değerlendirmeni güncelle' : 'Bu üyeyi değerlendir' }}</p>
@@ -82,6 +82,14 @@
                         @error('rating') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
                         <button type="submit" class="mt-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">{{ $myReview ? 'Güncelle' : 'Gönder' }}</button>
                     </form>
+                @elseif (auth()->id() !== $user->id)
+                    <div class="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-5 text-sm text-stone-600">
+                        Bu üyeyi değerlendirebilmek için önce kendisiyle iletişime geçmiş olman gerekir.
+                        @if ($listings->isNotEmpty())
+                            @php($firstListing = $listings->first())
+                            <a href="{{ route('listings.show', [$firstListing, $firstListing->slug]) }}" class="font-medium text-emerald-700 hover:underline">Bir ilanına mesaj gönder</a>
+                        @endif
+                    </div>
                 @endif
             @endauth
 
