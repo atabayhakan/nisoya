@@ -7,6 +7,7 @@ use App\Models\ListingImage;
 use App\Models\User;
 use App\Observers\ListingImageObserver;
 use App\Observers\UserObserver;
+use App\Services\PerformanceService;
 use App\Support\Settings;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
@@ -17,7 +18,12 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        // Singleton: PerformanceMetricsMiddleware ve QueryLogMiddleware aynı
+        // istek içinde aynı PerformanceService örneğini paylaşmalı — aksi
+        // halde start()/record() çağrıları farklı örneklerde çalışır ve
+        // performans logu istek başına iki kez (biri yanlış sorgu sayısıyla)
+        // yazılır.
+        $this->app->singleton(PerformanceService::class);
     }
 
     public function boot(): void

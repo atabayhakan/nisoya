@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\PerformanceService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,8 +24,6 @@ class QueryLogMiddleware
     private float $totalQueryTime = 0.0;
 
     private array $queries = [];
-
-    public function __construct(private readonly PerformanceService $service) {}
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -88,8 +85,9 @@ class QueryLogMiddleware
             ]);
         }
 
-        // PerformanceService'e rapor et
-        $this->service->record($request, $response->getStatusCode());
+        // Genel istek metriği PerformanceMetricsMiddleware tarafından zaten
+        // kaydediliyor (aynı PerformanceService singleton'ı) — burada tekrar
+        // record() çağırmak "Performance: request" log satırını iki kez yazar.
 
         return $response;
     }
