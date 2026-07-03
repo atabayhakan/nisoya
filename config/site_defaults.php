@@ -82,5 +82,9 @@ return [
         'bagis.paypal_me' => ['group' => 'bagis', 'label' => 'PayPal.me bağlantısı (örn: paypal.me/nisoya)', 'type' => 'text', 'default' => ''],
         'bagis.iban' => ['group' => 'bagis', 'label' => 'IBAN (TR ile başlayan)', 'type' => 'text', 'default' => ''],
         'bagis.iban_sahibi' => ['group' => 'bagis', 'label' => 'IBAN hesap sahibi', 'type' => 'text', 'default' => ''],
+        'bagis.maliyet_baslik' => ['group' => 'bagis', 'label' => 'Maliyet şeffaflığı — başlık (boş bırakılırsa bölüm gösterilmez)', 'type' => 'text', 'default' => 'Bağışların nereye gittiği'],
+        'bagis.maliyet1' => ['group' => 'bagis', 'label' => 'Maliyet kalemi 1 (örn: Sunucu barındırma — ayda ~15€)', 'type' => 'text', 'default' => ''],
+        'bagis.maliyet2' => ['group' => 'bagis', 'label' => 'Maliyet kalemi 2 (örn: Alan adı — yılda ~15€)', 'type' => 'text', 'default' => ''],
+        'bagis.maliyet3' => ['group' => 'bagis', 'label' => 'Maliyet kalemi 3 (örn: Bakım ve geliştirme — gönüllü)', 'type' => 'text', 'default' => ''],
     ],
 ];

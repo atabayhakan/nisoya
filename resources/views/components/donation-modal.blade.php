@@ -5,6 +5,8 @@
     $title = setting('bagis.baslik') ?: 'Nisoya ücretsiz kalacak';
     $text = setting('bagis.metin') ?: 'Nisoya tamamen ücretsiz bir hizmettir. Bağışlarınız bize güç verir.';
     $paypalUrl = $paypal ? (str_starts_with($paypal, 'http') ? $paypal : 'https://'.$paypal) : null;
+    $maliyetBaslik = setting('bagis.maliyet_baslik');
+    $maliyetKalemleri = array_filter([setting('bagis.maliyet1'), setting('bagis.maliyet2'), setting('bagis.maliyet3')]);
 @endphp
 
 <div
@@ -98,6 +100,20 @@
             </div>
 
             <div class="space-y-4 px-5 py-5">
+                @if ($maliyetBaslik && count($maliyetKalemleri) > 0)
+                    <div class="rounded-xl border border-stone-200 bg-stone-50 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">{{ $maliyetBaslik }}</p>
+                        <ul class="mt-2 space-y-1.5 text-sm text-stone-700">
+                            @foreach ($maliyetKalemleri as $kalem)
+                                <li class="flex items-start gap-2">
+                                    <x-heroicon-o-check-circle class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                                    <span>{{ $kalem }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 @if ($paypalUrl)
                     <a
                         href="{{ $paypalUrl }}"

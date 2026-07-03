@@ -174,6 +174,30 @@ class MonetizationTest extends TestCase
         $response->assertSee('Nisoya Test');
     }
 
+    public function test_donation_modal_maliyet_seffafligi_dolu_ise_gorunur(): void
+    {
+        $this->seedBaseData();
+
+        Settings::setMany([
+            'bagis.maliyet_baslik' => 'Bağışların nereye gittiği',
+            'bagis.maliyet1' => 'Sunucu barındırma — ayda ~15€',
+            'bagis.maliyet2' => 'Alan adı — yılda ~15€',
+        ]);
+
+        $response = $this->get('/')->assertOk();
+        $response->assertSee('Bağışların nereye gittiği');
+        $response->assertSee('Sunucu barındırma — ayda ~15€');
+        $response->assertSee('Alan adı — yılda ~15€');
+    }
+
+    public function test_donation_modal_maliyet_seffafligi_bos_ise_gorunmez(): void
+    {
+        $this->seedBaseData();
+
+        $response = $this->get('/')->assertOk();
+        $response->assertDontSee('Sunucu barındırma');
+    }
+
     public function test_json_ld_websites_chema_ekleniyor(): void
     {
         $this->seedBaseData();
