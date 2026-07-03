@@ -20,13 +20,16 @@
                     @if ($listing->coverImage)
                         <img src="{{ Storage::url($listing->coverImage->path) }}" alt="" class="h-full w-full object-cover">
                     @else
-                        <div class="flex h-full w-full items-center justify-center text-2xl text-stone-300">🧰</div>
+                        @php($fallbackIcon = \App\Support\CategoryIcon::heroicon($listing->category?->parent?->icon ?? $listing->category?->icon))
+                        <div class="flex h-full w-full items-center justify-center text-stone-300">
+                            <x-dynamic-component :component="'heroicon-o-'.$fallbackIcon" class="h-7 w-7" />
+                        </div>
                     @endif
                 </div>
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2">
                         <span class="rounded-full px-2 py-0.5 text-xs font-medium {{ $badge[$listing->status->getColor()] ?? $badge['gray'] }}">{{ $listing->status->getLabel() }}</span>
-                        <span class="text-xs text-stone-400">👁 {{ $listing->views_count }}</span>
+                        <span class="inline-flex items-center gap-0.5 text-xs text-stone-400"><x-heroicon-o-eye class="h-3.5 w-3.5" /> {{ $listing->views_count }}</span>
                     </div>
                     <a href="{{ route('listings.show', [$listing, $listing->slug]) }}" class="mt-1 block truncate font-semibold text-stone-800 hover:text-emerald-700">{{ $listing->title }}</a>
                     <p class="text-sm text-stone-500">
@@ -35,9 +38,9 @@
                 </div>
                 <div class="flex shrink-0 flex-wrap items-center justify-end gap-2">
                     @if ($listing->isCurrentlyFeatured())
-                        <span class="rounded-lg bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">⭐ Öne çıkan</span>
+                        <span class="inline-flex items-center gap-1 rounded-lg bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700"><x-heroicon-s-star class="h-3.5 w-3.5" /> Öne çıkan</span>
                     @elseif ($listing->has_pending_feature)
-                        <span class="rounded-lg bg-stone-100 px-2 py-1 text-xs text-stone-500">⏳ İncelemede</span>
+                        <span class="inline-flex items-center gap-1 rounded-lg bg-stone-100 px-2 py-1 text-xs text-stone-500"><x-heroicon-o-clock class="h-3.5 w-3.5" /> İncelemede</span>
                     @elseif ($listing->status->value === 'aktif')
                         <form method="POST" action="{{ route('panel.listings.feature', $listing) }}" class="flex items-center gap-1">
                             @csrf
@@ -45,7 +48,7 @@
                                 <option value="7">7 gün</option>
                                 <option value="30">30 gün</option>
                             </select>
-                            <button type="submit" class="rounded-lg border border-amber-300 px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-50">⭐ Öne çıkar</button>
+                            <button type="submit" class="inline-flex items-center gap-1 rounded-lg border border-amber-300 px-2 py-1 text-xs font-medium text-amber-700 transition hover:bg-amber-50"><x-heroicon-o-star class="h-3.5 w-3.5" /> Öne çıkar</button>
                         </form>
                     @endif
                     <a href="{{ route('panel.listings.edit', $listing) }}" class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-50">Düzenle</a>
@@ -54,10 +57,12 @@
             @if ($loop->last)</div>{{ $listings->links() }}@endif
         @empty
             <div class="mt-10 rounded-2xl border border-dashed border-stone-300 bg-white p-10 text-center">
-                <div class="text-4xl">🧰</div>
+                <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-600">
+                    <x-heroicon-o-clipboard-document-list class="h-6 w-6" />
+                </span>
                 <h2 class="mt-3 text-lg font-semibold text-stone-800">Henüz ilanın yok</h2>
                 <p class="mt-1 text-sm text-stone-500">İlk ilanını ver, yeteneğini paraya dönüştür.</p>
-                <a href="{{ route('panel.listings.create') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-700">+ İlk İlanını Ver</a>
+                <a href="{{ route('panel.listings.create') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand">+ İlk İlanını Ver</a>
             </div>
         @endforelse
     </div>

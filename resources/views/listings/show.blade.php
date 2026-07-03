@@ -99,14 +99,19 @@
                         </div>
                     @endif
                 @else
-                    <div class="flex h-56 items-center justify-center rounded-2xl bg-stone-100 text-6xl text-stone-300">🧰</div>
+                    @php($fallbackIcon = \App\Support\CategoryIcon::heroicon($listing->category?->parent?->icon ?? $listing->category?->icon))
+                    <div class="flex h-56 items-center justify-center rounded-2xl bg-stone-100 text-stone-300">
+                        <x-dynamic-component :component="'heroicon-o-'.$fallbackIcon" class="h-16 w-16" />
+                    </div>
                 @endif
 
                 <h1 class="mt-6 text-2xl font-bold text-stone-900">{{ $listing->title }}</h1>
 
                 <div class="mt-2 flex flex-wrap items-center gap-2 text-sm">
                     @if ($listing->isCurrentlyFeatured())
-                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-700">⭐ Öne çıkan</span>
+                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-700">
+                            <x-heroicon-s-star class="h-3.5 w-3.5" /> Öne çıkan
+                        </span>
                     @endif
                     @if ($listing->country)
                         <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-3 py-1 text-stone-600">
@@ -114,10 +119,14 @@
                         </span>
                     @endif
                     @if ($listing->is_remote)
-                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-700">🌐 Uzaktan / Online</span>
+                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-700">
+                            <x-heroicon-o-globe-alt class="h-3.5 w-3.5" /> Uzaktan / Online
+                        </span>
                     @endif
                     @if ($listing->type->value === 'urun' && $listing->stock !== null)
-                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-700">📦 Stokta {{ $listing->stock }} adet</span>
+                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-700">
+                            <x-heroicon-o-archive-box class="h-3.5 w-3.5" /> Stokta {{ $listing->stock }} adet
+                        </span>
                     @endif
                 </div>
 
@@ -128,7 +137,9 @@
                 @auth
                     @unless ($isOwner)
                         <details class="mt-8 text-sm">
-                            <summary class="cursor-pointer text-stone-400 hover:text-stone-600">⚐ Bu ilanı şikayet et</summary>
+                            <summary class="inline-flex cursor-pointer items-center gap-1 text-stone-400 hover:text-stone-600">
+                                <x-heroicon-o-flag class="h-4 w-4" /> Bu ilanı şikayet et
+                            </summary>
                             <form method="POST" action="{{ route('reports.store', $listing) }}" class="mt-3 max-w-md space-y-2 rounded-lg border border-stone-200 bg-white p-4">
                                 @csrf
                                 <select name="reason" required class="w-full rounded-lg border-stone-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
@@ -180,7 +191,11 @@
                                     <form method="POST" action="{{ route('favorites.toggle', $listing) }}">
                                         @csrf
                                         <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 font-medium transition {{ $isFavorited ? 'border-red-200 bg-red-50 text-red-600' : 'border-stone-300 text-stone-700 hover:bg-stone-50' }}">
-                                            {{ $isFavorited ? '❤️ Favorilerde' : '🤍 Favorilere ekle' }}
+                                            @if ($isFavorited)
+                                                <x-heroicon-s-heart class="h-5 w-5" /> Favorilerde
+                                            @else
+                                                <x-heroicon-o-heart class="h-5 w-5" /> Favorilere ekle
+                                            @endif
                                         </button>
                                     </form>
                                 @endunless

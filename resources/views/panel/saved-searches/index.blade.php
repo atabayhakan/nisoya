@@ -13,7 +13,7 @@
                 @foreach ($searches as $s)
                     <div class="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
                         <div class="min-w-0">
-                            <div class="font-medium text-stone-800">🔔 {{ $s->label }}</div>
+                            <div class="flex items-center gap-1.5 font-medium text-stone-800"><x-heroicon-o-bookmark class="h-4 w-4 shrink-0 text-emerald-600" /> {{ $s->label }}</div>
                             <div class="text-xs text-stone-400">{{ $s->created_at->diffForHumans() }} kaydedildi</div>
                         </div>
                         <div class="flex shrink-0 items-center gap-2">
@@ -29,10 +29,12 @@
             </div>
         @else
             <div class="mt-10 rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center">
-                <div class="text-4xl">🔔</div>
+                <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-600">
+                    <x-heroicon-o-bookmark class="h-6 w-6" />
+                </span>
                 <h2 class="mt-3 text-lg font-semibold text-stone-800">Kayıtlı araman yok</h2>
                 <p class="mt-1 text-sm text-stone-500">İlanlarda filtre uygula, sonra "Aramayı kaydet" ile buraya ekle.</p>
-                <a href="{{ route('listings.index') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">İlanlara git</a>
+                <a href="{{ route('listings.index') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand">İlanlara git</a>
             </div>
         @endif
     </div>

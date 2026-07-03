@@ -18,11 +18,15 @@
                         <input type="hidden" name="ulke" value="{{ $filters['ulke'] }}">
                         <input type="hidden" name="sehir" value="{{ $filters['sehir'] }}">
                         <input type="hidden" name="tip" value="{{ $filters['tip'] }}">
-                        <button type="submit" class="inline-flex items-center gap-1 rounded-lg border border-emerald-300 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50">🔔 Aramayı kaydet</button>
+                        <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50">
+                            <x-heroicon-o-bell class="h-4 w-4" /> Aramayı kaydet
+                        </button>
                     </form>
                 @endauth
                 <a href="{{ route('listings.map', $filters['tip'] ? ['tip' => $filters['tip']] : []) }}"
-                   class="inline-flex items-center gap-1 rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">🗺️ Haritada gör</a>
+                   class="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50">
+                    <x-heroicon-o-map class="h-4 w-4" /> Haritada gör
+                </a>
             </div>
         </div>
 
@@ -118,10 +122,12 @@
                     <div class="mt-8">{{ $listings->links() }}</div>
                 @else
                     <div class="rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center">
-                        <div class="text-4xl">🔍</div>
+                        <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-stone-100 text-stone-400">
+                            <x-heroicon-o-magnifying-glass class="h-6 w-6" />
+                        </span>
                         <h2 class="mt-3 text-lg font-semibold text-stone-800">Sonuç bulunamadı</h2>
                         <p class="mt-1 text-sm text-stone-500">Filtreleri değiştirmeyi veya temizlemeyi dene.</p>
-                        <a href="{{ route('listings.index') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">Tüm ilanları gör</a>
+                        <a href="{{ route('listings.index') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand">Tüm ilanları gör</a>
                     </div>
                 @endif
             </main>
