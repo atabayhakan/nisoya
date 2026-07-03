@@ -61,7 +61,7 @@
                                 </span>
                                 <span class="text-sm font-medium text-stone-800">{{ $member->name }}</span>
                             </div>
-                            <span class="text-xs text-stone-400">{{ $member->created_at->translatedFormat('D MMMM Y') }}</span>
+                            <span class="text-xs text-stone-400">{{ $member->created_at->translatedFormat('j F Y') }}</span>
                         </li>
                     @endforeach
                 </ul>

@@ -196,6 +196,17 @@ class InteractionTest extends TestCase
             ->assertSee('Deneyimini paylaş');
     }
 
+    public function test_profile_membership_date_shows_month_name_once(): void
+    {
+        $seller = User::factory()->create(['created_at' => '2026-07-03']);
+
+        $response = $this->get("/uye/{$seller->username}");
+
+        $response->assertOk();
+        $response->assertSee('Üyelik: Temmuz 2026');
+        $response->assertDontSee('TemmuzTemmuz');
+    }
+
     // --- Şikayet ---
 
     public function test_user_can_report_listing(): void

@@ -207,7 +207,7 @@
                                     {{ $listing->user->name }}
                                     @if ($listing->user->is_verified)<span title="Doğrulanmış üye" class="text-emerald-600">✓</span>@endif
                                 </div>
-                                <div class="text-xs text-stone-500">Üyelik: {{ $listing->user->created_at->translatedFormat('MMMM Y') }}</div>
+                                <div class="text-xs text-stone-500">Üyelik: {{ $listing->user->created_at->translatedFormat('F Y') }}</div>
                                 @if ($sellerRating['count'] > 0)
                                     <div class="text-xs font-medium text-amber-500">★ {{ $sellerRating['avg'] }} <span class="text-stone-400">({{ $sellerRating['count'] }} değerlendirme)</span></div>
                                 @endif

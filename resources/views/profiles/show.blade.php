@@ -16,7 +16,7 @@
                         @if ($user->is_verified)<span title="Doğrulanmış üye" class="text-base text-emerald-600">✓ Doğrulanmış</span>@endif
                     </h1>
                     <p class="mt-1 text-sm text-stone-500">
-                        @if ($user->city){{ $user->city }} · @endif{{ $user->country_code }} · Üyelik: {{ $user->created_at->translatedFormat('MMMM Y') }}
+                        @if ($user->city){{ $user->city }} · @endif{{ $user->country_code }} · Üyelik: {{ $user->created_at->translatedFormat('F Y') }}
                     </p>
                     @if ($rating['count'] > 0)
                         <p class="mt-1 text-sm font-medium text-amber-500">★ {{ $rating['avg'] }} <span class="text-stone-400">({{ $rating['count'] }} değerlendirme)</span></p>
@@ -101,7 +101,7 @@
                             <span class="text-amber-500">{{ str_repeat('★', $review->rating) }}<span class="text-stone-300">{{ str_repeat('★', 5 - $review->rating) }}</span></span>
                         </div>
                         @if ($review->comment)<p class="mt-1 text-sm text-stone-600">{{ $review->comment }}</p>@endif
-                        <p class="mt-1 text-xs text-stone-400">{{ $review->created_at->translatedFormat('D MMMM Y') }}</p>
+                        <p class="mt-1 text-xs text-stone-400">{{ $review->created_at->translatedFormat('j F Y') }}</p>
                     </div>
                 @empty
                     <p class="text-sm text-stone-500">Henüz değerlendirme yok. İlk değerlendiren sen ol!</p>
