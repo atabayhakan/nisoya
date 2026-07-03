@@ -21,5 +21,24 @@ Alpine.directive('reveal', (el) => {
     observer.observe(el);
 });
 
+// Ana sayfadaki "Canlı Akış" şeridi: son ilanlar arasında birkaç
+// saniyede bir geçiş yaparak siteye canlılık katar (prefers-reduced-motion
+// saygılı — hareketi azalt tercihinde ilk öğede sabit kalır).
+Alpine.data('activityTicker', (count) => ({
+    index: 0,
+    interval: null,
+    init() {
+        if (count < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            return;
+        }
+        this.interval = setInterval(() => {
+            this.index = (this.index + 1) % count;
+        }, 4500);
+    },
+    destroy() {
+        clearInterval(this.interval);
+    },
+}));
+
 window.Alpine = Alpine;
 Alpine.start();

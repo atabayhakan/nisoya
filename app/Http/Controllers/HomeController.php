@@ -6,6 +6,8 @@ use App\Models\Category;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Listing;
+use App\Support\CategoryIcon;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -26,6 +28,20 @@ class HomeController extends Controller
                 ->latest()
                 ->take(8)
                 ->get(),
+            'activityFeed' => Listing::query()->active()
+                ->with(['category.parent', 'country', 'user'])
+                ->latest()
+                ->take(10)
+                ->get()
+                ->map(fn (Listing $listing) => [
+                    'firstName' => Str::before($listing->user->name, ' '),
+                    'categoryName' => $listing->category->name,
+                    'categoryIcon' => CategoryIcon::heroicon($listing->category?->parent?->icon ?? $listing->category?->icon),
+                    'flag' => $listing->country?->emoji,
+                    'place' => $listing->city ?: $listing->country?->name_tr,
+                    'timeAgo' => $listing->created_at->diffForHumans(),
+                    'href' => route('listings.show', [$listing, $listing->slug]),
+                ]),
         ]);
     }
 }
