@@ -13,6 +13,9 @@ namespace App\Support;
 class CategoryIcon
 {
     private const MAP = [
+        '🚨' => 'exclamation-triangle',
+        '➕' => 'plus-circle',
+        '🔑' => 'key',
         '📚' => 'academic-cap',
         '🔧' => 'wrench-screwdriver',
         '🍽️' => 'cake',

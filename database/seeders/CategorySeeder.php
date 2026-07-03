@@ -11,7 +11,12 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         // Diaspora odaklı hizmet kategorileri (üst => alt kategoriler).
+        // "Acil Yardım" bilinçli olarak listenin başında: hem kategori
+        // ızgarasında öne çıksın hem de sort_order'ı en düşük (0) olsun —
+        // header'daki "Acil" hızlı-erişim butonu bu kategorinin alt
+        // kategorilerini (bkz. AppServiceProvider) sort_order'a göre listeler.
         $tree = [
+            ['Acil Yardım', '🚨', [['Doktorlar', '➕'], ['Çilingirler', '🔑']]],
             ['Eğitim & Ders', '📚', ['Yabancı Dil Dersi', 'Çocuklara Türkçe', 'Müzik Dersi', 'Özel Ders & Okul Desteği', 'Sınav Hazırlık', 'Yazılım & Kodlama Eğitimi']],
             ['Ev & Tamir', '🔧', ['Nakliyat & Taşınma', 'Tadilat & Boya', 'Mobilya Montaj', 'Tesisat & Elektrik', 'Ev Temizliği', 'Bahçe & Peyzaj']],
             ['Yemek & İkram', '🍽️', ['Ev Yemeği', 'Pasta & Tatlı', 'Catering', 'Özel Gün Menüleri']],
@@ -30,10 +35,16 @@ class CategorySeeder extends Seeder
                 ['name' => $name, 'icon' => $icon, 'type' => 'hizmet', 'sort_order' => $i, 'is_active' => true, 'parent_id' => null],
             );
 
-            foreach ($children as $j => $childName) {
+            foreach ($children as $j => $child) {
+                // Alt kategoriler normalde kendi ikonunu taşımaz (kartlarda üst
+                // kategorinin ikonuna düşer) — ama "Acil" butonu gibi alt
+                // kategorinin doğrudan gösterildiği yerlerde ayırt edici bir
+                // ikon gerekebilir, bu yüzden [isim, ikon] çifti de destekleniyor.
+                [$childName, $childIcon] = is_array($child) ? $child : [$child, null];
+
                 Category::updateOrCreate(
                     ['slug' => Str::slug($childName)],
-                    ['name' => $childName, 'type' => 'hizmet', 'sort_order' => $j, 'is_active' => true, 'parent_id' => $parent->id],
+                    ['name' => $childName, 'icon' => $childIcon, 'type' => 'hizmet', 'sort_order' => $j, 'is_active' => true, 'parent_id' => $parent->id],
                 );
             }
         }

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Category;
 use App\Models\City;
 use App\Models\ListingImage;
 use App\Models\User;
@@ -9,6 +10,7 @@ use App\Observers\ListingImageObserver;
 use App\Observers\UserObserver;
 use App\Services\PerformanceService;
 use App\Support\Settings;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -47,6 +49,29 @@ class AppServiceProvider extends ServiceProvider
                 ->get(['country_code', 'name'])
                 ->groupBy('country_code')
                 ->map(fn ($group) => $group->pluck('name')->all()));
+        });
+
+        // Header'daki "Acil" hızlı-erişim butonu: her sayfada görünür,
+        // kategoriler tablosu henüz yoksa (migrasyon öncesi/test) sessizce
+        // boş koleksiyon döner. Kategori nadiren değiştiği için kalıcı
+        // cache'lenir (bkz. Category::booted() — kayıt/silmede otomatik temizlenir).
+        // Not: Eloquent modeli değil, düz dizi cache'lenir (bkz. Page::navPages()
+        // ile aynı desen) — 'database' cache sürücüsü, APP_KEY sızıntısına karşı
+        // gadget-chain saldırılarını önlemek için nesne unserialize'ını
+        // varsayılan olarak engelliyor (config/cache.php: serializable_classes=false).
+        View::composer('components.layouts.app', function ($view) {
+            $items = Schema::hasTable('categories')
+                ? Cache::rememberForever(Category::EMERGENCY_CACHE_KEY, fn () => Category::query()
+                    ->where('slug', Category::EMERGENCY_SLUG)
+                    ->first()
+                    ?->children()
+                    ->where('is_active', true)
+                    ->get(['id', 'name', 'slug', 'icon'])
+                    ->map(fn (Category $cat) => $cat->only(['id', 'name', 'slug', 'icon']))
+                    ->all() ?? [])
+                : [];
+
+            $view->with('emergencyCategories', collect($items)->map(fn (array $item) => (object) $item));
         });
 
         // Reklam & bağış ayarlarını DB'den (varsa) env'in üzerine yaz.
