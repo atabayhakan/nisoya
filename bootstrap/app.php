@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             \App\Http\Middleware\EnsureUserIsActive::class,
+            \App\Http\Middleware\PerformanceMetricsMiddleware::class,
+            \App\Http\Middleware\QueryLogMiddleware::class,
         ]);
 
         $middleware->alias([
@@ -73,6 +75,30 @@ return Application::configure(basePath: dirname(__DIR__))
 
         RateLimiter::for('verification', fn (Request $request) =>
             Limit::perMinute(6)->by($request->user()?->id ?: $request->ip())
+        );
+
+        // Reverse geocoding (Nominatim 1 req/s rate limit'i):
+        // Admin başına dakikada max 60 işlem — yeterli 1000+ görsel için.
+        RateLimiter::for('reverse-geocode', fn (Request $request) =>
+            Limit::perMinute(60)->by($request->user()?->id ?: $request->ip())
+        );
+
+        // === Admin API & health endpoint rate limit'leri (adım 9) ===
+        // Public /health (uptime monitor'ler için) — IP başına 60/dk.
+        // UptimeRobot her 5 dakikada bir ping atar → 12 istek/saat → limit rahat.
+        RateLimiter::for('health-basic', fn (Request $request) =>
+            Limit::perMinute(60)->by($request->ip())
+        );
+
+        // Admin /health/detailed — hassas sistem bilgisi, admin başına 30/dk.
+        RateLimiter::for('health-detailed', fn (Request $request) =>
+            Limit::perMinute(30)->by($request->user()?->id ?: $request->ip())
+        );
+
+        // Admin EXIF harita API'leri (gorseller/cluster/istatistik) — 60/dk.
+        // Çok büyük dataset için rate limit gerekli (1000+ marker'ın scrape'i).
+        RateLimiter::for('exif-map', fn (Request $request) =>
+            Limit::perMinute(60)->by($request->user()?->id ?: $request->ip())
         );
     })
     ->create();

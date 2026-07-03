@@ -56,18 +56,20 @@ class ImageVariantsTest extends TestCase
             'status' => ListingStatus::Aktif,
         ]);
 
+        // DB'de path_large set edip url() çağır — Storage::url() her zaman URL üretir
         $image = $listing->images()->create([
-            'path' => 'listings/legacy.jpg',
+            'path_thumb' => 'listings/legacy-thumb.jpg',
+            'path_medium' => 'listings/legacy-medium.jpg',
+            'path_large' => 'listings/legacy-large.jpg',
             'sort_order' => 1,
             'is_cover' => true,
         ]);
 
-        // url() her durumda path'ten URL üretir; varyant path'leri null ise
-        // orijinal path'e fallback yapar
-        $expectedUrl = \Illuminate\Support\Facades\Storage::disk('public')->url('listings/legacy.jpg');
-        $this->assertSame($expectedUrl, $image->url('thumb'));
-        $this->assertSame($expectedUrl, $image->url('medium'));
-        $this->assertSame($expectedUrl, $image->url('large'));
+        $this->assertSame('listings/legacy-large.jpg', $image->path_large);
+        // url() variant parametresine göre doğru path'i kullanmalı
+        $this->assertStringEndsWith('listings/legacy-thumb.jpg', $image->url('thumb'));
+        $this->assertStringEndsWith('listings/legacy-medium.jpg', $image->url('medium'));
+        $this->assertStringEndsWith('listings/legacy-large.jpg', $image->url('large'));
     }
 
     public function test_url_returns_null_when_no_path_exists(): void
@@ -79,7 +81,13 @@ class ImageVariantsTest extends TestCase
             'status' => ListingStatus::Aktif,
         ]);
 
-        $image = new ListingImage(['path' => null, 'sort_order' => 1, 'is_cover' => true]);
+        $image = new ListingImage([
+            'path_thumb' => null,
+            'path_medium' => null,
+            'path_large' => null,
+            'sort_order' => 1,
+            'is_cover' => true,
+        ]);
         $image->listing_id = $listing->id;
 
         $this->assertNull($image->url('thumb'));
@@ -97,7 +105,6 @@ class ImageVariantsTest extends TestCase
         ]);
 
         $image = $listing->images()->create([
-            'path' => 'listings/large/x.webp',
             'path_thumb' => 'listings/thumb/x.webp',
             'path_medium' => 'listings/medium/x.webp',
             'path_large' => 'listings/large/x.webp',
@@ -106,10 +113,10 @@ class ImageVariantsTest extends TestCase
         ]);
 
         $paths = $image->variantPaths();
-        $this->assertCount(4, $paths);
-        $this->assertContains('listings/large/x.webp', $paths);
+        $this->assertCount(3, $paths);
         $this->assertContains('listings/thumb/x.webp', $paths);
         $this->assertContains('listings/medium/x.webp', $paths);
+        $this->assertContains('listings/large/x.webp', $paths);
     }
 
     public function test_listing_card_partial_renders_with_variants(): void

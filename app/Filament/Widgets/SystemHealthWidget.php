@@ -2,11 +2,6 @@
 
 namespace App\Filament\Widgets;
 
-use App\Enums\ListingStatus;
-use App\Enums\UserStatus;
-use App\Models\Listing;
-use App\Models\Message;
-use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Cache;

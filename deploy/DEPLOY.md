@@ -64,6 +64,9 @@ sudo chown -R www-data:www-data storage bootstrap/cache
 ## 4.5. İlk seferde çalıştırılması gereken komutlar
 ```bash
 # Tüm GPS'li görseller için şehir/ülke tespiti (~1.1 sn/görsel, 100 görsel = ~2 dk)
+# NOT: Laravel rate limit policy 'reverse-geocode' admin başına dakikada max 60 işlem
+# uygular. Cron job ile arka planda çalıştırmak için:
+#    * * * * * cd /var/www/nisoya && php artisan schedule:run >> /dev/null 2>&1
 php artisan images:reverse-geocode
 
 # Activity log tablosu otomatik migrate ile oluştu; geriye uyumluluk için eski

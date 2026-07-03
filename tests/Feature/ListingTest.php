@@ -78,7 +78,7 @@ class ListingTest extends TestCase
 
         $this->assertCount(1, $listing->images);
         $this->assertTrue($listing->images->first()->is_cover);
-        Storage::disk('public')->assertExists($listing->images->first()->path);
+        Storage::disk('public')->assertExists($listing->images->first()->path_large);
     }
 
     public function test_listing_creation_validates_input(): void

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ListingStatus;
-use App\Enums\ListingType;
 use App\Enums\PriceUnit;
 use App\Http\Requests\ListingRequest;
 use App\Jobs\ProcessListingImage;
@@ -16,7 +15,6 @@ use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 

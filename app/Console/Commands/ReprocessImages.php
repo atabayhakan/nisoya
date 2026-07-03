@@ -58,15 +58,15 @@ class ReprocessImages extends Command
             }
 
             try {
-                $sourcePath = Storage::disk('public')->path($image->path);
+                $sourcePath = Storage::disk('public')->path($image->path_large);
                 if (! file_exists($sourcePath)) {
                     $errors++;
                     continue;
                 }
 
                 // Eski tek-path'i yedekle, yeni varyantlar üret
-                $oldPath = $image->path;
-                $variants = $imageService->generateVariants($image->path, 'listings');
+                $oldPath = $image->path_large;
+                $variants = $imageService->generateVariants($image->path_large, 'listings');
 
                 if ($variants) {
                     $image->update([

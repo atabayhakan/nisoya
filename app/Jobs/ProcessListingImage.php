@@ -81,7 +81,7 @@ class ProcessListingImage implements ShouldQueue
         ]);
 
         try {
-            $image->update(['size_bytes' => Storage::disk('public')->size($image->path_large ?? $image->path)]);
+            $image->update(['size_bytes' => Storage::disk('public')->size($image->path_large)]);
         } catch (\Throwable) {
             // ignore — boyut okunamazsa devam et
         }

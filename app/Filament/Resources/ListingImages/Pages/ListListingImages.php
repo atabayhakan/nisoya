@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ListingImages\Pages;
 
 use App\Filament\Resources\ListingImages\ListingImageResource;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 
 class ListListingImages extends ListRecords
@@ -19,7 +20,10 @@ class ListListingImages extends ListRecords
                 ->color('warning')
                 ->action(function () {
                     \Illuminate\Support\Facades\Artisan::call('images:reprocess');
-                    $this->notify('Toplu yeniden işleme tamamlandı.');
+                    Notification::make()
+                        ->title('Toplu yeniden işleme tamamlandı')
+                        ->success()
+                        ->send();
                 })
                 ->requiresConfirmation()
                 ->modalHeading('Tüm görselleri yeniden işle')
@@ -30,12 +34,18 @@ class ListListingImages extends ListRecords
                 ->icon('heroicon-o-map-pin')
                 ->color('info')
                 ->action(function () {
+                    // Nominatim rate limit (1 req/s) — admin başına dakikada max 60 işlem
+                    // (config/app.php'de tanımlı 'reverse-geocode' policy).
+                    // Bu sayede 3600 görsel/saat'ten fazla istek atılması engellenir.
                     \Illuminate\Support\Facades\Artisan::call('images:reverse-geocode');
-                    $this->notify('Toplu reverse geocoding başladı (arkaplan).');
+                    Notification::make()
+                        ->title('Toplu reverse geocoding başladı (arkaplan)')
+                        ->info()
+                        ->send();
                 })
                 ->requiresConfirmation()
                 ->modalHeading('Tüm görselleri reverse geocode et')
-                ->modalDescription('GPS koordinatı bilinen görseller için Nominatim üzerinden şehir/ülke tespiti yapılır. Rate limit nedeniyle uzun sürebilir (yaklaşık 1.1 sn/görsel).'),
+                ->modalDescription('GPS koordinatı bilinen görseller için Nominatim üzerinden şehir/ülke tespiti yapılır. Rate limit nedeniyle uzun sürebilir (yaklaşık 1.1 sn/görsel, dakikada max 60 işlem).'),
         ];
     }
 }

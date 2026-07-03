@@ -5,9 +5,11 @@ namespace App\Filament\Pages;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
-use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Spatie\Activitylog\Models\Activity;
 use UnitEnum;
 use BackedEnum;
@@ -44,12 +46,12 @@ class ActivityLog extends Page implements HasForms, HasTable
     protected function getTableColumns(): array
     {
         return [
-            Tables\Columns\TextColumn::make('created_at')
+            TextColumn::make('created_at')
                 ->label('Tarih')
                 ->dateTime('d.m.Y H:i')
                 ->sortable(),
 
-            Tables\Columns\TextColumn::make('log_name')
+            TextColumn::make('log_name')
                 ->label('Kategori')
                 ->badge()
                 ->color(fn (?string $state): string => match ($state) {
@@ -59,25 +61,25 @@ class ActivityLog extends Page implements HasForms, HasTable
                 })
                 ->placeholder('—'),
 
-            Tables\Columns\TextColumn::make('description')
+            TextColumn::make('description')
                 ->label('İşlem')
                 ->searchable(),
 
-            Tables\Columns\TextColumn::make('causer.name')
+            TextColumn::make('causer.name')
                 ->label('Yapan')
                 ->default('Sistem')
                 ->searchable(),
 
-            Tables\Columns\TextColumn::make('subject_type')
+            TextColumn::make('subject_type')
                 ->label('Hedef Tür')
                 ->formatStateUsing(fn (?string $state) => $state ? class_basename($state) : '—')
                 ->placeholder('—'),
 
-            Tables\Columns\TextColumn::make('subject_id')
+            TextColumn::make('subject_id')
                 ->label('Hedef ID')
                 ->placeholder('—'),
 
-            Tables\Columns\TextColumn::make('changes')
+            TextColumn::make('changes')
                 ->label('Değişiklikler')
                 ->getStateUsing(function (Activity $record) {
                     $properties = $record->properties;
@@ -103,13 +105,13 @@ class ActivityLog extends Page implements HasForms, HasTable
     protected function getTableFilters(): array
     {
         return [
-            Tables\Filters\SelectFilter::make('log_name')
+            SelectFilter::make('log_name')
                 ->label('Kategori')
                 ->options([
                     'user' => 'Kullanıcı',
                     'listing' => 'İlan',
                 ]),
-            Tables\Filters\Filter::make('created_at')
+            Filter::make('created_at')
                 ->form([
                     \Filament\Forms\Components\DatePicker::make('created_from')->label('Başlangıç'),
                     \Filament\Forms\Components\DatePicker::make('created_until')->label('Bitiş'),

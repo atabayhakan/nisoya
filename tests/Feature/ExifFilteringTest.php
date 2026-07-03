@@ -314,7 +314,7 @@ class ExifFilteringTest extends TestCase
 
         ListingImage::create([
             'listing_id' => $listing->id,
-            'path' => 'listings/test-berlin.jpg',
+            'path_large' => 'listings/large/test-berlin.webp',
             'had_gps' => true,
             'gps_lat' => 52.52,
             'gps_lng' => 13.405,

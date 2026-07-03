@@ -1,7 +1,13 @@
 <?php
 
 use Illuminate\Support\Str;
-use Pdo\Mysql;
+
+// Pdo\Mysql PHP 8.4+ ile gelen yeni sabitler sınıfıdır (MYSQL_ATTR_SSL_CA gibi).
+// PHP 8.3'te bu sınıf mevcut değil ve `use` ifadesi parse error verir.
+// Bu yüzden use statement'ı tamamen kaldırdık, sınıfı tam yol (\Pdo\Mysql) ile
+// erişiyoruz + class_exists() ile sınıf varlığını kontrol ediyoruz.
+// PHP 8.3'te sınıf yoksa koşul false olur ve sabitlere erişilmez; PHP 8.4+
+// üretimde koşul true olur ve sabitler doğrudan kullanılır.
 
 return [
 
@@ -59,8 +65,8 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            'options' => extension_loaded('pdo_mysql') && class_exists('\Pdo\Mysql') ? array_filter([
+                \Pdo\Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
@@ -79,8 +85,8 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            'options' => extension_loaded('pdo_mysql') && class_exists('\Pdo\Mysql') ? array_filter([
+                \Pdo\Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 

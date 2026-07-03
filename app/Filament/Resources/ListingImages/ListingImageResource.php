@@ -4,7 +4,6 @@ namespace App\Filament\Resources\ListingImages;
 
 use App\Filament\Resources\ListingImages\Pages\ListListingImages;
 use App\Filament\Resources\ListingImages\Pages\ViewListingImage;
-use App\Filament\Resources\Listings\Infolists\ListingImageInfolist;
 use App\Models\ListingImage;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -15,7 +14,9 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -58,19 +59,19 @@ class ListingImageResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('path_thumb')
+                ImageColumn::make('path_thumb')
                     ->label('Önizleme')
                     ->height(60)
                     ->extraImgAttributes(['class' => 'rounded object-cover']),
 
-                Tables\Columns\TextColumn::make('listing.title')
+                TextColumn::make('listing.title')
                     ->label('İlan')
                     ->searchable()
                     ->sortable()
                     ->limit(40)
                     ->placeholder('—'),
 
-                Tables\Columns\TextColumn::make('width')
+                TextColumn::make('width')
                     ->label('Boyut')
                     ->formatStateUsing(fn ($record) => $record->width && $record->height
                         ? "{$record->width}×{$record->height}"
@@ -78,13 +79,13 @@ class ListingImageResource extends Resource
                     ->badge()
                     ->color('gray'),
 
-                Tables\Columns\TextColumn::make('size_bytes')
+                TextColumn::make('size_bytes')
                     ->label('Dosya')
                     ->formatStateUsing(fn ($state) => $state ? number_format($state / 1024, 1).' KB' : '—')
                     ->numeric()
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('had_gps')
+                IconColumn::make('had_gps')
                     ->label('GPS')
                     ->boolean()
                     ->trueIcon('heroicon-o-exclamation-triangle')
@@ -95,7 +96,7 @@ class ListingImageResource extends Resource
                         ? '⚠️ Orijinal görsel GPS koordinatları içeriyordu (temizlendi)'
                         : 'GPS verisi yok'),
 
-                Tables\Columns\TextColumn::make('gps_lat')
+                TextColumn::make('gps_lat')
                     ->label('GPS Konum')
                     ->formatStateUsing(function ($record) {
                         if (! $record->gps_lat || ! $record->gps_lng) {
@@ -109,7 +110,7 @@ class ListingImageResource extends Resource
                     ->size('xs')
                     ->copyable(),
 
-                Tables\Columns\IconColumn::make('has_sensitive_exif')
+                IconColumn::make('has_sensitive_exif')
                     ->label('Hassas EXIF')
                     ->boolean()
                     ->trueIcon('heroicon-o-shield-exclamation')
@@ -120,8 +121,11 @@ class ListingImageResource extends Resource
                         ? 'GPS, seri no vb. hassas EXIF bilgisi içeriyor'
                         : 'EXIF temiz'),
 
-                Tables\Columns\TextColumn::make('reverseLocationLabel')
+                TextColumn::make('reverse_city')
                     ->label('Konum (Reverse)')
+                    ->formatStateUsing(function ($state, $record) {
+                        return $record->reverseLocationLabel;
+                    })
                     ->searchable(query: function ($query, string $search) {
                         return $query->where(function ($q) use ($search) {
                             $q->where('reverse_city', 'like', "%{$search}%")
@@ -133,11 +137,11 @@ class ListingImageResource extends Resource
                     ->color('info')
                     ->icon('heroicon-o-map-pin'),
 
-                Tables\Columns\IconColumn::make('is_cover')
+                IconColumn::make('is_cover')
                     ->label('Kapak')
                     ->boolean(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Yüklendi')
                     ->dateTime('d.m.Y H:i')
                     ->sortable(),
@@ -243,12 +247,12 @@ class ListingImageResource extends Resource
                     })
                     ->searchable(),
 
-                Tables\Filters\Filter::make('reverse_geocoded')
+                Filter::make('reverse_geocoded')
                     ->label('Reverse geocoded mi?')
                     ->toggle()
                     ->query(fn ($query) => $query->whereNotNull('reverse_geocoded_at')),
 
-                Tables\Filters\Filter::make('pending_reverse_geocoded')
+                Filter::make('pending_reverse_geocoded')
                     ->label('Reverse geocoded bekleyen')
                     ->toggle()
                     ->query(fn ($query) => $query->whereNotNull('gps_lat')->whereNull('reverse_geocoded_at')),
@@ -270,7 +274,7 @@ class ListingImageResource extends Resource
                             ->orWhere('exif_metadata', '{}');
                     })),
 
-                Tables\Filters\Filter::make('created_at')
+                Filter::make('created_at')
                     ->form([
                         \Filament\Forms\Components\DatePicker::make('from')->label('Başlangıç'),
                         \Filament\Forms\Components\DatePicker::make('until')->label('Bitiş'),

@@ -62,7 +62,7 @@ class ExifMapController extends Controller
                     'id' => $img->id,
                     'lat' => (float) $img->gps_lat,
                     'lng' => (float) $img->gps_lng,
-                    'thumb' => $img->url('thumb') ?? \Illuminate\Support\Facades\Storage::url($img->path),
+                    'thumb' => $img->url('thumb') ?? \Illuminate\Support\Facades\Storage::url($img->path_large),
                     'had_gps' => $img->had_gps,
                     'sensitive' => $img->has_sensitive_exif,
                     'listing' => $img->listing ? [

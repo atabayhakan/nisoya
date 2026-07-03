@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserStatus;
-use App\Models\Conversation;
 use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Favorite;
-use App\Models\ListingImage;
 use App\Models\Message;
 use App\Models\Report;
 use App\Models\Review;

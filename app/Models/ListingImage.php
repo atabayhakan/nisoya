@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -10,7 +9,6 @@ class ListingImage extends Model
 {
     protected $fillable = [
         'listing_id',
-        'path',
         'path_thumb',
         'path_medium',
         'path_large',
@@ -289,9 +287,9 @@ class ListingImage extends Model
         $set = [];
 
         $sources = [
-            'thumb' => $this->path_thumb ?? $this->path,
-            'medium' => $this->path_medium ?? $this->path,
-            'large' => $this->path_large ?? $this->path,
+            'thumb' => $this->path_thumb,
+            'medium' => $this->path_medium,
+            'large' => $this->path_large,
         ];
 
         foreach ($sources as $size => $path) {
@@ -314,7 +312,7 @@ class ListingImage extends Model
             'large' => $this->path_large,
         ];
 
-        $path = $map[$variant] ?? $this->path;
+        $path = $map[$variant] ?? null;
         if (! $path) {
             return null;
         }
@@ -334,7 +332,6 @@ class ListingImage extends Model
     public function variantPaths(): array
     {
         return array_values(array_filter([
-            $this->path,
             $this->path_thumb,
             $this->path_medium,
             $this->path_large,
@@ -373,6 +370,8 @@ class ListingImage extends Model
      * Filament'in TextColumn::make('reverseLocationLabel') gibi state
      * çözümlemeleri) Eloquent tarafından "relationship metodu" sanılıp
      * LogicException fırlatırdı (bkz. Model::getRelationshipFromMethod).
+     * Bu daha önce tam olarak bu şekilde kırılıp düzeltilmişti — tekrar
+     * plain metoda çevirme (bkz. git log / ExifFilteringTest).
      */
     protected function reverseLocationLabel(): \Illuminate\Database\Eloquent\Casts\Attribute
     {

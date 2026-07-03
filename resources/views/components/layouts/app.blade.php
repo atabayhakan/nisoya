@@ -69,7 +69,12 @@
             gtag('js', new Date());
             gtag('config', @json(config('services.analytics.measurement_id')), { anonymize_ip: true });
         </script>
-        {{-- Analytics özel kodu (admin panelden — Site Yönetimi → İçerik) --}}
+        {{-- Analytics özel kodu (admin panelden — Site Yönetimi → İçerik).
+             GÜVENLİK: Bu alana sadece admin rolündeki kullanıcılar yazabilir
+             (Filament `canAccessPanel()` ile korunur). Üretim ortamında
+             admin'in kendi itibarı ve KVKK gereği sadece güvenilir 3. parti
+             (AdSense, Analytics, vb.) kodları eklemesi beklenir. Bilinmeyen
+             kullanıcıya bu alanı kullandırmayın. --}}
         @if (config('services.analytics.custom_code'))
             {!! config('services.analytics.custom_code') !!}
         @endif
@@ -77,7 +82,8 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    {{-- Header özel kodu (admin panelden — Site Yönetimi → İçerik) --}}
+    {{-- Header özel kodu (admin panelden — Site Yönetimi → İçerik).
+         GÜVENLİK: Yalnızca admin rolü yazabilir. --}}
     @if (config('services.custom_head_code'))
         {!! config('services.custom_head_code') !!}
     @endif
@@ -210,7 +216,8 @@
         </div>
     </footer>
 
-    {{-- Footer özel kodu (admin panelden — Site Yönetimi → İçerik) --}}
+    {{-- Footer özel kodu (admin panelden — Site Yönetimi → İçerik).
+         GÜVENLİK: Yalnızca admin rolü yazabilir. --}}
     @if (config('services.custom_footer_code'))
         {!! config('services.custom_footer_code') !!}
     @endif

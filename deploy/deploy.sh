@@ -91,6 +91,7 @@ if [ "$SMOKE_PASS" = false ]; then
     exit 1
 fi
 
-info "İlk seferde reverse geocoding için:"
-echo "    php artisan images:reverse-geocode"
-echo "  (bir kere çalıştırın; 1.1 sn/görsel rate limit var)"
+info "İlk seferde (eski görseller için) çalıştırılacak komutlar:"
+echo "    php artisan images:reverse-geocode    # GPS'ten şehir/ülke tespiti"
+echo "    php artisan images:reprocess          # EXIF orientation + metadata temizliği"
+echo "  (Nominatim rate limit: 1.1 sn/görsel, dakikada max 60 işlem)"

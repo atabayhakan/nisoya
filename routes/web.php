@@ -42,13 +42,15 @@ Route::view('/cerez-tercihleri', 'pages.cerez-tercihleri')->name('pages.cookie-p
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 // Sağlık kontrolü (uptime monitor'ler için basit JSON)
-Route::get('/health', [HealthController::class, 'basic'])->name('health.basic');
+Route::middleware('throttle:health-basic')
+    ->get('/health', [HealthController::class, 'basic'])->name('health.basic');
 // Detaylı health check (admin erişimli) — güvenlik gerektirir
 Route::middleware(['auth', 'active.user', 'admin.role'])->prefix('yonetim')->group(function () {
-    Route::get('/health/detailed', [HealthController::class, 'detailed'])->name('health.detailed');
+    Route::middleware('throttle:health-detailed')
+        ->get('/health/detailed', [HealthController::class, 'detailed'])->name('health.detailed');
 
     // EXIF harita API'si
-    Route::prefix('harita')->name('exif-map.')->group(function () {
+    Route::prefix('harita')->name('exif-map.')->middleware('throttle:exif-map')->group(function () {
         Route::get('/gorseller', [\App\Http\Controllers\ExifMapController::class, 'images'])->name('images');
         Route::get('/cluster', [\App\Http\Controllers\ExifMapController::class, 'clusters'])->name('clusters');
         Route::get('/istatistik', [\App\Http\Controllers\ExifMapController::class, 'stats'])->name('stats');
