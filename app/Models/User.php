@@ -31,6 +31,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'password',
         'avatar_path',
         'bio',
+        'skills',
         'country_code',
         'city',
         'preferred_currency',
@@ -59,6 +60,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'is_verified' => 'boolean',
             'role' => UserRole::class,
             'status' => UserStatus::class,
+            'skills' => 'array',
         ];
     }
 
@@ -119,6 +121,12 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function paymentLinks(): HasMany
     {
         return $this->hasMany(PaymentLink::class);
+    }
+
+    /** Kullanıcının profil portfolyosundaki geçmiş iş örnekleri. */
+    public function portfolioItems(): HasMany
+    {
+        return $this->hasMany(PortfolioItem::class)->orderBy('sort_order');
     }
 
     public function favorites(): HasMany

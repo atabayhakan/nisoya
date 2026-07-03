@@ -13,6 +13,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\PaymentLinkController;
+use App\Http\Controllers\PortfolioItemController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileSettingsController;
 use App\Http\Controllers\SitemapController;
@@ -118,6 +119,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Ödeme linki/QR kodu (Nisoya para akışını görmez — sadece satıcının kendi ödeme sayfasına yönlendirir)
     Route::post('/panel/profil/odeme-linki', [PaymentLinkController::class, 'store'])->name('panel.payment-links.store');
     Route::delete('/panel/profil/odeme-linki/{paymentLink}', [PaymentLinkController::class, 'destroy'])->name('panel.payment-links.destroy');
+
+    // Portfolyo (geçmiş iş örnekleri)
+    Route::post('/panel/profil/portfolyo', [PortfolioItemController::class, 'store'])->name('panel.portfolio.store');
+    Route::delete('/panel/profil/portfolyo/{portfolioItem}', [PortfolioItemController::class, 'destroy'])->name('panel.portfolio.destroy');
 
     // KVKK: Veri silme + veri dışa aktarma
     Route::delete('/panel/profil', [ProfileSettingsController::class, 'destroy'])->name('panel.profile.destroy');

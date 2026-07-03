@@ -45,6 +45,36 @@ class ProfileSettingsTest extends TestCase
         ]);
     }
 
+    public function test_user_can_set_skills_as_comma_separated_list(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->put('/panel/profil', [
+            'name' => $user->name,
+            'username' => $user->username,
+            'country_code' => 'DE',
+            'preferred_currency' => 'EUR',
+            'skills' => 'İngilizce, Web Tasarım, İngilizce, , Photoshop',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame(['İngilizce', 'Web Tasarım', 'Photoshop'], $user->fresh()->skills);
+    }
+
+    public function test_empty_skills_input_clears_skills(): void
+    {
+        $user = User::factory()->create(['skills' => ['Eski Yetenek']]);
+
+        $this->actingAs($user)->put('/panel/profil', [
+            'name' => $user->name,
+            'username' => $user->username,
+            'country_code' => 'DE',
+            'preferred_currency' => 'EUR',
+            'skills' => '',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertNull($user->fresh()->skills);
+    }
+
     public function test_username_must_be_unique(): void
     {
         $existing = User::factory()->create(['username' => 'alinmis-ad']);

@@ -6,8 +6,10 @@ use App\Models\Category;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\ListingImage;
+use App\Models\PortfolioItem;
 use App\Models\User;
 use App\Observers\ListingImageObserver;
+use App\Observers\PortfolioItemObserver;
 use App\Observers\UserObserver;
 use App\Services\PerformanceService;
 use App\Support\Settings;
@@ -36,6 +38,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Görsel kaydı silindiğinde thumb/medium/large dosyalarını da temizle.
         ListingImage::observe(ListingImageObserver::class);
+
+        // Portfolyo görseli silindiğinde thumb/medium/large dosyalarını da temizle.
+        PortfolioItem::observe(PortfolioItemObserver::class);
 
         // Şehir önerilerini (ülkeye göre) ilgili formlara paylaş.
         View::composer([

@@ -46,6 +46,13 @@
                 @error('bio') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
+            <div>
+                <label for="skills" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Yetenekler <span class="text-stone-400">(ops.)</span></label>
+                <input id="skills" name="skills" type="text" value="{{ old('skills', $user->skills ? implode(', ', $user->skills) : '') }}" placeholder="ör. İngilizce, Web Tasarım, Photoshop" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                <p class="mt-1 text-xs text-stone-400 dark:text-stone-500">Virgülle ayırarak yaz, profilinde rozet olarak görünür.</p>
+                @error('skills') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
             <div class="grid gap-4 sm:grid-cols-3">
                 <div>
                     <label for="country_code" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Ülke</label>
@@ -132,6 +139,55 @@
                         @error('qr') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <button type="submit" class="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">+ Ödeme yöntemi ekle</button>
+                </form>
+            @endif
+        </section>
+
+        {{-- Portfolyo --}}
+        <section class="mt-6 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
+            <header>
+                <h2 class="font-semibold text-stone-800 dark:text-stone-100">🖼️ Portfolyo</h2>
+                <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
+                    Geçmiş iş örneklerinden fotoğraflar ekle, profilini ziyaret edenler yeteneklerini görsün. En fazla {{ \App\Http\Controllers\PortfolioItemController::MAX_ITEMS }} görsel.
+                </p>
+            </header>
+
+            @error('image') <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+
+            @if ($portfolioItems->isNotEmpty())
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    @foreach ($portfolioItems as $item)
+                        <div class="group relative overflow-hidden rounded-lg border border-stone-200 dark:border-stone-700">
+                            <img src="{{ $item->url('medium') }}" alt="{{ $item->caption }}" class="aspect-square w-full object-cover">
+                            @if ($item->caption)
+                                <div class="absolute inset-x-0 bottom-0 truncate bg-stone-900/60 px-2 py-1 text-xs text-white">{{ $item->caption }}</div>
+                            @endif
+                            <form method="POST" action="{{ route('panel.portfolio.destroy', $item) }}" class="absolute right-1 top-1" onsubmit="return confirm('Bu görseli kaldırmak istediğine emin misin?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="grid h-6 w-6 place-items-center rounded-full bg-stone-900/70 text-white opacity-0 transition group-hover:opacity-100" aria-label="Kaldır">
+                                    <x-heroicon-o-x-mark class="h-4 w-4" />
+                                </button>
+                            </form>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
+            @if ($portfolioItems->count() < \App\Http\Controllers\PortfolioItemController::MAX_ITEMS)
+                <form method="POST" action="{{ route('panel.portfolio.store') }}" enctype="multipart/form-data" class="space-y-3 border-t border-stone-100 pt-4 dark:border-stone-800">
+                    @csrf
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div>
+                            <label for="pf_image" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Görsel</label>
+                            <input id="pf_image" name="image" type="file" accept="image/*" class="mt-1 text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
+                        </div>
+                        <div>
+                            <label for="pf_caption" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Açıklama <span class="text-stone-400">(ops.)</span></label>
+                            <input id="pf_caption" name="caption" type="text" value="{{ old('caption') }}" placeholder="ör. Mutfak tadilatı, 2026" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                        </div>
+                    </div>
+                    <button type="submit" class="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">+ Portfolyo görseli ekle</button>
                 </form>
             @endif
         </section>

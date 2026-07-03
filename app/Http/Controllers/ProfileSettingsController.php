@@ -38,6 +38,7 @@ class ProfileSettingsController extends Controller
                 ->reject(fn ($m) => $paymentLinks->contains('method', $m))
                 ->values(),
             'suggestedPaymentMethods' => PaymentMethod::suggestedFor($user->country_code),
+            'portfolioItems' => $user->portfolioItems,
         ]);
     }
 
@@ -49,14 +50,25 @@ class ProfileSettingsController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'min:3', 'max:50', 'alpha_dash', Rule::unique('users', 'username')->ignore($user->id)],
             'bio' => ['nullable', 'string', 'max:1000'],
+            'skills' => ['nullable', 'string', 'max:500'],
             'country_code' => ['required', 'exists:countries,code'],
             'city' => ['nullable', 'string', 'max:255'],
             'preferred_currency' => ['required', 'exists:currencies,code'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ], attributes: [
-            'name' => 'ad soyad', 'username' => 'kullanıcı adı', 'bio' => 'hakkında',
+            'name' => 'ad soyad', 'username' => 'kullanıcı adı', 'bio' => 'hakkında', 'skills' => 'yetenekler',
             'country_code' => 'ülke', 'city' => 'şehir', 'preferred_currency' => 'para birimi', 'avatar' => 'profil fotoğrafı',
         ]);
+
+        // Virgülle ayrılmış serbest metin girişini temiz bir diziye çevir
+        // (boş/tekrar eden girdileri at, en fazla 15 yetenek).
+        $data['skills'] = collect(explode(',', $data['skills'] ?? ''))
+            ->map(fn ($skill) => trim($skill))
+            ->filter()
+            ->unique()
+            ->take(15)
+            ->values()
+            ->all() ?: null;
 
         if ($request->hasFile('avatar')) {
             // Avatar için sadece tek varyant (400x400, orijinal aspect ratio korunur)
@@ -128,6 +140,12 @@ class ProfileSettingsController extends Controller
             }
             $user->paymentLinks()->delete();
 
+            // Portfolyo görsellerini sil, sonra kayıtları temizle
+            foreach ($user->portfolioItems as $portfolioItem) {
+                $imageService->deleteVariants($portfolioItem->variantPaths());
+            }
+            $user->portfolioItems()->delete();
+
             // İlan görsellerini sil (tüm varyantlar)
             foreach ($user->listings()->with('images')->get() as $listing) {
                 foreach ($listing->images as $image) {
@@ -167,6 +185,7 @@ class ProfileSettingsController extends Controller
                 'password' => bcrypt(\Illuminate\Support\Str::random(64)),
                 'avatar_path' => null,
                 'bio' => null,
+                'skills' => null,
                 'city' => null,
                 'remember_token' => null,
                 'status' => UserStatus::Silinmis,
@@ -202,6 +221,7 @@ class ProfileSettingsController extends Controller
                 'country_code' => $user->country_code,
                 'city' => $user->city,
                 'bio' => $user->bio,
+                'skills' => $user->skills,
                 'role' => $user->role?->value,
                 'is_verified' => $user->is_verified,
                 'status' => $user->status?->value,
@@ -212,6 +232,9 @@ class ProfileSettingsController extends Controller
                 'method' => $pl->method->value,
                 'detail' => $pl->detail,
                 'has_qr' => (bool) $pl->qr_path,
+            ])->all(),
+            'portfolio_items' => $user->portfolioItems()->get()->map(fn ($item) => [
+                'caption' => $item->caption,
             ])->all(),
             'listings' => $user->listings()->with('category', 'country', 'images', 'tags')->get()->toArray(),
             'reviews_given' => $user->reviewsGiven()->get()->toArray(),

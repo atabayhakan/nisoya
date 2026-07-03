@@ -14,7 +14,7 @@ class ProfileController extends Controller
     {
         abort_if($user->status === UserStatus::Silinmis, 404);
 
-        $user->load('paymentLinks');
+        $user->load('paymentLinks', 'portfolioItems');
 
         $listings = $user->listings()
             ->active()
