@@ -147,7 +147,7 @@ class ListingController extends Controller
             $listing->increment('views_count');
         }
 
-        $listing->load(['images', 'user', 'category', 'country']);
+        $listing->load(['images', 'user.paymentLinks', 'category', 'country']);
 
         $isFavorited = $request->user()
             ? $request->user()->favorites()->where('listing_id', $listing->id)->exists()

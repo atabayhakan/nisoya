@@ -70,33 +70,71 @@
                 </div>
             </div>
 
-            @php
-                $selectedPaymentMethods = old('payment_methods', $user->payment_methods?->map(fn ($m) => $m->value)->all() ?? []);
-                $suggestedValues = array_map(fn ($m) => $m->value, $suggestedPaymentMethods);
-            @endphp
-            <div>
-                <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">Ödeme yöntemlerin <span class="text-stone-400">(ops.)</span></label>
-                <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">
-                    Nisoya ödemeleri işlemez — burada seçtiklerin sadece diğer üyelere "bu yöntemlerle ödeme kabul ediyorum" bilgisini gösterir. Ülkene göre önerilen yöntemler işaretli.
-                </p>
-                <div class="mt-2 flex flex-wrap gap-2">
-                    @foreach ($paymentMethods as $method)
-                        @php($isSuggested = in_array($method->value, $suggestedValues, true))
-                        <label class="flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition {{ in_array($method->value, $selectedPaymentMethods, true) ? 'border-emerald-500 bg-emerald-50 text-emerald-800 dark:border-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-200' : 'border-stone-300 text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800' }}">
-                            <input type="checkbox" name="payment_methods[]" value="{{ $method->value }}" @checked(in_array($method->value, $selectedPaymentMethods, true)) class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600">
-                            <span aria-hidden="true">{{ $method->icon() }}</span>
-                            {{ $method->getLabel() }}
-                            @if ($isSuggested)
-                                <span class="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">Önerilen</span>
-                            @endif
-                        </label>
-                    @endforeach
-                </div>
-                @error('payment_methods') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
-
             <button type="submit" class="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Profili Kaydet</button>
         </form>
+
+        {{-- Ödeme yöntemleri --}}
+        <section class="mt-6 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
+            <header>
+                <h2 class="font-semibold text-stone-800 dark:text-stone-100">💳 Ödeme yöntemlerim</h2>
+                <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
+                    Nisoya ödemeleri işlemez — burada eklediğin kendi ödeme linkin veya QR kodun, diğer üyelere doğrudan sana ödeme yapmalarını kolaylaştırır. Ülkene göre önerilen yöntemler: {{ collect($suggestedPaymentMethods)->map->getLabel()->join(', ') }}.
+                </p>
+            </header>
+
+            @if ($paymentLinks->isNotEmpty())
+                <ul class="space-y-2">
+                    @foreach ($paymentLinks as $link)
+                        <li class="flex items-center gap-3 rounded-lg border border-stone-200 p-3 dark:border-stone-700">
+                            @if ($link->qr_path)
+                                <img src="{{ Storage::url($link->qr_path) }}" alt="QR kod" class="h-12 w-12 rounded object-cover">
+                            @endif
+                            <div class="min-w-0 flex-1">
+                                <div class="font-medium text-stone-800 dark:text-stone-100"><span aria-hidden="true">{{ $link->method->icon() }}</span> {{ $link->method->getLabel() }}</div>
+                                @if ($link->detail)
+                                    <div class="truncate text-xs text-stone-500 dark:text-stone-400">{{ $link->detail }}</div>
+                                @endif
+                            </div>
+                            <form method="POST" action="{{ route('panel.payment-links.destroy', $link) }}" onsubmit="return confirm('Bu ödeme yöntemini kaldırmak istediğine emin misin?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/30">Kaldır</button>
+                            </form>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+
+            @if ($availablePaymentMethods->isNotEmpty())
+                <form method="POST" action="{{ route('panel.payment-links.store') }}" enctype="multipart/form-data" class="space-y-3 border-t border-stone-100 pt-4 dark:border-stone-800">
+                    @csrf
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div>
+                            <label for="pl_method" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Yöntem ekle</label>
+                            <select id="pl_method" name="method" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                                @foreach ($availablePaymentMethods as $method)
+                                    <option value="{{ $method->value }}" @selected(old('method') === $method->value)>
+                                        {{ $method->icon() }} {{ $method->getLabel() }}@if (in_array($method, $suggestedPaymentMethods, true)) (önerilen)@endif
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('method') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label for="pl_detail" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Bağlantı veya bilgi <span class="text-stone-400">(ops.)</span></label>
+                            <input id="pl_detail" name="detail" type="text" value="{{ old('detail') }}" placeholder="ör. paypal.me/kullaniciadi veya IBAN" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                            @error('detail') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                    <div>
+                        <label for="pl_qr" class="block text-sm font-medium text-stone-700 dark:text-stone-300">QR kod görseli <span class="text-stone-400">(ops.)</span></label>
+                        <input id="pl_qr" name="qr" type="file" accept="image/*" class="mt-1 text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
+                        @error('qr') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <button type="submit" class="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">+ Ödeme yöntemi ekle</button>
+                </form>
+            @endif
+        </section>
 
         {{-- Şifre değiştir --}}
         <form method="POST" action="{{ route('panel.profile.password') }}" class="mt-6 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">

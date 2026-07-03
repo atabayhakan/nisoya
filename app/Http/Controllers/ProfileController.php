@@ -14,6 +14,8 @@ class ProfileController extends Controller
     {
         abort_if($user->status === UserStatus::Silinmis, 404);
 
+        $user->load('paymentLinks');
+
         $listings = $user->listings()
             ->active()
             ->with(['coverImage', 'category.parent', 'country', 'user'])

@@ -24,13 +24,23 @@
                     @if ($user->bio)
                         <p class="mt-2 text-sm text-stone-600">{{ $user->bio }}</p>
                     @endif
-                    @if ($user->payment_methods && $user->payment_methods->isNotEmpty())
+                    @if ($user->paymentLinks->isNotEmpty())
                         <div class="mt-2 flex flex-wrap items-center gap-1.5">
                             <span class="text-xs text-stone-400">Kabul ettiği ödeme yöntemleri:</span>
-                            @foreach ($user->payment_methods as $method)
-                                <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600" title="{{ $method->getLabel() }}">
-                                    <span aria-hidden="true">{{ $method->icon() }}</span>{{ $method->getLabel() }}
-                                </span>
+                            @foreach ($user->paymentLinks as $link)
+                                @if ($link->detailIsLink())
+                                    <a href="{{ $link->detail }}" target="_blank" rel="noopener nofollow" class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600 hover:bg-emerald-100 hover:text-emerald-700" title="{{ $link->method->getLabel() }} — kendi ödeme sayfasına git">
+                                        <span aria-hidden="true">{{ $link->method->icon() }}</span>{{ $link->method->getLabel() }} ↗
+                                    </a>
+                                @elseif ($link->qr_path)
+                                    <a href="{{ Storage::url($link->qr_path) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600 hover:bg-emerald-100 hover:text-emerald-700" title="{{ $link->method->getLabel() }} — QR kodu gör">
+                                        <span aria-hidden="true">{{ $link->method->icon() }}</span>{{ $link->method->getLabel() }} 🔳
+                                    </a>
+                                @else
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">
+                                        <span aria-hidden="true">{{ $link->method->icon() }}</span>{{ $link->method->getLabel() }}@if ($link->detail) — {{ $link->detail }}@endif
+                                    </span>
+                                @endif
                             @endforeach
                         </div>
                     @endif

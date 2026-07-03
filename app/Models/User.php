@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use App\Enums\PaymentMethod;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -36,7 +34,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'country_code',
         'city',
         'preferred_currency',
-        'payment_methods',
         'role',
         'is_verified',
         'status',
@@ -62,7 +59,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'is_verified' => 'boolean',
             'role' => UserRole::class,
             'status' => UserStatus::class,
-            'payment_methods' => AsEnumCollection::class.':'.PaymentMethod::class,
         ];
     }
 
@@ -117,6 +113,12 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function listings(): HasMany
     {
         return $this->hasMany(Listing::class);
+    }
+
+    /** Kullanıcının kendi ödeme linkleri/QR kodları (Nisoya para akışını görmez). */
+    public function paymentLinks(): HasMany
+    {
+        return $this->hasMany(PaymentLink::class);
     }
 
     public function favorites(): HasMany

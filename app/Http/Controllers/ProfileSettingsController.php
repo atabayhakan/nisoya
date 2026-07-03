@@ -26,12 +26,18 @@ class ProfileSettingsController extends Controller
 {
     public function edit(Request $request): View
     {
+        $user = $request->user();
+        $paymentLinks = $user->paymentLinks()->get();
+
         return view('panel.profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
             'countries' => Country::query()->where('is_active', true)->orderBy('sort_order')->get(),
             'currencies' => Currency::query()->where('is_active', true)->orderBy('sort_order')->get(),
-            'paymentMethods' => PaymentMethod::cases(),
-            'suggestedPaymentMethods' => PaymentMethod::suggestedFor($request->user()->country_code),
+            'paymentLinks' => $paymentLinks,
+            'availablePaymentMethods' => collect(PaymentMethod::cases())
+                ->reject(fn ($m) => $paymentLinks->contains('method', $m))
+                ->values(),
+            'suggestedPaymentMethods' => PaymentMethod::suggestedFor($user->country_code),
         ]);
     }
 
@@ -47,15 +53,10 @@ class ProfileSettingsController extends Controller
             'city' => ['nullable', 'string', 'max:255'],
             'preferred_currency' => ['required', 'exists:currencies,code'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'payment_methods' => ['nullable', 'array'],
-            'payment_methods.*' => ['string', Rule::enum(PaymentMethod::class)],
         ], attributes: [
             'name' => 'ad soyad', 'username' => 'kullanıcı adı', 'bio' => 'hakkında',
             'country_code' => 'ülke', 'city' => 'şehir', 'preferred_currency' => 'para birimi', 'avatar' => 'profil fotoğrafı',
-            'payment_methods' => 'ödeme yöntemleri',
         ]);
-
-        $data['payment_methods'] = $data['payment_methods'] ?? [];
 
         if ($request->hasFile('avatar')) {
             // Avatar için sadece tek varyant (400x400, orijinal aspect ratio korunur)
@@ -119,6 +120,14 @@ class ProfileSettingsController extends Controller
                 $imageService->deleteVariants(array_values($imageService->siblingVariantPaths($user->avatar_path)));
             }
 
+            // Ödeme linki QR kodlarını sil, sonra kayıtları temizle
+            foreach ($user->paymentLinks as $paymentLink) {
+                if ($paymentLink->qr_path) {
+                    $imageService->deleteVariants(array_values($imageService->siblingVariantPaths($paymentLink->qr_path)));
+                }
+            }
+            $user->paymentLinks()->delete();
+
             // İlan görsellerini sil (tüm varyantlar)
             foreach ($user->listings()->with('images')->get() as $listing) {
                 foreach ($listing->images as $image) {
@@ -159,7 +168,6 @@ class ProfileSettingsController extends Controller
                 'avatar_path' => null,
                 'bio' => null,
                 'city' => null,
-                'payment_methods' => null,
                 'remember_token' => null,
                 'status' => UserStatus::Silinmis,
                 'referral_code' => null,
@@ -194,13 +202,17 @@ class ProfileSettingsController extends Controller
                 'country_code' => $user->country_code,
                 'city' => $user->city,
                 'bio' => $user->bio,
-                'payment_methods' => $user->payment_methods?->map(fn ($m) => $m->value)->values()->all() ?? [],
                 'role' => $user->role?->value,
                 'is_verified' => $user->is_verified,
                 'status' => $user->status?->value,
                 'created_at' => $user->created_at?->toIso8601String(),
                 'last_seen_at' => $user->last_seen_at?->toIso8601String(),
             ],
+            'payment_links' => $user->paymentLinks()->get()->map(fn ($pl) => [
+                'method' => $pl->method->value,
+                'detail' => $pl->detail,
+                'has_qr' => (bool) $pl->qr_path,
+            ])->all(),
             'listings' => $user->listings()->with('category', 'country', 'images', 'tags')->get()->toArray(),
             'reviews_given' => $user->reviewsGiven()->get()->toArray(),
             'reviews_received' => $user->reviewsReceived()->get()->toArray(),
