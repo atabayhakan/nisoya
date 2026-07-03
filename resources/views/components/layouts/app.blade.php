@@ -133,6 +133,16 @@
                             <span class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
                         @endif
                     </a>
+                    <a href="{{ route('panel.profile.edit') }}" class="flex items-center gap-2 rounded-lg py-1.5 pl-1.5 pr-2 text-stone-700 hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800" title="Hesabım">
+                        <span class="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-xs font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                            @if (auth()->user()->avatar_path)
+                                <img src="{{ Storage::url(auth()->user()->avatar_path) }}" alt="" class="h-full w-full object-cover">
+                            @else
+                                {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
+                            @endif
+                        </span>
+                        <span class="hidden max-w-[110px] truncate text-sm font-medium sm:inline">{{ auth()->user()->name }}</span>
+                    </a>
                     <a href="{{ route('dashboard') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 sm:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Panelim</a>
                     <a href="{{ url('/panel/ilan/yeni') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
                     <form method="POST" action="{{ route('logout') }}" class="hidden sm:block">
