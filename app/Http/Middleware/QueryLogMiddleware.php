@@ -59,12 +59,13 @@ class QueryLogMiddleware
 
         $response = $next($request);
 
-        $totalTime = (microtime(true) - $this->requestStart) * 1000;
-        $avgQueryTime = $this->queryCount > 0 ? $this->totalQueryTime / $this->queryCount : 0;
-
-        // N+1 pattern tespiti: aynı SQL pattern >10 kez
+        // N+1 pattern tespiti: aynı SQL pattern >10 kez. Parametreli sorgular
+        // (bindings ile) zaten aynı ham SQL metnine sahip olur, ama satır içi
+        // sayısal literal içeren sorguları (ör. "id = 5" vs "id = 6") da aynı
+        // pattern olarak gruplamak için sayıları normalize ediyoruz — önceki
+        // hâli ('/\?/' → '?') hiçbir şey değiştirmeyen bir no-op'tu.
         $patterns = array_count_values(array_map(
-            fn ($q) => preg_replace('/\?/', '?', $q['sql']),
+            fn ($q) => preg_replace('/\d+/', '?', $q['sql']),
             $this->queries
         ));
         $suspicious = array_filter($patterns, fn ($count) => $count > 10);
