@@ -1,5 +1,5 @@
 <a href="{{ route('listings.show', [$listing, $listing->slug]) }}"
-   class="group block overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
+   class="group block overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-stone-900 dark:shadow-none {{ $listing->isCurrentlyFeatured() ? 'border-amber-300 ring-1 ring-amber-200 dark:border-amber-700 dark:ring-amber-900/40' : 'border-stone-200 dark:border-stone-800' }}">
     <div class="aspect-[4/3] w-full overflow-hidden bg-stone-100 dark:bg-stone-800">
         @if ($listing->coverImage)
             @php
@@ -18,15 +18,18 @@
                  decoding="async"
                  class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
         @else
-            <div class="flex h-full w-full items-center justify-center text-5xl text-stone-300 dark:text-stone-600">
-                {{ $listing->category?->parent?->icon ?? $listing->category?->icon ?? '🧰' }}
+            @php($fallbackIcon = \App\Support\CategoryIcon::heroicon($listing->category?->parent?->icon ?? $listing->category?->icon))
+            <div class="flex h-full w-full items-center justify-center text-stone-300 dark:text-stone-600">
+                <x-dynamic-component :component="'heroicon-o-'.$fallbackIcon" class="h-12 w-12" />
             </div>
         @endif
     </div>
     <div class="p-4">
         <div class="flex flex-wrap items-center gap-1.5 text-xs">
             @if ($listing->isCurrentlyFeatured())
-                <span class="rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">⭐ Öne çıkan</span>
+                <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                    <x-heroicon-s-star class="h-3 w-3" /> Öne çıkan
+                </span>
             @endif
             @if ($listing->category)
                 <span class="rounded-full bg-stone-100 px-2 py-0.5 text-stone-500 dark:bg-stone-800 dark:text-stone-400">{{ $listing->category->name }}</span>

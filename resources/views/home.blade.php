@@ -81,7 +81,7 @@
     </section>
 
     {{-- Kategoriler --}}
-    <section class="mx-auto max-w-6xl px-4 py-14">
+    <section class="mx-auto max-w-6xl px-4 py-14" x-data x-reveal>
         <div class="flex items-end justify-between">
             <h2 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Kategoriler</h2>
             <a href="{{ route('listings.index') }}" class="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">Tümünü gör →</a>
@@ -90,7 +90,9 @@
             @foreach ($categories as $cat)
                 <a href="{{ route('listings.category', $cat->slug) }}"
                    class="group flex flex-col items-center gap-2 rounded-2xl border border-stone-200 bg-white p-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-brand dark:border-stone-800 dark:bg-stone-900 dark:shadow-none dark:hover:border-emerald-700">
-                    <span class="text-3xl">{{ $cat->icon }}</span>
+                    <span class="grid h-12 w-12 place-items-center rounded-xl bg-emerald-50 text-emerald-600 transition group-hover:bg-emerald-600 group-hover:text-white dark:bg-emerald-900/40 dark:text-emerald-300">
+                        <x-dynamic-component :component="'heroicon-o-'.\App\Support\CategoryIcon::heroicon($cat->icon)" class="h-6 w-6" />
+                    </span>
                     <span class="text-sm font-medium text-stone-700 group-hover:text-emerald-700 dark:text-stone-200 dark:group-hover:text-emerald-400">{{ $cat->name }}</span>
                 </a>
             @endforeach
@@ -99,7 +101,7 @@
 
     {{-- Popüler ülkeler --}}
     @if ($countries->isNotEmpty())
-        <section class="mx-auto max-w-6xl px-4 pb-2">
+        <section class="mx-auto max-w-6xl px-4 pb-2" x-data x-reveal>
             <h2 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Ülkeler</h2>
             <div class="mt-5 flex flex-wrap gap-2">
                 @foreach ($countries as $country)
@@ -119,7 +121,7 @@
     @endif
 
     {{-- Yeni ilanlar --}}
-    <section class="mt-14 bg-white py-14 dark:bg-stone-900">
+    <section class="mt-14 bg-white py-14 dark:bg-stone-900" x-data x-reveal>
         <div class="mx-auto max-w-6xl px-4">
             <div class="flex items-end justify-between">
                 <h2 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Yeni ilanlar</h2>
@@ -147,7 +149,7 @@
     </section>
 
     {{-- Nasıl çalışır --}}
-    <section class="bg-white py-14 dark:bg-stone-900">
+    <section class="bg-white py-14 dark:bg-stone-900" x-data x-reveal>
         <div class="mx-auto max-w-6xl px-4">
             <h2 class="text-center text-2xl font-bold text-stone-900 dark:text-stone-50">{{ setting('home.nasil_baslik') }}</h2>
             <div class="mt-10 grid gap-8 md:grid-cols-3">
@@ -173,7 +175,7 @@
     </section>
 
     {{-- CTA --}}
-    <section class="mx-auto max-w-6xl px-4 py-14">
+    <section class="mx-auto max-w-6xl px-4 py-14" x-data x-reveal>
         <div class="rounded-3xl bg-emerald-600 px-6 py-12 text-center text-white sm:px-12 dark:bg-emerald-700">
             <h2 class="text-2xl font-bold sm:text-3xl">{{ setting('home.cta_baslik') }}</h2>
             <p class="mx-auto mt-3 max-w-xl text-emerald-50 dark:text-emerald-50">{{ setting('home.cta_metin') }}</p>
