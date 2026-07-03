@@ -38,28 +38,36 @@
         <div class="mx-auto max-w-6xl px-4 py-8">
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div class="flex items-start gap-3">
-                    <span class="text-2xl">🇹🇷</span>
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
+                        <x-heroicon-o-language class="h-5 w-5" />
+                    </span>
                     <div>
                         <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">{{ setting('home.deger1_baslik') }}</h3>
                         <p class="mt-0.5 text-sm text-stone-500 dark:text-stone-400">{{ setting('home.deger1_metin') }}</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-3">
-                    <span class="text-2xl">🔒</span>
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
+                        <x-heroicon-o-shield-check class="h-5 w-5" />
+                    </span>
                     <div>
                         <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">{{ setting('home.deger2_baslik') }}</h3>
                         <p class="mt-0.5 text-sm text-stone-500 dark:text-stone-400">{{ setting('home.deger2_metin') }}</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-3">
-                    <span class="text-2xl">💸</span>
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
+                        <x-heroicon-o-sparkles class="h-5 w-5" />
+                    </span>
                     <div>
                         <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">{{ setting('home.deger3_baslik') }}</h3>
                         <p class="mt-0.5 text-sm text-stone-500 dark:text-stone-400">{{ setting('home.deger3_metin') }}</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-3">
-                    <span class="text-2xl">🌍</span>
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
+                        <x-heroicon-o-globe-alt class="h-5 w-5" />
+                    </span>
                     <div>
                         <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">{{ $stats['countries'] }} ülke · {{ $stats['cities'] }} şehir</h3>
                         <p class="mt-0.5 text-sm text-stone-500 dark:text-stone-400">{{ $stats['categories'] }} kategoride hizmet ve ürün.</p>
@@ -78,7 +86,7 @@
         <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             @foreach ($categories as $cat)
                 <a href="{{ route('listings.category', $cat->slug) }}"
-                   class="group flex flex-col items-center gap-2 rounded-2xl border border-stone-200 bg-white p-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md dark:border-stone-800 dark:bg-stone-900 dark:shadow-none dark:hover:border-emerald-700">
+                   class="group flex flex-col items-center gap-2 rounded-2xl border border-stone-200 bg-white p-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-brand dark:border-stone-800 dark:bg-stone-900 dark:shadow-none dark:hover:border-emerald-700">
                     <span class="text-3xl">{{ $cat->icon }}</span>
                     <span class="text-sm font-medium text-stone-700 group-hover:text-emerald-700 dark:text-stone-200 dark:group-hover:text-emerald-400">{{ $cat->name }}</span>
                 </a>
@@ -93,7 +101,7 @@
             <div class="mt-5 flex flex-wrap gap-2">
                 @foreach ($countries as $country)
                     <a href="{{ url('/ilanlar') }}?ulke={{ $country->code }}"
-                       class="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:text-emerald-700 hover:shadow-md dark:border-stone-800 dark:bg-stone-900 dark:text-stone-200 dark:shadow-none dark:hover:border-emerald-700 dark:hover:text-emerald-400">
+                       class="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:text-emerald-700 hover:shadow-brand dark:border-stone-800 dark:bg-stone-900 dark:text-stone-200 dark:shadow-none dark:hover:border-emerald-700 dark:hover:text-emerald-400">
                         <span>{{ $country->emoji }}</span>
                         <span>{{ $country->name_tr }}</span>
                     </a>
@@ -122,12 +130,14 @@
                 </div>
             @else
                 <div class="mt-6 rounded-3xl border border-dashed border-emerald-300 bg-emerald-50/50 px-6 py-14 text-center dark:border-emerald-700 dark:bg-emerald-950/20">
-                    <div class="text-4xl">🚀</div>
+                    <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900">
+                        <x-heroicon-o-rocket-launch class="h-7 w-7" />
+                    </span>
                     <h3 class="mt-4 text-xl font-bold text-stone-900 dark:text-stone-50">Burada ilk ilan senin olsun</h3>
                     <p class="mx-auto mt-2 max-w-md text-sm text-stone-600 dark:text-stone-300">
                         Nisoya yeni açıldı. İlk ilanı vererek bulunduğun ülkedeki Türklere yeteneğini duyur.
                     </p>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="mt-6 inline-block rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlk ilanı sen ver</a>
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="mt-6 inline-block rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlk ilanı sen ver</a>
                 </div>
             @endif
         </div>
@@ -161,7 +171,7 @@
         <div class="rounded-3xl bg-emerald-600 px-6 py-12 text-center text-white sm:px-12 dark:bg-emerald-700">
             <h2 class="text-2xl font-bold sm:text-3xl">{{ setting('home.cta_baslik') }}</h2>
             <p class="mx-auto mt-3 max-w-xl text-emerald-50 dark:text-emerald-50">{{ setting('home.cta_metin') }}</p>
-            <a href="{{ url('/kayit') }}" class="mt-6 inline-block rounded-xl bg-white px-6 py-3 font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:bg-stone-50 dark:hover:bg-stone-100 dark:text-emerald-700">{{ setting('home.cta_buton') }}</a>
+            <a href="{{ url('/kayit') }}" class="mt-6 inline-block rounded-xl bg-white px-6 py-3 font-semibold text-emerald-700 shadow-lg transition hover:-translate-y-0.5 hover:bg-emerald-50 hover:shadow-xl dark:bg-stone-50 dark:hover:bg-stone-100 dark:text-emerald-700">{{ setting('home.cta_buton') }}</a>
         </div>
     </section>
 </x-layouts.app>

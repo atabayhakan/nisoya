@@ -16,7 +16,7 @@
     <meta property="og:image" content="{{ $ogImage ?? asset('og.png') }}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content="{{ $ogImage ?? asset('og.png') }}">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%23059669'/><path d='M7 17V7L17 17V7' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#059669" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#0c0a09" media="(prefers-color-scheme: dark)">
@@ -92,8 +92,10 @@
     {{-- Üst menü --}}
     <header class="sticky top-0 z-30 border-b border-stone-200 bg-white/90 backdrop-blur dark:border-stone-800 dark:bg-stone-900/90">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-            <a href="{{ url('/') }}" class="flex items-center gap-2">
-                <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-600 text-lg dark:bg-emerald-500">🧰</span>
+            <a href="{{ url('/') }}" class="group flex items-center gap-2">
+                <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-600 text-white transition group-hover:bg-emerald-700 dark:bg-emerald-500 dark:group-hover:bg-emerald-400 dark:text-stone-900">
+                    <x-logo-mark class="h-5 w-5" />
+                </span>
                 <span class="text-xl font-bold tracking-tight text-stone-900 dark:text-stone-50">{{ setting('genel.site_adi') }}</span>
             </a>
 
@@ -109,24 +111,24 @@
                 <button
                     type="button"
                     onclick="window.toggleTheme && window.toggleTheme()"
-                    class="inline-flex rounded-lg p-2 text-base text-stone-600 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+                    class="inline-flex rounded-lg p-2 text-stone-600 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                     title="Temayı değiştir"
                     aria-label="Karanlık/aydınlık tema değiştir"
                 >
-                    <span class="dark:hidden">🌙</span>
-                    <span class="hidden dark:inline">☀️</span>
+                    <x-heroicon-o-moon class="h-5 w-5 dark:hidden" />
+                    <x-heroicon-o-sun class="hidden h-5 w-5 dark:inline" />
                 </button>
 
                 @auth
                     @php($unreadCount = auth()->user()->unreadNotifications()->count())
-                    <a href="{{ route('panel.notifications.index') }}" class="relative inline-flex rounded-lg p-2 text-base text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800" title="Bildirimler">
-                        🔔
+                    <a href="{{ route('panel.notifications.index') }}" class="relative inline-flex rounded-lg p-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800" title="Bildirimler">
+                        <x-heroicon-o-bell class="h-5 w-5" />
                         @if ($unreadCount)
                             <span class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
                         @endif
                     </a>
                     <a href="{{ route('dashboard') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 sm:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Panelim</a>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
                     <form method="POST" action="{{ route('logout') }}" class="hidden sm:block">
                         @csrf
                         <button type="submit" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Çıkış</button>
@@ -134,7 +136,7 @@
                 @else
                     <a href="{{ route('login') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 sm:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Giriş</a>
                     <a href="{{ route('register') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 sm:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Kayıt</a>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
                 @endauth
             </div>
         </div>
@@ -162,7 +164,9 @@
         <div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 md:grid-cols-4">
             <div>
                 <div class="flex items-center gap-2">
-                    <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-base dark:bg-emerald-500">🧰</span>
+                    <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900">
+                        <x-logo-mark class="h-4 w-4" />
+                    </span>
                     <span class="text-lg font-bold text-stone-900 dark:text-stone-50">{{ setting('genel.site_adi') }}</span>
                 </div>
                 <p class="mt-3 text-sm text-stone-500 dark:text-stone-400">{{ setting('footer.aciklama') }}</p>

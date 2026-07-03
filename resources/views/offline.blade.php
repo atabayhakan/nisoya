@@ -16,7 +16,11 @@
 </head>
 <body>
     <div class="box">
-        <div class="logo">🧰</div>
+        <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" width="32" height="32">
+                <path d="M7 17V7L17 17V7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </div>
         <h1>Çevrimdışısın</h1>
         <p>İnternet bağlantın yok gibi görünüyor. Bağlantın gelince Nisoya'ya geri dönebilirsin.</p>
         <a href="/">Yeniden dene</a>

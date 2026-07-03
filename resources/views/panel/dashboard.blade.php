@@ -2,14 +2,14 @@
     @php
         $user = auth()->user();
         $cards = [
-            ['ad' => 'İlanlarım', 'aciklama' => 'İlanlarını yönet', 'ikon' => '📋', 'url' => '/panel/ilanlarim'],
-            ['ad' => 'Mesajlar', 'aciklama' => 'Gelen mesajların', 'ikon' => '💬', 'url' => '/panel/mesajlar'],
-            ['ad' => 'Bildirimler', 'aciklama' => 'Tüm bildirimlerin', 'ikon' => '🔔', 'url' => '/panel/bildirimler'],
-            ['ad' => 'Aramalarım', 'aciklama' => 'Kayıtlı aramalar', 'ikon' => '🔎', 'url' => '/panel/aramalarim'],
-            ['ad' => 'Favorilerim', 'aciklama' => 'Kaydettiğin ilanlar', 'ikon' => '❤️', 'url' => '/panel/favorilerim'],
-            ['ad' => 'Profilim', 'aciklama' => 'Bilgilerini düzenle', 'ikon' => '👤', 'url' => '/panel/profil'],
-            ['ad' => 'Arkadaşını Davet Et', 'aciklama' => 'Davet bağlantını paylaş', 'ikon' => '🎁', 'url' => '/panel/davet'],
-            ['ad' => 'İlanlara Göz At', 'aciklama' => 'Hizmet ara', 'ikon' => '🔍', 'url' => '/ilanlar'],
+            ['ad' => 'İlanlarım', 'aciklama' => 'İlanlarını yönet', 'ikon' => 'clipboard-document-list', 'url' => '/panel/ilanlarim'],
+            ['ad' => 'Mesajlar', 'aciklama' => 'Gelen mesajların', 'ikon' => 'chat-bubble-left-right', 'url' => '/panel/mesajlar'],
+            ['ad' => 'Bildirimler', 'aciklama' => 'Tüm bildirimlerin', 'ikon' => 'bell', 'url' => '/panel/bildirimler'],
+            ['ad' => 'Aramalarım', 'aciklama' => 'Kayıtlı aramalar', 'ikon' => 'bookmark', 'url' => '/panel/aramalarim'],
+            ['ad' => 'Favorilerim', 'aciklama' => 'Kaydettiğin ilanlar', 'ikon' => 'heart', 'url' => '/panel/favorilerim'],
+            ['ad' => 'Profilim', 'aciklama' => 'Bilgilerini düzenle', 'ikon' => 'user-circle', 'url' => '/panel/profil'],
+            ['ad' => 'Arkadaşını Davet Et', 'aciklama' => 'Davet bağlantını paylaş', 'ikon' => 'gift', 'url' => '/panel/davet'],
+            ['ad' => 'İlanlara Göz At', 'aciklama' => 'Hizmet ara', 'ikon' => 'magnifying-glass', 'url' => '/ilanlar'],
         ];
     @endphp
 
@@ -34,8 +34,10 @@
 
         <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @foreach ($cards as $c)
-                <a href="{{ url($c['url']) }}" class="flex items-start gap-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md">
-                    <span class="text-2xl">{{ $c['ikon'] }}</span>
+                <a href="{{ url($c['url']) }}" class="group flex items-start gap-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-brand">
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600 transition group-hover:bg-emerald-600 group-hover:text-white">
+                        <x-dynamic-component :component="'heroicon-o-'.$c['ikon']" class="h-5 w-5" />
+                    </span>
                     <span>
                         <span class="block font-semibold text-stone-800">{{ $c['ad'] }}</span>
                         <span class="block text-sm text-stone-500">{{ $c['aciklama'] }}</span>
