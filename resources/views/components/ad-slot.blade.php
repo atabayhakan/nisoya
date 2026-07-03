@@ -21,7 +21,7 @@
 
 @if ($enabled && $slot)
     <div
-        class="adsense-slot my-4 overflow-hidden rounded-xl border border-stone-200 bg-stone-50"
+        class="adsense-slot my-4 overflow-hidden rounded-xl border border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900"
         style="min-height: {{ $placeholderHeight }}px;"
         data-ad-slot="{{ $slot }}"
         data-ad-format="{{ $format }}"
@@ -35,7 +35,7 @@
             data-ad-format="{{ $format }}"
             data-full-width-responsive="{{ $responsive ? 'true' : 'false' }}"
         ></ins>
-        <div class="border-t border-stone-200 bg-white px-3 py-1 text-center text-[10px] uppercase tracking-wider text-stone-400">
+        <div class="border-t border-stone-200 bg-white px-3 py-1 text-center text-[10px] uppercase tracking-wider text-stone-400 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-500">
             Reklam
         </div>
     </div>
@@ -79,7 +79,7 @@
 @else
     {{-- AdSense devre dışı: küçük bir "destek ol" çağrısı göster (sabit yükseklik CLS yok) --}}
     <div
-        class="my-4 rounded-xl border border-dashed border-emerald-200 bg-emerald-50/40 px-4 py-3 text-center text-sm text-emerald-800"
+        class="my-4 rounded-xl border border-dashed border-emerald-200 bg-emerald-50/40 px-4 py-3 text-center text-sm text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-300"
         style="min-height: {{ $placeholderHeight }}px; display: flex; align-items: center; justify-content: center; flex-direction: column;"
     >
         <span class="text-base">💚 Nisoya ücretsiz kalır.</span>
