@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Category;
 use App\Models\City;
+use App\Models\Country;
 use App\Models\ListingImage;
 use App\Models\User;
 use App\Observers\ListingImageObserver;
@@ -71,7 +72,18 @@ class AppServiceProvider extends ServiceProvider
                     ->all() ?? [])
                 : [];
 
+            $countries = Schema::hasTable('countries')
+                ? Cache::rememberForever(Country::ACTIVE_LIST_CACHE_KEY, fn () => Country::query()
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->get(['code', 'name_tr', 'emoji'])
+                    ->map(fn (Country $country) => $country->only(['code', 'name_tr', 'emoji']))
+                    ->all())
+                : [];
+
             $view->with('emergencyCategories', collect($items)->map(fn (array $item) => (object) $item));
+            $view->with('emergencyCountries', collect($countries)->map(fn (array $item) => (object) $item));
+            $view->with('emergencyDefaultCountry', auth()->user()?->country_code ?? '');
         });
 
         // Reklam & bağış ayarlarını DB'den (varsa) env'in üzerine yaz.

@@ -107,7 +107,11 @@
             </nav>
 
             <div class="flex items-center gap-2">
-                <x-emergency-button :categories="$emergencyCategories" />
+                <x-emergency-button
+                    :categories="$emergencyCategories"
+                    :countries="$emergencyCountries"
+                    :default-country="$emergencyDefaultCountry"
+                />
 
                 {{-- Dark mode toggle --}}
                 <button

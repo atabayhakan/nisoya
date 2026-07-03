@@ -5,14 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class Country extends Model
 {
+    /** Header'daki "Acil" butonunun ülke seçicisinde kullanılan liste. */
+    public const ACTIVE_LIST_CACHE_KEY = 'active_countries';
+
     protected $primaryKey = 'code';
 
     public $incrementing = false;
 
     protected $keyType = 'string';
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => Cache::forget(self::ACTIVE_LIST_CACHE_KEY));
+        static::deleted(fn () => Cache::forget(self::ACTIVE_LIST_CACHE_KEY));
+    }
 
     protected $fillable = [
         'code',
