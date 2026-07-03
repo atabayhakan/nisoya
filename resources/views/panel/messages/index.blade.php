@@ -1,6 +1,9 @@
 <x-layouts.app title="Mesajlar — Nisoya">
-    @php($me = auth()->id())
+    @php
+        $me = auth()->id();
+    @endphp
     <div class="mx-auto max-w-3xl px-4 py-10">
+        <x-panel.back-link />
         <h1 class="text-2xl font-bold text-stone-900">Mesajlar</h1>
 
         @if ($conversations->isNotEmpty())

@@ -53,6 +53,32 @@ class InteractionTest extends TestCase
 
     // --- Mesajlaşma ---
 
+    public function test_messages_index_renders_when_empty(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/panel/mesajlar')
+            ->assertOk()
+            ->assertSee('Henüz mesajın yok');
+    }
+
+    public function test_messages_index_renders_with_conversations(): void
+    {
+        $me = User::factory()->create();
+        $other = User::factory()->create(['name' => 'Karşı Taraf']);
+        $conversation = Conversation::create([
+            'user_one_id' => $me->id, 'user_two_id' => $other->id, 'last_message_at' => now(),
+        ]);
+        $conversation->messages()->create(['sender_id' => $other->id, 'body' => 'Merhaba!']);
+
+        $this->actingAs($me)
+            ->get('/panel/mesajlar')
+            ->assertOk()
+            ->assertSee('Karşı Taraf')
+            ->assertSee('Merhaba!');
+    }
+
     public function test_user_can_message_seller_from_listing(): void
     {
         $seller = User::factory()->create();

@@ -1,5 +1,6 @@
 <x-layouts.app title="İki Faktörlü Doğrulama — Nisoya">
     <div class="mx-auto max-w-2xl px-4 py-10">
+        <x-panel.back-link :href="route('panel.profile.edit')" label="Profil Ayarları" />
         <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">İki Faktörlü Kimlik Doğrulama (2FA)</h1>
         <p class="mt-2 text-sm text-stone-600 dark:text-stone-400">
             Google Authenticator, Authy veya 1Password gibi TOTP uygulamalarıyla hesabına ekstra güvenlik kat.

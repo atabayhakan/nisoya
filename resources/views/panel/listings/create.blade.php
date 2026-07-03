@@ -1,6 +1,6 @@
 <x-layouts.app title="Yeni İlan Ver — Nisoya">
     <div class="mx-auto max-w-3xl px-4 py-10">
-        <a href="{{ route('panel.listings.index') }}" class="text-sm text-stone-500 hover:text-stone-700">← İlanlarım</a>
+        <x-panel.back-link :href="route('panel.listings.index')" label="İlanlarım" />
         <h1 class="mt-2 text-2xl font-bold text-stone-900">{{ $type === 'urun' ? 'Yeni Ürün İlanı' : 'Yeni Hizmet İlanı' }}</h1>
 
         {{-- Tip seçimi --}}

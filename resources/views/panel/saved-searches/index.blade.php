@@ -1,5 +1,6 @@
 <x-layouts.app title="Aramalarım — Nisoya">
     <div class="mx-auto max-w-2xl px-4 py-10">
+        <x-panel.back-link />
         <h1 class="text-2xl font-bold text-stone-900">Kayıtlı Aramalarım</h1>
         <p class="mt-1 text-sm text-stone-500">Bu aramalara uyan yeni ilanlar çıkınca sana e-posta ile haber veririz.</p>
 

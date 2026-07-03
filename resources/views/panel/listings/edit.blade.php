@@ -1,6 +1,6 @@
 <x-layouts.app title="İlanı Düzenle — Nisoya">
     <div class="mx-auto max-w-3xl px-4 py-10">
-        <a href="{{ route('panel.listings.index') }}" class="text-sm text-stone-500 hover:text-stone-700">← İlanlarım</a>
+        <x-panel.back-link :href="route('panel.listings.index')" label="İlanlarım" />
         <h1 class="mt-2 text-2xl font-bold text-stone-900">İlanı Düzenle</h1>
 
         <form method="POST" action="{{ route('panel.listings.update', $listing) }}" enctype="multipart/form-data" class="mt-6 space-y-5">

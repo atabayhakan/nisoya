@@ -1,5 +1,6 @@
 <x-layouts.app title="Profilim — Nisoya">
     <div class="mx-auto max-w-2xl px-4 py-10">
+        <x-panel.back-link />
         <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Profil Ayarları</h1>
 
         {{-- Profil bilgileri --}}

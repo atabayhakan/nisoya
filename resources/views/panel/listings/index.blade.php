@@ -3,6 +3,7 @@
         $badge = ['success' => 'bg-emerald-100 text-emerald-700', 'warning' => 'bg-amber-100 text-amber-700', 'danger' => 'bg-red-100 text-red-700', 'gray' => 'bg-stone-100 text-stone-600'];
     @endphp
     <div class="mx-auto max-w-5xl px-4 py-10">
+        <x-panel.back-link />
         <div class="flex items-center justify-between gap-4">
             <h1 class="text-2xl font-bold text-stone-900">İlanlarım</h1>
             <a href="{{ route('panel.listings.create') }}" class="rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-700">+ Yeni İlan</a>

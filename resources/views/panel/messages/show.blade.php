@@ -2,7 +2,7 @@
     @php($me = auth()->id())
     @php($lastId = $conversation->messages->max('id') ?? 0)
     <div class="mx-auto max-w-3xl px-4 py-8">
-        <a href="{{ route('panel.messages.index') }}" class="text-sm text-stone-500 hover:text-stone-700">← Tüm mesajlar</a>
+        <x-panel.back-link :href="route('panel.messages.index')" label="Tüm mesajlar" />
 
         {{-- Başlık --}}
         <div class="mt-3 flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">

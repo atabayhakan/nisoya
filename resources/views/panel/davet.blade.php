@@ -4,7 +4,7 @@
     @endphp
 
     <div class="mx-auto max-w-3xl px-4 py-10">
-        <a href="{{ route('dashboard') }}" class="text-sm font-medium text-emerald-700 hover:underline">← Panelim</a>
+        <x-panel.back-link />
 
         <div class="mt-4 rounded-3xl bg-gradient-to-br from-emerald-600 to-emerald-700 px-6 py-10 text-center text-white sm:px-12">
             <div class="text-4xl">🎁</div>
