@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Conversation;
 use App\Models\Listing;
+use App\Models\Message;
 use App\Notifications\NewMessageNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -66,11 +67,30 @@ class MessageController extends Controller
                 'id' => $message->id,
                 'body' => $message->body,
                 'mine' => true,
+                'recalled' => false,
                 'time' => $message->created_at->format('d.m H:i'),
             ]);
         }
 
         return redirect()->route('panel.messages.show', $conversation);
+    }
+
+    /**
+     * Kendi mesajını geri al. body DB'de kalır (moderasyon için), sadece
+     * recalled_at damgalanır; arayüzde "Bu mesaj geri alındı" gösterilir.
+     */
+    public function recall(Request $request, Conversation $conversation, Message $message): JsonResponse
+    {
+        abort_unless($conversation->isParticipant($request->user()), 403);
+        // Mesaj bu konuşmaya ait mi + gönderen ben miyim?
+        abort_unless($message->conversation_id === $conversation->id, 404);
+        abort_unless($message->sender_id === $request->user()->id, 403);
+
+        if (! $message->isRecalled()) {
+            $message->update(['recalled_at' => now()]);
+        }
+
+        return response()->json(['id' => $message->id, 'recalled' => true]);
     }
 
     /** Canlı sohbet: belirli id'den sonraki mesajları JSON döndürür (polling). */
@@ -92,12 +112,20 @@ class MessageController extends Controller
             ->get()
             ->map(fn ($m) => [
                 'id' => $m->id,
-                'body' => $m->body,
+                'body' => $m->displayBody(),
                 'mine' => $m->sender_id === $me,
+                'recalled' => $m->isRecalled(),
                 'time' => $m->created_at->format('d.m H:i'),
             ]);
 
-        return response()->json(['messages' => $messages]);
+        // Mevcut (daha önce çekilmiş) mesajlardan geri alınanların id'leri —
+        // karşı taraf açık ekranda geri almayı görebilsin diye.
+        $recalledIds = $conversation->messages()
+            ->whereNotNull('recalled_at')
+            ->where('id', '<=', $after)
+            ->pluck('id');
+
+        return response()->json(['messages' => $messages, 'recalled' => $recalledIds]);
     }
 
     /** İlan detayından satıcıya ilk mesajı gönder. */

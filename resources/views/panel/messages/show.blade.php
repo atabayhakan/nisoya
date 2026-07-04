@@ -1,12 +1,12 @@
 <x-layouts.app :title="($other?->name ?? 'Mesaj').' — Nisoya'">
     @php($me = auth()->id())
     @php($lastId = $conversation->messages->max('id') ?? 0)
-    <div class="mx-auto max-w-3xl px-4 py-8">
+    <div class="mx-auto max-w-3xl px-4 py-6">
         <x-panel.back-link :href="route('panel.messages.index')" label="Tüm mesajlar" />
 
         {{-- Başlık --}}
         <div class="mt-3 flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
-            <div class="grid h-11 w-11 place-items-center rounded-full bg-emerald-100 font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-emerald-100 font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                 {{ mb_strtoupper(mb_substr($other?->name ?? '?', 0, 1)) }}
             </div>
             <div class="min-w-0 flex-1">
@@ -21,28 +21,48 @@
                     </a>
                 @endif
             </div>
-            <span class="flex items-center gap-1 text-xs text-stone-400 dark:text-stone-500"><span class="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span> canlı</span>
+            <span class="flex shrink-0 items-center gap-1 text-xs text-stone-400 dark:text-stone-500"><span class="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span> canlı</span>
         </div>
 
-        {{-- Mesajlar --}}
-        <div id="thread" class="mt-4 space-y-3" data-url="{{ route('panel.messages.stream', $conversation) }}" data-last="{{ $lastId }}">
-            @foreach ($conversation->messages->sortBy('created_at') as $message)
+        {{-- Mesajlar: SABİT yükseklikli, KENDİ İÇİNDE kaydırılan kutu.
+             (Eskiden window.scrollTo tüm sayfayı en alta kaydırıyordu — sayfa
+             zıplaması sorunu buradan geliyordu. Artık sadece bu kutu kayıyor.) --}}
+        <div id="thread"
+             class="mt-4 h-[58vh] min-h-[280px] space-y-3 overflow-y-auto rounded-2xl border border-stone-200 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-950/40"
+             data-url="{{ route('panel.messages.stream', $conversation) }}"
+             data-recall-url="{{ url('/panel/mesajlar/'.$conversation->id.'/mesaj') }}"
+             data-last="{{ $lastId }}">
+            @forelse ($conversation->messages->sortBy('created_at') as $message)
                 @php($mine = $message->sender_id === $me)
-                <div class="flex {{ $mine ? 'justify-end' : 'justify-start' }}">
-                    <div class="max-w-[75%] rounded-2xl px-4 py-2 {{ $mine ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900' : 'bg-white text-stone-800 ring-1 ring-stone-200 dark:bg-stone-800 dark:text-stone-100 dark:ring-stone-700' }}">
-                        <p class="whitespace-pre-line text-sm">{{ $message->body }}</p>
-                        <p class="mt-1 text-[10px] {{ $mine ? 'text-emerald-100' : 'text-stone-400 dark:text-stone-500' }}">{{ $message->created_at->format('d.m H:i') }}</p>
-                    </div>
+                <div class="msg flex {{ $mine ? 'justify-end' : 'justify-start' }}" data-id="{{ $message->id }}" data-mine="{{ $mine ? '1' : '0' }}">
+                    @if ($message->isRecalled())
+                        <div class="max-w-[75%] rounded-2xl px-4 py-2 text-sm italic text-stone-400 ring-1 ring-stone-200 dark:text-stone-500 dark:ring-stone-700">
+                            <span class="select-none">🚫</span> Bu mesaj geri alındı
+                        </div>
+                    @else
+                        <div class="max-w-[75%] rounded-2xl px-4 py-2 {{ $mine ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900' : 'bg-white text-stone-800 ring-1 ring-stone-200 dark:bg-stone-800 dark:text-stone-100 dark:ring-stone-700' }}">
+                            <p class="body whitespace-pre-line break-words text-sm">{{ $message->body }}</p>
+                            <p class="meta mt-1 flex items-center justify-end gap-1.5 text-[10px] {{ $mine ? 'text-emerald-100' : 'text-stone-400 dark:text-stone-500' }}">
+                                <span>{{ $message->created_at->format('d.m H:i') }}</span>
+                                @if ($mine && $message->read_at)<span class="read-mark">· okundu</span>@endif
+                                @if ($mine)<button type="button" class="recall-btn font-medium underline decoration-dotted underline-offset-2 hover:no-underline">· geri al</button>@endif
+                            </p>
+                        </div>
+                    @endif
                 </div>
-            @endforeach
+            @empty
+                <div id="thread-empty" class="flex h-full items-center justify-center text-center text-sm text-stone-400 dark:text-stone-500">
+                    Henüz mesaj yok — ilk mesajı sen yaz.
+                </div>
+            @endforelse
         </div>
 
         {{-- Gönder --}}
-        <form id="send-form" data-url="{{ route('panel.messages.store', $conversation) }}" class="mt-4 flex items-end gap-2">
+        <form id="send-form" data-url="{{ route('panel.messages.store', $conversation) }}" class="mt-3 flex items-end gap-2">
             @csrf
-            <textarea name="body" rows="2" required placeholder="Mesaj yaz..."
-                      class="flex-1 rounded-xl border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"></textarea>
-            <button type="submit" class="rounded-xl bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Gönder</button>
+            <textarea name="body" rows="2" required maxlength="2000" placeholder="Mesaj yaz... (Enter ile gönder, Shift+Enter ile alt satır)"
+                      class="flex-1 resize-none rounded-xl border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"></textarea>
+            <button type="submit" class="shrink-0 rounded-xl bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Gönder</button>
         </form>
     </div>
 
@@ -52,43 +72,113 @@
             const form = document.getElementById('send-form');
             const csrf = document.querySelector('meta[name=csrf-token]').content;
             let last = parseInt(thread.dataset.last) || 0;
+            let busy = false;
 
-            const scrollBottom = () => window.scrollTo({ top: document.body.scrollHeight });
+            // Sadece bu kutuyu en alta kaydır — pencereyi ASLA kaydırma.
+            const scrollBottom = () => { thread.scrollTop = thread.scrollHeight; };
+
+            function removeEmpty() {
+                const e = document.getElementById('thread-empty');
+                if (e) e.remove();
+            }
+
+            function recalledBubble() {
+                const b = document.createElement('div');
+                b.className = 'max-w-[75%] rounded-2xl px-4 py-2 text-sm italic text-stone-400 ring-1 ring-stone-200 dark:text-stone-500 dark:ring-stone-700';
+                b.innerHTML = '<span class="select-none">🚫</span> Bu mesaj geri alındı';
+                return b;
+            }
 
             function appendMessage(m) {
+                removeEmpty();
                 const wrap = document.createElement('div');
-                wrap.className = 'flex ' + (m.mine ? 'justify-end' : 'justify-start');
+                wrap.className = 'msg flex ' + (m.mine ? 'justify-end' : 'justify-start');
+                wrap.dataset.id = m.id;
+                wrap.dataset.mine = m.mine ? '1' : '0';
+
+                if (m.recalled) {
+                    wrap.append(recalledBubble());
+                    thread.append(wrap);
+                    return;
+                }
+
                 const bubble = document.createElement('div');
-                bubble.className = 'max-w-[75%] rounded-2xl px-4 py-2 ' + (m.mine ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900' : 'bg-white text-stone-800 ring-1 ring-stone-200 dark:bg-stone-800 dark:text-stone-100 dark:ring-stone-700');
+                bubble.className = 'max-w-[75%] rounded-2xl px-4 py-2 ' + (m.mine
+                    ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900'
+                    : 'bg-white text-stone-800 ring-1 ring-stone-200 dark:bg-stone-800 dark:text-stone-100 dark:ring-stone-700');
+
                 const body = document.createElement('p');
-                body.className = 'whitespace-pre-line text-sm';
+                body.className = 'body whitespace-pre-line break-words text-sm';
                 body.textContent = m.body;
-                const time = document.createElement('p');
-                time.className = 'mt-1 text-[10px] ' + (m.mine ? 'text-emerald-100' : 'text-stone-400 dark:text-stone-500');
-                time.textContent = m.time;
-                bubble.append(body, time);
+
+                const meta = document.createElement('p');
+                meta.className = 'meta mt-1 flex items-center justify-end gap-1.5 text-[10px] ' + (m.mine ? 'text-emerald-100' : 'text-stone-400 dark:text-stone-500');
+                const t = document.createElement('span');
+                t.textContent = m.time;
+                meta.append(t);
+                if (m.mine) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'recall-btn font-medium underline decoration-dotted underline-offset-2 hover:no-underline';
+                    btn.textContent = '· geri al';
+                    meta.append(btn);
+                }
+
+                bubble.append(body, meta);
                 wrap.append(bubble);
                 thread.append(wrap);
             }
 
+            // Var olan bir mesajı "geri alındı" görünümüne çevir.
+            function markRecalled(id) {
+                const wrap = thread.querySelector('.msg[data-id="' + id + '"]');
+                if (!wrap || wrap.dataset.recalled === '1') return;
+                wrap.dataset.recalled = '1';
+                wrap.innerHTML = '';
+                wrap.append(recalledBubble());
+            }
+
+            // Geri al butonu (mevcut + dinamik mesajlar için olay delegasyonu).
+            thread.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.recall-btn');
+                if (!btn) return;
+                const wrap = btn.closest('.msg');
+                if (!wrap || !confirm('Bu mesajı geri almak istediğine emin misin? Karşı taraf artık içeriğini göremeyecek.')) return;
+                btn.disabled = true;
+                try {
+                    const res = await fetch(thread.dataset.recallUrl + '/' + wrap.dataset.id, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+                    });
+                    if (res.ok) markRecalled(wrap.dataset.id);
+                    else btn.disabled = false;
+                } catch (err) { btn.disabled = false; }
+            });
+
             async function poll() {
+                if (busy) return;
                 try {
                     const res = await fetch(thread.dataset.url + '?after=' + last, { headers: { 'Accept': 'application/json' } });
                     if (!res.ok) return;
                     const data = await res.json();
-                    if (data.messages.length) {
+                    let grew = false;
+                    if (data.messages && data.messages.length) {
                         data.messages.forEach((m) => { appendMessage(m); last = Math.max(last, m.id); });
-                        scrollBottom();
+                        grew = true;
                     }
+                    if (data.recalled && data.recalled.length) {
+                        data.recalled.forEach((id) => markRecalled(id));
+                    }
+                    if (grew) scrollBottom();
                 } catch (e) { /* sessizce yoksay */ }
             }
 
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
+            async function send() {
                 const ta = form.querySelector('textarea');
                 const text = ta.value.trim();
-                if (!text) return;
-                const btn = form.querySelector('button');
+                if (!text || busy) return;
+                busy = true;
+                const btn = form.querySelector('button[type=submit]');
                 btn.disabled = true;
                 try {
                     const res = await fetch(form.dataset.url, {
@@ -104,8 +194,19 @@
                         scrollBottom();
                     }
                 } catch (e) { /* yoksay */ } finally {
+                    busy = false;
                     btn.disabled = false;
                     ta.focus();
+                }
+            }
+
+            form.addEventListener('submit', (e) => { e.preventDefault(); send(); });
+
+            // Enter ile gönder, Shift+Enter ile alt satır.
+            form.querySelector('textarea').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    send();
                 }
             });
 

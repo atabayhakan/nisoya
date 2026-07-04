@@ -104,6 +104,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/panel/mesajlar/{conversation}', [MessageController::class, 'store'])
         ->middleware(['honeypot', 'throttle:message-send'])
         ->name('panel.messages.store');
+    Route::delete('/panel/mesajlar/{conversation}/mesaj/{message}', [MessageController::class, 'recall'])
+        ->name('panel.messages.recall');
     Route::post('/ilan/{listing}/mesaj', [MessageController::class, 'start'])
         ->middleware(['honeypot', 'throttle:message-start'])
         ->name('messages.start');
