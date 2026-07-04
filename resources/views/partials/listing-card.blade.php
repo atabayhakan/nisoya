@@ -16,10 +16,11 @@
                  height="300"
                  loading="lazy"
                  decoding="async"
-                 class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
+                 style="--listing-transition-name: listing-image-{{ $listing->id }}"
+                 class="listing-cover-transition h-full w-full object-cover transition duration-300 group-hover:scale-105">
         @else
             @php($fallbackIcon = \App\Support\CategoryIcon::heroicon($listing->category?->parent?->icon ?? $listing->category?->icon))
-            <div class="flex h-full w-full items-center justify-center text-stone-300 dark:text-stone-600">
+            <div style="--listing-transition-name: listing-image-{{ $listing->id }}" class="listing-cover-transition flex h-full w-full items-center justify-center text-stone-300 dark:text-stone-600">
                 <x-dynamic-component :component="'heroicon-o-'.$fallbackIcon" class="h-12 w-12" />
             </div>
         @endif

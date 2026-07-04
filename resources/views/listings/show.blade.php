@@ -80,7 +80,8 @@
                              width="800"
                              height="420"
                              fetchpriority="high"
-                             class="max-h-[420px] w-full object-cover">
+                             style="--listing-transition-name: listing-image-{{ $listing->id }}"
+                             class="listing-cover-transition max-h-[420px] w-full object-cover">
                     </div>
                     @if ($listing->images->count() > 1)
                         <div class="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-5">
@@ -100,7 +101,7 @@
                     @endif
                 @else
                     @php($fallbackIcon = \App\Support\CategoryIcon::heroicon($listing->category?->parent?->icon ?? $listing->category?->icon))
-                    <div class="flex h-56 items-center justify-center rounded-2xl bg-stone-100 text-stone-300 dark:bg-stone-800 dark:text-stone-600">
+                    <div style="--listing-transition-name: listing-image-{{ $listing->id }}" class="listing-cover-transition flex h-56 items-center justify-center rounded-2xl bg-stone-100 text-stone-300 dark:bg-stone-800 dark:text-stone-600">
                         <x-dynamic-component :component="'heroicon-o-'.$fallbackIcon" class="h-16 w-16" />
                     </div>
                 @endif
