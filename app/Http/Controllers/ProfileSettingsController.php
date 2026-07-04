@@ -152,6 +152,18 @@ class ProfileSettingsController extends Controller
             // silme talebinde veri tamamen kaldırılır).
             $user->stories()->delete();
 
+            // İş ilanı başvuruları (aday olarak yaptıkları)
+            $user->jobApplications()->delete();
+
+            // Şirket profili + logo + tüm iş ilanları (job_listings ve onların
+            // başvuruları FK cascade ile silinir).
+            if ($user->company) {
+                if ($user->company->logo_path) {
+                    $imageService->deleteVariants(array_values($imageService->siblingVariantPaths($user->company->logo_path)));
+                }
+                $user->company()->delete();
+            }
+
             // İlan görsellerini sil (tüm varyantlar)
             foreach ($user->listings()->with('images')->get() as $listing) {
                 foreach ($listing->images as $image) {
@@ -246,6 +258,17 @@ class ProfileSettingsController extends Controller
                 'body' => $story->body,
                 'status' => $story->status->value,
                 'created_at' => $story->created_at?->toIso8601String(),
+            ])->all(),
+            'sirket' => $user->company ? [
+                'name' => $user->company->name,
+                'sector' => $user->company->sector,
+                'website' => $user->company->website,
+                'about' => $user->company->about,
+            ] : null,
+            'is_basvurularim' => $user->jobApplications()->with('jobListing')->get()->map(fn ($a) => [
+                'ilan' => $a->jobListing?->title,
+                'durum' => $a->status->value,
+                'created_at' => $a->created_at?->toIso8601String(),
             ])->all(),
             'listings' => $user->listings()->with('category', 'country', 'images', 'tags')->get()->toArray(),
             'reviews_given' => $user->reviewsGiven()->get()->toArray(),

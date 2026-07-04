@@ -1,12 +1,16 @@
 <?php
 
 use App\Http\Controllers\BrowseController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ExifMapController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InviteController;
+use App\Http\Controllers\JobApplicationController;
+use App\Http\Controllers\JobBrowseController;
+use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\MessageController;
@@ -37,6 +41,11 @@ Route::get('/nabiz', [NabizController::class, 'index'])->name('nabiz');
 
 // Herkese açık ilan detayı
 Route::get('/ilan/{listing}/{slug?}', [ListingController::class, 'show'])->name('listings.show');
+
+// İş ilanları (herkese açık keşif + detay + şirket sayfası)
+Route::get('/isler', [JobBrowseController::class, 'index'])->name('jobs.index');
+Route::get('/is/{job}/{slug?}', [JobListingController::class, 'show'])->name('jobs.show');
+Route::get('/sirket/{company}', [CompanyController::class, 'show'])->name('companies.show');
 
 // Statik sayfalar (işlevsel olanlar kodda kalır; kurumsal metinler yönetilebilir sayfalara taşındı)
 Route::get('/nasil-calisir', [PagesController::class, 'nasilCalisir'])->name('pages.how');
@@ -135,6 +144,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/nabiz/hikaye', [StoryController::class, 'store'])
         ->middleware(['honeypot', 'throttle:story-store'])
         ->name('nabiz.stories.store');
+
+    // --- İş ilanları modülü (panel) ---
+    // Şirket profili
+    Route::get('/panel/sirket', [CompanyController::class, 'edit'])->name('panel.company.edit');
+    Route::put('/panel/sirket', [CompanyController::class, 'update'])->name('panel.company.update');
+
+    // İşverenin iş ilanları
+    Route::get('/panel/is-ilanlarim', [JobListingController::class, 'index'])->name('panel.jobs.index');
+    Route::get('/panel/is-ilani/yeni', [JobListingController::class, 'create'])->name('panel.jobs.create');
+    Route::post('/panel/is-ilani', [JobListingController::class, 'store'])
+        ->middleware(['honeypot', 'throttle:job-create'])
+        ->name('panel.jobs.store');
+    Route::get('/panel/is-ilani/{job}/duzenle', [JobListingController::class, 'edit'])->name('panel.jobs.edit');
+    Route::match(['put', 'patch'], '/panel/is-ilani/{job}', [JobListingController::class, 'update'])->name('panel.jobs.update');
+    Route::patch('/panel/is-ilani/{job}/durum', [JobListingController::class, 'updateStatus'])->name('panel.jobs.status');
+    Route::delete('/panel/is-ilani/{job}', [JobListingController::class, 'destroy'])->name('panel.jobs.destroy');
+    Route::get('/panel/is-ilani/{job}/basvurular', [JobApplicationController::class, 'applicants'])->name('panel.jobs.applicants');
+
+    // Başvurular (aday + işveren)
+    Route::post('/is/{job}/basvur', [JobApplicationController::class, 'store'])
+        ->middleware(['honeypot', 'throttle:job-apply'])
+        ->name('jobs.apply');
+    Route::get('/panel/basvurularim', [JobApplicationController::class, 'mine'])->name('panel.applications.mine');
+    Route::patch('/panel/basvuru/{application}/durum', [JobApplicationController::class, 'updateStatus'])->name('panel.applications.status');
+    Route::get('/panel/basvuru/{application}/cv', [JobApplicationController::class, 'downloadCv'])->name('panel.applications.cv');
 
     // KVKK: Veri silme + veri dışa aktarma
     Route::delete('/panel/profil', [ProfileSettingsController::class, 'destroy'])->name('panel.profile.destroy');

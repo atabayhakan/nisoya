@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AccountType;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -32,6 +34,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'avatar_path',
         'bio',
         'skills',
+        'account_type',
         'country_code',
         'city',
         'preferred_currency',
@@ -60,6 +63,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'is_verified' => 'boolean',
             'role' => UserRole::class,
             'status' => UserStatus::class,
+            'account_type' => AccountType::class,
             'skills' => 'array',
         ];
     }
@@ -133,6 +137,32 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function stories(): HasMany
     {
         return $this->hasMany(Story::class);
+    }
+
+    /**
+     * Kurumsal hesabın şirket profili (varsa).
+     *
+     * @return HasOne<Company, $this>
+     */
+    public function company(): HasOne
+    {
+        return $this->hasOne(Company::class);
+    }
+
+    /**
+     * Kullanıcının iş ilanlarına yaptığı başvurular (aday olarak).
+     *
+     * @return HasMany<JobApplication, $this>
+     */
+    public function jobApplications(): HasMany
+    {
+        return $this->hasMany(JobApplication::class);
+    }
+
+    /** Kurumsal (işveren) hesap mı? */
+    public function isEmployer(): bool
+    {
+        return $this->account_type === AccountType::Kurumsal;
     }
 
     public function favorites(): HasMany

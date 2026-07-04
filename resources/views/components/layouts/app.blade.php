@@ -101,8 +101,8 @@
 
             <nav class="hidden items-center gap-6 text-sm font-medium text-stone-600 md:flex dark:text-stone-300">
                 <a href="{{ route('listings.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İlanlar</a>
+                <a href="{{ route('jobs.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İş İlanları</a>
                 <a href="{{ route('listings.map') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Harita</a>
-                <a href="{{ route('listings.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Kategoriler</a>
                 <a href="{{ route('pages.how') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a>
             </nav>
 
@@ -160,6 +160,7 @@
         {{-- Mobil gezinme --}}
         <nav class="flex items-center gap-5 overflow-x-auto border-t border-stone-100 px-4 py-2 text-sm font-medium text-stone-600 md:hidden dark:border-stone-800 dark:text-stone-300">
             <a href="{{ route('listings.index') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">İlanlar</a>
+            <a href="{{ route('jobs.index') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">İş İlanları</a>
             <a href="{{ route('listings.map') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">Harita</a>
             <a href="{{ route('pages.how') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a>
             @guest
@@ -204,7 +205,7 @@
                 <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">Keşfet</h3>
                 <ul class="mt-3 space-y-2 text-sm text-stone-500 dark:text-stone-400">
                     <li><a href="{{ url('/ilanlar') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Tüm İlanlar</a></li>
-                    <li><a href="{{ route('listings.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Kategoriler</a></li>
+                    <li><a href="{{ route('jobs.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İş İlanları</a></li>
                     <li><a href="{{ url('/nasil-calisir') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a></li>
                     <li><a href="{{ route('nabiz') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nisoya Nabzı</a></li>
                 </ul>
