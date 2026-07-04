@@ -15,58 +15,58 @@
         </div>
 
         {{-- Davet bağlantısı --}}
-        <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-            <label class="block text-sm font-semibold text-stone-700">Sana özel davet bağlantın</label>
+        <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
+            <label class="block text-sm font-semibold text-stone-700 dark:text-stone-300">Sana özel davet bağlantın</label>
             <div class="mt-2 flex flex-col gap-2 sm:flex-row">
                 <input id="referral-url" type="text" readonly value="{{ $user->referralUrl() }}"
-                       class="flex-1 rounded-lg border-stone-300 bg-stone-50 px-3 py-2.5 text-sm text-stone-700 focus:border-emerald-500 focus:ring-emerald-500"
+                       class="flex-1 rounded-lg border-stone-300 bg-stone-50 px-3 py-2.5 text-sm text-stone-700 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200"
                        onclick="this.select()">
                 <button type="button"
                         onclick="navigator.clipboard.writeText(document.getElementById('referral-url').value).then(() => { const s = this.querySelector('span'); const o = s.textContent; s.textContent = '✓ Kopyalandı'; setTimeout(() => s.textContent = o, 2000); })"
-                        class="rounded-lg bg-stone-800 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-900">
+                        class="rounded-lg bg-stone-800 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-900 dark:bg-stone-700 dark:hover:bg-stone-600">
                     <span>Kopyala</span>
                 </button>
             </div>
 
             <div class="mt-4">
-                <p class="mb-2 text-xs font-medium text-stone-500">Hemen paylaş</p>
+                <p class="mb-2 text-xs font-medium text-stone-500 dark:text-stone-400">Hemen paylaş</p>
                 @include('partials.share-buttons', ['shareUrl' => $user->referralUrl(), 'shareText' => $shareText])
             </div>
 
-            <p class="mt-4 text-xs text-stone-400">
-                Davet kodun: <span class="font-mono font-semibold text-stone-600">{{ $user->referral_code }}</span>
+            <p class="mt-4 text-xs text-stone-400 dark:text-stone-500">
+                Davet kodun: <span class="font-mono font-semibold text-stone-600 dark:text-stone-300">{{ $user->referral_code }}</span>
             </p>
         </div>
 
         {{-- Davet istatistiği --}}
-        <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+        <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-lg font-bold text-stone-900">Davet ettiklerin</h2>
-                    <p class="text-sm text-stone-500">Bağlantınla kaydolan üyeler burada görünür.</p>
+                    <h2 class="text-lg font-bold text-stone-900 dark:text-stone-50">Davet ettiklerin</h2>
+                    <p class="text-sm text-stone-500 dark:text-stone-400">Bağlantınla kaydolan üyeler burada görünür.</p>
                 </div>
                 <div class="text-center">
-                    <div class="text-3xl font-bold text-emerald-600">{{ $invitedCount }}</div>
-                    <div class="text-xs text-stone-500">kişi</div>
+                    <div class="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{{ $invitedCount }}</div>
+                    <div class="text-xs text-stone-500 dark:text-stone-400">kişi</div>
                 </div>
             </div>
 
             @if ($invited->isNotEmpty())
-                <ul class="mt-4 divide-y divide-stone-100">
+                <ul class="mt-4 divide-y divide-stone-100 dark:divide-stone-800">
                     @foreach ($invited as $member)
                         <li class="flex items-center justify-between py-3">
                             <div class="flex items-center gap-3">
-                                <span class="grid h-9 w-9 place-items-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
+                                <span class="grid h-9 w-9 place-items-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                                     {{ mb_strtoupper(mb_substr($member->name, 0, 1)) }}
                                 </span>
-                                <span class="text-sm font-medium text-stone-800">{{ $member->name }}</span>
+                                <span class="text-sm font-medium text-stone-800 dark:text-stone-100">{{ $member->name }}</span>
                             </div>
-                            <span class="text-xs text-stone-400">{{ $member->created_at->translatedFormat('j F Y') }}</span>
+                            <span class="text-xs text-stone-400 dark:text-stone-500">{{ $member->created_at->translatedFormat('j F Y') }}</span>
                         </li>
                     @endforeach
                 </ul>
             @else
-                <div class="mt-4 rounded-xl border border-dashed border-stone-300 bg-stone-50 px-4 py-8 text-center text-sm text-stone-500">
+                <div class="mt-4 rounded-xl border border-dashed border-stone-300 bg-stone-50 px-4 py-8 text-center text-sm text-stone-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-400">
                     Henüz kimseyi davet etmedin. Bağlantını paylaşarak başla!
                 </div>
             @endif
