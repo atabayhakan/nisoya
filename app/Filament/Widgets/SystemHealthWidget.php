@@ -6,6 +6,7 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -104,7 +105,7 @@ class SystemHealthWidget extends BaseWidget
                 return (int) DB::table('jobs')->count();
             }
             if (config('queue.default') === 'redis') {
-                return (int) \Illuminate\Support\Facades\Redis::llen('queues:default');
+                return (int) Redis::llen('queues:default');
             }
         } catch (\Throwable) {
             return 0;

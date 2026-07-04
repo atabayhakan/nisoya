@@ -26,8 +26,8 @@ class DemoSeeder extends Seeder
         ])->map(fn ($u) => User::updateOrCreate(
             ['email' => $u[1]],
             ['name' => $u[0], 'username' => Str::slug($u[0]), 'password' => bcrypt('nisoya1234'),
-             'email_verified_at' => now(), 'country_code' => $u[2], 'city' => $u[3],
-             'preferred_currency' => $u[4], 'is_verified' => true],
+                'email_verified_at' => now(), 'country_code' => $u[2], 'city' => $u[3],
+                'preferred_currency' => $u[4], 'is_verified' => true],
         ));
 
         $pool = $demoUsers->when($admin, fn ($c) => $c->push($admin));

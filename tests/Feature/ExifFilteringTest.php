@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\ListingStatus;
 use App\Enums\UserRole;
-use App\Enums\UserStatus;
 use App\Models\Category;
 use App\Models\Listing;
 use App\Models\ListingImage;
@@ -13,7 +12,6 @@ use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Activitylog\Models\Activity;
 use Tests\TestCase;
 
 /**

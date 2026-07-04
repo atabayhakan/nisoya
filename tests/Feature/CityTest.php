@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\City;
 use Database\Seeders\CitySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
@@ -21,7 +22,7 @@ class CityTest extends TestCase
         $this->assertDatabaseHas('cities', ['country_code' => 'KZ', 'name' => 'Almatı']);
         $this->assertDatabaseHas('cities', ['country_code' => 'DE', 'name' => 'Berlin']);
         $this->assertDatabaseHas('cities', ['country_code' => 'GB', 'name' => 'Londra']);
-        $this->assertSame(44, \App\Models\City::count());
+        $this->assertSame(44, City::count());
     }
 
     public function test_registration_page_includes_city_suggestions(): void

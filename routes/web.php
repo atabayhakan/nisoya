@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BrowseController;
+use App\Http\Controllers\ExifMapController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\HealthController;
@@ -17,11 +18,12 @@ use App\Http\Controllers\PaymentLinkController;
 use App\Http\Controllers\PortfolioItemController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileSettingsController;
-use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SavedSearchController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StoryController;
+use App\Http\Controllers\TwoFactorController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -56,9 +58,9 @@ Route::middleware(['auth', 'active.user', 'admin.role'])->prefix('yonetim')->gro
 
     // EXIF harita API'si
     Route::prefix('harita')->name('exif-map.')->middleware('throttle:exif-map')->group(function () {
-        Route::get('/gorseller', [\App\Http\Controllers\ExifMapController::class, 'images'])->name('images');
-        Route::get('/cluster', [\App\Http\Controllers\ExifMapController::class, 'clusters'])->name('clusters');
-        Route::get('/istatistik', [\App\Http\Controllers\ExifMapController::class, 'stats'])->name('stats');
+        Route::get('/gorseller', [ExifMapController::class, 'images'])->name('images');
+        Route::get('/cluster', [ExifMapController::class, 'clusters'])->name('clusters');
+        Route::get('/istatistik', [ExifMapController::class, 'stats'])->name('stats');
     });
 });
 
@@ -137,10 +139,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/panel/profil/verilerim', [ProfileSettingsController::class, 'export'])->name('panel.profile.export');
 
     // İki faktörlü kimlik doğrulama (2FA / TOTP)
-    Route::get('/panel/profil/iki-faktor', [\App\Http\Controllers\TwoFactorController::class, 'show'])->name('panel.profile.2fa');
-    Route::post('/panel/profil/iki-faktor/kur', [\App\Http\Controllers\TwoFactorController::class, 'setup'])->name('panel.profile.2fa.setup');
-    Route::post('/panel/profil/iki-faktor/onayla', [\App\Http\Controllers\TwoFactorController::class, 'confirm'])->name('panel.profile.2fa.confirm');
-    Route::post('/panel/profil/iki-faktor/kapat', [\App\Http\Controllers\TwoFactorController::class, 'disable'])->name('panel.profile.2fa.disable');
+    Route::get('/panel/profil/iki-faktor', [TwoFactorController::class, 'show'])->name('panel.profile.2fa');
+    Route::post('/panel/profil/iki-faktor/kur', [TwoFactorController::class, 'setup'])->name('panel.profile.2fa.setup');
+    Route::post('/panel/profil/iki-faktor/onayla', [TwoFactorController::class, 'confirm'])->name('panel.profile.2fa.confirm');
+    Route::post('/panel/profil/iki-faktor/kapat', [TwoFactorController::class, 'disable'])->name('panel.profile.2fa.disable');
 });
 
 require __DIR__.'/auth.php';

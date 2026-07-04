@@ -44,11 +44,13 @@ class ReverseGeocodeImages extends Command
 
         if ($count === 0) {
             $this->info('Tüm görseller zaten reverse geocoded edilmiş.');
+
             return self::SUCCESS;
         }
 
         if ($dryRun) {
             $this->warn('DRY RUN: Gerçek API çağrısı yapılmadı.');
+
             return self::SUCCESS;
         }
 

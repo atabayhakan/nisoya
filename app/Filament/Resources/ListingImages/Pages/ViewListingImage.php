@@ -7,12 +7,13 @@ use App\Filament\Resources\Listings\Infolists\ListingImageInfolist;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Schema;
 
 class ViewListingImage extends ViewRecord
 {
     protected static string $resource = ListingImageResource::class;
 
-    public function infolist(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    public function infolist(Schema $schema): Schema
     {
         return ListingImageInfolist::configure($schema);
     }

@@ -1,9 +1,9 @@
 <?php
+
 /**
  * composer audit JSON çıktısından high+ seviye güvenlik açıklarını say.
  * CI workflow'unda kullanılır. Lokal: php audit.php composer-audit.json
  */
-
 $path = $argv[1] ?? null;
 if (! $path || ! file_exists($path)) {
     fwrite(STDERR, "Kullanım: php audit.php <composer-audit.json>\n");
@@ -28,7 +28,7 @@ foreach ($data['advisories'] as $advisory) {
     }
 }
 
-echo "high=$highCount critical=$criticalCount" . PHP_EOL;
+echo "high=$highCount critical=$criticalCount".PHP_EOL;
 
 if ($criticalCount > 0) {
     fwrite(STDERR, "::error::$criticalCount kritik seviye güvenlik açığı tespit edildi\n");
@@ -40,5 +40,5 @@ if ($highCount > 0) {
     exit(1);
 }
 
-echo "✓ Yüksek/kritik seviye güvenlik açığı yok" . PHP_EOL;
+echo '✓ Yüksek/kritik seviye güvenlik açığı yok'.PHP_EOL;
 exit(0);

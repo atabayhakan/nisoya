@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use BackedEnum;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
@@ -10,9 +12,9 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
 use Spatie\Activitylog\Models\Activity;
 use UnitEnum;
-use BackedEnum;
 
 /**
  * Admin işlem geçmişi — Spatie ActivityLog görüntüleyici.
@@ -38,7 +40,7 @@ class ActivityLog extends Page implements HasForms, HasTable
         return 'İşlem Geçmişi';
     }
 
-    protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
+    protected function getTableQuery(): Builder
     {
         return Activity::query()->latest();
     }
@@ -113,8 +115,8 @@ class ActivityLog extends Page implements HasForms, HasTable
                 ]),
             Filter::make('created_at')
                 ->form([
-                    \Filament\Forms\Components\DatePicker::make('created_from')->label('Başlangıç'),
-                    \Filament\Forms\Components\DatePicker::make('created_until')->label('Bitiş'),
+                    DatePicker::make('created_from')->label('Başlangıç'),
+                    DatePicker::make('created_until')->label('Bitiş'),
                 ])
                 ->query(function ($query, array $data) {
                     return $query

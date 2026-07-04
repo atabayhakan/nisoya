@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
+use App\Services\GeocodingService;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class ListingImage extends Model
 {
@@ -53,7 +57,7 @@ class ListingImage extends Model
     /**
      * GPS koordinatı bilinen görselleri getir.
      */
-    public function scopeWithGps(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeWithGps(Builder $query): Builder
     {
         return $query->whereNotNull('gps_lat')->whereNotNull('gps_lng');
     }
@@ -63,12 +67,12 @@ class ListingImage extends Model
      * Coğrafi filtreleme için kullanılır.
      */
     public function scopeWithinBounds(
-        \Illuminate\Database\Eloquent\Builder $query,
+        Builder $query,
         float $minLat,
         float $maxLat,
         float $minLng,
         float $maxLng
-    ): \Illuminate\Database\Eloquent\Builder {
+    ): Builder {
         return $query
             ->whereBetween('gps_lat', [$minLat, $maxLat])
             ->whereBetween('gps_lng', [$minLng, $maxLng]);
@@ -77,7 +81,7 @@ class ListingImage extends Model
     /**
      * Hassas EXIF içeren görselleri getir.
      */
-    public function scopeWithSensitiveExif(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeWithSensitiveExif(Builder $query): Builder
     {
         return $query->where('has_sensitive_exif', true);
     }
@@ -87,11 +91,11 @@ class ListingImage extends Model
      * 0.001 derece ~= ~100 metre (yaklaşık).
      */
     public function scopeNearCoordinates(
-        \Illuminate\Database\Eloquent\Builder $query,
+        Builder $query,
         float $lat,
         float $lng,
         float $tolerance = 0.001
-    ): \Illuminate\Database\Eloquent\Builder {
+    ): Builder {
         return $query
             ->whereBetween('gps_lat', [$lat - $tolerance, $lat + $tolerance])
             ->whereBetween('gps_lng', [$lng - $tolerance, $lng + $tolerance]);
@@ -101,7 +105,7 @@ class ListingImage extends Model
      * Reverse geocoded edilmemiş GPS'li görselleri getir.
      * Batch processing için kullanılır (örn: images:geocode-reversely).
      */
-    public function scopePendingReverseGeocode(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopePendingReverseGeocode(Builder $query): Builder
     {
         return $query
             ->whereNotNull('gps_lat')
@@ -112,7 +116,7 @@ class ListingImage extends Model
     /**
      * Belirli bir ülkedeki görselleri getir (reverse geocoded).
      */
-    public function scopeInCountry(\Illuminate\Database\Eloquent\Builder $query, string $countryCode): \Illuminate\Database\Eloquent\Builder
+    public function scopeInCountry(Builder $query, string $countryCode): Builder
     {
         return $query->where('reverse_country_code', strtoupper($countryCode));
     }
@@ -120,7 +124,7 @@ class ListingImage extends Model
     /**
      * Belirli bir şehre ait görselleri getir.
      */
-    public function scopeInCity(\Illuminate\Database\Eloquent\Builder $query, string $city): \Illuminate\Database\Eloquent\Builder
+    public function scopeInCity(Builder $query, string $city): Builder
     {
         return $query->where('reverse_city', $city);
     }
@@ -283,7 +287,7 @@ class ListingImage extends Model
      */
     public function srcset(): array
     {
-        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        $disk = Storage::disk('public');
         $set = [];
 
         $sources = [
@@ -317,7 +321,7 @@ class ListingImage extends Model
             return null;
         }
 
-        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        $disk = Storage::disk('public');
 
         // URL builder her durumda path'ten URL üretir; dosya disk'te yoksa da
         // geçerli bir URL döner (production URL'leri için bu doğru davranış).
@@ -342,13 +346,13 @@ class ListingImage extends Model
      * Reverse geocoding uygula (GPS'ten şehir/ülke çıkar).
      * Sonuçları DB'ye yazar.
      */
-    public function applyReverseGeocode(?\App\Services\GeocodingService $service = null): bool
+    public function applyReverseGeocode(?GeocodingService $service = null): bool
     {
         if ($this->gps_lat === null || $this->gps_lng === null) {
             return false;
         }
 
-        $service = $service ?? app(\App\Services\GeocodingService::class);
+        $service = $service ?? app(GeocodingService::class);
         $result = $service->reverse((float) $this->gps_lat, (float) $this->gps_lng);
 
         $this->update([
@@ -373,9 +377,9 @@ class ListingImage extends Model
      * Bu daha önce tam olarak bu şekilde kırılıp düzeltilmişti — tekrar
      * plain metoda çevirme (bkz. git log / ExifFilteringTest).
      */
-    protected function reverseLocationLabel(): \Illuminate\Database\Eloquent\Casts\Attribute
+    protected function reverseLocationLabel(): Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+        return Attribute::make(
             get: function () {
                 $parts = array_filter([
                     $this->reverse_city,

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\ListingStatus;
 use App\Enums\UserRole;
+use App\Filament\Pages\ExifMapPage;
 use App\Models\Category;
 use App\Models\Listing;
 use App\Models\ListingImage;
@@ -322,7 +323,7 @@ class ExifMapTest extends TestCase
         $this->createListingWithImage(['gps_lat' => 39.9, 'gps_lng' => 32.8]);
         $this->createListingWithImage(['gps_lat' => 38.7, 'gps_lng' => 35.5]);
 
-        $badge = \App\Filament\Pages\ExifMapPage::getNavigationBadge();
+        $badge = ExifMapPage::getNavigationBadge();
         $this->assertSame('3', $badge);
     }
 }

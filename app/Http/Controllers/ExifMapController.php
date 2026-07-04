@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\ListingImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Admin için EXIF haritası API'si.
@@ -57,35 +59,35 @@ class ExifMapController extends Controller
         $images = $query->latest('created_at')->limit($limit)->get();
 
         // Harita için optimize JSON
-            $markers = $images->map(function (ListingImage $img) {
-                return [
-                    'id' => $img->id,
-                    'lat' => (float) $img->gps_lat,
-                    'lng' => (float) $img->gps_lng,
-                    'thumb' => $img->url('thumb') ?? \Illuminate\Support\Facades\Storage::url($img->path_large),
-                    'had_gps' => $img->had_gps,
-                    'sensitive' => $img->has_sensitive_exif,
-                    'listing' => $img->listing ? [
-                        'id' => $img->listing->id,
-                        'title' => $img->listing->title,
-                        'url' => route('listings.show', [$img->listing->id, $img->listing->slug ?? null]),
-                    ] : null,
-                    'user' => $img->listing?->user ? [
-                        'id' => $img->listing->user->id,
-                        'name' => $img->listing->user->name,
-                    ] : null,
-                    'camera' => $img->exif_metadata['Make'] ?? null,
-                    'model' => $img->exif_metadata['Model'] ?? null,
-                    'reverse' => [
-                        'country_code' => $img->reverse_country_code,
-                        'country_name' => $img->reverse_country_name,
-                        'city' => $img->reverse_city,
-                        'state' => $img->reverse_state,
-                        'label' => $img->reverseLocationLabel,
-                    ],
-                    'uploaded_at' => $img->created_at?->toIso8601String(),
-                ];
-            });
+        $markers = $images->map(function (ListingImage $img) {
+            return [
+                'id' => $img->id,
+                'lat' => (float) $img->gps_lat,
+                'lng' => (float) $img->gps_lng,
+                'thumb' => $img->url('thumb') ?? Storage::url($img->path_large),
+                'had_gps' => $img->had_gps,
+                'sensitive' => $img->has_sensitive_exif,
+                'listing' => $img->listing ? [
+                    'id' => $img->listing->id,
+                    'title' => $img->listing->title,
+                    'url' => route('listings.show', [$img->listing->id, $img->listing->slug ?? null]),
+                ] : null,
+                'user' => $img->listing?->user ? [
+                    'id' => $img->listing->user->id,
+                    'name' => $img->listing->user->name,
+                ] : null,
+                'camera' => $img->exif_metadata['Make'] ?? null,
+                'model' => $img->exif_metadata['Model'] ?? null,
+                'reverse' => [
+                    'country_code' => $img->reverse_country_code,
+                    'country_name' => $img->reverse_country_name,
+                    'city' => $img->reverse_city,
+                    'state' => $img->reverse_state,
+                    'label' => $img->reverseLocationLabel,
+                ],
+                'uploaded_at' => $img->created_at?->toIso8601String(),
+            ];
+        });
 
         return response()->json([
             'count' => $markers->count(),
@@ -123,7 +125,7 @@ class ExifMapController extends Controller
      */
     public function stats(): JsonResponse
     {
-        $data = \Illuminate\Support\Facades\Cache::remember('exif_map_stats', 60, function () {
+        $data = Cache::remember('exif_map_stats', 60, function () {
             $result = $this->computeClusters(0.01);
 
             return [

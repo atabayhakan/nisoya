@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\ListingStatus;
 use App\Enums\ListingType;
 use App\Enums\PriceUnit;
+use App\Notifications\ListingStatusNotification;
+use Database\Factories\ListingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,7 +18,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Listing extends Model
 {
-    /** @use HasFactory<\Database\Factories\ListingFactory> */
+    /** @use HasFactory<ListingFactory> */
     use HasFactory, LogsActivity;
 
     protected $fillable = [
@@ -61,7 +63,7 @@ class Listing extends Model
         // İlan durumu (moderasyon) değişince sahibini bilgilendir.
         static::updated(function (self $listing) {
             if ($listing->wasChanged('status')) {
-                $listing->user?->notify(new \App\Notifications\ListingStatusNotification(
+                $listing->user?->notify(new ListingStatusNotification(
                     $listing->title,
                     $listing->status->getLabel(),
                     route('listings.show', [$listing->id, $listing->slug]),

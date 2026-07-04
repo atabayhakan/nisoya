@@ -4,11 +4,12 @@ namespace Tests\Feature;
 
 use App\Enums\ListingStatus;
 use App\Enums\UserStatus;
+use App\Models\Category;
 use App\Models\Favorite;
 use App\Models\Listing;
-use App\Models\Review;
 use App\Models\SavedSearch;
 use App\Models\User;
+use App\Observers\UserObserver;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
@@ -60,7 +61,7 @@ class KvkkAndModerationTest extends TestCase
         ]);
 
         // Bir de ilan + favori + saved search oluşturalım
-        $category = \App\Models\Category::first();
+        $category = Category::first();
         $listing = Listing::factory()->create([
             'user_id' => $user->id,
             'category_id' => $category->id,
@@ -83,7 +84,7 @@ class KvkkAndModerationTest extends TestCase
         // Password NULL olamaz (NOT NULL constraint) — rasgele hash'lenmiş değer.
         // Önemli olan: giriş yapılamaz (status='silinmis' → EnsureUserIsActive middleware).
         $this->assertNotEmpty($user->password);
-        $this->assertNotEquals(\Illuminate\Support\Facades\Hash::make('password'), $user->password);
+        $this->assertNotEquals(Hash::make('password'), $user->password);
         $this->assertStringStartsWith('Silinmiş', $user->name);
         $this->assertStringStartsWith('deleted-', $user->username);
         $this->assertStringEndsWith('@nisoya.local', $user->email);
@@ -122,7 +123,7 @@ class KvkkAndModerationTest extends TestCase
     public function test_admin_ban_user_passes_their_active_listings_to_pasif(): void
     {
         $user = User::factory()->create(['status' => UserStatus::Aktif]);
-        $category = \App\Models\Category::first();
+        $category = Category::first();
         Listing::factory()->create([
             'user_id' => $user->id,
             'category_id' => $category->id,
@@ -136,7 +137,7 @@ class KvkkAndModerationTest extends TestCase
 
         // Observer'ın public metodu — production'da updated event'i tetikler,
         // test'te doğrudan çağrılarak aynı davranış doğrulanır.
-        (new \App\Observers\UserObserver())->suspendActiveListings($user);
+        (new UserObserver)->suspendActiveListings($user);
 
         $this->assertSame(0, $user->listings()->where('status', ListingStatus::Aktif->value)->count());
         $this->assertSame(2, $user->listings()->where('status', ListingStatus::Pasif->value)->count());
@@ -145,7 +146,7 @@ class KvkkAndModerationTest extends TestCase
     public function test_reactivating_user_does_not_auto_reactivate_listings(): void
     {
         $user = User::factory()->create(['status' => UserStatus::Askida]);
-        $category = \App\Models\Category::first();
+        $category = Category::first();
         Listing::factory()->create([
             'user_id' => $user->id,
             'category_id' => $category->id,

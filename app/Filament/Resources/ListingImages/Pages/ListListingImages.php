@@ -6,6 +6,7 @@ use App\Filament\Resources\ListingImages\ListingImageResource;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Artisan;
 
 class ListListingImages extends ListRecords
 {
@@ -19,7 +20,7 @@ class ListListingImages extends ListRecords
                 ->icon('heroicon-o-arrow-path')
                 ->color('warning')
                 ->action(function () {
-                    \Illuminate\Support\Facades\Artisan::call('images:reprocess');
+                    Artisan::call('images:reprocess');
                     Notification::make()
                         ->title('Toplu yeniden işleme tamamlandı')
                         ->success()
@@ -37,7 +38,7 @@ class ListListingImages extends ListRecords
                     // Nominatim rate limit (1 req/s) — admin başına dakikada max 60 işlem
                     // (config/app.php'de tanımlı 'reverse-geocode' policy).
                     // Bu sayede 3600 görsel/saat'ten fazla istek atılması engellenir.
-                    \Illuminate\Support\Facades\Artisan::call('images:reverse-geocode');
+                    Artisan::call('images:reverse-geocode');
                     Notification::make()
                         ->title('Toplu reverse geocoding başladı (arkaplan)')
                         ->info()

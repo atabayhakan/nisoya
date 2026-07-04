@@ -27,11 +27,13 @@ class PerfSlow extends Command
 
         if (empty($endpoints)) {
             $this->info('Log dosyasında performans kaydı bulunamadı (PERFORMANCE_LOG=true olmalı).');
+
             return self::SUCCESS;
         }
 
         if ($this->option('json')) {
             $this->line(json_encode($endpoints, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
             return self::SUCCESS;
         }
 

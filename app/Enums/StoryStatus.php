@@ -9,7 +9,7 @@ use Filament\Support\Contracts\HasLabel;
  * "Gurbet Günlüğü" (Nisoya Nabzı'nın anonim hikaye duvarı) — kullanıcı
  * hikayeleri yayınlanmadan önce admin onayından geçer.
  */
-enum StoryStatus: string implements HasLabel, HasColor
+enum StoryStatus: string implements HasColor, HasLabel
 {
     case Beklemede = 'beklemede';
     case Onaylandi = 'onaylandi';

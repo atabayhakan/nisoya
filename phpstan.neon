@@ -1,12 +1,10 @@
 includes:
-    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
 
 parameters:
     level: 5
     paths:
         - app/
-    excludePaths:
-        - app/Console/Kernel.php
     ignoreErrors:
         # Filament Pages base class'ında $this->form() magic method var; PHPStan görmüyor
         - '#Access to an undefined property App\\Filament\\Pages\\.*\$form\.#'

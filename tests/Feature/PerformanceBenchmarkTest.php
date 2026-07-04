@@ -3,14 +3,15 @@
 namespace Tests\Feature;
 
 use App\Enums\ListingStatus;
-use App\Enums\UserRole;
-use App\Enums\UserStatus;
 use App\Models\Category;
 use App\Models\Listing;
+use App\Models\ListingImage;
 use App\Models\User;
+use App\Services\PerformanceService;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Tests\TestCase;
 
 /**
@@ -74,7 +75,7 @@ class PerformanceBenchmarkTest extends TestCase
         ]);
         foreach ($listings as $listing) {
             foreach (range(1, 3) as $i) {
-                \App\Models\ListingImage::create([
+                ListingImage::create([
                     'listing_id' => $listing->id,
                     'path_thumb' => "listings/{$listing->id}/thumb-{$i}.webp",
                     'path_medium' => "listings/{$listing->id}/medium-{$i}.webp",
@@ -96,7 +97,7 @@ class PerformanceBenchmarkTest extends TestCase
     public function test_performance_service_disabled_by_default(): void
     {
         // PERFORMANCE_LOG env varsayılan false
-        $service = app(\App\Services\PerformanceService::class);
+        $service = app(PerformanceService::class);
         $this->assertFalse(env('PERFORMANCE_LOG', false));
 
         $service->start();
@@ -117,10 +118,10 @@ class PerformanceBenchmarkTest extends TestCase
         putenv('PERFORMANCE_LOG=true');
 
         $user = User::factory()->create();
-        $request = \Illuminate\Http\Request::create('/test', 'GET');
+        $request = Request::create('/test', 'GET');
         $request->setUserResolver(fn () => $user);
 
-        $service = app(\App\Services\PerformanceService::class);
+        $service = app(PerformanceService::class);
         $service->start();
         $service->record($request, 200);
 
@@ -136,11 +137,12 @@ class PerformanceBenchmarkTest extends TestCase
 
     public function test_performance_service_measures_block_correctly(): void
     {
-        $service = app(\App\Services\PerformanceService::class);
+        $service = app(PerformanceService::class);
         $service->start();
 
         $result = $service->measure(function () {
             usleep(1000); // 1ms simüle
+
             return 'done';
         });
 
@@ -170,7 +172,7 @@ class PerformanceBenchmarkTest extends TestCase
 
         foreach ($listings as $listing) {
             foreach (range(1, 2) as $i) {
-                \App\Models\ListingImage::create([
+                ListingImage::create([
                     'listing_id' => $listing->id,
                     'path_thumb' => "listings/{$listing->id}/thumb-{$i}.webp",
                     'path_medium' => "listings/{$listing->id}/medium-{$i}.webp",
@@ -188,7 +190,7 @@ class PerformanceBenchmarkTest extends TestCase
 
         $response->assertOk();
 
-        $this->assertLessThan(80, count($queries), 'N+1 query riski: ' . count($queries) . ' sorgu çalıştı');
+        $this->assertLessThan(80, count($queries), 'N+1 query riski: '.count($queries).' sorgu çalıştı');
     }
 
     public function test_listing_show_query_count_is_bounded(): void
@@ -208,11 +210,11 @@ class PerformanceBenchmarkTest extends TestCase
         ]);
 
         \DB::enableQueryLog();
-        $response = $this->get('/ilan/' . $listing->id);
+        $response = $this->get('/ilan/'.$listing->id);
         $queries = \DB::getQueryLog();
         \DB::disableQueryLog();
 
         $response->assertOk();
-        $this->assertLessThan(25, count($queries), 'Listing show fazla sorgu: ' . count($queries));
+        $this->assertLessThan(25, count($queries), 'Listing show fazla sorgu: '.count($queries));
     }
 }

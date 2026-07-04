@@ -2,6 +2,10 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\ExifPrivacyWidget;
+use App\Filament\Widgets\StatsOverview;
+use App\Filament\Widgets\SystemHealthWidget;
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -33,7 +37,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Emerald,
             ])
             ->darkMode(true) // Sistem teması ile otomatik senkronize; kullanıcı override edebilir.
-            ->defaultThemeMode(\Filament\Enums\ThemeMode::System)
+            ->defaultThemeMode(ThemeMode::System)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -41,9 +45,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                \App\Filament\Widgets\SystemHealthWidget::class,
-                \App\Filament\Widgets\ExifPrivacyWidget::class,
-                \App\Filament\Widgets\StatsOverview::class,
+                SystemHealthWidget::class,
+                ExifPrivacyWidget::class,
+                StatsOverview::class,
                 AccountWidget::class,
                 FilamentInfoWidget::class,
             ])

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\ListingImage;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
 
@@ -30,7 +31,7 @@ class ExifMapPage extends Page
 
     public static function getNavigationBadge(): ?string
     {
-        $count = \App\Models\ListingImage::query()->withGps()->count();
+        $count = ListingImage::query()->withGps()->count();
 
         return $count > 0 ? (string) $count : null;
     }
@@ -47,8 +48,8 @@ class ExifMapPage extends Page
 
     public function getSubheading(): ?string
     {
-        $count = \App\Models\ListingImage::query()->withGps()->count();
-        $clusters = \App\Models\ListingImage::query()->withGps()
+        $count = ListingImage::query()->withGps()->count();
+        $clusters = ListingImage::query()->withGps()
             ->selectRaw('COUNT(*) as cnt, ROUND(gps_lat, 2) as lat, ROUND(gps_lng, 2) as lng')
             ->groupBy('lat', 'lng')
             ->havingRaw('cnt > 1')

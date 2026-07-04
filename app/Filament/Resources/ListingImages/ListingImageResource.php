@@ -4,7 +4,9 @@ namespace App\Filament\Resources\ListingImages;
 
 use App\Filament\Resources\ListingImages\Pages\ListListingImages;
 use App\Filament\Resources\ListingImages\Pages\ViewListingImage;
+use App\Models\Country;
 use App\Models\ListingImage;
+use App\Notifications\GpsPrivacyNotification;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -12,8 +14,10 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -48,7 +52,7 @@ class ListingImageResource extends Resource
         return 'Görseller';
     }
 
-    public static function infolist(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    public static function infolist(Schema $schema): Schema
     {
         return $schema->components([
             // Şema doğrudan view'da çağrılacak
@@ -242,7 +246,7 @@ class ListingImageResource extends Resource
                             ->distinct()
                             ->orderBy('reverse_country_code')
                             ->pluck('reverse_country_code', 'reverse_country_code')
-                            ->mapWithKeys(fn ($code) => [$code => \App\Models\Country::find($code)?->name_tr ?? $code])
+                            ->mapWithKeys(fn ($code) => [$code => Country::find($code)?->name_tr ?? $code])
                             ->toArray();
                     })
                     ->searchable(),
@@ -276,8 +280,8 @@ class ListingImageResource extends Resource
 
                 Filter::make('created_at')
                     ->form([
-                        \Filament\Forms\Components\DatePicker::make('from')->label('Başlangıç'),
-                        \Filament\Forms\Components\DatePicker::make('until')->label('Bitiş'),
+                        DatePicker::make('from')->label('Başlangıç'),
+                        DatePicker::make('until')->label('Bitiş'),
                     ])
                     ->query(function ($query, array $data) {
                         return $query
@@ -367,7 +371,7 @@ class ListingImageResource extends Resource
                                     continue;
                                 }
 
-                                $record->listing->user->notify(new \App\Notifications\GpsPrivacyNotification(
+                                $record->listing->user->notify(new GpsPrivacyNotification(
                                     listingId: $record->listing->id,
                                     listingTitle: $record->listing->title,
                                 ));

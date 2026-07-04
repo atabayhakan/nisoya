@@ -34,7 +34,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Kullanıcı banlandığında aktif ilanları otomatik pasif yap.
-        User::observe(\App\Observers\UserObserver::class);
+        User::observe(UserObserver::class);
 
         // Görsel kaydı silindiğinde thumb/medium/large dosyalarını da temizle.
         ListingImage::observe(ListingImageObserver::class);

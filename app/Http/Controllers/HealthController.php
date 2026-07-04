@@ -6,6 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -66,12 +67,12 @@ class HealthController extends Controller
             DB::select('SELECT 1');
             $latency = round((microtime(true) - $start) * 1000, 2);
 
-            $stats = DB::selectOne("
+            $stats = DB::selectOne('
                 SELECT
                     (SELECT COUNT(*) FROM users) as users,
                     (SELECT COUNT(*) FROM listings) as listings,
                     (SELECT COUNT(*) FROM messages) as messages
-            ");
+            ');
 
             return [
                 'status' => 'ok',
@@ -134,7 +135,7 @@ class HealthController extends Controller
             if (config('queue.default') === 'database') {
                 $size = DB::table('jobs')->count();
             } elseif (config('queue.default') === 'redis') {
-                $size = \Illuminate\Support\Facades\Redis::llen('queues:default');
+                $size = Redis::llen('queues:default');
             }
 
             return [

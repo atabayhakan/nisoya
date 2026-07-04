@@ -61,6 +61,7 @@ class ReprocessImages extends Command
                 $sourcePath = Storage::disk('public')->path($image->path_large);
                 if (! file_exists($sourcePath)) {
                     $errors++;
+
                     continue;
                 }
 

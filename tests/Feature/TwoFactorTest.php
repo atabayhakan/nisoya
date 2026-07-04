@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\TwoFactorController;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use PragmaRX\Google2FA\Google2FA;
 use Tests\TestCase;
 
@@ -106,7 +108,7 @@ class TwoFactorTest extends TestCase
 
         $user = User::factory()->create([
             'email_verified_at' => now(),
-            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            'password' => Hash::make('password'),
             'two_factor_secret' => 'JBSWY3DPEHPK3PXP',
             'two_factor_confirmed_at' => now(),
             'two_factor_recovery_codes' => json_encode(['CODE1', 'CODE2']),
@@ -131,7 +133,7 @@ class TwoFactorTest extends TestCase
 
         $user = User::factory()->create([
             'email_verified_at' => now(),
-            'password' => \Illuminate\Support\Facades\Hash::make('correct'),
+            'password' => Hash::make('correct'),
             'two_factor_secret' => 'JBSWY3DPEHPK3PXP',
             'two_factor_confirmed_at' => now(),
         ]);
@@ -155,7 +157,7 @@ class TwoFactorTest extends TestCase
             'two_factor_recovery_codes' => json_encode(['AAAA-BBBB', 'CCCC-DDDD']),
         ]);
 
-        $controller = app(\App\Http\Controllers\TwoFactorController::class);
+        $controller = app(TwoFactorController::class);
 
         // İlk kod doğru
         $this->assertTrue($controller->useRecoveryCode(request(), $user, 'AAAA-BBBB'));
@@ -179,7 +181,7 @@ class TwoFactorTest extends TestCase
             'two_factor_recovery_codes' => json_encode(['VALID-CODE']),
         ]);
 
-        $controller = app(\App\Http\Controllers\TwoFactorController::class);
+        $controller = app(TwoFactorController::class);
         $this->assertFalse($controller->useRecoveryCode(request(), $user, 'INVALID-CODE'));
     }
 

@@ -2,12 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\ListingStatus;
-use App\Enums\UserRole;
-use App\Enums\UserStatus;
-use App\Models\Category;
-use App\Models\Listing;
-use App\Models\User;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -78,6 +72,6 @@ class QueryLogTest extends TestCase
         \DB::disableQueryLog();
 
         // 50'den az sorgu — limit middleware'i uyarı vermez
-        $this->assertLessThan(50, count($queries), 'Home page ' . count($queries) . ' sorgu çalıştırdı (>50)');
+        $this->assertLessThan(50, count($queries), 'Home page '.count($queries).' sorgu çalıştırdı (>50)');
     }
 }

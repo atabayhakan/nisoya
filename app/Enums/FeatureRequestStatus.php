@@ -5,7 +5,7 @@ namespace App\Enums;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 
-enum FeatureRequestStatus: string implements HasLabel, HasColor
+enum FeatureRequestStatus: string implements HasColor, HasLabel
 {
     case Beklemede = 'beklemede';
     case Onaylandi = 'onaylandi';

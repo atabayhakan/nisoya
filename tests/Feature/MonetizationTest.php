@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\Listing;
 use App\Models\User;
 use App\Support\Settings;
@@ -10,6 +11,7 @@ use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Database\Seeders\ProductCategorySeeder;
 use Database\Seeders\SiteSettingSeeder;
+use Database\Seeders\StaticPagesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -37,7 +39,7 @@ class MonetizationTest extends TestCase
     public function test_gizlilik_sayfasi_aciliyor(): void
     {
         // Gizlilik sayfası Faz B'de CMS'e (pages tablosu) taşındı.
-        $this->seed(\Database\Seeders\StaticPagesSeeder::class);
+        $this->seed(StaticPagesSeeder::class);
 
         $this->get('/gizlilik')->assertOk()->assertSee('Gizlilik Politikası');
     }
@@ -213,7 +215,7 @@ class MonetizationTest extends TestCase
         $this->seedBaseData();
 
         $user = User::factory()->create(['email_verified_at' => now()]);
-        $category = \App\Models\Category::first();
+        $category = Category::first();
         $listing = Listing::factory()->create([
             'user_id' => $user->id,
             'category_id' => $category->id,
@@ -237,7 +239,7 @@ class MonetizationTest extends TestCase
         $this->seedBaseData();
 
         $user = User::factory()->create(['email_verified_at' => now()]);
-        $category = \App\Models\Category::first();
+        $category = Category::first();
         $listing = Listing::factory()->create([
             'user_id' => $user->id,
             'category_id' => $category->id,
@@ -274,7 +276,7 @@ class MonetizationTest extends TestCase
     public function test_sitemap_gizlilik_ve_cerez_tercihlerini_icerir(): void
     {
         $this->seedBaseData();
-        $this->seed(\Database\Seeders\StaticPagesSeeder::class);
+        $this->seed(StaticPagesSeeder::class);
 
         $response = $this->get('/sitemap.xml')->assertOk();
         $this->assertStringContainsString('/gizlilik', $response->getContent());

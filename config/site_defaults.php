@@ -79,7 +79,7 @@ return [
 
         // --- Bağış ---
         'bagis.baslik' => ['group' => 'bagis', 'label' => 'Bağış başlığı', 'type' => 'text', 'default' => 'Nisoya ücretsiz kalacak'],
-        'bagis.metin' => ['group' => 'bagis', 'label' => 'Bağış açıklaması', 'type' => 'textarea', 'default' => "Nisoya tamamen ücretsiz bir hizmettir. Sunucu, alan adı ve bakım giderlerini karşılamak için bağışlarınız bize güç verir. İstediğiniz yöntemi seçebilirsiniz:"],
+        'bagis.metin' => ['group' => 'bagis', 'label' => 'Bağış açıklaması', 'type' => 'textarea', 'default' => 'Nisoya tamamen ücretsiz bir hizmettir. Sunucu, alan adı ve bakım giderlerini karşılamak için bağışlarınız bize güç verir. İstediğiniz yöntemi seçebilirsiniz:'],
         'bagis.paypal_me' => ['group' => 'bagis', 'label' => 'PayPal.me bağlantısı (örn: paypal.me/nisoya)', 'type' => 'text', 'default' => ''],
         'bagis.iban' => ['group' => 'bagis', 'label' => 'IBAN (TR ile başlayan)', 'type' => 'text', 'default' => ''],
         'bagis.iban_sahibi' => ['group' => 'bagis', 'label' => 'IBAN hesap sahibi', 'type' => 'text', 'default' => ''],

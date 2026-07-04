@@ -11,7 +11,9 @@ use App\Models\User;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Models\Activity;
 use Tests\TestCase;
 
@@ -88,7 +90,7 @@ class AdminHealthAndAuditTest extends TestCase
         ]);
 
         // DB bağlantısını boz
-        \Illuminate\Support\Facades\DB::shouldReceive('select')->andThrow(new \Exception('DB down'));
+        DB::shouldReceive('select')->andThrow(new \Exception('DB down'));
 
         $response = $this->actingAs($admin)->get('/yonetim/health/detailed');
         // 503 Service Unavailable
@@ -188,7 +190,7 @@ class AdminHealthAndAuditTest extends TestCase
 
     public function test_filament_panel_supports_dark_mode(): void
     {
-        $panel = \Filament\Facades\Filament::getPanel('admin');
+        $panel = Filament::getPanel('admin');
         $this->assertTrue($panel->hasDarkMode());
     }
 

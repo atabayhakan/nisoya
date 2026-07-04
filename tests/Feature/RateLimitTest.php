@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ListingStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
+use App\Models\Category;
+use App\Models\Listing;
+use App\Models\ListingImage;
 use App\Models\User;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
@@ -110,16 +114,16 @@ class RateLimitTest extends TestCase
 
         // Admin'in kendi ilanına GPS ata (factory kullanmadan doğrudan)
         $user = User::factory()->create();
-        \App\Models\Category::create([
+        Category::create([
             'parent_id' => null,
             'name' => 'Test Kategori',
             'slug' => 'test-kategori',
             'type' => 'hizmet',
             'is_active' => true,
         ]);
-        $category = \App\Models\Category::where('slug', 'test-kategori')->first();
+        $category = Category::where('slug', 'test-kategori')->first();
 
-        $listing = \App\Models\Listing::create([
+        $listing = Listing::create([
             'user_id' => $user->id,
             'category_id' => $category->id,
             'type' => 'hizmet',
@@ -133,10 +137,10 @@ class RateLimitTest extends TestCase
             'gps_lat' => 41.0,
             'gps_lng' => 29.0,
             'is_remote' => false,
-            'status' => \App\Enums\ListingStatus::Aktif->value,
+            'status' => ListingStatus::Aktif->value,
         ]);
 
-        \App\Models\ListingImage::create([
+        ListingImage::create([
             'listing_id' => $listing->id,
             'path_thumb' => 'listings/thumb/test.webp',
             'path_medium' => 'listings/medium/test.webp',

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\UserRole;
 use App\Filament\Pages\IcerikAyarlari;
 use App\Models\User;
+use App\Providers\AppServiceProvider;
 use App\Support\Settings;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
@@ -122,7 +123,7 @@ class SiteContentTest extends TestCase
         ]);
 
         // Provider'ı yeniden boot ettirerek gerçek merge mantığını tetikle.
-        $this->app->register(\App\Providers\AppServiceProvider::class, force: true);
+        $this->app->register(AppServiceProvider::class, force: true);
 
         $this->assertSame('<meta name="merge-test-head" content="1">', config('services.custom_head_code'));
         $this->assertSame('<script data-test-marker="MERGE-TEST-FOOTER"></script>', config('services.custom_footer_code'));

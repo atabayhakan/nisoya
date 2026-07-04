@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ListingStatus;
+use App\Models\Category;
 use App\Models\Listing;
 use App\Models\ListingImage;
 use App\Models\User;
@@ -49,7 +51,7 @@ class ExifErrorHandlingTest extends TestCase
 
         $corruptJpeg = UploadedFile::fake()->createWithContent(
             'corrupt.jpg',
-            "\xFF\xD8\xFF\xE0" . str_repeat("\x00", 100)
+            "\xFF\xD8\xFF\xE0".str_repeat("\x00", 100)
         );
 
         $service = app(ImageService::class);
@@ -101,8 +103,8 @@ class ExifErrorHandlingTest extends TestCase
         $user = User::factory()->create();
         $listing = Listing::factory()->create([
             'user_id' => $user->id,
-            'category_id' => \App\Models\Category::first()->id,
-            'status' => \App\Enums\ListingStatus::Aktif,
+            'category_id' => Category::first()->id,
+            'status' => ListingStatus::Aktif,
         ]);
 
         $image = UploadedFile::fake()->image('test.jpg', 1000, 750);
@@ -140,7 +142,7 @@ class ExifErrorHandlingTest extends TestCase
         // Uzantısız dosya → RuntimeException (controller yakalar)
         $this->expectException(\RuntimeException::class);
 
-        $image = UploadedFile::fake()->createWithContent('noext', "\xFF\xD8\xFF\xE0" . str_repeat("\x00", 100));
+        $image = UploadedFile::fake()->createWithContent('noext', "\xFF\xD8\xFF\xE0".str_repeat("\x00", 100));
 
         $service = app(ImageService::class);
         $service->storeOptimized($image, 'listings');
@@ -196,7 +198,7 @@ class ExifErrorHandlingTest extends TestCase
         // EXIF APP1 segmenti ekle
         $exifSegment = $this->buildExifOrientationSegment($orientation);
         $jpeg = file_get_contents($tmpPath);
-        $patched = substr($jpeg, 0, 2) . $exifSegment . substr($jpeg, 2);
+        $patched = substr($jpeg, 0, 2).$exifSegment.substr($jpeg, 2);
         file_put_contents($tmpPath, $patched);
 
         return new UploadedFile($tmpPath, 'test.jpg', 'image/jpeg', null, true);
@@ -209,7 +211,8 @@ class ExifErrorHandlingTest extends TestCase
         $ifd .= pack('vv', 0x0112, 3);
         $ifd .= pack('VV', 1, $orientation);
         $ifd .= pack('V', 0);
-        $app1Data = "Exif\0\0" . $tiffHeader . $ifd;
-        return "\xFF\xE1" . pack('n', strlen($app1Data) + 2) . $app1Data;
+        $app1Data = "Exif\0\0".$tiffHeader.$ifd;
+
+        return "\xFF\xE1".pack('n', strlen($app1Data) + 2).$app1Data;
     }
 }

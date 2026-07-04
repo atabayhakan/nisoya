@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ListingImage;
 use App\Services\ImageService;
 use Tests\TestCase;
 
@@ -136,7 +137,7 @@ class ExifHandlingTest extends TestCase
             'ImageDescription' => 'Hassas açıklama — TEMİZLENMELİ',
         ];
 
-        $sanitized = \App\Models\ListingImage::sanitizeExifForAudit($raw);
+        $sanitized = ListingImage::sanitizeExifForAudit($raw);
 
         // İzinli alanlar korunmalı
         $this->assertSame('Canon', $sanitized['Make']);
@@ -161,7 +162,7 @@ class ExifHandlingTest extends TestCase
             'UnknownTag12345' => 'should be filtered',
         ];
 
-        $sanitized = \App\Models\ListingImage::sanitizeExifForAudit($raw);
+        $sanitized = ListingImage::sanitizeExifForAudit($raw);
 
         $this->assertSame('Canon', $sanitized['Make']);
         $this->assertArrayNotHasKey('UnknownTag12345', $sanitized);
@@ -169,13 +170,13 @@ class ExifHandlingTest extends TestCase
 
     public function test_exif_summary_returns_camera_info(): void
     {
-        $reflection = new \ReflectionClass(\App\Models\ListingImage::class);
+        $reflection = new \ReflectionClass(ListingImage::class);
         $this->assertTrue($reflection->hasMethod('exifSummary'));
     }
 
     public function test_listing_image_model_has_exif_metadata_fillable(): void
     {
-        $image = new \App\Models\ListingImage;
+        $image = new ListingImage;
         $fillable = $image->getFillable();
 
         $this->assertContains('exif_metadata', $fillable);
