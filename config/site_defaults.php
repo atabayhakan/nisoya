@@ -93,5 +93,6 @@ return [
         'nabiz.hedef_metrik' => ['group' => 'nabiz', 'label' => 'Hedef neyi sayar?', 'type' => 'select', 'options' => ['yeni_uye' => 'Bu ay yeni üye', 'yeni_ilan' => 'Bu ay yeni ilan'], 'default' => 'yeni_uye'],
         'nabiz.hedef_baslik' => ['group' => 'nabiz', 'label' => 'Hedef başlığı', 'type' => 'text', 'default' => 'Bu ay hedefimiz'],
         'nabiz.odul_mesaji' => ['group' => 'nabiz', 'label' => 'Ödül/motivasyon mesajı (ops.)', 'type' => 'text', 'default' => ''],
+        'nabiz.hikaye_duvari_aktif' => ['group' => 'nabiz', 'label' => 'Gurbet Günlüğü (anonim hikaye duvarı)', 'type' => 'select', 'options' => ['0' => 'Kapalı', '1' => 'Açık'], 'default' => '0'],
     ],
 ];

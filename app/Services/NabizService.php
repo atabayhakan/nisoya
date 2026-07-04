@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use App\Enums\StoryStatus;
 use App\Models\Listing;
+use App\Models\Story;
 use App\Models\User;
 use App\Support\Settings;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -84,5 +87,47 @@ class NabizService
         });
 
         return collect($ambassadors)->map(fn (array $item) => (object) $item);
+    }
+
+    /** "Gurbet Günlüğü" hikaye duvarı admin panelden açık mı? */
+    public function storyWallEnabled(): bool
+    {
+        return Settings::get('nabiz.hikaye_duvari_aktif', '0') === '1';
+    }
+
+    /**
+     * Onaylanmış hikayeler — tamamen anonim (sorgu bile user_id/isim
+     * çekmiyor, sadece body+tarih; herhangi bir kimlik sızıntısını
+     * kaynağında engeller).
+     *
+     * Not: created_at Carbon nesnesi de cache'lenmeden önce string'e
+     * çevrilir — aksi halde Eloquent modelleri gibi Carbon da
+     * serializable_classes=false ile ikinci okumada bozulur.
+     *
+     * @return Collection<int, object{body: string, created_at: Carbon}>
+     */
+    public function approvedStories(int $limit = 12): Collection
+    {
+        $stories = Cache::remember("nabiz_stories_{$limit}", self::CACHE_TTL_SECONDS, fn () => Story::query()
+            ->where('status', StoryStatus::Onaylandi)
+            ->latest()
+            ->take($limit)
+            ->get(['body', 'created_at'])
+            ->map(fn (Story $story) => [
+                'body' => $story->body,
+                'created_at' => $story->created_at->toIso8601String(),
+            ])
+            ->all());
+
+        return collect($stories)->map(fn (array $item) => (object) [
+            'body' => $item['body'],
+            'created_at' => Carbon::parse($item['created_at']),
+        ]);
+    }
+
+    /** Kullanıcının en son gönderdiği hikayenin durumu (hiç göndermediyse null). */
+    public function latestStoryStatusFor(User $user): ?StoryStatus
+    {
+        return $user->stories()->latest()->first()?->status;
     }
 }

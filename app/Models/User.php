@@ -129,6 +129,12 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(PortfolioItem::class)->orderBy('sort_order');
     }
 
+    /** Kullanıcının "Gurbet Günlüğü" hikaye gönderileri (onay bekleyen/onaylı/reddedilen). */
+    public function stories(): HasMany
+    {
+        return $this->hasMany(Story::class);
+    }
+
     public function favorites(): HasMany
     {
         return $this->hasMany(Favorite::class);

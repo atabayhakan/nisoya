@@ -21,6 +21,7 @@ use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SavedSearchController;
+use App\Http\Controllers\StoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -125,6 +126,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Portfolyo (geçmiş iş örnekleri)
     Route::post('/panel/profil/portfolyo', [PortfolioItemController::class, 'store'])->name('panel.portfolio.store');
     Route::delete('/panel/profil/portfolyo/{portfolioItem}', [PortfolioItemController::class, 'destroy'])->name('panel.portfolio.destroy');
+
+    // Gurbet Günlüğü (Nisoya Nabzı — anonim hikaye duvarı)
+    Route::post('/nabiz/hikaye', [StoryController::class, 'store'])
+        ->middleware(['honeypot', 'throttle:story-store'])
+        ->name('nabiz.stories.store');
 
     // KVKK: Veri silme + veri dışa aktarma
     Route::delete('/panel/profil', [ProfileSettingsController::class, 'destroy'])->name('panel.profile.destroy');

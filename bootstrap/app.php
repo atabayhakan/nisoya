@@ -65,6 +65,10 @@ return Application::configure(basePath: dirname(__DIR__))
             Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
         );
 
+        RateLimiter::for('story-store', fn (Request $request) =>
+            Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
+        );
+
         RateLimiter::for('register', fn (Request $request) =>
             Limit::perMinute(5)->by($request->ip())
         );

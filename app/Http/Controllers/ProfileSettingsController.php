@@ -146,6 +146,11 @@ class ProfileSettingsController extends Controller
             }
             $user->portfolioItems()->delete();
 
+            // Gurbet Günlüğü hikayelerini sil (onaylanmış olsalar bile —
+            // herkese açık tarafta zaten anonim gösteriliyordu ama hesap
+            // silme talebinde veri tamamen kaldırılır).
+            $user->stories()->delete();
+
             // İlan görsellerini sil (tüm varyantlar)
             foreach ($user->listings()->with('images')->get() as $listing) {
                 foreach ($listing->images as $image) {
@@ -235,6 +240,11 @@ class ProfileSettingsController extends Controller
             ])->all(),
             'portfolio_items' => $user->portfolioItems()->get()->map(fn ($item) => [
                 'caption' => $item->caption,
+            ])->all(),
+            'gurbet_gunlugu_hikayeleri' => $user->stories()->get()->map(fn ($story) => [
+                'body' => $story->body,
+                'status' => $story->status->value,
+                'created_at' => $story->created_at?->toIso8601String(),
             ])->all(),
             'listings' => $user->listings()->with('category', 'country', 'images', 'tags')->get()->toArray(),
             'reviews_given' => $user->reviewsGiven()->get()->toArray(),
