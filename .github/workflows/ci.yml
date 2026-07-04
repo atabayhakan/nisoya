@@ -45,6 +45,13 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
+      - name: SQLite dosyasını oluştur
+        # composer install'ın post-autoload-dump adımı (package:discover) uygulamayı
+        # bootstrap eder ve AppServiceProvider::boot() Schema::hasTable() çağırır —
+        # bu da sqlite dosyasının fiziksel olarak var olmasını gerektirir
+        # (database.sqlite .gitignore'da, checkout'ta gelmez).
+        run: touch database/database.sqlite
+
       - name: Composer bağımlılıkları
         run: composer install --prefer-dist --no-interaction --no-progress
 
@@ -120,6 +127,9 @@ jobs:
           extensions: mbstring, bcmath, gd, intl, pdo_mysql, sqlite, pdo_sqlite, zip
           coverage: none
 
+      - name: SQLite dosyasını oluştur
+        run: touch database/database.sqlite
+
       - name: Composer install (dev)
         run: composer install --prefer-dist --no-interaction --no-progress
 
@@ -147,6 +157,9 @@ jobs:
         with:
           php-version: '8.3'
           extensions: mbstring, bcmath, gd, intl, pdo_mysql, sqlite, pdo_sqlite, zip
+
+      - name: SQLite dosyasını oluştur
+        run: touch database/database.sqlite
 
       - name: Composer bağımlılıkları
         run: composer install --prefer-dist --no-interaction --no-progress
@@ -192,6 +205,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: SQLite dosyasını oluştur
+        run: touch database/database.sqlite
+
       - name: Composer install (production)
         run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
@@ -225,6 +241,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: SQLite dosyasını oluştur
+        run: touch database/database.sqlite
 
       - name: Composer bağımlılıkları
         run: composer install --prefer-dist --no-interaction --no-progress
