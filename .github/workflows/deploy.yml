@@ -30,4 +30,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/nisoya
+            # ÖNEMLİ: git pull'u BURADA yapıyoruz, deploy.sh'ın İÇİNDE değil.
+            # deploy.sh kendini güncellerse (git pull), bash script'i diskten
+            # satır satır okuduğu için çalışan sürüm bozulur (kendini-değiştiren
+            # script sorunu). Önce pull → deploy.sh güncel hale gelir → sonra
+            # bash onu baştan (güncel) okur.
+            git pull origin main
             bash deploy/deploy.sh

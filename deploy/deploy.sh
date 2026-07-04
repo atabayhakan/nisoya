@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Nisoya — Üretim deploy betiği.
-# Kullanım: cd /var/www/nisoya && bash deploy/deploy.sh
+# Kullanım: cd /var/www/nisoya && git pull origin main && bash deploy/deploy.sh
+# (git pull bilinçli olarak script DIŞINDA — bkz. aşağıdaki not.)
 #
 # Adımlar:
 #   1. Bakım modu (down) — trap ile her durumda up garanti edilir
-#   2. Kod güncelleme (git pull)
-#   3. Bağımlılıklar (composer + npm)
+#   2. Bağımlılıklar (composer + npm)
 #   4. Migrasyonlar
 #   5. Önbellekler (config/route/view/event)
 #   6. Storage symlink
@@ -40,8 +40,11 @@ trap cleanup EXIT
 info "Bakım moduna alınıyor..."
 php artisan down --render="errors::503" --retry=15 || warn "down komutu başarısız (devam ediliyor)"
 
-info "Kod güncelleniyor..."
-git pull origin main
+# NOT: `git pull` bilinçli olarak BURADA yok. Bu script kendini güncellerse
+# (deploy.sh değişmişse) bash çalışan sürümü bozar (kendini-değiştiren script).
+# Kod güncellemesi bu script ÇAĞRILMADAN ÖNCE yapılır: CI'da .github/workflows/
+# deploy.yml `git pull origin main` çalıştırır; elle çalıştırırken de önce
+# `git pull origin main && bash deploy/deploy.sh` yapılmalı.
 
 info "PHP bağımlılıkları yükleniyor..."
 composer install --no-dev --optimize-autoloader --no-interaction
