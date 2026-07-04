@@ -11,11 +11,11 @@ name: Deploy
 #     && git fetch origin && git checkout -f -b main origin/main
 
 on:
-  # NOT: Otomatik push-tetikleme, sunucu git tabanlı deploy'a hazırlanıp
-  # secret'lar (SSH_HOST / SSH_USER / SSH_PRIVATE_KEY) eklenene kadar geçici
-  # olarak KAPALI — aksi halde her push'ta secret'sız çalışıp başarısız olur
-  # ve mail spam'i yapardı. Kurulum tamamlanıp elle test (aşağıdaki
-  # workflow_dispatch) başarılı olunca `push: branches: [main]` geri eklenecek.
+  # main'e her push'ta VPS'e otomatik deploy. Kurulum 2026-07-04'te tamamlandı:
+  # 3 secret (SSH_HOST/USER/PRIVATE_KEY) eklendi, sunucu git deposuna çevrildi
+  # (repo deploy key ile), workflow_dispatch ile elle test başarılı oldu.
+  push:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
