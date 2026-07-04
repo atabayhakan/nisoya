@@ -6,13 +6,14 @@ use App\Models\Category;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Listing;
+use App\Services\NabizService;
 use App\Support\CategoryIcon;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    public function index(): View
+    public function index(NabizService $nabiz): View
     {
         return view('home', [
             'categories' => Category::query()->whereNull('parent_id')->where('is_active', true)
@@ -42,6 +43,8 @@ class HomeController extends Controller
                     'timeAgo' => $listing->created_at->diffForHumans(),
                     'href' => route('listings.show', [$listing, $listing->slug]),
                 ]),
+            'nabizGoal' => $nabiz->goalProgress(),
+            'nabizAmbassadors' => $nabiz->cityAmbassadors(3),
         ]);
     }
 }

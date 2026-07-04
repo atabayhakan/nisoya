@@ -206,6 +206,7 @@
                     <li><a href="{{ url('/ilanlar') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Tüm İlanlar</a></li>
                     <li><a href="{{ route('listings.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Kategoriler</a></li>
                     <li><a href="{{ url('/nasil-calisir') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a></li>
+                    <li><a href="{{ route('nabiz') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nisoya Nabzı</a></li>
                 </ul>
             </div>
             <div>

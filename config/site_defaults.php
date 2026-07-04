@@ -18,6 +18,7 @@ return [
         'genel' => 'Genel',
         'reklam' => 'Reklam & Analiz',
         'bagis' => 'Bağış',
+        'nabiz' => 'Nisoya Nabzı',
     ],
 
     // key => [group, label, type (text|textarea), default]
@@ -86,5 +87,11 @@ return [
         'bagis.maliyet1' => ['group' => 'bagis', 'label' => 'Maliyet kalemi 1 (örn: Sunucu barındırma — ayda ~15€)', 'type' => 'text', 'default' => ''],
         'bagis.maliyet2' => ['group' => 'bagis', 'label' => 'Maliyet kalemi 2 (örn: Alan adı — yılda ~15€)', 'type' => 'text', 'default' => ''],
         'bagis.maliyet3' => ['group' => 'bagis', 'label' => 'Maliyet kalemi 3 (örn: Bakım ve geliştirme — gönüllü)', 'type' => 'text', 'default' => ''],
+
+        // --- Nisoya Nabzı: topluluk hedefi + şehir elçileri ---
+        'nabiz.hedef_sayi' => ['group' => 'nabiz', 'label' => 'Hedef sayı (0 = özelliği tamamen gizle)', 'type' => 'text', 'default' => '0'],
+        'nabiz.hedef_metrik' => ['group' => 'nabiz', 'label' => 'Hedef neyi sayar?', 'type' => 'select', 'options' => ['yeni_uye' => 'Bu ay yeni üye', 'yeni_ilan' => 'Bu ay yeni ilan'], 'default' => 'yeni_uye'],
+        'nabiz.hedef_baslik' => ['group' => 'nabiz', 'label' => 'Hedef başlığı', 'type' => 'text', 'default' => 'Bu ay hedefimiz'],
+        'nabiz.odul_mesaji' => ['group' => 'nabiz', 'label' => 'Ödül/motivasyon mesajı (ops.)', 'type' => 'text', 'default' => ''],
     ],
 ];

@@ -9,6 +9,7 @@ use App\Http\Controllers\InviteController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NabizController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PagesController;
@@ -29,6 +30,7 @@ Route::get('/ilanlar', [BrowseController::class, 'index'])->name('listings.index
 Route::get('/harita', [MapController::class, 'index'])->name('listings.map');
 Route::get('/ilanlar/kategori/{category:slug}', [BrowseController::class, 'category'])->name('listings.category');
 Route::get('/uye/{user:username}', [ProfileController::class, 'show'])->name('profiles.show');
+Route::get('/nabiz', [NabizController::class, 'index'])->name('nabiz');
 
 // Herkese açık ilan detayı
 Route::get('/ilan/{listing}/{slug?}', [ListingController::class, 'show'])->name('listings.show');

@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Support\Settings;
 use BackedEnum;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -69,6 +70,7 @@ class IcerikAyarlari extends Page
                         ->helperText('⚠️ Buraya yapıştırılan kod sayfaya olduğu gibi eklenir (HTML/JavaScript). Yalnızca güvendiğin kaynaklardan (ör. Google AdSense/Analytics panelinden) kopyaladığın kodu ekle.')
                         ->columnSpanFull(),
                     'textarea' => Textarea::make($name)->rows(3)->maxLength(2000),
+                    'select' => Select::make($name)->options($meta['options'] ?? []),
                     default => TextInput::make($name)->maxLength(2000),
                 };
 
