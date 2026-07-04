@@ -28,6 +28,10 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # SSH bağlantı zaman aşımı 30s→60s: geçici ağ yavaşlığında deploy'un
+          # "dial tcp: i/o timeout" ile yanlış yere düşmesini önler.
+          timeout: 60s
+          command_timeout: 15m
           script: |
             cd /var/www/nisoya
             # ÖNEMLİ: git pull'u BURADA yapıyoruz, deploy.sh'ın İÇİNDE değil.

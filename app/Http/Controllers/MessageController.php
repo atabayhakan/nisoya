@@ -110,7 +110,7 @@ class MessageController extends Controller
             ->where('id', '>', $after)
             ->orderBy('id')
             ->get()
-            ->map(fn ($m) => [
+            ->map(fn (Message $m) => [
                 'id' => $m->id,
                 'body' => $m->displayBody(),
                 'mine' => $m->sender_id === $me,
