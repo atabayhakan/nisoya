@@ -125,12 +125,14 @@ class PerformanceBenchmarkTest extends TestCase
         $service->start();
         $service->record($request, 200);
 
-        // Log dosyası yazıldı mı?
-        $logFile = storage_path('logs/laravel.log');
+        // Log dosyası yazıldı mı? (paralel testlerde her worker kendi log
+        // dosyasını kullanır, bkz. Tests\TestCase::setUp())
+        $logFile = config('logging.channels.single.path');
         $this->assertTrue(file_exists($logFile));
         $content = file_get_contents($logFile);
         $this->assertStringContainsString('Performance: request', $content);
-        $this->assertStringContainsString('/test', $content);
+        // Request::path() başındaki "/" karakterini siler ("/test" -> "test")
+        $this->assertStringContainsString('"path":"test"', $content);
 
         putenv('PERFORMANCE_LOG=');
     }
