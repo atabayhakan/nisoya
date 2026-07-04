@@ -76,9 +76,10 @@ jobs:
       - name: Vite build
         run: npm run build
 
-      - name: Migrasyonlar (yeni migration'lar var mı?)
+      - name: Migrasyonlar (temiz DB'ye uygulanabiliyor mu?)
         run: |
-          # Bekleyen migration'ları listele (boş dönmeli)
+          php artisan migrate --force
+          # Migrate sonrası hiçbir migration pending kalmamalı
           PENDING=$(php artisan migrate:status 2>&1 | grep -c "Pending" || true)
           if [ "$PENDING" -gt 0 ]; then
             echo "Bekleyen migration'lar var:"
@@ -214,15 +215,28 @@ jobs:
       - name: NPM production build
         run: npm ci --no-audit --no-fund && npm run build
 
-      - name: Artisan komutları (production-ready)
+      - name: .env hazırla + migrate
         run: |
           cp .env.example .env
           php artisan key:generate
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
-          # Production'da debug kapalı
-          APP_DEBUG=false php artisan optimize
+          php artisan migrate --force
+
+      - name: Artisan komutları (production-ready)
+        # NOT: config/route/view cache'i APP_DEBUG=true (env varsayılanı) ile
+        # bir kez, sonra optimize'ı APP_DEBUG=false ile TEKRAR çalıştırmak
+        # (iki farklı debug değeriyle iki geçiş) view:cache'i
+        # "Unable to locate a class or view for component
+        # [laravel-exceptions-renderer::...]" hatasıyla düşürüyor — Filament'in
+        # kullandığı hata sayfası bileşenleri ilk geçişte APP_DEBUG=true ile
+        # kaydediliyor, ikinci geçişte APP_DEBUG=false ile tutarsızlık oluşuyor
+        # (bkz. https://github.com/laravel/framework/issues/55769). Tek geçişte,
+        # baştan sona APP_DEBUG=false ile çalıştırmak sorunu ortadan kaldırıyor
+        # (yerel olarak doğrulandı).
+        env:
+          APP_DEBUG: false
+        run: |
+          php artisan optimize:clear
+          php artisan optimize
 
   e2e:
     name: E2E Health Checks
