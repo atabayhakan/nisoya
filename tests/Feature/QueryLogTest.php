@@ -20,20 +20,17 @@ class QueryLogTest extends TestCase
         parent::setUp();
         $this->seed([CurrencySeeder::class, CountrySeeder::class]);
 
-        // Query log'u aktifleştir
-        putenv('QUERY_LOG_ENABLED=true');
-        config(['app.query_log_enabled' => true]);
-    }
-
-    protected function tearDown(): void
-    {
-        putenv('QUERY_LOG_ENABLED=');
-        parent::tearDown();
+        // Sorgu logunu aktifleştir. Performans logunu da açıyoruz: aşağıdaki
+        // istek-metriği testi "Performance: request" satırını bu worker'ın
+        // kendi log dosyasında bekliyor (PerformanceMetricsMiddleware üretir).
+        config([
+            'app.query_log_enabled' => true,
+            'app.performance_log' => true,
+        ]);
     }
 
     public function test_query_log_disabled_by_default(): void
     {
-        putenv('QUERY_LOG_ENABLED=false');
         config(['app.query_log_enabled' => false]);
 
         $response = $this->get('/');
@@ -55,12 +52,12 @@ class QueryLogTest extends TestCase
         $response = $this->get('/');
         $response->assertOk();
 
-        // Log dosyasında sorgu sayısı bilgisi yer almalı (etkinse)
-        $logFile = storage_path('logs/laravel.log');
-        if (file_exists($logFile)) {
-            $content = file_get_contents($logFile);
-            $this->assertStringContainsString('Performance: request', $content);
-        }
+        // İstek metriği bu worker'ın kendi log dosyasına yazılmalı
+        // (paralel testlerde her worker ayrı dosya kullanır, bkz. Tests\TestCase).
+        $logFile = config('logging.channels.single.path');
+        $this->assertTrue(file_exists($logFile));
+        $content = file_get_contents($logFile);
+        $this->assertStringContainsString('Performance: request', $content);
     }
 
     public function test_home_page_query_count_under_threshold(): void

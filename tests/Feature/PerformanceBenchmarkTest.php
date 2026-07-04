@@ -96,9 +96,9 @@ class PerformanceBenchmarkTest extends TestCase
 
     public function test_performance_service_disabled_by_default(): void
     {
-        // PERFORMANCE_LOG env varsayılan false
+        // performance_log varsayılan false
         $service = app(PerformanceService::class);
-        $this->assertFalse(env('PERFORMANCE_LOG', false));
+        $this->assertFalse((bool) config('app.performance_log'));
 
         $service->start();
         $result = $service->measure(function () {
@@ -111,11 +111,10 @@ class PerformanceBenchmarkTest extends TestCase
 
     public function test_performance_service_logs_when_enabled(): void
     {
-        // PERFORMANCE_LOG=true simüle et
-        $this->app['config']->set('app.performance_log', true);
-
-        // Geçici env
-        putenv('PERFORMANCE_LOG=true');
+        // Özelliği config üzerinden aç. Singleton'ın taze config'i okuması için
+        // varsa önceki örneği unut (fresh app zaten reset eder, garanti olsun).
+        config(['app.performance_log' => true]);
+        $this->app->forgetInstance(PerformanceService::class);
 
         $user = User::factory()->create();
         $request = Request::create('/test', 'GET');
@@ -133,8 +132,6 @@ class PerformanceBenchmarkTest extends TestCase
         $this->assertStringContainsString('Performance: request', $content);
         // Request::path() başındaki "/" karakterini siler ("/test" -> "test")
         $this->assertStringContainsString('"path":"test"', $content);
-
-        putenv('PERFORMANCE_LOG=');
     }
 
     public function test_performance_service_measures_block_correctly(): void

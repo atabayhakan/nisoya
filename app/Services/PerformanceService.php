@@ -27,7 +27,7 @@ class PerformanceService
 
     public function __construct()
     {
-        $this->enabled = (bool) env('PERFORMANCE_LOG', false);
+        $this->enabled = (bool) config('app.performance_log', false);
         $this->startTime = microtime(true);
         $this->startMemory = memory_get_usage(true);
     }

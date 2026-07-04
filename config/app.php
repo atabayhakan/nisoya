@@ -17,6 +17,35 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Performans Logu
+    |--------------------------------------------------------------------------
+    |
+    | true olduğunda PerformanceService her isteğin süre/bellek/sorgu metriklerini
+    | log'a yazar. env() yerine config üzerinden okunur; çünkü production'da
+    | config:cache sonrası env() config dosyaları dışında null döner
+    | (aksi halde bu özellik canlıda hiç etkinleşmezdi).
+    |
+    */
+
+    'performance_log' => env('PERFORMANCE_LOG', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sorgu Logu (QueryLogMiddleware)
+    |--------------------------------------------------------------------------
+    |
+    | Aynı config:cache gerekçesiyle (bkz. performance_log) env yerine config
+    | üzerinden okunur. query_log_enabled true olduğunda yavaş sorgular ve
+    | olası N+1 pattern'leri log'a yazılır; slow_ms eşiği (varsayılan 200ms).
+    |
+    */
+
+    'query_log_enabled' => env('QUERY_LOG_ENABLED', false),
+
+    'query_log_slow_ms' => env('QUERY_LOG_SLOW_MS', 200),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

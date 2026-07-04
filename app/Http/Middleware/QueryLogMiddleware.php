@@ -27,11 +27,11 @@ class QueryLogMiddleware
 
     public function handle(Request $request, Closure $next): Response
     {
-        if (! (bool) env('QUERY_LOG_ENABLED', false)) {
+        if (! (bool) config('app.query_log_enabled', false)) {
             return $next($request);
         }
 
-        $slowThreshold = (float) env('QUERY_LOG_SLOW_MS', 200);
+        $slowThreshold = (float) config('app.query_log_slow_ms', 200);
         $this->requestStart = microtime(true);
         $this->queryCount = 0;
         $this->totalQueryTime = 0;
