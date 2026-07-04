@@ -83,22 +83,30 @@ php artisan up
 trap - EXIT   # buradan sonra deploy başarılı; trap'e gerek yok
 
 # Smoke test
+# NOT: nginx http→https yönlendirmesi yapıyor ve host-bazlı çalışıyor
+# (server_name nisoya.com). Bu yüzden düz `http://127.0.0.1/` isteği 404/301
+# döner. Doğru test: APP_URL'deki domain'i Host başlığı olarak verip, self
+# origin'e (127.0.0.1) https üzerinden cert doğrulaması OLMADAN (-k) istek at.
 info "Smoke test çalıştırılıyor..."
 SMOKE_PASS=true
-if curl -s -o /dev/null -w "%{http_code}" -f http://127.0.0.1/health 2>/dev/null | grep -q '^200$'; then
+APP_HOST=$(grep '^APP_URL=' .env | sed -E 's#^APP_URL=https?://##; s#/.*$##')
+APP_HOST=${APP_HOST:-nisoya.com}
+smoke() { curl -sk -H "Host: $APP_HOST" -o /dev/null -w "%{http_code}" "https://127.0.0.1$1" 2>/dev/null; }
+
+if [ "$(smoke /health)" = "200" ]; then
     info "  ✓ /health → 200"
 else
     warn "  ! /health → yanıt yok (henüz route yapılandırılmamış olabilir)"
 fi
 
-if curl -s -o /dev/null -w "%{http_code}" -f http://127.0.0.1/ 2>/dev/null | grep -q '^200$'; then
+if [ "$(smoke /)" = "200" ]; then
     info "  ✓ / → 200"
 else
-    fail "  ✗ / → 200 bekleniyordu (deploy başarısız olabilir)"
     SMOKE_PASS=false
+    fail "  ✗ / → 200 bekleniyordu (deploy başarısız olabilir)"
 fi
 
-if curl -s -o /dev/null -w "%{http_code}" -f http://127.0.0.1/yonetim/login 2>/dev/null | grep -q '^200$'; then
+if [ "$(smoke /yonetim/login)" = "200" ]; then
     info "  ✓ /yonetim/login → 200"
 else
     warn "  ! /yonetim/login → yanıt yok (admin panel route'ları eksik olabilir)"
