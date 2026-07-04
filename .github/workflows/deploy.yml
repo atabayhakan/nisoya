@@ -11,8 +11,11 @@ name: Deploy
 #     && git fetch origin && git checkout -f -b main origin/main
 
 on:
-  push:
-    branches: [main]
+  # NOT: Otomatik push-tetikleme, sunucu git tabanlı deploy'a hazırlanıp
+  # secret'lar (SSH_HOST / SSH_USER / SSH_PRIVATE_KEY) eklenene kadar geçici
+  # olarak KAPALI — aksi halde her push'ta secret'sız çalışıp başarısız olur
+  # ve mail spam'i yapardı. Kurulum tamamlanıp elle test (aşağıdaki
+  # workflow_dispatch) başarılı olunca `push: branches: [main]` geri eklenecek.
   workflow_dispatch:
 
 jobs:
