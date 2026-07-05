@@ -199,12 +199,12 @@
                 @endforeach
             </div>
         </section>
-
-        {{-- Reklam: Ülkeler listesi ile yeni ilanlar arasında --}}
-        <div class="mx-auto max-w-6xl px-4 pt-6">
-            <x-ad-slot slot="1111111111" format="horizontal" />
-        </div>
     @endif
+
+    {{-- Alan: Ülkeler listesi ile yeni ilanlar arasında (reklam/duyuru) --}}
+    <div class="mx-auto max-w-6xl px-4 pt-6">
+        <x-zone zone-key="anasayfa_ust" />
+    </div>
 
     {{-- Yeni ilanlar --}}
     <section class="mt-14 bg-white py-14 dark:bg-stone-900" x-data x-reveal>
@@ -268,4 +268,9 @@
             <a href="{{ url('/kayit') }}" class="mt-6 inline-block rounded-xl bg-white px-6 py-3 font-semibold text-emerald-700 shadow-lg transition hover:-translate-y-0.5 hover:bg-emerald-50 hover:shadow-xl dark:bg-stone-50 dark:hover:bg-stone-100 dark:text-emerald-700">{{ setting('home.cta_buton') }}</a>
         </div>
     </section>
+
+    {{-- Alan: sayfa sonu (reklam/duyuru) --}}
+    <div class="mx-auto max-w-6xl px-4 pb-6">
+        <x-zone zone-key="anasayfa_alt" />
+    </div>
 </x-layouts.app>

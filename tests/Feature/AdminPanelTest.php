@@ -35,6 +35,7 @@ class AdminPanelTest extends TestCase
             '/yonetim/reports',
             '/yonetim/reviews',
             '/yonetim/tags',
+            '/yonetim/zones',
         ];
 
         foreach ($pages as $page) {

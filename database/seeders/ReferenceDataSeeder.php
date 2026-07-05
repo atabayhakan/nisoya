@@ -6,10 +6,11 @@ use Illuminate\Database\Seeder;
 
 /**
  * Yalnızca CANLIDA HER DEPLOY'DA GÜVENLE çalıştırılabilen referans/taksonomi
- * verileri. Hepsi updateOrCreate ile idempotenttir — mevcut kayıtları bozmaz,
- * yeni kod ile gelen referans verilerini (yeni ülke/kategori/para birimi vb.)
- * canlıya otomatik taşır. deploy.sh bunu `db:seed --class=ReferenceDataSeeder
- * --force` ile çağırır.
+ * verileri. Hepsi idempotenttir — mevcut kayıtları bozmaz, yeni kod ile gelen
+ * referans verilerini (yeni ülke/kategori/para birimi/alan vb.) canlıya
+ * otomatik taşır. deploy.sh bunu `db:seed --class=ReferenceDataSeeder
+ * --force` ile çağırır. ZoneSeeder firstOrCreate kullanır (updateOrCreate
+ * DEĞİL) — admin panelinden düzenlenen alan içeriğinin üzerine yazmaz.
  *
  * DİKKAT: Buraya ASLA AdminUserSeeder (admin parolasını sıfırlar),
  * DemoSeeder (sahte veri ekler) veya SiteSettingSeeder / StaticPagesSeeder
@@ -26,6 +27,7 @@ class ReferenceDataSeeder extends Seeder
             CategorySeeder::class,
             ProductCategorySeeder::class,
             JobCategorySeeder::class,
+            ZoneSeeder::class,
         ]);
     }
 }

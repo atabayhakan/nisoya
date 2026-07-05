@@ -176,6 +176,11 @@
         {{ $slot }}
     </main>
 
+    {{-- Alan: footer üstü şerit (sitewide reklam/duyuru) --}}
+    <div class="mx-auto max-w-6xl px-4">
+        <x-zone zone-key="footer_ust_serit" />
+    </div>
+
     {{-- Alt bilgi --}}
     <footer class="mt-16 border-t border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
         <div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 md:grid-cols-4">

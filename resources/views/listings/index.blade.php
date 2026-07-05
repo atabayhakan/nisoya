@@ -108,9 +108,9 @@
 
             {{-- Sonuçlar --}}
             <main class="lg:col-span-3">
-                {{-- Reklam: liste üstü --}}
+                {{-- Alan: liste üstü (reklam/duyuru) --}}
                 <div class="mb-4">
-                    <x-ad-slot slot="2222222222" format="horizontal" />
+                    <x-zone zone-key="ilan_listesi_ust" />
                 </div>
 
                 @if ($listings->isNotEmpty())

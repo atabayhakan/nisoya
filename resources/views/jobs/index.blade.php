@@ -39,6 +39,11 @@
             <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900 lg:col-span-1">Filtrele</button>
         </form>
 
+        {{-- Alan: liste üstü (reklam/duyuru) --}}
+        <div class="mt-4">
+            <x-zone zone-key="is_ilanlari_liste_ust" />
+        </div>
+
         {{-- Sonuçlar --}}
         @if ($jobs->isNotEmpty())
             <p class="mt-6 text-sm text-stone-500 dark:text-stone-400">{{ $jobs->total() }} ilan bulundu</p>

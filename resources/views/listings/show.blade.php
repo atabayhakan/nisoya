@@ -254,8 +254,8 @@
                         </p>
                     </div>
 
-                    {{-- Reklam: sidebar alt --}}
-                    <x-ad-slot slot="3333333333" format="rectangle" />
+                    {{-- Alan: sidebar alt (reklam/duyuru) --}}
+                    <x-zone zone-key="ilan_detay_yan" />
                 </div>
             </div>
         </div>

@@ -51,6 +51,11 @@
             <div class="prose prose-sm mt-2 max-w-none whitespace-pre-line text-stone-600 dark:text-stone-300">{{ $job->description }}</div>
         </div>
 
+        {{-- Alan: açıklama altı (reklam/duyuru) --}}
+        <div class="mt-4">
+            <x-zone zone-key="is_ilani_detay_alt" />
+        </div>
+
         {{-- Başvuru bölümü --}}
         <div class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-6 dark:border-emerald-900/40 dark:bg-emerald-950/20">
             @if ($isOwner)
