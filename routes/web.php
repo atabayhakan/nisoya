@@ -144,7 +144,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/panel/profil/odeme-linki/{paymentLink}', [PaymentLinkController::class, 'destroy'])->name('panel.payment-links.destroy');
 
     // Portfolyo (geçmiş iş örnekleri)
-    Route::post('/panel/profil/portfolyo', [PortfolioItemController::class, 'store'])->name('panel.portfolio.store');
+    Route::post('/panel/profil/portfolyo', [PortfolioItemController::class, 'store'])->name('panel.portfolio.store')->middleware('throttle:portfolio-store');
     Route::delete('/panel/profil/portfolyo/{portfolioItem}', [PortfolioItemController::class, 'destroy'])->name('panel.portfolio.destroy');
 
     // Gurbet Günlüğü (Nisoya Nabzı — anonim hikaye duvarı)
@@ -156,7 +156,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Şirket profili
     Route::get('/panel/sirket', [CompanyController::class, 'edit'])->name('panel.company.edit');
     Route::put('/panel/sirket', [CompanyController::class, 'update'])->name('panel.company.update');
-    Route::post('/panel/sirket/galeri', [CompanyGalleryController::class, 'store'])->name('panel.company.gallery.store');
+    Route::post('/panel/sirket/galeri', [CompanyGalleryController::class, 'store'])->name('panel.company.gallery.store')->middleware('throttle:company-gallery-store');
     Route::delete('/panel/sirket/galeri/{companyGalleryImage}', [CompanyGalleryController::class, 'destroy'])->name('panel.company.gallery.destroy');
 
     // İşverenin iş ilanları

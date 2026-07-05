@@ -189,6 +189,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     }
 
     /**
+     * Kullanıcının (işveren olarak) iş ilanları için yaptığı öne çıkarma talepleri.
+     *
+     * @return HasMany<JobFeatureRequest, $this>
+     */
+    public function jobFeatureRequests(): HasMany
+    {
+        return $this->hasMany(JobFeatureRequest::class);
+    }
+
+    /**
      * Kullanıcının yaptığı şirket değerlendirmeleri (aday olarak).
      *
      * @return HasMany<CompanyReview, $this>

@@ -80,6 +80,24 @@ class JobFeatureRequestTest extends TestCase
         $this->assertNotNull($request->fresh()->processed_at);
     }
 
+    public function test_approving_shorter_request_does_not_shorten_existing_window(): void
+    {
+        $fixture = $this->jobListingFixture();
+
+        $longRequest = JobFeatureRequest::create([
+            'job_listing_id' => $fixture->job->id, 'user_id' => $fixture->employer->id, 'days' => 30, 'status' => 'beklemede',
+        ]);
+        $longRequest->update(['status' => 'onaylandi']);
+        $originalUntil = $fixture->job->fresh()->featured_until;
+
+        $shortRequest = JobFeatureRequest::create([
+            'job_listing_id' => $fixture->job->id, 'user_id' => $fixture->employer->id, 'days' => 7, 'status' => 'beklemede',
+        ]);
+        $shortRequest->update(['status' => 'onaylandi']);
+
+        $this->assertTrue($fixture->job->fresh()->featured_until->equalTo($originalUntil));
+    }
+
     public function test_expire_command_unfeatures_expired_job_listings(): void
     {
         $expiredFixture = $this->jobListingFixture();

@@ -56,6 +56,29 @@ class KvkkAndModerationTest extends TestCase
         $this->assertArrayHasKey('sirket_degerlendirmelerim', $data);
         $this->assertArrayHasKey('saved_searches', $data);
         $this->assertArrayHasKey('sent_messages', $data);
+        $this->assertArrayHasKey('sirket_galeri', $data);
+        $this->assertArrayHasKey('is_ilani_one_cikarma_taleplerim', $data);
+        $this->assertArrayHasKey('yetenek_havuzunda_gorunur', $data['user']);
+    }
+
+    public function test_export_includes_company_gallery_and_feature_requests(): void
+    {
+        $user = User::factory()->create();
+        $company = Company::create(['user_id' => $user->id, 'name' => 'Acme', 'slug' => 'acme']);
+        $company->galleryImages()->create([
+            'path_thumb' => 'gallery/thumb/x.webp', 'path_medium' => 'gallery/medium/x.webp', 'path_large' => 'gallery/large/x.webp',
+            'caption' => 'Ofisimiz',
+        ]);
+        $job = $company->jobListings()->create([
+            'title' => 'Test ilanı', 'slug' => 'test-ilani', 'description' => 'Açıklama.',
+            'employment_type' => 'tam_zamanli', 'status' => JobStatus::Aktif->value, 'positions' => 1,
+        ]);
+        $job->featureRequests()->create(['user_id' => $user->id, 'days' => 7, 'status' => 'beklemede']);
+
+        $data = json_decode($this->actingAs($user)->get('/panel/profil/verilerim')->streamedContent(), true);
+
+        $this->assertSame('Ofisimiz', $data['sirket_galeri'][0]['caption']);
+        $this->assertSame('Test ilanı', $data['is_ilani_one_cikarma_taleplerim'][0]['ilan']);
     }
 
     public function test_user_can_delete_their_account(): void

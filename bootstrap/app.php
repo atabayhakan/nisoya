@@ -59,6 +59,12 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('job-bookmark-toggle', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip())
         );
 
+        RateLimiter::for('portfolio-store', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
+        );
+
+        RateLimiter::for('company-gallery-store', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
+        );
+
         RateLimiter::for('message-send', fn (Request $request) => Limit::perMinute(40)->by($request->user()?->id ?: $request->ip())
         );
 

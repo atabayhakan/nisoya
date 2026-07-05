@@ -169,36 +169,6 @@ parameters:
 			path: app/Http/Controllers/MapController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$body\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Http/Controllers/MessageController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$created_at\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/MessageController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/MessageController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sender_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/MessageController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/MessageController.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:active\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -261,12 +231,18 @@ parameters:
 		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
-			count: 2
+			count: 3
 			path: app/Http/Controllers/ProfileSettingsController.php
 
 		-
 			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
 			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/ProfileSettingsController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\JobFeatureRequest\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/ProfileSettingsController.php
 
@@ -289,12 +265,6 @@ parameters:
 			path: app/Http/Middleware/EnsureUserCanAccessAdminPanel.php
 
 		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 2
-			path: app/Http/Middleware/QueryLogMiddleware.php
-
-		-
 			message: '#^Property App\\Http\\Middleware\\QueryLogMiddleware\:\:\$requestStart is never read, only written\.$#'
 			identifier: property.onlyWritten
 			count: 1
@@ -314,12 +284,6 @@ parameters:
 
 		-
 			message: '#^Cannot call method getLabel\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Models/Listing.php
-
-		-
-			message: '#^Cannot call method isFuture\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: app/Models/Listing.php
@@ -377,12 +341,6 @@ parameters:
 			identifier: return.type
 			count: 1
 			path: app/Services/NabizService.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 1
-			path: app/Services/PerformanceService.php
 
 		-
 			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'

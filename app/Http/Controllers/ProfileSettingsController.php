@@ -10,6 +10,7 @@ use App\Models\Currency;
 use App\Models\Favorite;
 use App\Models\JobBookmark;
 use App\Models\JobCategory;
+use App\Models\JobFeatureRequest;
 use App\Models\JobSavedSearch;
 use App\Models\Message;
 use App\Models\Report;
@@ -285,6 +286,15 @@ class ProfileSettingsController extends Controller
                 'website' => $user->company->website,
                 'about' => $user->company->about,
             ] : null,
+            'sirket_galeri' => $user->company
+                ? $user->company->galleryImages()->get()->map(fn ($img) => ['caption' => $img->caption])->all()
+                : [],
+            'is_ilani_one_cikarma_taleplerim' => $user->jobFeatureRequests()->with('jobListing')->get()->map(fn (JobFeatureRequest $r) => [
+                'ilan' => $r->jobListing?->title,
+                'gun' => $r->days,
+                'durum' => $r->status->value,
+                'created_at' => $r->created_at?->toIso8601String(),
+            ])->all(),
             'is_basvurularim' => $user->jobApplications()->with('jobListing')->get()->map(fn ($a) => [
                 'ilan' => $a->jobListing?->title,
                 'durum' => $a->status->value,

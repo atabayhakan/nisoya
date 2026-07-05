@@ -45,9 +45,11 @@ class CompanyController extends Controller
             'address' => ['nullable', 'string', 'max:255'],
             'social_linkedin' => ['nullable', 'url', 'max:255'],
             'social_instagram' => ['nullable', 'string', 'max:255'],
-            'social_whatsapp' => ['nullable', 'string', 'max:255'],
+            'social_whatsapp' => ['nullable', 'string', 'max:255', 'regex:/^(https?:\/\/)?(www\.)?(wa\.me|api\.whatsapp\.com)\/.+$/i'],
             'social_twitter' => ['nullable', 'url', 'max:255'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ], messages: [
+            'social_whatsapp.regex' => 'WhatsApp bağlantısı wa.me veya api.whatsapp.com adresiyle başlamalı.',
         ], attributes: [
             'name' => 'şirket adı', 'tagline' => 'slogan', 'about' => 'hakkında',
             'website' => 'web sitesi', 'video_url' => 'tanıtım videosu', 'sector' => 'sektör', 'founded_year' => 'kuruluş yılı',

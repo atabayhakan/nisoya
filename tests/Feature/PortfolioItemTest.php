@@ -9,6 +9,7 @@ use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -157,5 +158,23 @@ class PortfolioItemTest extends TestCase
         $response->assertOk();
         $response->assertSee('İngilizce');
         $response->assertSee('Web Tasarım');
+    }
+
+    public function test_portfolio_upload_is_rate_limited(): void
+    {
+        RateLimiter::clear('portfolio-store');
+        $user = User::factory()->create();
+
+        for ($i = 0; $i < 10; $i++) {
+            $this->actingAs($user)->post('/panel/profil/portfolyo', [
+                'image' => UploadedFile::fake()->image("img{$i}.jpg"),
+            ]);
+        }
+
+        $response = $this->actingAs($user)->post('/panel/profil/portfolyo', [
+            'image' => UploadedFile::fake()->image('img-extra.jpg'),
+        ]);
+
+        $response->assertStatus(429);
     }
 }

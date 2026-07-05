@@ -46,9 +46,14 @@ class JobFeatureRequest extends Model
             }
 
             if ($req->status === FeatureRequestStatus::Onaylandi) {
+                $newUntil = now()->addDays($req->days);
+                $currentUntil = $req->jobListing?->featured_until;
+
                 $req->jobListing?->update([
                     'is_featured' => true,
-                    'featured_until' => now()->addDays($req->days),
+                    // Zaten öne çıkan bir ilan için onaylanan daha kısa bir talep
+                    // mevcut süreyi kısaltmasın — ikisinin daha uzun olanı geçerli olur.
+                    'featured_until' => ($currentUntil && $currentUntil->isAfter($newUntil)) ? $currentUntil : $newUntil,
                 ]);
                 $req->forceFill(['processed_at' => now()])->saveQuietly();
             } elseif ($req->status === FeatureRequestStatus::Reddedildi) {

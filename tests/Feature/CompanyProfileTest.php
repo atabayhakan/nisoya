@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -34,6 +35,19 @@ class CompanyProfileTest extends TestCase
             'social_whatsapp' => 'https://wa.me/491234567',
             'social_twitter' => 'https://x.com/acme',
         ]);
+    }
+
+    public function test_social_whatsapp_rejects_non_whatsapp_domains(): void
+    {
+        $user = User::factory()->create();
+        Company::create(['user_id' => $user->id, 'name' => 'Acme', 'slug' => 'acme']);
+
+        $this->actingAs($user)->put('/panel/sirket', [
+            'name' => 'Acme',
+            'social_whatsapp' => 'https://evil.example.com/phishing',
+        ])->assertSessionHasErrors('social_whatsapp');
+
+        $this->assertDatabaseMissing('companies', ['social_whatsapp' => 'https://evil.example.com/phishing']);
     }
 
     public function test_public_company_page_shows_new_fields(): void
@@ -104,6 +118,26 @@ class CompanyProfileTest extends TestCase
 
         $this->assertDatabaseMissing('company_gallery_images', ['id' => $image->id]);
         Storage::disk('public')->assertMissing('gallery/large/x.webp');
+    }
+
+    public function test_gallery_upload_is_rate_limited(): void
+    {
+        Storage::fake('public');
+        RateLimiter::clear('company-gallery-store');
+        $user = User::factory()->create();
+        Company::create(['user_id' => $user->id, 'name' => 'Acme', 'slug' => 'acme']);
+
+        for ($i = 0; $i < 10; $i++) {
+            $this->actingAs($user)->post('/panel/sirket/galeri', [
+                'image' => UploadedFile::fake()->image("img{$i}.jpg"),
+            ]);
+        }
+
+        $response = $this->actingAs($user)->post('/panel/sirket/galeri', [
+            'image' => UploadedFile::fake()->image('img-extra.jpg'),
+        ]);
+
+        $response->assertStatus(429);
     }
 
     public function test_account_deletion_removes_gallery_images(): void

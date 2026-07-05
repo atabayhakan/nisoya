@@ -74,6 +74,24 @@ class FeatureRequestTest extends TestCase
         $this->assertNotNull($request->fresh()->processed_at);
     }
 
+    public function test_approving_shorter_request_does_not_shorten_existing_window(): void
+    {
+        $listing = Listing::factory()->for(User::factory())->create(['status' => 'aktif', 'is_featured' => false]);
+
+        $longRequest = FeatureRequest::create([
+            'listing_id' => $listing->id, 'user_id' => $listing->user_id, 'days' => 30, 'status' => 'beklemede',
+        ]);
+        $longRequest->update(['status' => 'onaylandi']);
+        $originalUntil = $listing->fresh()->featured_until;
+
+        $shortRequest = FeatureRequest::create([
+            'listing_id' => $listing->id, 'user_id' => $listing->user_id, 'days' => 7, 'status' => 'beklemede',
+        ]);
+        $shortRequest->update(['status' => 'onaylandi']);
+
+        $this->assertTrue($listing->fresh()->featured_until->equalTo($originalUntil));
+    }
+
     public function test_expire_command_unfeatures_expired_listings(): void
     {
         $expired = Listing::factory()->for(User::factory())->create([
