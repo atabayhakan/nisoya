@@ -12,7 +12,8 @@
                 <a href="{{ route('listings.map') }}" class="rounded-lg px-3 py-1.5 font-medium {{ $tip === '' ? 'bg-emerald-600 text-white' : 'text-stone-600 hover:bg-stone-100' }}">Tümü</a>
                 <a href="{{ route('listings.map', ['tip' => 'hizmet']) }}" class="rounded-lg px-3 py-1.5 font-medium {{ $tip === 'hizmet' ? 'bg-emerald-600 text-white' : 'text-stone-600 hover:bg-stone-100' }}">🧰 Hizmet</a>
                 <a href="{{ route('listings.map', ['tip' => 'urun']) }}" class="rounded-lg px-3 py-1.5 font-medium {{ $tip === 'urun' ? 'bg-emerald-600 text-white' : 'text-stone-600 hover:bg-stone-100' }}">📦 Ürün</a>
-                <a href="{{ route('listings.index', $tip ? ['tip' => $tip] : []) }}" class="rounded-lg border border-stone-300 px-3 py-1.5 font-medium text-stone-700 hover:bg-stone-50">Liste →</a>
+                <a href="{{ route('listings.map', ['tip' => 'is']) }}" class="rounded-lg px-3 py-1.5 font-medium {{ $tip === 'is' ? 'bg-emerald-600 text-white' : 'text-stone-600 hover:bg-stone-100' }}">💼 İş İlanları</a>
+                <a href="{{ $tip === 'is' ? route('jobs.index') : route('listings.index', $tip ? ['tip' => $tip] : []) }}" class="rounded-lg border border-stone-300 px-3 py-1.5 font-medium text-stone-700 hover:bg-stone-50">Liste →</a>
             </div>
         </div>
 
@@ -36,7 +37,7 @@
             points.forEach((p) => {
                 if (!p.lat || !p.lng) return;
                 const m = L.marker([p.lat, p.lng]).addTo(map);
-                const tip = p.type === 'urun' ? '📦' : '🧰';
+                const tip = p.type === 'urun' ? '📦' : (p.type === 'is' ? '💼' : '🧰');
                 m.bindPopup(
                     `<div style="min-width:160px">
                         <div style="font-weight:600">${tip} ${esc(p.title)}</div>

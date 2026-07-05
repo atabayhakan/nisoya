@@ -40,6 +40,8 @@ class JobListing extends Model
         'salary_period',
         'country_code',
         'city',
+        'latitude',
+        'longitude',
         'is_remote',
         'deadline',
         'positions',
@@ -60,6 +62,8 @@ class JobListing extends Model
             'salary_max' => 'decimal:2',
             'is_remote' => 'boolean',
             'is_featured' => 'boolean',
+            'latitude' => 'float',
+            'longitude' => 'float',
             'deadline' => 'date',
             'featured_until' => 'datetime',
         ];

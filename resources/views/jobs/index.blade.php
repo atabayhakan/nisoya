@@ -20,6 +20,10 @@
                     </form>
                     <a href="{{ route('panel.company.edit') }}" class="rounded-lg border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-500 dark:text-emerald-400 dark:hover:bg-emerald-950/30">İşveren misin? İlan ver</a>
                 @endauth
+                <a href="{{ route('listings.map', ['tip' => 'is']) }}"
+                   class="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">
+                    <x-heroicon-o-map class="h-4 w-4" /> Haritada gör
+                </a>
             </div>
         </div>
 

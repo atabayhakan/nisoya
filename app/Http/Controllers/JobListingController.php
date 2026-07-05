@@ -8,6 +8,7 @@ use App\Models\Country;
 use App\Models\Currency;
 use App\Models\JobCategory;
 use App\Models\JobListing;
+use App\Services\GeocodingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -43,6 +44,7 @@ class JobListingController extends Controller
     public function store(JobListingRequest $request): RedirectResponse
     {
         $data = $request->validated();
+        $coords = app(GeocodingService::class)->locate($data['city'] ?? null, $data['country_code'] ?? null);
 
         $job = $request->user()->company->jobListings()->create([
             'title' => $data['title'],
@@ -57,6 +59,8 @@ class JobListingController extends Controller
             'salary_period' => $data['salary_period'] ?? null,
             'country_code' => $data['country_code'] ?? null,
             'city' => $data['city'] ?? null,
+            'latitude' => $coords['latitude'],
+            'longitude' => $coords['longitude'],
             'is_remote' => $request->boolean('is_remote'),
             'deadline' => $data['deadline'] ?? null,
             'positions' => $data['positions'] ?? 1,
@@ -78,6 +82,7 @@ class JobListingController extends Controller
         Gate::authorize('update', $job);
 
         $data = $request->validated();
+        $coords = app(GeocodingService::class)->locate($data['city'] ?? null, $data['country_code'] ?? null);
 
         $job->update([
             'title' => $data['title'],
@@ -92,6 +97,8 @@ class JobListingController extends Controller
             'salary_period' => $data['salary_period'] ?? null,
             'country_code' => $data['country_code'] ?? null,
             'city' => $data['city'] ?? null,
+            'latitude' => $coords['latitude'],
+            'longitude' => $coords['longitude'],
             'is_remote' => $request->boolean('is_remote'),
             'deadline' => $data['deadline'] ?? null,
             'positions' => $data['positions'] ?? 1,

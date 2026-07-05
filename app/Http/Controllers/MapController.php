@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\JobListing;
 use App\Models\Listing;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -11,6 +12,27 @@ class MapController extends Controller
     public function index(Request $request): View
     {
         $type = $request->string('tip')->toString();
+
+        if ($type === 'is') {
+            $points = JobListing::query()->active()
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->with('company')
+                ->latest()
+                ->limit(500)
+                ->get()
+                ->map(fn (JobListing $j) => [
+                    'title' => $j->title,
+                    'price' => $j->salaryLabel() ?? 'Görüşülür',
+                    'type' => 'is',
+                    'city' => $j->city,
+                    'lat' => $j->latitude,
+                    'lng' => $j->longitude,
+                    'url' => route('jobs.show', [$j->id, $j->slug]),
+                ]);
+
+            return view('listings.map', ['points' => $points, 'tip' => 'is']);
+        }
 
         $query = Listing::query()->active()
             ->whereNotNull('latitude')
