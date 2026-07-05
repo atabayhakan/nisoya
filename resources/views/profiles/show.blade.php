@@ -17,6 +17,7 @@
                     </h1>
                     <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
                         @if ($user->city){{ $user->city }} · @endif{{ $user->country_code }} · Üyelik: {{ $user->created_at->translatedFormat('F Y') }}
+                        @if ($user->jobCategory) · <span class="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-500 dark:bg-stone-800 dark:text-stone-400">{{ $user->jobCategory->name }}</span>@endif
                     </p>
                     @if ($rating['count'] > 0)
                         <p class="mt-1 text-sm font-medium text-amber-500 dark:text-amber-400">★ {{ $rating['avg'] }} <span class="text-stone-400 dark:text-stone-500">({{ $rating['count'] }} değerlendirme)</span></p>

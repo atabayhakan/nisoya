@@ -34,6 +34,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'avatar_path',
         'bio',
         'skills',
+        'is_searchable',
+        'job_category_id',
         'account_type',
         'country_code',
         'city',
@@ -61,6 +63,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'last_seen_at' => 'datetime',
             'password' => 'hashed',
             'is_verified' => 'boolean',
+            'is_searchable' => 'boolean',
             'role' => UserRole::class,
             'status' => UserStatus::class,
             'account_type' => AccountType::class,
@@ -163,6 +166,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function isEmployer(): bool
     {
         return $this->account_type === AccountType::Kurumsal;
+    }
+
+    /**
+     * Yetenek Havuzu'ndaki uzmanlık alanı (varsa).
+     *
+     * @return BelongsTo<JobCategory, $this>
+     */
+    public function jobCategory(): BelongsTo
+    {
+        return $this->belongsTo(JobCategory::class);
     }
 
     /**

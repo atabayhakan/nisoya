@@ -9,6 +9,7 @@ use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Favorite;
 use App\Models\JobBookmark;
+use App\Models\JobCategory;
 use App\Models\JobSavedSearch;
 use App\Models\Message;
 use App\Models\Report;
@@ -43,6 +44,7 @@ class ProfileSettingsController extends Controller
                 ->values(),
             'suggestedPaymentMethods' => PaymentMethod::suggestedFor($user->country_code),
             'portfolioItems' => $user->portfolioItems,
+            'jobCategories' => JobCategory::query()->where('is_active', true)->orderBy('sort_order')->get(),
         ]);
     }
 
@@ -59,10 +61,15 @@ class ProfileSettingsController extends Controller
             'city' => ['nullable', 'string', 'max:255'],
             'preferred_currency' => ['required', 'exists:currencies,code'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'is_searchable' => ['nullable', 'boolean'],
+            'job_category_id' => ['nullable', 'exists:job_categories,id'],
         ], attributes: [
             'name' => 'ad soyad', 'username' => 'kullanıcı adı', 'bio' => 'hakkında', 'skills' => 'yetenekler',
             'country_code' => 'ülke', 'city' => 'şehir', 'preferred_currency' => 'para birimi', 'avatar' => 'profil fotoğrafı',
+            'is_searchable' => 'yetenek havuzunda görünürlük', 'job_category_id' => 'uzmanlık alanı',
         ]);
+
+        $data['is_searchable'] = $request->boolean('is_searchable');
 
         // Virgülle ayrılmış serbest metin girişini temiz bir diziye çevir
         // (boş/tekrar eden girdileri at, en fazla 15 yetenek).
@@ -214,6 +221,8 @@ class ProfileSettingsController extends Controller
                 'bio' => null,
                 'skills' => null,
                 'city' => null,
+                'is_searchable' => false,
+                'job_category_id' => null,
                 'remember_token' => null,
                 'status' => UserStatus::Silinmis,
                 'referral_code' => null,
@@ -249,6 +258,8 @@ class ProfileSettingsController extends Controller
                 'city' => $user->city,
                 'bio' => $user->bio,
                 'skills' => $user->skills,
+                'yetenek_havuzunda_gorunur' => $user->is_searchable,
+                'uzmanlik_alani' => $user->jobCategory?->name,
                 'role' => $user->role?->value,
                 'is_verified' => $user->is_verified,
                 'status' => $user->status?->value,

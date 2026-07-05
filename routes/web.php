@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BrowseController;
+use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyGalleryController;
 use App\Http\Controllers\CompanyReviewController;
@@ -51,6 +52,7 @@ Route::get('/ilan/{listing}/{slug?}', [ListingController::class, 'show'])->name(
 Route::get('/isler', [JobBrowseController::class, 'index'])->name('jobs.index');
 Route::get('/is/{job}/{slug?}', [JobListingController::class, 'show'])->name('jobs.show');
 Route::get('/sirket/{company}', [CompanyController::class, 'show'])->name('companies.show');
+Route::get('/adaylar', [CandidateController::class, 'index'])->name('candidates.index');
 
 // Statik sayfalar (işlevsel olanlar kodda kalır; kurumsal metinler yönetilebilir sayfalara taşındı)
 Route::get('/nasil-calisir', [PagesController::class, 'nasilCalisir'])->name('pages.how');

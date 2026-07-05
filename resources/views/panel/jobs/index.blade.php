@@ -4,7 +4,10 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
             <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">İş İlanlarım</h1>
             @if ($company)
-                <a href="{{ route('panel.jobs.create') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">+ Yeni ilan</a>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('candidates.index') }}" class="rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">💼 Yetenek Havuzu</a>
+                    <a href="{{ route('panel.jobs.create') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">+ Yeni ilan</a>
+                </div>
             @endif
         </div>
 

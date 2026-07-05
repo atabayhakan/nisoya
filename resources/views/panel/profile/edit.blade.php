@@ -77,6 +77,25 @@
                 </div>
             </div>
 
+            <div class="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-800 dark:bg-emerald-950/20">
+                <label class="flex items-start gap-3">
+                    <input type="hidden" name="is_searchable" value="0">
+                    <input type="checkbox" id="is_searchable" name="is_searchable" value="1" @checked(old('is_searchable', $user->is_searchable)) class="mt-0.5 rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
+                    <span class="text-sm text-stone-700 dark:text-stone-300">
+                        <span class="font-medium">💼 Yetenek Havuzu'nda görün</span> — işverenler seni <a href="{{ route('candidates.index') }}" class="text-emerald-700 underline dark:text-emerald-400">Yetenek Havuzu</a>'nda arayıp bulabilsin (isim, bio, yetenekler ve şehir/ülke bilgin görünür).
+                    </span>
+                </label>
+                <div class="mt-3">
+                    <label for="job_category_id" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Uzmanlık alanı <span class="text-stone-400">(ops.)</span></label>
+                    <select id="job_category_id" name="job_category_id" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                        <option value="">Seçiniz</option>
+                        @foreach ($jobCategories as $jobCategory)
+                            <option value="{{ $jobCategory->id }}" @selected((int) old('job_category_id', $user->job_category_id) === $jobCategory->id)>{{ $jobCategory->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
             <button type="submit" class="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Profili Kaydet</button>
         </form>
 
