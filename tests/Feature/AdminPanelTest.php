@@ -40,6 +40,8 @@ class AdminPanelTest extends TestCase
             '/yonetim/navigation-links/create',
             '/yonetim/company-reviews',
             '/yonetim/company-reviews/create',
+            '/yonetim/job-feature-requests',
+            '/yonetim/job-feature-requests/create',
         ];
 
         foreach ($pages as $page) {

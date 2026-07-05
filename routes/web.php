@@ -12,6 +12,7 @@ use App\Http\Controllers\InviteController;
 use App\Http\Controllers\JobApplicationController;
 use App\Http\Controllers\JobBookmarkController;
 use App\Http\Controllers\JobBrowseController;
+use App\Http\Controllers\JobFeatureController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\MapController;
@@ -163,6 +164,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/panel/is-ilani/{job}/durum', [JobListingController::class, 'updateStatus'])->name('panel.jobs.status');
     Route::delete('/panel/is-ilani/{job}', [JobListingController::class, 'destroy'])->name('panel.jobs.destroy');
     Route::get('/panel/is-ilani/{job}/basvurular', [JobApplicationController::class, 'applicants'])->name('panel.jobs.applicants');
+    Route::post('/panel/is-ilani/{job}/one-cikar', [JobFeatureController::class, 'store'])
+        ->name('panel.jobs.feature')
+        ->middleware('throttle:job-listing-feature');
 
     // Başvurular (aday + işveren)
     Route::post('/is/{job}/basvur', [JobApplicationController::class, 'store'])

@@ -22,7 +22,9 @@ class JobListingController extends Controller
         $company = $request->user()->company;
 
         $jobs = $company
-            ? $company->jobListings()->withCount('applications')->latest()->paginate(12)
+            ? $company->jobListings()->withCount('applications')
+                ->withExists(['featureRequests as has_pending_feature' => fn ($q) => $q->where('status', 'beklemede')])
+                ->latest()->paginate(12)
             : collect();
 
         return view('panel.jobs.index', compact('jobs', 'company'));

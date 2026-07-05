@@ -93,6 +93,12 @@ class JobListing extends Model
         return $this->hasMany(JobBookmark::class);
     }
 
+    /** @return HasMany<JobFeatureRequest, $this> */
+    public function featureRequests(): HasMany
+    {
+        return $this->hasMany(JobFeatureRequest::class);
+    }
+
     /** Yalnızca yayında (aktif) ilanlar. */
     public function scopeActive($query)
     {
