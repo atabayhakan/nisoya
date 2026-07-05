@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CompanyReviewController;
 use App\Http\Controllers\ExifMapController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FeatureController;
@@ -174,6 +175,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // İş ilanı yer imleri (aday)
     Route::get('/panel/is-yer-imlerim', [JobBookmarkController::class, 'index'])->name('panel.job-bookmarks.index');
     Route::post('/is-yer-imi/{job}', [JobBookmarkController::class, 'toggle'])->name('job-bookmarks.toggle')->middleware('throttle:job-bookmark-toggle');
+
+    // Şirket değerlendirmeleri (aday, sadece başvurmuşsa)
+    Route::post('/sirket/{company}/degerlendir', [CompanyReviewController::class, 'store'])
+        ->middleware(['honeypot', 'throttle:company-review-store'])
+        ->name('company-reviews.store');
 
     // KVKK: Veri silme + veri dışa aktarma
     Route::delete('/panel/profil', [ProfileSettingsController::class, 'destroy'])->name('panel.profile.destroy');

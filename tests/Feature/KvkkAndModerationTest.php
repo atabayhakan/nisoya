@@ -7,6 +7,7 @@ use App\Enums\ListingStatus;
 use App\Enums\UserStatus;
 use App\Models\Category;
 use App\Models\Company;
+use App\Models\CompanyReview;
 use App\Models\Favorite;
 use App\Models\JobBookmark;
 use App\Models\Listing;
@@ -51,6 +52,7 @@ class KvkkAndModerationTest extends TestCase
         $this->assertArrayHasKey('reviews_received', $data);
         $this->assertArrayHasKey('favorites', $data);
         $this->assertArrayHasKey('is_yer_imlerim', $data);
+        $this->assertArrayHasKey('sirket_degerlendirmelerim', $data);
         $this->assertArrayHasKey('saved_searches', $data);
         $this->assertArrayHasKey('sent_messages', $data);
     }
@@ -82,6 +84,8 @@ class KvkkAndModerationTest extends TestCase
             'employment_type' => 'tam_zamanli', 'status' => JobStatus::Aktif->value, 'positions' => 1,
         ]);
         JobBookmark::create(['user_id' => $user->id, 'job_listing_id' => $job->id]);
+        $job->applications()->create(['user_id' => $user->id, 'status' => 'gonderildi']);
+        CompanyReview::create(['company_id' => $company->id, 'reviewer_id' => $user->id, 'rating' => 5, 'status' => 'yayinda']);
 
         $response = $this->actingAs($user)->delete('/panel/profil', [
             'current_password' => 'password',
@@ -106,6 +110,7 @@ class KvkkAndModerationTest extends TestCase
         $this->assertDatabaseMissing('listings', ['user_id' => $user->id]);
         $this->assertDatabaseMissing('favorites', ['user_id' => $user->id]);
         $this->assertDatabaseMissing('job_bookmarks', ['user_id' => $user->id]);
+        $this->assertDatabaseMissing('company_reviews', ['reviewer_id' => $user->id]);
         $this->assertDatabaseMissing('saved_searches', ['user_id' => $user->id]);
     }
 

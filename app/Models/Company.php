@@ -57,6 +57,12 @@ class Company extends Model
         return $this->hasMany(JobListing::class);
     }
 
+    /** @return HasMany<CompanyReview, $this> */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(CompanyReview::class);
+    }
+
     /** Logo URL'i (yoksa null). */
     public function logoUrl(): ?string
     {

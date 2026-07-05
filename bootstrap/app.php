@@ -62,6 +62,9 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('review-store', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
         );
 
+        RateLimiter::for('company-review-store', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
+        );
+
         RateLimiter::for('report-store', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
         );
 

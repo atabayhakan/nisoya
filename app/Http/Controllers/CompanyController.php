@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\AccountType;
 use App\Models\Company;
 use App\Models\Country;
+use App\Models\JobApplication;
 use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -83,7 +84,24 @@ class CompanyController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('companies.show', compact('company', 'jobs'));
+        $reviews = $company->reviews()->where('status', 'yayinda')->with('reviewer')->latest()->get();
+        $rating = [
+            'avg' => round((float) $reviews->avg('rating'), 1),
+            'count' => $reviews->count(),
+        ];
+        $myReview = auth()->check()
+            ? $reviews->firstWhere('reviewer_id', auth()->id())
+            : null;
+        // Değerlendirme yalnızca bu şirkete daha önce başvurmuş adaylar için
+        // açılır — bkz. CompanyReviewController::store().
+        $canReview = auth()->check()
+            && auth()->id() !== $company->user_id
+            && JobApplication::query()
+                ->where('user_id', auth()->id())
+                ->whereHas('jobListing', fn ($q) => $q->where('company_id', $company->id))
+                ->exists();
+
+        return view('companies.show', compact('company', 'jobs', 'reviews', 'rating', 'myReview', 'canReview'));
     }
 
     protected function uniqueSlug(string $name): string

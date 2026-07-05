@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\PaymentMethod;
 use App\Enums\UserStatus;
+use App\Models\CompanyReview;
 use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Favorite;
@@ -178,6 +179,7 @@ class ProfileSettingsController extends Controller
             // Kullanıcıya ait tüm kişisel etkileşimleri temizle
             Favorite::query()->where('user_id', $user->id)->delete();
             JobBookmark::query()->where('user_id', $user->id)->delete();
+            CompanyReview::query()->where('reviewer_id', $user->id)->delete();
             SavedSearch::query()->where('user_id', $user->id)->delete();
             Review::query()->where('reviewer_id', $user->id)->delete();
 
@@ -279,6 +281,12 @@ class ProfileSettingsController extends Controller
             'is_yer_imlerim' => $user->jobBookmarks()->with('jobListing')->get()->map(fn ($b) => [
                 'ilan' => $b->jobListing?->title,
                 'created_at' => $b->created_at?->toIso8601String(),
+            ])->all(),
+            'sirket_degerlendirmelerim' => $user->companyReviewsGiven()->with('company')->get()->map(fn ($r) => [
+                'sirket' => $r->company?->name,
+                'puan' => $r->rating,
+                'yorum' => $r->comment,
+                'created_at' => $r->created_at?->toIso8601String(),
             ])->all(),
             'saved_searches' => $user->savedSearches()->get()->toArray(),
             'sent_messages' => $user->sentMessages()->get()->toArray(),

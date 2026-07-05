@@ -50,5 +50,61 @@
         @else
             <p class="mt-3 rounded-2xl border border-dashed border-stone-300 bg-white p-8 text-center text-sm text-stone-500 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-400">Şu an açık pozisyon yok.</p>
         @endif
+
+        {{-- Değerlendirmeler --}}
+        <div class="mt-12">
+            <h2 class="text-lg font-bold text-stone-900 dark:text-stone-50">
+                Değerlendirmeler
+                @if ($rating['count'] > 0)<span class="text-amber-500 dark:text-amber-400">★ {{ $rating['avg'] }}</span> <span class="text-sm font-normal text-stone-400 dark:text-stone-500">({{ $rating['count'] }})</span>@endif
+            </h2>
+
+            @if (session('status'))
+                <div class="mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">{{ session('status') }}</div>
+            @endif
+
+            @auth
+                @if ($canReview)
+                    <form method="POST" action="{{ route('company-reviews.store', $company) }}" class="mt-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+                        @csrf
+                        <p class="text-sm font-medium text-stone-700 dark:text-stone-300">{{ $myReview ? 'Değerlendirmeni güncelle' : 'Bu şirketi değerlendir' }}</p>
+                        <div class="mt-2 flex flex-wrap items-end gap-3">
+                            <div>
+                                <label for="rating" class="block text-sm text-stone-600 dark:text-stone-300">Puan</label>
+                                <select id="rating" name="rating" class="mt-1 rounded-lg border-stone-300 px-3 py-2 text-sm text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                                    @for ($i = 5; $i >= 1; $i--)
+                                        <option value="{{ $i }}" @selected(($myReview?->rating ?? 5) === $i)>{{ $i }} yıldız</option>
+                                    @endfor
+                                </select>
+                            </div>
+                        </div>
+                        <textarea name="comment" rows="3" placeholder="Deneyimini paylaş (ops.)" class="mt-2 w-full rounded-lg border-stone-300 px-3 py-2 text-sm text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">{{ $myReview?->comment }}</textarea>
+                        @error('rating') <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                        <button type="submit" class="mt-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">{{ $myReview ? 'Güncelle' : 'Gönder' }}</button>
+                    </form>
+                @elseif (auth()->id() !== $company->user_id)
+                    <div class="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-5 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300">
+                        Bu şirketi değerlendirebilmek için önce bir iş ilanına başvurmuş olman gerekir.
+                        @if ($jobs->isNotEmpty())
+                            <a href="{{ route('jobs.show', [$jobs->first(), $jobs->first()->slug]) }}" class="font-medium text-emerald-700 hover:underline dark:text-emerald-400">Bir ilanına başvur</a>
+                        @endif
+                    </div>
+                @endif
+            @endauth
+
+            <div class="mt-4 space-y-3">
+                @forelse ($reviews as $review)
+                    <div class="rounded-2xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+                        <div class="flex items-center justify-between">
+                            <span class="font-medium text-stone-800 dark:text-stone-100">{{ $review->reviewer->name }}</span>
+                            <span class="text-amber-500 dark:text-amber-400">{{ str_repeat('★', $review->rating) }}<span class="text-stone-300 dark:text-stone-600">{{ str_repeat('★', 5 - $review->rating) }}</span></span>
+                        </div>
+                        @if ($review->comment)<p class="mt-1 text-sm text-stone-600 dark:text-stone-300">{{ $review->comment }}</p>@endif
+                        <p class="mt-1 text-xs text-stone-400 dark:text-stone-500">{{ $review->created_at->translatedFormat('j F Y') }}</p>
+                    </div>
+                @empty
+                    <p class="text-sm text-stone-500 dark:text-stone-400">Henüz değerlendirme yok. İlk değerlendiren sen ol!</p>
+                @endforelse
+            </div>
+        </div>
     </div>
 </x-layouts.app>

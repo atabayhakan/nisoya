@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\JobStatus;
 use App\Models\Company;
+use App\Models\CompanyReview;
 use App\Models\Conversation;
 use App\Models\Listing;
 use App\Models\Review;
@@ -220,6 +221,74 @@ class InteractionTest extends TestCase
             ->assertForbidden();
 
         $this->assertDatabaseCount('reviews', 0);
+    }
+
+    // --- Şirket değerlendirmesi ---
+
+    public function test_user_can_review_company_after_applying(): void
+    {
+        $fixture = $this->jobListingFixture();
+        $applicant = User::factory()->create();
+        $fixture->job->applications()->create(['user_id' => $applicant->id, 'status' => 'gonderildi']);
+
+        $this->actingAs($applicant)
+            ->post("/sirket/{$fixture->company->slug}/degerlendir", ['rating' => 4, 'comment' => 'İyi bir işverendi.'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('company_reviews', ['company_id' => $fixture->company->id, 'reviewer_id' => $applicant->id, 'rating' => 4]);
+    }
+
+    public function test_company_review_updates_existing_instead_of_duplicating(): void
+    {
+        $fixture = $this->jobListingFixture();
+        $applicant = User::factory()->create();
+        $fixture->job->applications()->create(['user_id' => $applicant->id, 'status' => 'gonderildi']);
+        CompanyReview::create(['company_id' => $fixture->company->id, 'reviewer_id' => $applicant->id, 'rating' => 5, 'status' => 'yayinda']);
+
+        $this->actingAs($applicant)->post("/sirket/{$fixture->company->slug}/degerlendir", ['rating' => 2]);
+
+        $this->assertDatabaseCount('company_reviews', 1);
+        $this->assertDatabaseHas('company_reviews', ['company_id' => $fixture->company->id, 'reviewer_id' => $applicant->id, 'rating' => 2]);
+    }
+
+    public function test_user_cannot_review_own_company(): void
+    {
+        $fixture = $this->jobListingFixture();
+
+        $this->actingAs($fixture->employer)
+            ->post("/sirket/{$fixture->company->slug}/degerlendir", ['rating' => 5])
+            ->assertForbidden();
+    }
+
+    public function test_user_cannot_review_company_without_applying(): void
+    {
+        $fixture = $this->jobListingFixture();
+        $stranger = User::factory()->create();
+
+        $this->actingAs($stranger)
+            ->post("/sirket/{$fixture->company->slug}/degerlendir", ['rating' => 5])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('company_reviews', 0);
+    }
+
+    public function test_company_review_form_only_shown_after_applying(): void
+    {
+        $fixture = $this->jobListingFixture();
+        $applicant = User::factory()->create();
+
+        $this->actingAs($applicant)
+            ->get("/sirket/{$fixture->company->slug}")
+            ->assertOk()
+            ->assertDontSee('Deneyimini paylaş')
+            ->assertSee('önce bir iş ilanına başvurmuş olman gerekir');
+
+        $fixture->job->applications()->create(['user_id' => $applicant->id, 'status' => 'gonderildi']);
+
+        $this->actingAs($applicant)
+            ->get("/sirket/{$fixture->company->slug}")
+            ->assertOk()
+            ->assertSee('Deneyimini paylaş');
     }
 
     public function test_review_form_only_shown_after_contact(): void
