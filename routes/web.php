@@ -9,6 +9,7 @@ use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\JobApplicationController;
+use App\Http\Controllers\JobBookmarkController;
 use App\Http\Controllers\JobBrowseController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\ListingController;
@@ -169,6 +170,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/panel/basvurularim', [JobApplicationController::class, 'mine'])->name('panel.applications.mine');
     Route::patch('/panel/basvuru/{application}/durum', [JobApplicationController::class, 'updateStatus'])->name('panel.applications.status');
     Route::get('/panel/basvuru/{application}/cv', [JobApplicationController::class, 'downloadCv'])->name('panel.applications.cv');
+
+    // İş ilanı yer imleri (aday)
+    Route::get('/panel/is-yer-imlerim', [JobBookmarkController::class, 'index'])->name('panel.job-bookmarks.index');
+    Route::post('/is-yer-imi/{job}', [JobBookmarkController::class, 'toggle'])->name('job-bookmarks.toggle')->middleware('throttle:job-bookmark-toggle');
 
     // KVKK: Veri silme + veri dışa aktarma
     Route::delete('/panel/profil', [ProfileSettingsController::class, 'destroy'])->name('panel.profile.destroy');

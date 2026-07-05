@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Enums\JobStatus;
 use App\Enums\ListingStatus;
 use App\Enums\UserStatus;
 use App\Models\Category;
+use App\Models\Company;
 use App\Models\Favorite;
+use App\Models\JobBookmark;
 use App\Models\Listing;
 use App\Models\SavedSearch;
 use App\Models\User;
@@ -47,6 +50,7 @@ class KvkkAndModerationTest extends TestCase
         $this->assertArrayHasKey('reviews_given', $data);
         $this->assertArrayHasKey('reviews_received', $data);
         $this->assertArrayHasKey('favorites', $data);
+        $this->assertArrayHasKey('is_yer_imlerim', $data);
         $this->assertArrayHasKey('saved_searches', $data);
         $this->assertArrayHasKey('sent_messages', $data);
     }
@@ -70,6 +74,15 @@ class KvkkAndModerationTest extends TestCase
         Favorite::create(['user_id' => $user->id, 'listing_id' => $listing->id]);
         SavedSearch::create(['user_id' => $user->id, 'q' => 'test', 'label' => 'Test arama']);
 
+        // Bir de iş ilanı yer imi oluşturalım
+        $otherEmployer = User::factory()->create();
+        $company = Company::create(['user_id' => $otherEmployer->id, 'name' => 'Acme', 'slug' => 'acme']);
+        $job = $company->jobListings()->create([
+            'title' => 'Test iş', 'slug' => 'test-is', 'description' => 'Açıklama.',
+            'employment_type' => 'tam_zamanli', 'status' => JobStatus::Aktif->value, 'positions' => 1,
+        ]);
+        JobBookmark::create(['user_id' => $user->id, 'job_listing_id' => $job->id]);
+
         $response = $this->actingAs($user)->delete('/panel/profil', [
             'current_password' => 'password',
             'confirm_text' => 'HESABIMI SİL',
@@ -92,6 +105,7 @@ class KvkkAndModerationTest extends TestCase
         // Kişisel veriler temizlendi
         $this->assertDatabaseMissing('listings', ['user_id' => $user->id]);
         $this->assertDatabaseMissing('favorites', ['user_id' => $user->id]);
+        $this->assertDatabaseMissing('job_bookmarks', ['user_id' => $user->id]);
         $this->assertDatabaseMissing('saved_searches', ['user_id' => $user->id]);
     }
 

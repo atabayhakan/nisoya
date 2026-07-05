@@ -137,7 +137,11 @@ class JobListingController extends Controller
             ? $job->applications()->where('user_id', $request->user()->id)->exists()
             : false;
 
-        return view('jobs.show', compact('job', 'isOwner', 'hasApplied'));
+        $isBookmarked = $request->user()
+            ? $request->user()->jobBookmarks()->where('job_listing_id', $job->id)->exists()
+            : false;
+
+        return view('jobs.show', compact('job', 'isOwner', 'hasApplied', 'isBookmarked'));
     }
 
     /** Form için ortak veri. */

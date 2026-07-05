@@ -165,6 +165,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->account_type === AccountType::Kurumsal;
     }
 
+    /**
+     * Kullanıcının yer imlerine eklediği iş ilanları (aday olarak).
+     *
+     * @return HasMany<JobBookmark, $this>
+     */
+    public function jobBookmarks(): HasMany
+    {
+        return $this->hasMany(JobBookmark::class);
+    }
+
     public function favorites(): HasMany
     {
         return $this->hasMany(Favorite::class);

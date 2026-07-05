@@ -50,6 +50,9 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('favorite-toggle', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip())
         );
 
+        RateLimiter::for('job-bookmark-toggle', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip())
+        );
+
         RateLimiter::for('message-send', fn (Request $request) => Limit::perMinute(40)->by($request->user()?->id ?: $request->ip())
         );
 

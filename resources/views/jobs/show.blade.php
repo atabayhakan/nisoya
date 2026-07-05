@@ -45,6 +45,22 @@
             </dl>
         </div>
 
+        {{-- Yer imi --}}
+        @auth
+            @unless ($isOwner)
+                <form method="POST" action="{{ route('job-bookmarks.toggle', $job) }}" class="mt-3">
+                    @csrf
+                    <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition {{ $isBookmarked ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400' : 'border-stone-300 text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800' }}">
+                        @if ($isBookmarked)
+                            <x-heroicon-s-bookmark class="h-5 w-5" /> Yer imlerimde
+                        @else
+                            <x-heroicon-o-bookmark class="h-5 w-5" /> Yer imlerime ekle
+                        @endif
+                    </button>
+                </form>
+            @endunless
+        @endauth
+
         {{-- Açıklama --}}
         <div class="mt-4 rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
             <h2 class="font-semibold text-stone-800 dark:text-stone-100">İş tanımı</h2>

@@ -7,6 +7,7 @@ use App\Enums\UserStatus;
 use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Favorite;
+use App\Models\JobBookmark;
 use App\Models\Message;
 use App\Models\Report;
 use App\Models\Review;
@@ -176,6 +177,7 @@ class ProfileSettingsController extends Controller
 
             // Kullanıcıya ait tüm kişisel etkileşimleri temizle
             Favorite::query()->where('user_id', $user->id)->delete();
+            JobBookmark::query()->where('user_id', $user->id)->delete();
             SavedSearch::query()->where('user_id', $user->id)->delete();
             Review::query()->where('reviewer_id', $user->id)->delete();
 
@@ -274,6 +276,10 @@ class ProfileSettingsController extends Controller
             'reviews_given' => $user->reviewsGiven()->get()->toArray(),
             'reviews_received' => $user->reviewsReceived()->get()->toArray(),
             'favorites' => $user->favorites()->with('listing')->get()->toArray(),
+            'is_yer_imlerim' => $user->jobBookmarks()->with('jobListing')->get()->map(fn ($b) => [
+                'ilan' => $b->jobListing?->title,
+                'created_at' => $b->created_at?->toIso8601String(),
+            ])->all(),
             'saved_searches' => $user->savedSearches()->get()->toArray(),
             'sent_messages' => $user->sentMessages()->get()->toArray(),
         ];

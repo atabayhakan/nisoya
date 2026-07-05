@@ -9,6 +9,7 @@
             ['ad' => 'Favorilerim', 'aciklama' => 'Kaydettiğin ilanlar', 'ikon' => 'heart', 'url' => '/panel/favorilerim'],
             ['ad' => 'İş İlanlarım', 'aciklama' => 'İşveren: ilan ver & yönet', 'ikon' => 'briefcase', 'url' => '/panel/is-ilanlarim'],
             ['ad' => 'Başvurularım', 'aciklama' => 'Başvurduğun işler', 'ikon' => 'document-text', 'url' => '/panel/basvurularim'],
+            ['ad' => 'İş Yer İmlerim', 'aciklama' => 'Kaydettiğin iş ilanları', 'ikon' => 'bookmark', 'url' => '/panel/is-yer-imlerim'],
             ['ad' => 'Şirket Profili', 'aciklama' => 'İşveren profilin', 'ikon' => 'building-office-2', 'url' => '/panel/sirket'],
             ['ad' => 'Profilim', 'aciklama' => 'Bilgilerini düzenle', 'ikon' => 'user-circle', 'url' => '/panel/profil'],
             ['ad' => 'Arkadaşını Davet Et', 'aciklama' => 'Davet bağlantını paylaş', 'ikon' => 'gift', 'url' => '/panel/davet'],

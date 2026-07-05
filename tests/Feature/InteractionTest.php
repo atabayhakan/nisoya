@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\JobStatus;
+use App\Models\Company;
 use App\Models\Conversation;
 use App\Models\Listing;
 use App\Models\Review;
@@ -49,6 +51,49 @@ class InteractionTest extends TestCase
         $user->favorites()->create(['listing_id' => $listing->id]);
 
         $this->actingAs($user)->get('/panel/favorilerim')->assertOk()->assertSee('Favori ilan başlığı');
+    }
+
+    // --- İş ilanı yer imleri ---
+
+    /** İşveren + şirket + aktif iş ilanı üretir. */
+    protected function jobListingFixture(): object
+    {
+        $employer = User::factory()->create();
+        $company = Company::create(['user_id' => $employer->id, 'name' => 'Acme GmbH', 'slug' => 'acme-gmbh']);
+        $job = $company->jobListings()->create([
+            'title' => 'Yer imi ilanı', 'slug' => 'yer-imi-ilani', 'description' => 'Açıklama.',
+            'employment_type' => 'tam_zamanli', 'status' => JobStatus::Aktif->value, 'positions' => 1,
+        ]);
+
+        return (object) ['employer' => $employer, 'company' => $company, 'job' => $job];
+    }
+
+    public function test_user_can_toggle_job_bookmark(): void
+    {
+        $user = User::factory()->create();
+        $job = $this->jobListingFixture()->job;
+
+        $this->actingAs($user)->post("/is-yer-imi/{$job->id}")->assertRedirect();
+        $this->assertDatabaseHas('job_bookmarks', ['user_id' => $user->id, 'job_listing_id' => $job->id]);
+
+        $this->actingAs($user)->post("/is-yer-imi/{$job->id}");
+        $this->assertDatabaseMissing('job_bookmarks', ['user_id' => $user->id, 'job_listing_id' => $job->id]);
+    }
+
+    public function test_guest_cannot_bookmark_job(): void
+    {
+        $job = $this->jobListingFixture()->job;
+
+        $this->post("/is-yer-imi/{$job->id}")->assertRedirect(route('login'));
+    }
+
+    public function test_job_bookmarks_page_lists_bookmarked_jobs(): void
+    {
+        $user = User::factory()->create();
+        $job = $this->jobListingFixture()->job;
+        $user->jobBookmarks()->create(['job_listing_id' => $job->id]);
+
+        $this->actingAs($user)->get('/panel/is-yer-imlerim')->assertOk()->assertSee('Yer imi ilanı');
     }
 
     // --- Mesajlaşma ---
