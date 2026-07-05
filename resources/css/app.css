@@ -6,6 +6,13 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+/* Marka rengi seçenekleri (bkz. config/brand_colors.php) — bu renkler hiçbir
+   Blade dosyasında class olarak kullanılmasa bile Tailwind'in --color-* CSS
+   değişkenlerini derlemesini zorunlu kılar; brand-theme.blade.php bu
+   değişkenleri --color-emerald-* üzerine yönlendirerek marka rengini
+   değiştirir. */
+@source inline("{bg,text,border,ring}-{blue,rose,amber,violet,teal,indigo,orange}-{50,100,200,300,400,500,600,700,800,900,950}");
+
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';

@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\ListingImage;
+use App\Models\NavigationLink;
 use App\Models\PortfolioItem;
 use App\Models\User;
 use App\Observers\ListingImageObserver;
@@ -89,6 +90,12 @@ class AppServiceProvider extends ServiceProvider
             $view->with('emergencyCategories', collect($items)->map(fn (array $item) => (object) $item));
             $view->with('emergencyCountries', collect($countries)->map(fn (array $item) => (object) $item));
             $view->with('emergencyDefaultCountry', auth()->user()?->country_code ?? '');
+
+            // Header menü linkleri (bkz. App\Models\NavigationLink) — admin
+            // panelden ekleyip/çıkarabildiği, sürükle-bırakla sıraladığı liste.
+            $view->with('navLinks', Schema::hasTable('navigation_links')
+                ? NavigationLink::activeCached()
+                : collect());
         });
 
         // Reklam & bağış ayarlarını DB'den (varsa) env'in üzerine yaz.

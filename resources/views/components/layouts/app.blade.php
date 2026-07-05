@@ -16,9 +16,15 @@
     <meta property="og:image" content="{{ $ogImage ?? asset('og.png') }}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content="{{ $ogImage ?? asset('og.png') }}">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%23059669'/><path d='M7 17V7L17 17V7' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+    @php
+        $faviconPath = setting('gorunum.favicon_path');
+        $faviconHref = $faviconPath
+            ? Storage::disk('public')->url($faviconPath)
+            : "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%23".ltrim(brandColorHex(), '#')."'/><path d='M7 17V7L17 17V7' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>";
+    @endphp
+    <link rel="icon" href="{{ $faviconHref }}">
     <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#059669" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="{{ brandColorHex() }}" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#0c0a09" media="(prefers-color-scheme: dark)">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
@@ -82,6 +88,9 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    {{-- Marka rengi override'ı (admin panelden — Site Yönetimi → İçerik → Görünüm) --}}
+    <x-brand-theme />
+
     {{-- Header özel kodu (admin panelden — Site Yönetimi → İçerik).
          GÜVENLİK: Yalnızca admin rolü yazabilir. --}}
     @if (config('services.custom_head_code'))
@@ -93,17 +102,20 @@
     <header class="sticky top-0 z-30 border-b border-stone-200 bg-white/90 backdrop-blur dark:border-stone-800 dark:bg-stone-900/90">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
             <a href="{{ url('/') }}" class="group flex items-center gap-2">
-                <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-600 text-white transition group-hover:bg-emerald-700 dark:bg-emerald-500 dark:group-hover:bg-emerald-400 dark:text-stone-900">
-                    <x-logo-mark class="h-5 w-5" />
-                </span>
+                @if ($logoPath = setting('gorunum.logo_path'))
+                    <img src="{{ Storage::disk('public')->url($logoPath) }}" alt="{{ setting('genel.site_adi') }}" class="h-9 w-9 rounded-xl object-cover">
+                @else
+                    <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-600 text-white transition group-hover:bg-emerald-700 dark:bg-emerald-500 dark:group-hover:bg-emerald-400 dark:text-stone-900">
+                        <x-logo-mark class="h-5 w-5" />
+                    </span>
+                @endif
                 <span class="text-xl font-bold tracking-tight text-stone-900 dark:text-stone-50">{{ setting('genel.site_adi') }}</span>
             </a>
 
             <nav class="hidden items-center gap-6 text-sm font-medium text-stone-600 md:flex dark:text-stone-300">
-                <a href="{{ route('listings.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İlanlar</a>
-                <a href="{{ route('jobs.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İş İlanları</a>
-                <a href="{{ route('listings.map') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Harita</a>
-                <a href="{{ route('pages.how') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a>
+                @foreach ($navLinks as $navLink)
+                    <a href="{{ $navLink->url }}" @if ($navLink->opens_new_tab) target="_blank" rel="noopener noreferrer" @endif class="hover:text-emerald-700 dark:hover:text-emerald-400">{{ $navLink->label }}</a>
+                @endforeach
             </nav>
 
             <div class="flex items-center gap-2">
@@ -159,10 +171,9 @@
 
         {{-- Mobil gezinme --}}
         <nav class="flex items-center gap-5 overflow-x-auto border-t border-stone-100 px-4 py-2 text-sm font-medium text-stone-600 md:hidden dark:border-stone-800 dark:text-stone-300">
-            <a href="{{ route('listings.index') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">İlanlar</a>
-            <a href="{{ route('jobs.index') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">İş İlanları</a>
-            <a href="{{ route('listings.map') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">Harita</a>
-            <a href="{{ route('pages.how') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a>
+            @foreach ($navLinks as $navLink)
+                <a href="{{ $navLink->url }}" @if ($navLink->opens_new_tab) target="_blank" rel="noopener noreferrer" @endif class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">{{ $navLink->label }}</a>
+            @endforeach
             @guest
                 <a href="{{ route('login') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">Giriş</a>
                 <a href="{{ route('register') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">Kayıt</a>
@@ -186,9 +197,13 @@
         <div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 md:grid-cols-4">
             <div>
                 <div class="flex items-center gap-2">
-                    <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900">
-                        <x-logo-mark class="h-4 w-4" />
-                    </span>
+                    @if ($logoPath)
+                        <img src="{{ Storage::disk('public')->url($logoPath) }}" alt="{{ setting('genel.site_adi') }}" class="h-8 w-8 rounded-lg object-cover">
+                    @else
+                        <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900">
+                            <x-logo-mark class="h-4 w-4" />
+                        </span>
+                    @endif
                     <span class="text-lg font-bold text-stone-900 dark:text-stone-50">{{ setting('genel.site_adi') }}</span>
                 </div>
                 <p class="mt-3 text-sm text-stone-500 dark:text-stone-400">{{ setting('footer.aciklama') }}</p>

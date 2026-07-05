@@ -13,6 +13,7 @@ return [
 
     'groups' => [
         'anasayfa' => 'Anasayfa',
+        'gorunum' => 'Görünüm (Marka)',
         'header' => 'Üst Menü (Header)',
         'footer' => 'Alt Bilgi (Footer)',
         'genel' => 'Genel',
@@ -58,6 +59,17 @@ return [
         'home.cta_baslik' => ['group' => 'anasayfa', 'label' => 'CTA — başlık', 'type' => 'text', 'default' => 'Bir yeteneğin mutlaka vardır.'],
         'home.cta_metin' => ['group' => 'anasayfa', 'label' => 'CTA — metin', 'type' => 'text', 'default' => 'Hadi onu paraya dönüştür. İlan vermek tamamen ücretsiz.'],
         'home.cta_buton' => ['group' => 'anasayfa', 'label' => 'CTA — buton', 'type' => 'text', 'default' => 'Hemen Başla'],
+
+        // --- Görünüm (Marka) ---
+        'gorunum.logo_path' => ['group' => 'gorunum', 'label' => 'Logo (opsiyonel — yüklenmezse varsayılan "N" işareti kullanılır)', 'type' => 'image', 'default' => ''],
+        'gorunum.favicon_path' => ['group' => 'gorunum', 'label' => 'Favicon (opsiyonel, kare görsel önerilir)', 'type' => 'image', 'default' => ''],
+        'gorunum.marka_rengi' => [
+            'group' => 'gorunum',
+            'label' => 'Marka rengi',
+            'type' => 'select',
+            'options' => array_map(fn (array $c) => $c['label'], config('brand_colors', [])),
+            'default' => 'emerald',
+        ],
 
         // --- Üst Menü (Header) ---
         'header.ozel_kod' => ['group' => 'header', 'label' => 'Header özel kod (</head> öncesi)', 'type' => 'code', 'default' => ''],
