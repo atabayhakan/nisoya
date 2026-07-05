@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CompanyGalleryController;
 use App\Http\Controllers\CompanyReviewController;
 use App\Http\Controllers\ExifMapController;
 use App\Http\Controllers\FavoriteController;
@@ -153,6 +154,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Şirket profili
     Route::get('/panel/sirket', [CompanyController::class, 'edit'])->name('panel.company.edit');
     Route::put('/panel/sirket', [CompanyController::class, 'update'])->name('panel.company.update');
+    Route::post('/panel/sirket/galeri', [CompanyGalleryController::class, 'store'])->name('panel.company.gallery.store');
+    Route::delete('/panel/sirket/galeri/{companyGalleryImage}', [CompanyGalleryController::class, 'destroy'])->name('panel.company.gallery.destroy');
 
     // İşverenin iş ilanları
     Route::get('/panel/is-ilanlarim', [JobListingController::class, 'index'])->name('panel.jobs.index');

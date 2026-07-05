@@ -14,6 +14,7 @@ class Company extends Model
         'name',
         'slug',
         'logo_path',
+        'video_url',
         'tagline',
         'about',
         'website',
@@ -22,8 +23,11 @@ class Company extends Model
         'founded_year',
         'country_code',
         'city',
+        'address',
         'social_linkedin',
         'social_instagram',
+        'social_whatsapp',
+        'social_twitter',
         'is_verified',
     ];
 
@@ -61,6 +65,12 @@ class Company extends Model
     public function reviews(): HasMany
     {
         return $this->hasMany(CompanyReview::class);
+    }
+
+    /** @return HasMany<CompanyGalleryImage, $this> */
+    public function galleryImages(): HasMany
+    {
+        return $this->hasMany(CompanyGalleryImage::class)->orderBy('sort_order');
     }
 
     /** Logo URL'i (yoksa null). */

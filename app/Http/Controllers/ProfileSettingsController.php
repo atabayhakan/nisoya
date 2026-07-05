@@ -158,11 +158,14 @@ class ProfileSettingsController extends Controller
             // İş ilanı başvuruları (aday olarak yaptıkları)
             $user->jobApplications()->delete();
 
-            // Şirket profili + logo + tüm iş ilanları (job_listings ve onların
-            // başvuruları FK cascade ile silinir).
+            // Şirket profili + logo + galeri görselleri + tüm iş ilanları
+            // (job_listings ve onların başvuruları FK cascade ile silinir).
             if ($user->company) {
                 if ($user->company->logo_path) {
                     $imageService->deleteVariants(array_values($imageService->siblingVariantPaths($user->company->logo_path)));
+                }
+                foreach ($user->company->galleryImages as $galleryImage) {
+                    $imageService->deleteVariants($galleryImage->variantPaths());
                 }
                 $user->company()->delete();
             }

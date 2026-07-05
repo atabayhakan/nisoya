@@ -17,9 +17,12 @@ class CompanyController extends Controller
     /** Şirket profili oluşturma/düzenleme formu (panel). */
     public function edit(Request $request): View
     {
+        $company = $request->user()->company;
+
         return view('panel.company.edit', [
-            'company' => $request->user()->company,
+            'company' => $company,
             'countries' => Country::query()->where('is_active', true)->orderBy('sort_order')->get(),
+            'galleryImages' => $company ? $company->galleryImages : collect(),
         ]);
     }
 
@@ -33,18 +36,23 @@ class CompanyController extends Controller
             'tagline' => ['nullable', 'string', 'max:180'],
             'about' => ['nullable', 'string', 'max:5000'],
             'website' => ['nullable', 'url', 'max:255'],
+            'video_url' => ['nullable', 'url', 'max:255'],
             'sector' => ['nullable', 'string', 'max:100'],
             'company_size' => ['nullable', 'string', 'max:20'],
             'founded_year' => ['nullable', 'integer', 'min:1900', 'max:'.(int) date('Y')],
             'country_code' => ['nullable', 'exists:countries,code'],
             'city' => ['nullable', 'string', 'max:100'],
+            'address' => ['nullable', 'string', 'max:255'],
             'social_linkedin' => ['nullable', 'url', 'max:255'],
             'social_instagram' => ['nullable', 'string', 'max:255'],
+            'social_whatsapp' => ['nullable', 'string', 'max:255'],
+            'social_twitter' => ['nullable', 'url', 'max:255'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ], attributes: [
             'name' => 'şirket adı', 'tagline' => 'slogan', 'about' => 'hakkında',
-            'website' => 'web sitesi', 'sector' => 'sektör', 'founded_year' => 'kuruluş yılı',
-            'country_code' => 'ülke', 'city' => 'şehir', 'logo' => 'logo',
+            'website' => 'web sitesi', 'video_url' => 'tanıtım videosu', 'sector' => 'sektör', 'founded_year' => 'kuruluş yılı',
+            'country_code' => 'ülke', 'city' => 'şehir', 'address' => 'adres', 'logo' => 'logo',
+            'social_whatsapp' => 'WhatsApp', 'social_twitter' => 'Twitter/X',
         ]);
 
         $company = $user->company;
@@ -78,7 +86,7 @@ class CompanyController extends Controller
     /** Herkese açık şirket sayfası. */
     public function show(Company $company): View
     {
-        $company->load('country');
+        $company->load('country', 'galleryImages');
 
         $jobs = $company->jobListings()->active()
             ->latest()

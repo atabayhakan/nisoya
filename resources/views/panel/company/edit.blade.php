@@ -67,9 +67,17 @@
                     <label class="block text-sm font-medium text-stone-700 dark:text-stone-200">Şehir</label>
                     <input type="text" name="city" value="{{ $val('city') }}" class="mt-1 w-full rounded-lg border-stone-300 text-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                 </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-stone-700 dark:text-stone-200">Adres (opsiyonel)</label>
+                    <input type="text" name="address" value="{{ $val('address') }}" placeholder="Ofis adresi" class="mt-1 w-full rounded-lg border-stone-300 text-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                </div>
                 <div>
                     <label class="block text-sm font-medium text-stone-700 dark:text-stone-200">Web sitesi</label>
                     <input type="url" name="website" value="{{ $val('website') }}" placeholder="https://" class="mt-1 w-full rounded-lg border-stone-300 text-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-stone-700 dark:text-stone-200">Tanıtım videosu (opsiyonel)</label>
+                    <input type="url" name="video_url" value="{{ $val('video_url') }}" placeholder="https://youtube.com/..." class="mt-1 w-full rounded-lg border-stone-300 text-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-stone-700 dark:text-stone-200">LinkedIn</label>
@@ -78,6 +86,14 @@
                 <div>
                     <label class="block text-sm font-medium text-stone-700 dark:text-stone-200">Instagram</label>
                     <input type="text" name="social_instagram" value="{{ $val('social_instagram') }}" class="mt-1 w-full rounded-lg border-stone-300 text-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-stone-700 dark:text-stone-200">WhatsApp</label>
+                    <input type="text" name="social_whatsapp" value="{{ $val('social_whatsapp') }}" placeholder="wa.me/49..." class="mt-1 w-full rounded-lg border-stone-300 text-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-stone-700 dark:text-stone-200">Twitter/X</label>
+                    <input type="url" name="social_twitter" value="{{ $val('social_twitter') }}" placeholder="https://x.com/..." class="mt-1 w-full rounded-lg border-stone-300 text-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                 </div>
             </div>
 
@@ -88,5 +104,53 @@
                 @endif
             </div>
         </form>
+
+        @if ($company)
+            <div class="mt-6 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+                <h2 class="font-semibold text-stone-800 dark:text-stone-100">🖼️ Ofis Galerisi</h2>
+                <p class="text-sm text-stone-500 dark:text-stone-400">
+                    Ofisinden/ekibinden fotoğraflar ekle, şirket sayfanı ziyaret edenler görsün. En fazla {{ \App\Http\Controllers\CompanyGalleryController::MAX_ITEMS }} görsel.
+                </p>
+
+                @error('image') <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+
+                @if ($galleryImages->isNotEmpty())
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        @foreach ($galleryImages as $item)
+                            <div class="group relative overflow-hidden rounded-lg border border-stone-200 dark:border-stone-700">
+                                <img src="{{ $item->url('medium') }}" alt="{{ $item->caption }}" class="aspect-square w-full object-cover">
+                                @if ($item->caption)
+                                    <div class="absolute inset-x-0 bottom-0 truncate bg-stone-900/60 px-2 py-1 text-xs text-white">{{ $item->caption }}</div>
+                                @endif
+                                <form method="POST" action="{{ route('panel.company.gallery.destroy', $item) }}" class="absolute right-1 top-1" onsubmit="return confirm('Bu görseli kaldırmak istediğine emin misin?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="grid h-6 w-6 place-items-center rounded-full bg-stone-900/70 text-white opacity-0 transition group-hover:opacity-100" aria-label="Kaldır">
+                                        <x-heroicon-o-x-mark class="h-4 w-4" />
+                                    </button>
+                                </form>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+
+                @if ($galleryImages->count() < \App\Http\Controllers\CompanyGalleryController::MAX_ITEMS)
+                    <form method="POST" action="{{ route('panel.company.gallery.store') }}" enctype="multipart/form-data" class="space-y-3 border-t border-stone-100 pt-4 dark:border-stone-800">
+                        @csrf
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            <div>
+                                <label for="cg_image" class="text-xs font-medium text-stone-600 dark:text-stone-300">Görsel</label>
+                                <input id="cg_image" name="image" type="file" accept="image/*" class="mt-1 block w-full text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 dark:text-stone-300 dark:file:bg-emerald-900/40 dark:file:text-emerald-300">
+                            </div>
+                            <div>
+                                <label for="cg_caption" class="text-xs font-medium text-stone-600 dark:text-stone-300">Açıklama (ops.)</label>
+                                <input id="cg_caption" name="caption" type="text" value="{{ old('caption') }}" placeholder="ör. Ofisimiz, Berlin" class="mt-1 w-full rounded-lg border-stone-300 text-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                            </div>
+                        </div>
+                        <button type="submit" class="rounded-lg bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700">+ Galeri görseli ekle</button>
+                    </form>
+                @endif
+            </div>
+        @endif
     </div>
 </x-layouts.app>
