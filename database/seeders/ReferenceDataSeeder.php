@@ -1,0 +1,31 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+
+/**
+ * Yalnızca CANLIDA HER DEPLOY'DA GÜVENLE çalıştırılabilen referans/taksonomi
+ * verileri. Hepsi updateOrCreate ile idempotenttir — mevcut kayıtları bozmaz,
+ * yeni kod ile gelen referans verilerini (yeni ülke/kategori/para birimi vb.)
+ * canlıya otomatik taşır. deploy.sh bunu `db:seed --class=ReferenceDataSeeder
+ * --force` ile çağırır.
+ *
+ * DİKKAT: Buraya ASLA AdminUserSeeder (admin parolasını sıfırlar),
+ * DemoSeeder (sahte veri ekler) veya SiteSettingSeeder / StaticPagesSeeder
+ * (admin panelden yönetilen içeriği geri getirebilir) EKLENMEZ.
+ */
+class ReferenceDataSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $this->call([
+            CurrencySeeder::class,
+            CountrySeeder::class,
+            CitySeeder::class,
+            CategorySeeder::class,
+            ProductCategorySeeder::class,
+            JobCategorySeeder::class,
+        ]);
+    }
+}

@@ -56,6 +56,15 @@ npm run build
 info "Veritabanı migrasyonları..."
 php artisan migrate --force
 
+# Referans/taksonomi verilerini senkronla (para birimi, ülke, şehir,
+# kategoriler, iş kategorileri). SADECE ReferenceDataSeeder çalışır —
+# hepsi updateOrCreate ile idempotenttir, mevcut veriyi bozmaz ama yeni
+# kod ile gelen referans verilerini otomatik canlıya taşır. Migration
+# boş tablo oluşturur; seed etmezsek (örn. yeni JobCategory tablosu) tablo
+# boş kalır. AdminUser/Demo/SiteSetting seeder'ları KASITLI olarak dışarıda.
+info "Referans verileri senkronlanıyor..."
+php artisan db:seed --class=ReferenceDataSeeder --force || warn "referans seed atlandı"
+
 info "Spatie Filament upgrade (varsa)..."
 php artisan filament:upgrade || true
 
