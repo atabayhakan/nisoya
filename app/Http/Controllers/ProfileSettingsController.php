@@ -9,6 +9,7 @@ use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Favorite;
 use App\Models\JobBookmark;
+use App\Models\JobSavedSearch;
 use App\Models\Message;
 use App\Models\Report;
 use App\Models\Review;
@@ -181,6 +182,7 @@ class ProfileSettingsController extends Controller
             JobBookmark::query()->where('user_id', $user->id)->delete();
             CompanyReview::query()->where('reviewer_id', $user->id)->delete();
             SavedSearch::query()->where('user_id', $user->id)->delete();
+            JobSavedSearch::query()->where('user_id', $user->id)->delete();
             Review::query()->where('reviewer_id', $user->id)->delete();
 
             // Aldığı değerlendirmeleri anonimleştir

@@ -14,6 +14,7 @@ use App\Http\Controllers\JobBookmarkController;
 use App\Http\Controllers\JobBrowseController;
 use App\Http\Controllers\JobFeatureController;
 use App\Http\Controllers\JobListingController;
+use App\Http\Controllers\JobSavedSearchController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\MessageController;
@@ -184,6 +185,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/sirket/{company}/degerlendir', [CompanyReviewController::class, 'store'])
         ->middleware(['honeypot', 'throttle:company-review-store'])
         ->name('company-reviews.store');
+
+    // İş ilanı uyarıları (kayıtlı arama)
+    Route::get('/panel/is-aramalarim', [JobSavedSearchController::class, 'index'])->name('panel.job-saved-searches.index');
+    Route::post('/panel/is-arama-kaydet', [JobSavedSearchController::class, 'store'])->name('job-saved-searches.store')->middleware('throttle:job-search-save');
+    Route::delete('/panel/is-aramalarim/{jobSavedSearch}', [JobSavedSearchController::class, 'destroy'])->name('job-saved-searches.destroy');
 
     // KVKK: Veri silme + veri dışa aktarma
     Route::delete('/panel/profil', [ProfileSettingsController::class, 'destroy'])->name('panel.profile.destroy');

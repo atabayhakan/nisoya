@@ -10,6 +10,7 @@ use App\Models\Company;
 use App\Models\CompanyReview;
 use App\Models\Favorite;
 use App\Models\JobBookmark;
+use App\Models\JobSavedSearch;
 use App\Models\Listing;
 use App\Models\SavedSearch;
 use App\Models\User;
@@ -86,6 +87,7 @@ class KvkkAndModerationTest extends TestCase
         JobBookmark::create(['user_id' => $user->id, 'job_listing_id' => $job->id]);
         $job->applications()->create(['user_id' => $user->id, 'status' => 'gonderildi']);
         CompanyReview::create(['company_id' => $company->id, 'reviewer_id' => $user->id, 'rating' => 5, 'status' => 'yayinda']);
+        JobSavedSearch::create(['user_id' => $user->id, 'label' => 'Test', 'ulke' => 'DE']);
 
         $response = $this->actingAs($user)->delete('/panel/profil', [
             'current_password' => 'password',
@@ -112,6 +114,7 @@ class KvkkAndModerationTest extends TestCase
         $this->assertDatabaseMissing('job_bookmarks', ['user_id' => $user->id]);
         $this->assertDatabaseMissing('company_reviews', ['reviewer_id' => $user->id]);
         $this->assertDatabaseMissing('saved_searches', ['user_id' => $user->id]);
+        $this->assertDatabaseMissing('job_saved_searches', ['user_id' => $user->id]);
     }
 
     public function test_account_delete_requires_correct_password(): void

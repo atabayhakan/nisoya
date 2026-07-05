@@ -14,3 +14,4 @@ Schedule::command('job-listings:expire-featured')->daily();
 
 // Kayıtlı aramalara uyan yeni ilanlar için günlük uyarı e-postaları
 Schedule::command('alerts:saved-searches')->dailyAt('09:00');
+Schedule::command('job-alerts:saved-searches')->dailyAt('09:00');

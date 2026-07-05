@@ -185,6 +185,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(CompanyReview::class, 'reviewer_id');
     }
 
+    /**
+     * Kullanıcının kayıtlı iş ilanı aramaları (uyarılar).
+     *
+     * @return HasMany<JobSavedSearch, $this>
+     */
+    public function jobSavedSearches(): HasMany
+    {
+        return $this->hasMany(JobSavedSearch::class);
+    }
+
     public function favorites(): HasMany
     {
         return $this->hasMany(Favorite::class);

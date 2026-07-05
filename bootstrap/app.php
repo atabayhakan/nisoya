@@ -50,6 +50,9 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('search-save', fn (Request $request) => Limit::perMinute(20)->by($request->user()?->id ?: $request->ip())
         );
 
+        RateLimiter::for('job-search-save', fn (Request $request) => Limit::perMinute(20)->by($request->user()?->id ?: $request->ip())
+        );
+
         RateLimiter::for('favorite-toggle', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip())
         );
 
