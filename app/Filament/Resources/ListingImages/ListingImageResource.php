@@ -65,6 +65,7 @@ class ListingImageResource extends Resource
             ->columns([
                 ImageColumn::make('path_thumb')
                     ->label('Önizleme')
+                    ->disk('public')
                     ->height(60)
                     ->extraImgAttributes(['class' => 'rounded object-cover']),
 

@@ -24,6 +24,7 @@ class ListingImageInfolist
                     ->schema([
                         ImageEntry::make('path_large')
                             ->label('Varyantlar')
+                            ->disk('public')
                             ->height(280)
                             ->extraImgAttributes(['class' => 'rounded-lg object-cover']),
                         TextEntry::make('path_thumb')
