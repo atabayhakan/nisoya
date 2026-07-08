@@ -88,12 +88,20 @@ class AppServiceProvider extends ServiceProvider
                     ->all())
                 : [];
 
+            // "Acil Yardım"da varsayılan ülke: profildeki kayıtlı ülke değil,
+            // o an fiilen bulunulan ülke önceliklidir (ör. seyahatteyken
+            // profil bilgisi yanıltıcı olur) — bkz. VisitorLocationService.
+            // Sadece Acil Yardım'ın listelediği ülkelerden biriyse kullanılır.
+            $visitorCountry = app(VisitorLocationService::class)->resolve(request());
+            $emergencyDefaultCountry = auth()->user()?->country_code ?? '';
+            if ($visitorCountry && collect($countries)->contains('code', $visitorCountry->code)) {
+                $emergencyDefaultCountry = $visitorCountry->code;
+            }
+
             $view->with('emergencyCategories', collect($items)->map(fn (array $item) => (object) $item));
             $view->with('emergencyCountries', collect($countries)->map(fn (array $item) => (object) $item));
-            $view->with('emergencyDefaultCountry', auth()->user()?->country_code ?? '');
-
-            // Header'da "hangi ülkeden giriliyorsa o bayrak" — bkz. VisitorLocationService.
-            $view->with('visitorCountry', app(VisitorLocationService::class)->resolve(request()));
+            $view->with('emergencyDefaultCountry', $emergencyDefaultCountry);
+            $view->with('visitorCountry', $visitorCountry);
 
             // Header menü linkleri (bkz. App\Models\NavigationLink) — admin
             // panelden ekleyip/çıkarabildiği, sürükle-bırakla sıraladığı liste.
