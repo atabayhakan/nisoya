@@ -13,6 +13,7 @@ use App\Observers\ListingImageObserver;
 use App\Observers\PortfolioItemObserver;
 use App\Observers\UserObserver;
 use App\Services\PerformanceService;
+use App\Services\VisitorLocationService;
 use App\Support\Settings;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -90,6 +91,9 @@ class AppServiceProvider extends ServiceProvider
             $view->with('emergencyCategories', collect($items)->map(fn (array $item) => (object) $item));
             $view->with('emergencyCountries', collect($countries)->map(fn (array $item) => (object) $item));
             $view->with('emergencyDefaultCountry', auth()->user()?->country_code ?? '');
+
+            // Header'da "hangi ülkeden giriliyorsa o bayrak" — bkz. VisitorLocationService.
+            $view->with('visitorCountry', app(VisitorLocationService::class)->resolve(request()));
 
             // Header menü linkleri (bkz. App\Models\NavigationLink) — admin
             // panelden ekleyip/çıkarabildiği, sürükle-bırakla sıraladığı liste.

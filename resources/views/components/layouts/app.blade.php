@@ -119,6 +119,8 @@
             </nav>
 
             <div class="flex items-center gap-2">
+                <x-visitor-country-badge :country="$visitorCountry" />
+
                 <x-emergency-button
                     :categories="$emergencyCategories"
                     :countries="$emergencyCountries"

@@ -15,3 +15,7 @@ Schedule::command('job-listings:expire-featured')->daily()->withoutOverlapping()
 // Kayıtlı aramalara uyan yeni ilanlar için günlük uyarı e-postaları
 Schedule::command('alerts:saved-searches')->dailyAt('09:00')->withoutOverlapping();
 Schedule::command('job-alerts:saved-searches')->dailyAt('09:00')->withoutOverlapping();
+
+// Header'daki ülke bayrağı için MaxMind GeoLite2 veritabanını güncel tut
+// (MaxMind veriyi haftalık yayınlar; lisans anahtarı yoksa sessizce atlanır).
+Schedule::command('geoip:update')->weekly()->withoutOverlapping();

@@ -88,4 +88,19 @@ return [
         'cache_days' => (int) env('REVERSE_GEOCODING_CACHE_DAYS', 30),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | MaxMind GeoLite2 (ziyaretçi ülkesi tespiti)
+    |--------------------------------------------------------------------------
+    | Header'da "hangi ülkeden giriliyorsa o bayrak" özelliği için. Ücretsiz
+    | ip-api.com/ipapi.co gibi servisler ticari sitelerde kullanım şartlarını
+    | ihlal ettiğinden, ücretsiz + ticari kullanıma uygun tek yerel çözüm olan
+    | MaxMind GeoLite2 veritabanı tercih edildi (dış API çağrısı yok).
+    | Lisans anahtarı: https://www.maxmind.com/en/geolite2/signup (ücretsiz).
+    */
+    'maxmind' => [
+        'license_key' => env('MAXMIND_LICENSE_KEY'),
+        'database_path' => storage_path('app/geoip/GeoLite2-Country.mmdb'),
+    ],
+
 ];
