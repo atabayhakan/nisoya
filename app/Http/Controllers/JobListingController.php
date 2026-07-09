@@ -128,12 +128,20 @@ class JobListingController extends Controller
     }
 
     /** Herkese açık iş ilanı detayı. */
-    public function show(Request $request, JobListing $job, ?string $slug = null): View
+    public function show(Request $request, JobListing $job, ?string $slug = null): View|RedirectResponse
     {
         $isOwner = $request->user()?->company?->id === $job->company_id;
 
         if ($job->status !== JobStatus::Aktif && ! $isOwner) {
             abort(404);
+        }
+
+        // Yanlış/eksik slug'lı istekleri kanonik URL'e yönlendir (duplicate content önleme).
+        if ($slug !== $job->slug) {
+            return redirect()->route('jobs.show', array_merge(
+                ['job' => $job, 'slug' => $job->slug],
+                $request->query()
+            ), 301);
         }
 
         if (! $isOwner) {

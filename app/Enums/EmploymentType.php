@@ -23,4 +23,16 @@ enum EmploymentType: string implements HasLabel
             self::Serbest => 'Serbest (Freelance)',
         };
     }
+
+    /** Google Jobs / schema.org JobPosting.employmentType değeri. */
+    public function schemaOrgType(): string
+    {
+        return match ($this) {
+            self::TamZamanli => 'FULL_TIME',
+            self::YariZamanli => 'PART_TIME',
+            self::Sozlesmeli => 'CONTRACTOR',
+            self::Staj => 'INTERN',
+            self::Serbest => 'OTHER',
+        };
+    }
 }

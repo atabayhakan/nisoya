@@ -1,4 +1,47 @@
-<x-layouts.app :title="$job->title.' — Nisoya'">
+<x-layouts.app
+    :title="$job->title.' — '.($job->company->name ?? 'Nisoya')"
+    :description="\Illuminate\Support\Str::limit(strip_tags($job->description), 150)"
+    :ogImage="$job->company?->logoUrl()"
+>
+    {{-- JSON-LD: JobPosting (Google Jobs zengin sonuçlar) --}}
+    <x-json-ld type="JobPosting" :data="array_filter([
+        'title' => $job->title,
+        'description' => nl2br(e($job->description)),
+        'datePosted' => $job->created_at->toIso8601String(),
+        'validThrough' => $job->deadline?->toIso8601String(),
+        'employmentType' => $job->employment_type->schemaOrgType(),
+        'hiringOrganization' => array_filter([
+            '@type' => 'Organization',
+            'name' => $job->company->name ?? null,
+            'sameAs' => $job->company?->website,
+            'logo' => $job->company?->logoUrl(),
+        ]),
+        'jobLocationType' => $job->is_remote ? 'TELECOMMUTE' : null,
+        'jobLocation' => ! $job->is_remote ? [
+            '@type' => 'Place',
+            'address' => array_filter([
+                '@type' => 'PostalAddress',
+                'addressLocality' => $job->city,
+                'addressCountry' => $job->country_code,
+            ]),
+        ] : null,
+        'baseSalary' => $job->salary_min || $job->salary_max ? array_filter([
+            '@type' => 'MonetaryAmount',
+            'currency' => $job->salary_currency,
+            'value' => array_filter([
+                '@type' => 'QuantitativeValue',
+                'minValue' => $job->salary_min,
+                'maxValue' => $job->salary_max,
+                'unitText' => match ($job->salary_period?->value) {
+                    'saatlik' => 'HOUR',
+                    'aylik' => 'MONTH',
+                    'yillik' => 'YEAR',
+                    default => null,
+                },
+            ]),
+        ]) : null,
+    ])" />
+
     <div class="mx-auto max-w-3xl px-4 py-8">
         <x-panel.back-link :href="route('jobs.index')" label="Tüm iş ilanları" />
 
@@ -65,6 +108,10 @@
         <div class="mt-4 rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
             <h2 class="font-semibold text-stone-800 dark:text-stone-100">İş tanımı</h2>
             <div class="prose prose-sm mt-2 max-w-none whitespace-pre-line text-stone-600 dark:text-stone-300">{{ $job->description }}</div>
+
+            <div class="mt-4 border-t border-stone-100 pt-3 dark:border-stone-800">
+                @include('partials.share-buttons', ['shareUrl' => route('jobs.show', [$job, $job->slug]), 'shareText' => $job->title.' — '.($job->company->name ?? 'Nisoya')])
+            </div>
         </div>
 
         {{-- Alan: açıklama altı (reklam/duyuru) --}}

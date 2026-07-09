@@ -1,4 +1,27 @@
-<x-layouts.app :title="$user->name.' — Nisoya'">
+<x-layouts.app
+    :title="$user->name.' — Nisoya'"
+    :description="$user->bio ? \Illuminate\Support\Str::limit(strip_tags($user->bio), 150) : ($user->jobCategory ? $user->jobCategory->name.' — '.$user->name.' Nisoya üzerinde hizmet veriyor.' : $user->name.' — Nisoya üzerinde yetenek ve hizmet sunuyor.')"
+    :ogImage="$user->avatar_path ? \Illuminate\Support\Facades\Storage::url($user->avatar_path) : null"
+>
+    {{-- JSON-LD: Person --}}
+    <x-json-ld type="Person" :data="array_filter([
+        'name' => $user->name,
+        'description' => $user->bio ? \Illuminate\Support\Str::limit(strip_tags($user->bio), 300) : null,
+        'image' => $user->avatar_path ? \Illuminate\Support\Facades\Storage::url($user->avatar_path) : null,
+        'url' => route('profiles.show', $user->username),
+        'jobTitle' => $user->jobCategory?->name,
+        'address' => $user->city || $user->country_code ? array_filter([
+            '@type' => 'PostalAddress',
+            'addressLocality' => $user->city,
+            'addressCountry' => $user->country_code,
+        ]) : null,
+        'aggregateRating' => $rating['count'] > 0 ? [
+            '@type' => 'AggregateRating',
+            'ratingValue' => $rating['avg'],
+            'reviewCount' => $rating['count'],
+        ] : null,
+    ])" />
+
     <div class="mx-auto max-w-6xl px-4 py-8">
         {{-- Satıcı başlığı --}}
         <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">

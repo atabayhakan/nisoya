@@ -1,4 +1,28 @@
-<x-layouts.app :title="$company->name.' — Nisoya'">
+<x-layouts.app
+    :title="$company->name.' — Nisoya'"
+    :description="$company->tagline ? \Illuminate\Support\Str::limit(strip_tags($company->tagline), 150) : ($company->about ? \Illuminate\Support\Str::limit(strip_tags($company->about), 150) : $company->name.' — Nisoya üzerinde iş ilanları veriyor.')"
+    :ogImage="$company->logoUrl()"
+>
+    {{-- JSON-LD: Organization --}}
+    <x-json-ld type="Organization" :data="array_filter([
+        'name' => $company->name,
+        'description' => $company->about ? \Illuminate\Support\Str::limit(strip_tags($company->about), 300) : $company->tagline,
+        'url' => $company->website ?: route('companies.show', $company),
+        'logo' => $company->logoUrl(),
+        'foundingDate' => $company->founded_year ? (string) $company->founded_year : null,
+        'address' => $company->city || $company->country_code ? array_filter([
+            '@type' => 'PostalAddress',
+            'streetAddress' => $company->address,
+            'addressLocality' => $company->city,
+            'addressCountry' => $company->country_code,
+        ]) : null,
+        'sameAs' => array_values(array_filter([
+            $company->social_linkedin,
+            $company->social_instagram,
+            $company->social_twitter,
+        ])),
+    ])" />
+
     <div class="mx-auto max-w-3xl px-4 py-8">
         <x-panel.back-link :href="route('jobs.index')" label="İş ilanları" />
 
@@ -41,6 +65,10 @@
                         @endif
                     </div>
                 </div>
+            </div>
+
+            <div class="mt-4 border-t border-stone-100 pt-3 dark:border-stone-800">
+                @include('partials.share-buttons', ['shareUrl' => route('companies.show', $company), 'shareText' => $company->name.' — Nisoya'])
             </div>
 
             @if ($company->about)

@@ -161,7 +161,7 @@ class ImageVariantsTest extends TestCase
             'is_cover' => true,
         ]);
 
-        $response = $this->get(route('listings.show', $listing));
+        $response = $this->get(route('listings.show', [$listing, $listing->slug]));
         $response->assertOk();
         $response->assertSee('sizes=', false);
         $response->assertSee('fetchpriority="high"', false);

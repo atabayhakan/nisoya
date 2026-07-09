@@ -209,7 +209,7 @@ class PerformanceBenchmarkTest extends TestCase
         ]);
 
         \DB::enableQueryLog();
-        $response = $this->get('/ilan/'.$listing->id);
+        $response = $this->get('/ilan/'.$listing->id.'/'.$listing->slug);
         $queries = \DB::getQueryLog();
         \DB::disableQueryLog();
 

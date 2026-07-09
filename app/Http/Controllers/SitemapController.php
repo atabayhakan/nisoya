@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Company;
+use App\Models\JobListing;
 use App\Models\Listing;
 use App\Models\Page;
 use App\Models\User;
@@ -15,6 +17,8 @@ class SitemapController extends Controller
         $urls = [
             ['loc' => url('/'), 'priority' => '1.0'],
             ['loc' => route('listings.index'), 'priority' => '0.9'],
+            ['loc' => route('jobs.index'), 'priority' => '0.9'],
+            ['loc' => route('candidates.index'), 'priority' => '0.6'],
             ['loc' => route('pages.how'), 'priority' => '0.4'],
             ['loc' => route('pages.contact'), 'priority' => '0.3'],
             // '/gizlilik' artık CMS'teki bir Page kaydı — aşağıdaki döngüden gelir, burada tekrar eklenmez.
@@ -41,8 +45,22 @@ class SitemapController extends Controller
             ];
         }
 
+        foreach (JobListing::query()->active()->latest()->limit(1000)->get() as $job) {
+            $urls[] = [
+                'loc' => route('jobs.show', [$job, $job->slug]),
+                'lastmod' => $job->updated_at?->toAtomString(),
+                'priority' => '0.7',
+            ];
+        }
+
+        foreach (Company::query()->get() as $company) {
+            $urls[] = ['loc' => route('companies.show', $company), 'priority' => '0.5'];
+        }
+
+        // Aktif ilanı olan ya da Yetenek Havuzu'nda görünür olan üyeler (bkz. Nisoya Jobzilla Esinlenme Planı).
         foreach (User::query()->where('status', 'aktif')->whereNotNull('username')
-            ->whereHas('listings', fn ($q) => $q->active())->get() as $user) {
+            ->where(fn ($q) => $q->whereHas('listings', fn ($q2) => $q2->active())->orWhere('is_searchable', true))
+            ->get() as $user) {
             $urls[] = ['loc' => route('profiles.show', $user->username), 'priority' => '0.5'];
         }
 

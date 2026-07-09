@@ -1,5 +1,5 @@
 @props([
-    'type' => 'WebSite',     // WebSite, Organization, Product, Service, BreadcrumbList, LocalBusiness
+    'type' => 'WebSite',     // WebSite, Organization, Product, Service, BreadcrumbList, LocalBusiness, Person, JobPosting
     'data' => [],
 ])
 

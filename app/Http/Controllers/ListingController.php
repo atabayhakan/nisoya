@@ -135,12 +135,20 @@ class ListingController extends Controller
     }
 
     /** Herkese açık ilan detayı. */
-    public function show(Request $request, Listing $listing, ?string $slug = null): View
+    public function show(Request $request, Listing $listing, ?string $slug = null): View|RedirectResponse
     {
         $isOwner = $request->user()?->id === $listing->user_id;
 
         if ($listing->status !== ListingStatus::Aktif && ! $isOwner) {
             abort(404);
+        }
+
+        // Yanlış/eksik slug'lı istekleri kanonik URL'e yönlendir (duplicate content önleme).
+        if ($slug !== $listing->slug) {
+            return redirect()->route('listings.show', array_merge(
+                ['listing' => $listing, 'slug' => $listing->slug],
+                $request->query()
+            ), 301);
         }
 
         if (! $isOwner) {

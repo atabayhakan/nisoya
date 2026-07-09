@@ -129,6 +129,14 @@ class JobModuleTest extends TestCase
         $this->get("/is/{$closed->id}/gizli")->assertNotFound();
     }
 
+    public function test_wrong_or_missing_slug_redirects_to_canonical_url(): void
+    {
+        [, , $job] = $this->employerWithJob();
+
+        $this->get("/is/{$job->id}")->assertRedirect("/is/{$job->id}/{$job->slug}");
+        $this->get("/is/{$job->id}/yanlis-slug")->assertRedirect("/is/{$job->id}/{$job->slug}");
+    }
+
     // --- Başvuru sistemi ---
 
     public function test_candidate_can_apply_and_employer_is_notified(): void

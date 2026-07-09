@@ -143,6 +143,17 @@ class ListingTest extends TestCase
         $listing = Listing::factory()->for($owner)->create(['status' => 'beklemede']);
 
         $this->get(route('listings.show', $listing))->assertNotFound();
-        $this->actingAs($owner)->get(route('listings.show', $listing))->assertOk();
+        $this->actingAs($owner)->get(route('listings.show', [$listing, $listing->slug]))->assertOk();
+    }
+
+    public function test_wrong_or_missing_slug_redirects_to_canonical_url(): void
+    {
+        $listing = Listing::factory()->for($this->verifiedUser())->create(['status' => 'aktif']);
+
+        $this->get(route('listings.show', $listing))
+            ->assertRedirect(route('listings.show', [$listing, $listing->slug]));
+
+        $this->get("/ilan/{$listing->id}/yanlis-slug")
+            ->assertRedirect(route('listings.show', [$listing, $listing->slug]));
     }
 }

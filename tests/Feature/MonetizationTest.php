@@ -228,7 +228,7 @@ class MonetizationTest extends TestCase
             'stock' => 5,
         ]);
 
-        $response = $this->get(route('listings.show', $listing))->assertOk();
+        $response = $this->get(route('listings.show', [$listing, $listing->slug]))->assertOk();
         $response->assertSee('"@type": "Product"', false);
         $response->assertSee('"@type": "BreadcrumbList"', false);
         $response->assertSee('InStock', false);
@@ -251,7 +251,7 @@ class MonetizationTest extends TestCase
             'city' => 'Berlin',
         ]);
 
-        $response = $this->get(route('listings.show', $listing))->assertOk();
+        $response = $this->get(route('listings.show', [$listing, $listing->slug]))->assertOk();
         $response->assertSee('"@type": "Service"', false);
     }
 
