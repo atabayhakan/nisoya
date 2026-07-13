@@ -9,6 +9,7 @@ enum CategoryType: string implements HasLabel
     case Hizmet = 'hizmet';
     case Urun = 'urun';
     case Ikisi = 'ikisi';
+    case Emlak = 'emlak';
 
     public function getLabel(): string
     {
@@ -16,6 +17,7 @@ enum CategoryType: string implements HasLabel
             self::Hizmet => 'Hizmet',
             self::Urun => 'Ürün',
             self::Ikisi => 'Hizmet ve Ürün',
+            self::Emlak => 'Emlak',
         };
     }
 }

@@ -70,6 +70,13 @@ class ZoneSeeder extends Seeder
                 'blocks' => [],
                 'is_active' => false,
             ],
+            [
+                'key' => 'emlak_liste_ust',
+                'name' => 'Emlak — liste üstü',
+                'location_note' => '/emlak sayfasında, sonuç listesinin en üstünde görünür.',
+                'blocks' => [],
+                'is_active' => false,
+            ],
         ];
 
         foreach ($zones as $zone) {

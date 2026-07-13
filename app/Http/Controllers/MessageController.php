@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ListingType;
+use App\Enums\PriceUnit;
 use App\Models\Conversation;
 use App\Models\Listing;
 use App\Models\Message;
@@ -9,6 +11,7 @@ use App\Notifications\NewMessageNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 class MessageController extends Controller
@@ -137,13 +140,21 @@ class MessageController extends Controller
             return back()->with('status', 'Kendi ilanına mesaj gönderemezsin.');
         }
 
-        $data = $request->validate(['body' => ['required', 'string', 'max:2000']]);
+        $data = $request->validate([
+            'body' => ['required', 'string', 'max:2000'],
+            // Emlak (kısa dönem) müsaitlik talebi — hepsi isteğe bağlı
+            'giris' => ['nullable', 'date'],
+            'cikis' => ['nullable', 'date', 'after:giris'],
+            'kisi' => ['nullable', 'integer', 'min:1', 'max:50'],
+        ]);
+
+        $body = $this->prependAvailabilityRequest($listing, $data);
 
         $conversation = Conversation::findOrCreateBetween($user->id, $listing->user_id, $listing->id);
 
         $message = $conversation->messages()->create([
             'sender_id' => $user->id,
-            'body' => $data['body'],
+            'body' => $body,
         ]);
         $conversation->update(['last_message_at' => now()]);
 
@@ -151,5 +162,33 @@ class MessageController extends Controller
 
         return redirect()->route('panel.messages.show', $conversation)
             ->with('status', 'Mesajın gönderildi.');
+    }
+
+    /**
+     * Emlak ilanında tarih seçilmişse mesajın başına yapılandırılmış müsaitlik
+     * talebi bloğu ekle (gece sayısı + gecelik fiyattan tahmini toplam dahil).
+     */
+    private function prependAvailabilityRequest(Listing $listing, array $data): string
+    {
+        if ($listing->type !== ListingType::Emlak || empty($data['giris']) || empty($data['cikis'])) {
+            return $data['body'];
+        }
+
+        $in = Carbon::parse($data['giris']);
+        $out = Carbon::parse($data['cikis']);
+        $nights = max(1, (int) $in->diffInDays($out));
+
+        $parts = ['📅 Müsaitlik talebi: '.$in->format('d.m.Y').' → '.$out->format('d.m.Y').' ('.$nights.' gece)'];
+
+        if (! empty($data['kisi'])) {
+            $parts[] = $data['kisi'].' kişi';
+        }
+
+        if ($listing->price !== null && $listing->price_unit === PriceUnit::Gecelik) {
+            $total = number_format($nights * (float) $listing->price, 0);
+            $parts[] = 'tahmini '.number_format((float) $listing->price, 0).' × '.$nights.' = '.$total.' '.$listing->currency;
+        }
+
+        return implode(' · ', $parts)."\n\n".$data['body'];
     }
 }

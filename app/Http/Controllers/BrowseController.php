@@ -65,7 +65,7 @@ class BrowseController extends Controller
         }
 
         $type = $request->string('tip')->toString();
-        if (in_array($type, ['hizmet', 'urun'], true)) {
+        if (in_array($type, ['hizmet', 'urun', 'emlak'], true)) {
             $query->where('type', $type);
         }
 
@@ -95,7 +95,7 @@ class BrowseController extends Controller
                 'max' => $request->input('max', ''),
                 'uzaktan' => $request->boolean('uzaktan'),
                 'sirala' => $request->input('sirala', ''),
-                'tip' => in_array($type, ['hizmet', 'urun'], true) ? $type : '',
+                'tip' => in_array($type, ['hizmet', 'urun', 'emlak'], true) ? $type : '',
             ],
         ]);
     }

@@ -12,6 +12,9 @@ enum PriceUnit: string implements HasLabel
     case IsBasina = 'is_basina';
     case Paket = 'paket';
     case Adet = 'adet';
+    case Aylik = 'aylik';
+    case Gecelik = 'gecelik';
+    case Toplam = 'toplam';
     case Gorusulur = 'gorusulur';
 
     public function getLabel(): string
@@ -23,6 +26,9 @@ enum PriceUnit: string implements HasLabel
             self::IsBasina => 'İş başına',
             self::Paket => 'Paket',
             self::Adet => 'Adet',
+            self::Aylik => 'Aylık',
+            self::Gecelik => 'Gecelik',
+            self::Toplam => 'Toplam (satış)',
             self::Gorusulur => 'Görüşülür',
         };
     }
@@ -30,9 +36,11 @@ enum PriceUnit: string implements HasLabel
     /** İlan tipine uygun fiyat birimleri. */
     public static function forType(string $type): array
     {
-        return $type === 'urun'
-            ? [self::Adet, self::Paket, self::Gorusulur]
-            : [self::Saatlik, self::Gunluk, self::Kilogram, self::IsBasina, self::Paket, self::Gorusulur];
+        return match ($type) {
+            'urun' => [self::Adet, self::Paket, self::Gorusulur],
+            'emlak' => [self::Aylik, self::Gecelik, self::Toplam, self::Gorusulur],
+            default => [self::Saatlik, self::Gunluk, self::Kilogram, self::IsBasina, self::Paket, self::Gorusulur],
+        };
     }
 
     /** Fiyat alanında birim eki olarak gösterim (ör. "/saat"). */
@@ -45,6 +53,9 @@ enum PriceUnit: string implements HasLabel
             self::IsBasina => '/iş',
             self::Paket => '/paket',
             self::Adet => '/adet',
+            self::Aylik => '/ay',
+            self::Gecelik => '/gece',
+            self::Toplam => '',
             self::Gorusulur => '',
         };
     }

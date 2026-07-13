@@ -91,11 +91,13 @@ class Listing extends Model
         return $this->belongsTo(Country::class, 'country_code', 'code');
     }
 
+    /** @return HasMany<ListingImage, $this> */
     public function images(): HasMany
     {
         return $this->hasMany(ListingImage::class)->orderBy('sort_order');
     }
 
+    /** @return HasOne<ListingImage, $this> */
     public function coverImage(): HasOne
     {
         return $this->hasOne(ListingImage::class)->where('is_cover', true);
@@ -104,6 +106,32 @@ class Listing extends Model
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'listing_tag');
+    }
+
+    /**
+     * Emlak ilanının 1:1 detay kaydı (tip=emlak dışında null).
+     *
+     * @return HasOne<ListingPropertyDetail, $this>
+     */
+    public function propertyDetail(): HasOne
+    {
+        return $this->hasOne(ListingPropertyDetail::class);
+    }
+
+    /**
+     * Takvimde "dolu" işaretlenen tarih aralıkları (emlak kısa dönem + ileride kiralık araç).
+     *
+     * @return HasMany<ListingUnavailableRange, $this>
+     */
+    public function unavailableRanges(): HasMany
+    {
+        return $this->hasMany(ListingUnavailableRange::class)->orderBy('starts_on');
+    }
+
+    /** Verilen tarih aralığı bu ilanın takviminde tamamen boş mu? */
+    public function isAvailableBetween(string $from, string $to): bool
+    {
+        return ! $this->unavailableRanges()->overlapping($from, $to)->exists();
     }
 
     public function reviews(): HasMany

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\ListingType;
 use App\Enums\PriceUnit;
+use App\Models\ListingPropertyDetail;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -33,6 +34,19 @@ class ListingRequest extends FormRequest
             'images' => ['nullable', 'array', 'max:8'],
             'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'website' => ['prohibited'], // honeypot
+
+            // Emlak detayları (yalnızca tip=emlak formunda bulunur; diğer
+            // tiplerde alanlar gönderilmediği için nullable kurallar yeterli)
+            'rooms' => ['nullable', Rule::in(ListingPropertyDetail::ROOM_OPTIONS)],
+            'area_m2' => ['nullable', 'integer', 'min:1', 'max:10000'],
+            'floor' => ['nullable', 'integer', 'min:-5', 'max:90'],
+            'furnished' => ['nullable', 'boolean'],
+            'deposit' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
+            'available_from' => ['nullable', 'date'],
+            'max_guests' => ['nullable', 'integer', 'min:1', 'max:50'],
+            'min_stay_nights' => ['nullable', 'integer', 'min:1', 'max:365'],
+            'badges' => ['nullable', 'array'],
+            'badges.*' => [Rule::in(array_keys(ListingPropertyDetail::BADGES))],
         ];
     }
 
@@ -50,6 +64,14 @@ class ListingRequest extends FormRequest
             'city' => 'şehir',
             'images' => 'görseller',
             'images.*' => 'görsel',
+            'rooms' => 'oda sayısı',
+            'area_m2' => 'metrekare',
+            'floor' => 'bulunduğu kat',
+            'deposit' => 'depozito',
+            'available_from' => 'müsait tarih',
+            'max_guests' => 'konuk kapasitesi',
+            'min_stay_nights' => 'minimum konaklama',
+            'badges' => 'özellik rozetleri',
         ];
     }
 }

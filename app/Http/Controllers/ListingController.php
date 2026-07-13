@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ListingStatus;
+use App\Enums\ListingType;
 use App\Enums\PriceUnit;
 use App\Http\Requests\ListingRequest;
 use App\Jobs\ProcessListingImage;
@@ -34,7 +35,8 @@ class ListingController extends Controller
 
     public function create(Request $request): View
     {
-        $type = $request->query('tip') === 'urun' ? 'urun' : 'hizmet';
+        $tip = $request->query('tip');
+        $type = in_array($tip, ['urun', 'emlak'], true) ? $tip : 'hizmet';
 
         return view('panel.listings.create', $this->formData($type));
     }
@@ -63,10 +65,15 @@ class ListingController extends Controller
             'status' => ListingStatus::Aktif->value,
         ]);
 
+        $this->syncPropertyDetail($listing, $request);
         $this->storeImages($listing, $request);
 
         return redirect()->route('panel.listings.index')
-            ->with('status', $type === 'urun' ? 'Ürün ilanın yayınlandı! 🎉' : 'İlanın yayınlandı! 🎉');
+            ->with('status', match ($type) {
+                'urun' => 'Ürün ilanın yayınlandı! 🎉',
+                'emlak' => 'Emlak ilanın yayınlandı! 🎉',
+                default => 'İlanın yayınlandı! 🎉',
+            });
     }
 
     public function edit(Listing $listing): View
@@ -101,6 +108,8 @@ class ListingController extends Controller
             'is_remote' => $listing->type->value === 'hizmet' ? $request->boolean('is_remote') : false,
             'stock' => $listing->type->value === 'urun' ? ($data['stock'] ?? null) : null,
         ]);
+
+        $this->syncPropertyDetail($listing, $request);
 
         // İşaretlenen görselleri sil (tüm varyantlarıyla)
         $imageService = app(ImageService::class);
@@ -157,6 +166,10 @@ class ListingController extends Controller
 
         $listing->load(['images', 'user.paymentLinks', 'category', 'country']);
 
+        if ($listing->type === ListingType::Emlak) {
+            $listing->load(['propertyDetail', 'unavailableRanges' => fn ($q) => $q->where('ends_on', '>=', now()->toDateString())]);
+        }
+
         $isFavorited = $request->user()
             ? $request->user()->favorites()->where('listing_id', $listing->id)->exists()
             : false;
@@ -173,12 +186,16 @@ class ListingController extends Controller
     /** Form için ortak veri (tipe göre filtreli kategoriler, para birimleri, ülkeler). */
     protected function formData(string $type = 'hizmet'): array
     {
+        // 'ikisi' yalnızca hizmet+ürün ortak kategorileri için — emlak kendi
+        // kategori ağacını kullanır, 'ikisi' oraya sızmamalı.
+        $categoryTypes = $type === 'emlak' ? ['emlak'] : [$type, 'ikisi'];
+
         return [
             'type' => $type,
             'categories' => Category::query()
                 ->whereNull('parent_id')
                 ->where('is_active', true)
-                ->whereIn('type', [$type, 'ikisi'])
+                ->whereIn('type', $categoryTypes)
                 ->with(['children' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')])
                 ->orderBy('sort_order')
                 ->get(),
@@ -193,6 +210,28 @@ class ListingController extends Controller
         $slug = Str::slug($title);
 
         return $slug !== '' ? $slug : 'ilan';
+    }
+
+    /** Emlak ilanının 1:1 detay kaydını oluştur/güncelle (diğer tiplerde no-op). */
+    protected function syncPropertyDetail(Listing $listing, ListingRequest $request): void
+    {
+        if ($listing->type !== ListingType::Emlak) {
+            return;
+        }
+
+        $data = $request->validated();
+
+        $listing->propertyDetail()->updateOrCreate([], [
+            'rooms' => $data['rooms'] ?? null,
+            'area_m2' => $data['area_m2'] ?? null,
+            'floor' => $data['floor'] ?? null,
+            'furnished' => $request->boolean('furnished'),
+            'deposit' => $data['deposit'] ?? null,
+            'available_from' => $data['available_from'] ?? null,
+            'max_guests' => $data['max_guests'] ?? null,
+            'min_stay_nights' => $data['min_stay_nights'] ?? null,
+            'badges' => array_values($data['badges'] ?? []),
+        ]);
     }
 
     protected function storeImages(Listing $listing, Request $request): void

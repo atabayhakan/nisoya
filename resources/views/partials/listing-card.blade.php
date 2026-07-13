@@ -38,6 +38,11 @@
             @if ($listing->is_remote)
                 <span class="rounded-full bg-emerald-100 px-2 py-0.5 font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">Online</span>
             @endif
+            @if ($listing->relationLoaded('propertyDetail') && $listing->propertyDetail && ($listing->propertyDetail->rooms || $listing->propertyDetail->area_m2))
+                <span class="rounded-full bg-stone-100 px-2 py-0.5 text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+                    {{ collect([$listing->propertyDetail->rooms, $listing->propertyDetail->area_m2 ? $listing->propertyDetail->area_m2.' m²' : null])->filter()->implode(' · ') }}
+                </span>
+            @endif
         </div>
 
         <h3 class="mt-2 line-clamp-2 min-h-[2.5rem] font-semibold text-stone-800 group-hover:text-emerald-700 dark:text-stone-100 dark:group-hover:text-emerald-400">{{ $listing->title }}</h3>

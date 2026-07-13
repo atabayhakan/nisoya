@@ -17,6 +17,7 @@ use App\Http\Controllers\JobBrowseController;
 use App\Http\Controllers\JobFeatureController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\JobSavedSearchController;
+use App\Http\Controllers\ListingAvailabilityController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\MessageController;
@@ -28,6 +29,7 @@ use App\Http\Controllers\PaymentLinkController;
 use App\Http\Controllers\PortfolioItemController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileSettingsController;
+use App\Http\Controllers\PropertyBrowseController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SavedSearchController;
@@ -40,6 +42,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Keşif (herkese açık)
 Route::get('/ilanlar', [BrowseController::class, 'index'])->name('listings.index');
+Route::get('/emlak', [PropertyBrowseController::class, 'index'])->name('properties.index');
 Route::get('/harita', [MapController::class, 'index'])->name('listings.map');
 Route::get('/ilanlar/kategori/{category:slug}', [BrowseController::class, 'category'])->name('listings.category');
 Route::get('/uye/{user:username}', [ProfileController::class, 'show'])->name('profiles.show');
@@ -97,6 +100,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::match(['put', 'patch'], '/panel/ilan/{listing}', [ListingController::class, 'update'])->name('panel.listings.update');
     Route::delete('/panel/ilan/{listing}', [ListingController::class, 'destroy'])->name('panel.listings.destroy');
     Route::post('/panel/ilan/{listing}/one-cikar', [FeatureController::class, 'store'])->name('panel.listings.feature')->middleware('throttle:listing-feature');
+    Route::post('/panel/ilan/{listing}/takvim', [ListingAvailabilityController::class, 'store'])->name('panel.listings.availability.store');
+    Route::delete('/panel/ilan/{listing}/takvim/{range}', [ListingAvailabilityController::class, 'destroy'])->name('panel.listings.availability.destroy');
 
     // Bildirimler
     Route::get('/panel/bildirimler', [NotificationController::class, 'index'])->name('panel.notifications.index');
