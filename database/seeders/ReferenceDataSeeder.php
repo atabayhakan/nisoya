@@ -27,6 +27,7 @@ class ReferenceDataSeeder extends Seeder
             CategorySeeder::class,
             ProductCategorySeeder::class,
             PropertyCategorySeeder::class,
+            VehicleCategorySeeder::class,
             JobCategorySeeder::class,
             ZoneSeeder::class,
             NavigationLinkSeeder::class,

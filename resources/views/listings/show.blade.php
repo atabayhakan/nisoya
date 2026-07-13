@@ -27,6 +27,18 @@
                 'priceCurrency' => $listing->currency,
             ] : null,
         ]" />
+    @elseif ($listing->type->value === 'vasita')
+        <x-json-ld type="Product" :data="[
+            'name' => $listing->title,
+            'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
+            'image' => $listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null,
+            'brand' => $listing->vehicleDetail?->brand ? ['@type' => 'Brand', 'name' => $listing->vehicleDetail->brand] : null,
+            'offers' => $listing->price ? [
+                '@type' => 'Offer',
+                'price' => $listing->price,
+                'priceCurrency' => $listing->currency,
+            ] : null,
+        ]" />
     @elseif ($listing->type->value === 'urun')
         <x-json-ld type="Product" :data="[
             'name' => $listing->title,
@@ -188,17 +200,75 @@
                     </div>
                 @endif
 
+                {{-- Vasıta özellikleri --}}
+                @if ($listing->type->value === 'vasita' && $listing->vehicleDetail)
+                    @php($vehicle = $listing->vehicleDetail)
+                    <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900">
+                        <h2 class="text-sm font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">🚗 Araç Özellikleri</h2>
+                        <dl class="mt-3 grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
+                            @if ($vehicle->brand)
+                                <div><dt class="text-stone-400 dark:text-stone-500">Marka</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->brand }}</dd></div>
+                            @endif
+                            @if ($vehicle->model)
+                                <div><dt class="text-stone-400 dark:text-stone-500">Model</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->model }}</dd></div>
+                            @endif
+                            @if ($vehicle->year)
+                                <div><dt class="text-stone-400 dark:text-stone-500">Model yılı</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->year }}</dd></div>
+                            @endif
+                            @if ($vehicle->mileage_km !== null)
+                                <div><dt class="text-stone-400 dark:text-stone-500">Kilometre</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ number_format($vehicle->mileage_km, 0, ',', '.') }} km</dd></div>
+                            @endif
+                            @if ($vehicle->fuelLabel())
+                                <div><dt class="text-stone-400 dark:text-stone-500">Yakıt</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->fuelLabel() }}</dd></div>
+                            @endif
+                            @if ($vehicle->transmissionLabel())
+                                <div><dt class="text-stone-400 dark:text-stone-500">Vites</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->transmissionLabel() }}</dd></div>
+                            @endif
+                            @if ($vehicle->bodyTypeLabel())
+                                <div><dt class="text-stone-400 dark:text-stone-500">Kasa tipi</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->bodyTypeLabel() }}</dd></div>
+                            @endif
+                            @if ($vehicle->color)
+                                <div><dt class="text-stone-400 dark:text-stone-500">Renk</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->color }}</dd></div>
+                            @endif
+                            @if ($vehicle->min_rental_days)
+                                <div><dt class="text-stone-400 dark:text-stone-500">Min. kiralama</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->min_rental_days }} gün</dd></div>
+                            @endif
+                            @if ($vehicle->deposit !== null)
+                                <div><dt class="text-stone-400 dark:text-stone-500">Depozito</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ number_format((float) $vehicle->deposit, 0) }} {{ $listing->currency }}</dd></div>
+                            @endif
+                            @if ($vehicle->km_limit_per_day)
+                                <div><dt class="text-stone-400 dark:text-stone-500">Günlük km sınırı</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ number_format($vehicle->km_limit_per_day, 0, ',', '.') }} km</dd></div>
+                            @endif
+                        </dl>
+                        @if ($vehicle->badgeLabels())
+                            <div class="mt-4 flex flex-wrap gap-1.5 border-t border-stone-100 pt-3 dark:border-stone-800">
+                                @foreach ($vehicle->badgeLabels() as $badge)
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">✓ {{ $badge }}</span>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
                 <div class="prose prose-stone mt-6 max-w-none text-stone-700 dark:prose-invert dark:text-stone-300">
                     {!! nl2br(e($listing->description)) !!}
                 </div>
 
-                {{-- Emlak dolandırıcılık uyarısı --}}
+                {{-- Emlak/vasıta dolandırıcılık uyarısı --}}
                 @if ($listing->type->value === 'emlak')
                     <div class="mt-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
                         <x-heroicon-o-shield-exclamation class="mt-0.5 h-5 w-5 shrink-0" />
                         <div>
                             <strong>Güvenlik hatırlatması:</strong> Evi görmeden asla kapora, depozito veya kira ödemesi yapmayın.
                             Anahtar "postayla gönderilecek" diyen ilan sahiplerine itibar etmeyin; şüpheli ilanı şikayet edin.
+                        </div>
+                    </div>
+                @elseif ($listing->type->value === 'vasita')
+                    <div class="mt-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+                        <x-heroicon-o-shield-exclamation class="mt-0.5 h-5 w-5 shrink-0" />
+                        <div>
+                            <strong>Güvenlik hatırlatması:</strong> Aracı görmeden asla kapora veya ödeme yapmayın.
+                            Km ve hasar beyanı ilan sahibinin sorumluluğundadır — alım öncesi bağımsız ekspertiz önerilir; şüpheli ilanı şikayet edin.
                         </div>
                     </div>
                 @endif
@@ -244,7 +314,8 @@
                             @if ($isOwner)
                                 <a href="{{ route('panel.listings.edit', $listing) }}" class="block w-full rounded-lg border border-stone-300 px-4 py-2.5 text-center font-semibold text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">İlanı Düzenle</a>
                             @elseif (auth()->check())
-                                @php($isShortTerm = $listing->type->value === 'emlak' && ($listing->category?->slug === 'kisa-donem-tatil' || $listing->propertyDetail?->max_guests))
+                                @php($isShortTerm = ($listing->type->value === 'emlak' && ($listing->category?->slug === 'kisa-donem-tatil' || $listing->propertyDetail?->max_guests))
+                                    || ($listing->type->value === 'vasita' && $listing->category?->slug === 'kiralik-arac'))
                                 <form method="POST" action="{{ route('messages.start', $listing) }}" class="space-y-2">
                                     @csrf
                                     @if ($isShortTerm)
@@ -293,8 +364,8 @@
                         </div>
                     </div>
 
-                    {{-- Emlak müsaitlik takvimi --}}
-                    @if ($listing->type->value === 'emlak' && $listing->relationLoaded('unavailableRanges'))
+                    {{-- Emlak/vasıta müsaitlik takvimi --}}
+                    @if (in_array($listing->type->value, ['emlak', 'vasita'], true) && $listing->relationLoaded('unavailableRanges'))
                         <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
                             <h2 class="text-sm font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">📅 Müsaitlik</h2>
                             <div class="mt-3">

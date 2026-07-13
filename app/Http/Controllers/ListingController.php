@@ -36,7 +36,7 @@ class ListingController extends Controller
     public function create(Request $request): View
     {
         $tip = $request->query('tip');
-        $type = in_array($tip, ['urun', 'emlak'], true) ? $tip : 'hizmet';
+        $type = in_array($tip, ['urun', 'emlak', 'vasita'], true) ? $tip : 'hizmet';
 
         return view('panel.listings.create', $this->formData($type));
     }
@@ -66,12 +66,14 @@ class ListingController extends Controller
         ]);
 
         $this->syncPropertyDetail($listing, $request);
+        $this->syncVehicleDetail($listing, $request);
         $this->storeImages($listing, $request);
 
         return redirect()->route('panel.listings.index')
             ->with('status', match ($type) {
                 'urun' => 'Ürün ilanın yayınlandı! 🎉',
                 'emlak' => 'Emlak ilanın yayınlandı! 🎉',
+                'vasita' => 'Vasıta ilanın yayınlandı! 🎉',
                 default => 'İlanın yayınlandı! 🎉',
             });
     }
@@ -110,6 +112,7 @@ class ListingController extends Controller
         ]);
 
         $this->syncPropertyDetail($listing, $request);
+        $this->syncVehicleDetail($listing, $request);
 
         // İşaretlenen görselleri sil (tüm varyantlarıyla)
         $imageService = app(ImageService::class);
@@ -166,8 +169,11 @@ class ListingController extends Controller
 
         $listing->load(['images', 'user.paymentLinks', 'category', 'country']);
 
-        if ($listing->type === ListingType::Emlak) {
-            $listing->load(['propertyDetail', 'unavailableRanges' => fn ($q) => $q->where('ends_on', '>=', now()->toDateString())]);
+        if (in_array($listing->type, [ListingType::Emlak, ListingType::Vasita], true)) {
+            $listing->load([
+                $listing->type === ListingType::Emlak ? 'propertyDetail' : 'vehicleDetail',
+                'unavailableRanges' => fn ($q) => $q->where('ends_on', '>=', now()->toDateString()),
+            ]);
         }
 
         $isFavorited = $request->user()
@@ -186,9 +192,9 @@ class ListingController extends Controller
     /** Form için ortak veri (tipe göre filtreli kategoriler, para birimleri, ülkeler). */
     protected function formData(string $type = 'hizmet'): array
     {
-        // 'ikisi' yalnızca hizmet+ürün ortak kategorileri için — emlak kendi
-        // kategori ağacını kullanır, 'ikisi' oraya sızmamalı.
-        $categoryTypes = $type === 'emlak' ? ['emlak'] : [$type, 'ikisi'];
+        // 'ikisi' yalnızca hizmet+ürün ortak kategorileri için — emlak ve
+        // vasıta kendi kategori ağaçlarını kullanır, 'ikisi' oraya sızmamalı.
+        $categoryTypes = in_array($type, ['emlak', 'vasita'], true) ? [$type] : [$type, 'ikisi'];
 
         return [
             'type' => $type,
@@ -230,6 +236,31 @@ class ListingController extends Controller
             'available_from' => $data['available_from'] ?? null,
             'max_guests' => $data['max_guests'] ?? null,
             'min_stay_nights' => $data['min_stay_nights'] ?? null,
+            'badges' => array_values($data['badges'] ?? []),
+        ]);
+    }
+
+    /** Vasıta ilanının 1:1 detay kaydını oluştur/güncelle (diğer tiplerde no-op). */
+    protected function syncVehicleDetail(Listing $listing, ListingRequest $request): void
+    {
+        if ($listing->type !== ListingType::Vasita) {
+            return;
+        }
+
+        $data = $request->validated();
+
+        $listing->vehicleDetail()->updateOrCreate([], [
+            'brand' => $data['brand'] ?? null,
+            'model' => $data['model'] ?? null,
+            'year' => $data['year'] ?? null,
+            'mileage_km' => $data['mileage_km'] ?? null,
+            'fuel' => $data['fuel'] ?? null,
+            'transmission' => $data['transmission'] ?? null,
+            'body_type' => $data['body_type'] ?? null,
+            'color' => $data['color'] ?? null,
+            'min_rental_days' => $data['min_rental_days'] ?? null,
+            'deposit' => $data['deposit'] ?? null,
+            'km_limit_per_day' => $data['km_limit_per_day'] ?? null,
             'badges' => array_values($data['badges'] ?? []),
         ]);
     }

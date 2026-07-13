@@ -46,12 +46,12 @@
             </div>
         </form>
 
-        {{-- Müsaitlik takvimi (yalnızca emlak) --}}
-        @if ($listing->type->value === 'emlak')
+        {{-- Müsaitlik takvimi (emlak + vasıta) --}}
+        @if (in_array($listing->type->value, ['emlak', 'vasita'], true))
             @php($ranges = $listing->unavailableRanges()->where('ends_on', '>=', now()->toDateString())->get())
             <div class="mt-8 rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900">
                 <h2 class="font-semibold text-stone-800 dark:text-stone-100">📅 Müsaitlik Takvimi</h2>
-                <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Dolu olduğun tarih aralıklarını işaretle — ziyaretçiler ilanında bu tarihleri "dolu" görür, kısa dönem aramalarında ilanın o tarihler için listelenmez.</p>
+                <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Dolu olduğun tarih aralıklarını işaretle — ziyaretçiler ilanında bu tarihleri "dolu" görür, tarihli aramalarda ilanın o tarihler için listelenmez.</p>
 
                 @if (session('status'))
                     <div class="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ session('status') }}</div>

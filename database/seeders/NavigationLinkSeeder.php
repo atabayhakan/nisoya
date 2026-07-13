@@ -20,10 +20,11 @@ class NavigationLinkSeeder extends Seeder
         $links = [
             ['label' => 'İlanlar', 'url' => '/ilanlar', 'sort_order' => 1],
             ['label' => 'Emlak', 'url' => '/emlak', 'sort_order' => 2],
-            ['label' => 'İş İlanları', 'url' => '/isler', 'sort_order' => 3],
-            ['label' => 'Harita', 'url' => '/harita', 'sort_order' => 4],
-            ['label' => 'Nasıl Çalışır?', 'url' => '/nasil-calisir', 'sort_order' => 5],
-            ['label' => 'Yetenek Havuzu', 'url' => '/adaylar', 'sort_order' => 6],
+            ['label' => 'Vasıta', 'url' => '/vasita', 'sort_order' => 3],
+            ['label' => 'İş İlanları', 'url' => '/isler', 'sort_order' => 4],
+            ['label' => 'Harita', 'url' => '/harita', 'sort_order' => 5],
+            ['label' => 'Nasıl Çalışır?', 'url' => '/nasil-calisir', 'sort_order' => 6],
+            ['label' => 'Yetenek Havuzu', 'url' => '/adaylar', 'sort_order' => 7],
         ];
 
         foreach ($links as $link) {

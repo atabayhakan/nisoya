@@ -165,28 +165,33 @@ class MessageController extends Controller
     }
 
     /**
-     * Emlak ilanında tarih seçilmişse mesajın başına yapılandırılmış müsaitlik
-     * talebi bloğu ekle (gece sayısı + gecelik fiyattan tahmini toplam dahil).
+     * Emlak/vasıta ilanında tarih seçilmişse mesajın başına yapılandırılmış
+     * müsaitlik talebi bloğu ekle (süre + birim fiyattan tahmini toplam dahil).
      */
     private function prependAvailabilityRequest(Listing $listing, array $data): string
     {
-        if ($listing->type !== ListingType::Emlak || empty($data['giris']) || empty($data['cikis'])) {
+        $calendarTypes = [ListingType::Emlak, ListingType::Vasita];
+
+        if (! in_array($listing->type, $calendarTypes, true) || empty($data['giris']) || empty($data['cikis'])) {
             return $data['body'];
         }
 
         $in = Carbon::parse($data['giris']);
         $out = Carbon::parse($data['cikis']);
-        $nights = max(1, (int) $in->diffInDays($out));
+        $units = max(1, (int) $in->diffInDays($out));
+        $unitWord = $listing->type === ListingType::Emlak ? 'gece' : 'gün';
 
-        $parts = ['📅 Müsaitlik talebi: '.$in->format('d.m.Y').' → '.$out->format('d.m.Y').' ('.$nights.' gece)'];
+        $parts = ['📅 Müsaitlik talebi: '.$in->format('d.m.Y').' → '.$out->format('d.m.Y').' ('.$units.' '.$unitWord.')'];
 
         if (! empty($data['kisi'])) {
             $parts[] = $data['kisi'].' kişi';
         }
 
-        if ($listing->price !== null && $listing->price_unit === PriceUnit::Gecelik) {
-            $total = number_format($nights * (float) $listing->price, 0);
-            $parts[] = 'tahmini '.number_format((float) $listing->price, 0).' × '.$nights.' = '.$total.' '.$listing->currency;
+        // Süre birimiyle fiyat birimi uyuşuyorsa tahmini toplam göster
+        $perUnitPrices = [PriceUnit::Gecelik, PriceUnit::Gunluk];
+        if ($listing->price !== null && in_array($listing->price_unit, $perUnitPrices, true)) {
+            $total = number_format($units * (float) $listing->price, 0);
+            $parts[] = 'tahmini '.number_format((float) $listing->price, 0).' × '.$units.' = '.$total.' '.$listing->currency;
         }
 
         return implode(' · ', $parts)."\n\n".$data['body'];

@@ -119,7 +119,17 @@ class Listing extends Model
     }
 
     /**
-     * Takvimde "dolu" işaretlenen tarih aralıkları (emlak kısa dönem + ileride kiralık araç).
+     * Vasıta ilanının 1:1 detay kaydı (tip=vasita dışında null).
+     *
+     * @return HasOne<ListingVehicleDetail, $this>
+     */
+    public function vehicleDetail(): HasOne
+    {
+        return $this->hasOne(ListingVehicleDetail::class);
+    }
+
+    /**
+     * Takvimde "dolu" işaretlenen tarih aralıkları (emlak kısa dönem + kiralık araç).
      *
      * @return HasMany<ListingUnavailableRange, $this>
      */

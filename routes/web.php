@@ -36,6 +36,7 @@ use App\Http\Controllers\SavedSearchController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StoryController;
 use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\VehicleBrowseController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -43,6 +44,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Keşif (herkese açık)
 Route::get('/ilanlar', [BrowseController::class, 'index'])->name('listings.index');
 Route::get('/emlak', [PropertyBrowseController::class, 'index'])->name('properties.index');
+Route::get('/vasita', [VehicleBrowseController::class, 'index'])->name('vehicles.index');
 Route::get('/harita', [MapController::class, 'index'])->name('listings.map');
 Route::get('/ilanlar/kategori/{category:slug}', [BrowseController::class, 'category'])->name('listings.category');
 Route::get('/uye/{user:username}', [ProfileController::class, 'show'])->name('profiles.show');

@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\ListingType;
 use App\Enums\PriceUnit;
 use App\Models\ListingPropertyDetail;
+use App\Models\ListingVehicleDetail;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -45,8 +46,24 @@ class ListingRequest extends FormRequest
             'available_from' => ['nullable', 'date'],
             'max_guests' => ['nullable', 'integer', 'min:1', 'max:50'],
             'min_stay_nights' => ['nullable', 'integer', 'min:1', 'max:365'],
+
+            // Vasıta detayları (yalnızca tip=vasita formunda bulunur)
+            'brand' => ['nullable', 'string', 'max:60'],
+            'model' => ['nullable', 'string', 'max:60'],
+            'year' => ['nullable', 'integer', 'min:1950', 'max:'.(now()->year + 1)],
+            'mileage_km' => ['nullable', 'integer', 'min:0', 'max:2000000'],
+            'fuel' => ['nullable', Rule::in(array_keys(ListingVehicleDetail::FUELS))],
+            'transmission' => ['nullable', Rule::in(array_keys(ListingVehicleDetail::TRANSMISSIONS))],
+            'body_type' => ['nullable', Rule::in(array_keys(ListingVehicleDetail::BODY_TYPES))],
+            'color' => ['nullable', 'string', 'max:30'],
+            'min_rental_days' => ['nullable', 'integer', 'min:1', 'max:365'],
+            'km_limit_per_day' => ['nullable', 'integer', 'min:0', 'max:10000'],
+
+            // Rozetler: geçerli küme ilan tipine göre değişir
             'badges' => ['nullable', 'array'],
-            'badges.*' => [Rule::in(array_keys(ListingPropertyDetail::BADGES))],
+            'badges.*' => [Rule::in(array_keys(
+                $this->input('type') === 'vasita' ? ListingVehicleDetail::BADGES : ListingPropertyDetail::BADGES
+            ))],
         ];
     }
 
@@ -72,6 +89,16 @@ class ListingRequest extends FormRequest
             'max_guests' => 'konuk kapasitesi',
             'min_stay_nights' => 'minimum konaklama',
             'badges' => 'özellik rozetleri',
+            'brand' => 'marka',
+            'model' => 'model',
+            'year' => 'model yılı',
+            'mileage_km' => 'kilometre',
+            'fuel' => 'yakıt',
+            'transmission' => 'vites',
+            'body_type' => 'kasa tipi',
+            'color' => 'renk',
+            'min_rental_days' => 'minimum kiralama günü',
+            'km_limit_per_day' => 'günlük km sınırı',
         ];
     }
 }

@@ -47,6 +47,7 @@
                             <option value="hizmet" @selected($filters['tip'] === 'hizmet')>🧰 Hizmetler</option>
                             <option value="urun" @selected($filters['tip'] === 'urun')>📦 Ürünler</option>
                             <option value="emlak" @selected($filters['tip'] === 'emlak')>🏡 Emlak</option>
+                            <option value="vasita" @selected($filters['tip'] === 'vasita')>🚗 Vasıta</option>
                         </select>
                     </div>
 

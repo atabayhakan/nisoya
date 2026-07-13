@@ -77,6 +77,13 @@ class ZoneSeeder extends Seeder
                 'blocks' => [],
                 'is_active' => false,
             ],
+            [
+                'key' => 'vasita_liste_ust',
+                'name' => 'Vasıta — liste üstü',
+                'location_note' => '/vasita sayfasında, sonuç listesinin en üstünde görünür.',
+                'blocks' => [],
+                'is_active' => false,
+            ],
         ];
 
         foreach ($zones as $zone) {

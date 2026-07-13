@@ -19,7 +19,7 @@ class NavigationLinkTest extends TestCase
 
         $labels = NavigationLink::query()->orderBy('sort_order')->pluck('label')->all();
 
-        $this->assertSame(['İlanlar', 'Emlak', 'İş İlanları', 'Harita', 'Nasıl Çalışır?', 'Yetenek Havuzu'], $labels);
+        $this->assertSame(['İlanlar', 'Emlak', 'Vasıta', 'İş İlanları', 'Harita', 'Nasıl Çalışır?', 'Yetenek Havuzu'], $labels);
     }
 
     public function test_seeder_does_not_duplicate_or_overwrite_admin_edits(): void
@@ -30,7 +30,7 @@ class NavigationLinkTest extends TestCase
 
         $this->seed(NavigationLinkSeeder::class);
 
-        $this->assertSame(6, NavigationLink::count());
+        $this->assertSame(7, NavigationLink::count());
         $this->assertDatabaseHas('navigation_links', ['label' => 'İlanlar', 'is_active' => false]);
     }
 

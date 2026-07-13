@@ -14,6 +14,7 @@ enum PriceUnit: string implements HasLabel
     case Adet = 'adet';
     case Aylik = 'aylik';
     case Gecelik = 'gecelik';
+    case Haftalik = 'haftalik';
     case Toplam = 'toplam';
     case Gorusulur = 'gorusulur';
 
@@ -28,6 +29,7 @@ enum PriceUnit: string implements HasLabel
             self::Adet => 'Adet',
             self::Aylik => 'Aylık',
             self::Gecelik => 'Gecelik',
+            self::Haftalik => 'Haftalık',
             self::Toplam => 'Toplam (satış)',
             self::Gorusulur => 'Görüşülür',
         };
@@ -39,6 +41,7 @@ enum PriceUnit: string implements HasLabel
         return match ($type) {
             'urun' => [self::Adet, self::Paket, self::Gorusulur],
             'emlak' => [self::Aylik, self::Gecelik, self::Toplam, self::Gorusulur],
+            'vasita' => [self::Toplam, self::Gunluk, self::Haftalik, self::Gorusulur],
             default => [self::Saatlik, self::Gunluk, self::Kilogram, self::IsBasina, self::Paket, self::Gorusulur],
         };
     }
@@ -55,6 +58,7 @@ enum PriceUnit: string implements HasLabel
             self::Adet => '/adet',
             self::Aylik => '/ay',
             self::Gecelik => '/gece',
+            self::Haftalik => '/hafta',
             self::Toplam => '',
             self::Gorusulur => '',
         };

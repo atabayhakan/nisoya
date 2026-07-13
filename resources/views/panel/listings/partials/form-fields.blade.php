@@ -12,7 +12,7 @@
 <div>
     <label for="title" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Başlık</label>
     <input id="title" name="title" type="text" value="{{ old('title', $listing?->title) }}" required
-           placeholder="{{ match ($type ?? 'hizmet') { 'urun' => 'ör. Ev yapımı fıstıklı baklava (1 kg)', 'emlak' => 'ör. Kreuzberg\'de eşyalı 2+1 kiralık daire', default => 'ör. Online İngilizce konuşma dersi veriyorum' } }}"
+           placeholder="{{ match ($type ?? 'hizmet') { 'urun' => 'ör. Ev yapımı fıstıklı baklava (1 kg)', 'emlak' => 'ör. Kreuzberg\'de eşyalı 2+1 kiralık daire', 'vasita' => 'ör. 2019 VW Golf 1.6 TDI — kesin dönüş nedeniyle', default => 'ör. Online İngilizce konuşma dersi veriyorum' } }}"
            class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
     @error('title') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
 </div>
@@ -36,7 +36,7 @@
 <div>
     <label for="description" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Açıklama</label>
     <textarea id="description" name="description" rows="6" required
-              placeholder="{{ match ($type ?? 'hizmet') { 'urun' => 'Ürününü anlat: malzemeler, boyut/ağırlık, teslimat & kargo, hazırlık süresi...', 'emlak' => 'Evi anlat: konum/ulaşım, ısıtma, bina yaşı, çevre olanakları, kiralama koşulları...', default => 'Sunduğun hizmeti detaylıca anlat: deneyimin, neler yaptığın, nasıl çalıştığın...' } }}"
+              placeholder="{{ match ($type ?? 'hizmet') { 'urun' => 'Ürününü anlat: malzemeler, boyut/ağırlık, teslimat & kargo, hazırlık süresi...', 'emlak' => 'Evi anlat: konum/ulaşım, ısıtma, bina yaşı, çevre olanakları, kiralama koşulları...', 'vasita' => 'Aracı anlat: bakım geçmişi, hasar durumu, ekstralar, satış/kiralama koşulları...', default => 'Sunduğun hizmeti detaylıca anlat: deneyimin, neler yaptığın, nasıl çalıştığın...' } }}"
               class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">{{ old('description', $listing?->description) }}</textarea>
     @error('description') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
 </div>
@@ -184,6 +184,119 @@
                 @foreach (\App\Models\ListingPropertyDetail::BADGES as $key => $label)
                     <label class="flex items-center gap-2 text-sm text-stone-700 dark:text-stone-300">
                         <input type="checkbox" name="badges[]" value="{{ $key }}" @checked(in_array($key, $badgesVal, true))
+                               class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
+                        {{ $label }}
+                    </label>
+                @endforeach
+            </div>
+            @error('badges') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+        </div>
+    </fieldset>
+@elseif (($type ?? 'hizmet') === 'vasita')
+    @php
+        $vehicle = $listing?->vehicleDetail;
+        $vBadgesVal = (array) old('badges', $vehicle?->badges ?? []);
+    @endphp
+
+    <fieldset class="rounded-xl border border-stone-200 p-4 dark:border-stone-800">
+        <legend class="px-1 text-sm font-semibold text-stone-700 dark:text-stone-300">🚗 Araç detayları</legend>
+
+        <div class="grid gap-4 sm:grid-cols-3">
+            <div>
+                <label for="brand" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Marka</label>
+                <input id="brand" name="brand" type="text" maxlength="60" value="{{ old('brand', $vehicle?->brand) }}"
+                       placeholder="ör. Volkswagen" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                @error('brand') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="model" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Model</label>
+                <input id="model" name="model" type="text" maxlength="60" value="{{ old('model', $vehicle?->model) }}"
+                       placeholder="ör. Golf 1.6 TDI" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                @error('model') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="year" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Model yılı</label>
+                <input id="year" name="year" type="number" min="1950" max="{{ now()->year + 1 }}" value="{{ old('year', $vehicle?->year) }}"
+                       placeholder="ör. 2019" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                @error('year') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+        </div>
+
+        <div class="mt-4 grid gap-4 sm:grid-cols-3">
+            <div>
+                <label for="mileage_km" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Kilometre</label>
+                <input id="mileage_km" name="mileage_km" type="number" min="0" max="2000000" value="{{ old('mileage_km', $vehicle?->mileage_km) }}"
+                       placeholder="ör. 85000" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                @error('mileage_km') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="fuel" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Yakıt</label>
+                <select id="fuel" name="fuel" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                    <option value="">Seç...</option>
+                    @foreach (\App\Models\ListingVehicleDetail::FUELS as $key => $label)
+                        <option value="{{ $key }}" @selected(old('fuel', $vehicle?->fuel) === $key)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                @error('fuel') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="transmission" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Vites</label>
+                <select id="transmission" name="transmission" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                    <option value="">Seç...</option>
+                    @foreach (\App\Models\ListingVehicleDetail::TRANSMISSIONS as $key => $label)
+                        <option value="{{ $key }}" @selected(old('transmission', $vehicle?->transmission) === $key)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                @error('transmission') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+        </div>
+
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <div>
+                <label for="body_type" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Kasa tipi <span class="text-stone-400 dark:text-stone-500">(ops.)</span></label>
+                <select id="body_type" name="body_type" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                    <option value="">Seç...</option>
+                    @foreach (\App\Models\ListingVehicleDetail::BODY_TYPES as $key => $label)
+                        <option value="{{ $key }}" @selected(old('body_type', $vehicle?->body_type) === $key)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                @error('body_type') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="color" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Renk <span class="text-stone-400 dark:text-stone-500">(ops.)</span></label>
+                <input id="color" name="color" type="text" maxlength="30" value="{{ old('color', $vehicle?->color) }}"
+                       placeholder="ör. Gri" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                @error('color') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+        </div>
+
+        <div class="mt-4 grid gap-4 sm:grid-cols-3">
+            <div>
+                <label for="min_rental_days" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Min. kiralama (gün) <span class="text-stone-400 dark:text-stone-500">(kiralık, ops.)</span></label>
+                <input id="min_rental_days" name="min_rental_days" type="number" min="1" max="365" value="{{ old('min_rental_days', $vehicle?->min_rental_days) }}"
+                       placeholder="ör. 3" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                @error('min_rental_days') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="deposit" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Depozito <span class="text-stone-400 dark:text-stone-500">(kiralık, ops.)</span></label>
+                <input id="deposit" name="deposit" type="number" step="0.01" min="0" value="{{ old('deposit', $vehicle?->deposit) }}"
+                       placeholder="ör. 300" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                @error('deposit') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="km_limit_per_day" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Günlük km sınırı <span class="text-stone-400 dark:text-stone-500">(kiralık, ops.)</span></label>
+                <input id="km_limit_per_day" name="km_limit_per_day" type="number" min="0" max="10000" value="{{ old('km_limit_per_day', $vehicle?->km_limit_per_day) }}"
+                       placeholder="Boş = sınırsız" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">
+                @error('km_limit_per_day') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <span class="block text-sm font-medium text-stone-700 dark:text-stone-300">Öne çıkan özellikler <span class="text-stone-400 dark:text-stone-500">(işaretlediklerin ilanında rozet olur)</span></span>
+            <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                @foreach (\App\Models\ListingVehicleDetail::BADGES as $key => $label)
+                    <label class="flex items-center gap-2 text-sm text-stone-700 dark:text-stone-300">
+                        <input type="checkbox" name="badges[]" value="{{ $key }}" @checked(in_array($key, $vBadgesVal, true))
                                class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
                         {{ $label }}
                     </label>
