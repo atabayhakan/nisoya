@@ -71,6 +71,13 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('message-start', fn (Request $request) => Limit::perMinute(20)->by($request->user()?->id ?: $request->ip())
         );
 
+        RateLimiter::for('event-create', fn (Request $request) => Limit::perMinute(6)->by($request->user()?->id ?: $request->ip())
+        );
+
+        // LCV hesapsız verildiği için IP bazlı (aynı ağdan birden çok misafir olabilir — cömert ama sınırlı)
+        RateLimiter::for('rsvp', fn (Request $request) => Limit::perMinute(15)->by($request->ip())
+        );
+
         RateLimiter::for('review-store', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
         );
 

@@ -13,6 +13,7 @@
             ['ad' => 'İş Aramalarım', 'aciklama' => 'Kayıtlı iş uyarıları', 'ikon' => 'bell', 'url' => '/panel/is-aramalarim'],
             ['ad' => 'Şirket Profili', 'aciklama' => 'İşveren profilin', 'ikon' => 'building-office-2', 'url' => '/panel/sirket'],
             ['ad' => 'Profilim', 'aciklama' => 'Bilgilerini düzenle', 'ikon' => 'user-circle', 'url' => '/panel/profil'],
+            ['ad' => 'Davetiyelerim', 'aciklama' => 'Düğün, sünnet, iftar... davetiye oluştur', 'ikon' => 'envelope-open', 'url' => '/panel/etkinlikler'],
             ['ad' => 'Arkadaşını Davet Et', 'aciklama' => 'Davet bağlantını paylaş', 'ikon' => 'gift', 'url' => '/panel/davet'],
             ['ad' => 'İlanlara Göz At', 'aciklama' => 'Hizmet ara', 'ikon' => 'magnifying-glass', 'url' => '/ilanlar'],
         ];

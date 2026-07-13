@@ -1,0 +1,33 @@
+<x-layouts.app title="Davetiyeyi Düzenle — Nisoya">
+    <div class="mx-auto max-w-3xl px-4 py-10">
+        <x-panel.back-link :href="route('panel.events.show', $event)" label="Davetiye yönetimi" />
+        <h1 class="mt-2 text-2xl font-bold text-stone-900 dark:text-stone-50">Davetiyeyi Düzenle</h1>
+
+        <form method="POST" action="{{ route('panel.events.update', $event) }}" class="mt-6 space-y-5">
+            @csrf
+            @method('PUT')
+            @include('panel.events.partials.form-fields', ['event' => $event])
+
+            <label class="flex items-center gap-2 text-sm text-stone-700 dark:text-stone-300">
+                <input type="hidden" name="is_active" value="0">
+                <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $event->is_active))
+                       class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
+                Davet linki açık (kapatırsan misafirler sayfayı göremez)
+            </label>
+
+            <div class="flex items-center gap-3 pt-2">
+                <button type="submit" class="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
+                    Değişiklikleri Kaydet
+                </button>
+                <a href="{{ $event->inviteUrl() }}" target="_blank" class="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">Davetiyeyi gör →</a>
+            </div>
+        </form>
+
+        <form method="POST" action="{{ route('panel.events.destroy', $event) }}" class="mt-8 border-t border-stone-200 pt-6 dark:border-stone-800"
+              onsubmit="return confirm('Bu etkinliği ve tüm davetli listesini silmek istediğine emin misin? Bu işlem geri alınamaz.');">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">Etkinliği sil</button>
+        </form>
+    </div>
+</x-layouts.app>

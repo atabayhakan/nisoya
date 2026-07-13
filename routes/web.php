@@ -5,6 +5,8 @@ use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyGalleryController;
 use App\Http\Controllers\CompanyReviewController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventInvitationController;
 use App\Http\Controllers\ExifMapController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FeatureController;
@@ -52,6 +54,12 @@ Route::get('/nabiz', [NabizController::class, 'index'])->name('nabiz');
 
 // Herkese açık ilan detayı
 Route::get('/ilan/{listing}/{slug?}', [ListingController::class, 'show'])->name('listings.show');
+
+// Davetiye (herkese açık — misafirler hesap açmadan LCV verir)
+Route::get('/davet/{token}', [EventInvitationController::class, 'show'])->name('davet.show');
+Route::post('/davet/{token}/lcv', [EventInvitationController::class, 'rsvp'])
+    ->middleware(['honeypot', 'throttle:rsvp'])
+    ->name('davet.rsvp');
 
 // İş ilanları (herkese açık keşif + detay + şirket sayfası)
 Route::get('/isler', [JobBrowseController::class, 'index'])->name('jobs.index');
@@ -110,6 +118,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Davet / referans
     Route::get('/panel/davet', [InviteController::class, 'index'])->name('panel.invite');
+
+    // Davetiyeler (etkinlik + LCV yönetimi)
+    Route::get('/panel/etkinlikler', [EventController::class, 'index'])->name('panel.events.index');
+    Route::get('/panel/etkinlik/yeni', [EventController::class, 'create'])->name('panel.events.create');
+    Route::post('/panel/etkinlik', [EventController::class, 'store'])
+        ->middleware(['honeypot', 'throttle:event-create'])
+        ->name('panel.events.store');
+    Route::get('/panel/etkinlik/{event}', [EventController::class, 'show'])->name('panel.events.show');
+    Route::get('/panel/etkinlik/{event}/duzenle', [EventController::class, 'edit'])->name('panel.events.edit');
+    Route::match(['put', 'patch'], '/panel/etkinlik/{event}', [EventController::class, 'update'])->name('panel.events.update');
+    Route::delete('/panel/etkinlik/{event}', [EventController::class, 'destroy'])->name('panel.events.destroy');
 
     // Kayıtlı aramalar
     Route::get('/panel/aramalarim', [SavedSearchController::class, 'index'])->name('panel.saved-searches.index');

@@ -125,6 +125,12 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(Listing::class);
     }
 
+    /** Üyenin oluşturduğu davetiye etkinlikleri. @return HasMany<Event, $this> */
+    public function events(): HasMany
+    {
+        return $this->hasMany(Event::class);
+    }
+
     /** Kullanıcının kendi ödeme linkleri/QR kodları (Nisoya para akışını görmez). */
     public function paymentLinks(): HasMany
     {
