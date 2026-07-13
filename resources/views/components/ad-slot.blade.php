@@ -1,5 +1,7 @@
+{{-- Prop adı bilinçli olarak "slotId" — "slot" Blade'in rezerve bileşen-içeriği
+     değişkeniyle çakışır ve <x-ad-slot :slot="..."> her zaman boş render eder. --}}
 @props([
-    'slot' => null,
+    'slotId' => null,
     'format' => 'auto',     // auto, rectangle, vertical, horizontal
     'responsive' => true,
     'minHeight' => 90,      // CLS'yi önlemek için placeholder yüksekliği
@@ -19,11 +21,11 @@
     $placeholderHeight = $heightByFormat[$format] ?? $minHeight;
 @endphp
 
-@if ($enabled && $slot)
+@if ($enabled && $slotId)
     <div
         class="adsense-slot my-4 overflow-hidden rounded-xl border border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900"
         style="min-height: {{ $placeholderHeight }}px;"
-        data-ad-slot="{{ $slot }}"
+        data-ad-slot="{{ $slotId }}"
         data-ad-format="{{ $format }}"
         data-ads-loaded="false"
     >
@@ -31,7 +33,7 @@
             class="adsbyblock block"
             style="display:block; min-height: {{ $placeholderHeight }}px;"
             data-ad-client="{{ $publisher }}"
-            data-ad-slot="{{ $slot }}"
+            data-ad-slot="{{ $slotId }}"
             data-ad-format="{{ $format }}"
             data-full-width-responsive="{{ $responsive ? 'true' : 'false' }}"
         ></ins>
@@ -46,7 +48,7 @@
             }
 
             // IntersectionObserver ile ekrana gelince yükle (performans + CLS)
-            const slot = document.querySelector('[data-ad-slot="{{ $slot }}"]');
+            const slot = document.querySelector('[data-ad-slot="{{ $slotId }}"]');
             if (!slot) return;
 
             if (slot.dataset.adsLoaded === 'true') return;

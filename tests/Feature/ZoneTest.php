@@ -74,6 +74,9 @@ class ZoneTest extends TestCase
 
     public function test_active_zone_renders_ad_block(): void
     {
+        // Yerel .env'deki ADSENSE_ENABLED değerinden bağımsız, deterministik olsun diye açıkça kapatılır.
+        config(['services.adsense.enabled' => false]);
+
         Zone::create([
             'key' => 'test_zone',
             'name' => 'Test alanı',
@@ -83,8 +86,27 @@ class ZoneTest extends TestCase
 
         $html = (string) view('components.zone', ['zoneKey' => 'test_zone'])->render();
 
-        // Test ortamında ADSENSE_ENABLED kapalı olduğundan bağış çağrısı fallback'i görünür.
+        // AdSense kapalıyken bağış çağrısı fallback'i görünür.
         $this->assertStringContainsString('Nisoya ücretsiz kalır', $html);
+    }
+
+    public function test_active_zone_ad_block_carries_slot_id_through_to_adsense_markup(): void
+    {
+        config(['services.adsense.enabled' => true, 'services.adsense.publisher_id' => 'ca-pub-123']);
+
+        Zone::create([
+            'key' => 'test_zone',
+            'name' => 'Test alanı',
+            'is_active' => true,
+            'blocks' => [['type' => 'reklam', 'data' => ['slot_id' => '999', 'format' => 'horizontal']]],
+        ]);
+
+        $html = (string) view('components.zone', ['zoneKey' => 'test_zone'])->render();
+
+        // <x-ad-slot :slot="..."> Blade'in rezerve slot değişkeniyle çakışıp bunu
+        // boş render ediyordu (bkz. ad-slot.blade.php); regresyonu burada sabitliyoruz.
+        $this->assertStringContainsString('data-ad-slot="999"', $html);
+        $this->assertStringContainsString('data-ad-client="ca-pub-123"', $html);
     }
 
     public function test_zone_scheduling_window(): void
