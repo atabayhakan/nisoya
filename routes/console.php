@@ -19,3 +19,6 @@ Schedule::command('job-alerts:saved-searches')->dailyAt('09:00')->withoutOverlap
 // Header'daki ülke bayrağı için MaxMind GeoLite2 veritabanını güncel tut
 // (MaxMind veriyi haftalık yayınlar; lisans anahtarı yoksa sessizce atlanır).
 Schedule::command('geoip:update')->weekly()->withoutOverlapping();
+
+// Etkinlik medyası saklama politikası: 11. ayda ev sahibini uyar, 12. ayda sil
+Schedule::command('events:purge-media')->dailyAt('03:30')->withoutOverlapping();

@@ -8,12 +8,26 @@
             @method('PUT')
             @include('panel.events.partials.form-fields', ['event' => $event])
 
-            <label class="flex items-center gap-2 text-sm text-stone-700 dark:text-stone-300">
-                <input type="hidden" name="is_active" value="0">
-                <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $event->is_active))
-                       class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
-                Davet linki açık (kapatırsan misafirler sayfayı göremez)
-            </label>
+            <div class="space-y-2 rounded-xl border border-stone-200 p-4 dark:border-stone-800">
+                <label class="flex items-center gap-2 text-sm text-stone-700 dark:text-stone-300">
+                    <input type="hidden" name="is_active" value="0">
+                    <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $event->is_active))
+                           class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
+                    Davet linki açık (kapatırsan misafirler sayfayı göremez)
+                </label>
+                <label class="flex items-center gap-2 text-sm text-stone-700 dark:text-stone-300">
+                    <input type="hidden" name="allow_uploads" value="0">
+                    <input type="checkbox" name="allow_uploads" value="1" @checked(old('allow_uploads', $event->allow_uploads))
+                           class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
+                    Anı akışı açık (etkinlik gününden itibaren misafirler fotoğraf/video paylaşabilir)
+                </label>
+                <label class="flex items-center gap-2 text-sm text-stone-700 dark:text-stone-300">
+                    <input type="hidden" name="require_approval" value="0">
+                    <input type="checkbox" name="require_approval" value="1" @checked(old('require_approval', $event->require_approval))
+                           class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
+                    Paylaşımlar önce onayımdan geçsin (kalabalık etkinliklerde önerilir)
+                </label>
+            </div>
 
             <div class="flex items-center gap-3 pt-2">
                 <button type="submit" class="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">

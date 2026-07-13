@@ -31,6 +31,9 @@ class Event extends Model
         'description',
         'theme',
         'is_active',
+        'allow_uploads',
+        'require_approval',
+        'media_purge_warned_at',
     ];
 
     protected function casts(): array
@@ -39,6 +42,9 @@ class Event extends Model
             'type' => EventType::class,
             'starts_at' => 'datetime',
             'is_active' => 'boolean',
+            'allow_uploads' => 'boolean',
+            'require_approval' => 'boolean',
+            'media_purge_warned_at' => 'datetime',
         ];
     }
 
@@ -68,6 +74,18 @@ class Event extends Model
     public function guests(): HasMany
     {
         return $this->hasMany(EventGuest::class)->orderByDesc('id');
+    }
+
+    /** @return HasMany<EventMedia, $this> */
+    public function media(): HasMany
+    {
+        return $this->hasMany(EventMedia::class)->orderByDesc('id');
+    }
+
+    /** Anı akışı görünür mü: etkinlik günü geldi ve yüklemeler açık. */
+    public function streamIsOpen(): bool
+    {
+        return $this->allow_uploads && $this->starts_at->copy()->startOfDay()->isPast();
     }
 
     /** LCV sayaçları: durum bazlı davetli satırı + toplam kişi (parti boyutu toplamı). */

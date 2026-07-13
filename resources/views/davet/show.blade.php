@@ -119,6 +119,81 @@
             </div>
         </div>
 
+        {{-- Anı akışı: etkinlik gününden itibaren ortak albüm --}}
+        @if ($media !== null)
+            <div class="mt-8 w-full max-w-3xl rounded-3xl border p-6 shadow-lg sm:p-8 {{ $theme['card'] }}">
+                <h2 class="text-center text-sm font-semibold uppercase tracking-wider opacity-70">📸 Anı Akışı</h2>
+                <p class="mt-1 text-center text-xs opacity-60">Etkinlikten kareler — herkes kendi çektiklerini ekleyebilir.</p>
+
+                @if (session('media_status'))
+                    <div class="mt-4 rounded-xl bg-emerald-100 px-4 py-3 text-center text-sm font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">
+                        {{ session('media_status') }}
+                    </div>
+                @endif
+                @error('files')
+                    <div class="mt-4 rounded-xl bg-red-100 px-4 py-3 text-center text-sm font-medium text-red-800 dark:bg-red-900/50 dark:text-red-200">{{ $message }}</div>
+                @enderror
+                @error('files.*')
+                    <div class="mt-4 rounded-xl bg-red-100 px-4 py-3 text-center text-sm font-medium text-red-800 dark:bg-red-900/50 dark:text-red-200">{{ $message }}</div>
+                @enderror
+
+                {{-- Yükleme --}}
+                @if ($myGuest || $isHost)
+                    <form method="POST" action="{{ route('davet.media.store', $event->token) }}" enctype="multipart/form-data" class="mt-4 flex flex-wrap items-center justify-center gap-2">
+                        @csrf
+                        <div class="hidden" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+                        <input name="files[]" type="file" multiple required accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
+                               class="max-w-xs text-xs opacity-80 file:mr-2 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-2 file:text-xs file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:file:bg-emerald-900/40 dark:file:text-emerald-300">
+                        <button type="submit" class="rounded-xl px-4 py-2 text-sm font-semibold transition {{ $theme['button'] }}">Paylaş</button>
+                        <p class="w-full text-center text-[11px] opacity-50">Fotoğraf (en fazla 8 MB) veya video (MP4/WebM, en fazla 100 MB) · tek seferde 10 dosya</p>
+                    </form>
+                @else
+                    <p class="mt-4 rounded-xl bg-stone-100 px-4 py-3 text-center text-sm text-stone-600 dark:bg-stone-800 dark:text-stone-300">
+                        Fotoğraf paylaşmak için önce yukarıdan katılımını bildir (LCV) 👆
+                    </p>
+                @endif
+
+                {{-- Akış ızgarası --}}
+                @if ($media->isNotEmpty())
+                    <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        @foreach ($media as $item)
+                            <figure class="group relative overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800">
+                                @if ($item->type === 'image')
+                                    <a href="{{ Storage::disk(\App\Models\EventMedia::DISK)->url($item->path_large) }}" target="_blank" rel="noopener">
+                                        <img src="{{ Storage::disk(\App\Models\EventMedia::DISK)->url($item->path_medium) }}"
+                                             alt="" loading="lazy" decoding="async"
+                                             class="aspect-square w-full object-cover transition group-hover:scale-105">
+                                    </a>
+                                @else
+                                    <video controls preload="metadata" class="aspect-square w-full object-cover"
+                                           src="{{ Storage::disk(\App\Models\EventMedia::DISK)->url($item->path) }}"></video>
+                                @endif
+
+                                @if ($item->status === 'beklemede')
+                                    <span class="absolute left-1.5 top-1.5 rounded bg-amber-500/90 px-1.5 py-0.5 text-[10px] font-semibold text-white">Onay bekliyor</span>
+                                @endif
+
+                                <figcaption class="flex items-center justify-between gap-1 px-2 py-1.5 text-[11px] opacity-70">
+                                    <span class="truncate">{{ $item->uploaderName() }}</span>
+                                    @if ($isHost || ($myGuest && $item->event_guest_id === $myGuest->id))
+                                        <form method="POST" action="{{ route('davet.media.destroy', [$event->token, $item]) }}"
+                                              onsubmit="return confirm('Bu paylaşımı silmek istediğine emin misin?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="font-medium text-red-500 hover:text-red-600">Sil</button>
+                                        </form>
+                                    @endif
+                                </figcaption>
+                            </figure>
+                        @endforeach
+                    </div>
+                    <div class="mt-4">{{ $media->links() }}</div>
+                @else
+                    <p class="mt-6 text-center text-sm opacity-60">Henüz paylaşım yok — ilk kareyi sen ekle! 📷</p>
+                @endif
+            </div>
+        @endif
+
         {{-- Büyüme döngüsü: davetiyeyi gören herkes Nisoya'yı görür --}}
         <a href="{{ url('/panel/etkinlikler') }}" class="mt-6 text-center text-xs text-stone-400 underline-offset-2 hover:underline dark:text-stone-500">
             Bu davetiye <span class="font-semibold text-emerald-600 dark:text-emerald-400">Nisoya</span> ile hazırlandı — sen de ücretsiz oluştur 💌

@@ -7,6 +7,7 @@ use App\Http\Controllers\CompanyGalleryController;
 use App\Http\Controllers\CompanyReviewController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventInvitationController;
+use App\Http\Controllers\EventMediaController;
 use App\Http\Controllers\ExifMapController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FeatureController;
@@ -60,6 +61,12 @@ Route::get('/davet/{token}', [EventInvitationController::class, 'show'])->name('
 Route::post('/davet/{token}/lcv', [EventInvitationController::class, 'rsvp'])
     ->middleware(['honeypot', 'throttle:rsvp'])
     ->name('davet.rsvp');
+Route::post('/davet/{token}/medya', [EventMediaController::class, 'store'])
+    ->middleware(['honeypot', 'throttle:event-upload'])
+    ->name('davet.media.store');
+Route::delete('/davet/{token}/medya/{media}', [EventMediaController::class, 'destroy'])
+    ->middleware('throttle:event-upload')
+    ->name('davet.media.destroy');
 
 // İş ilanları (herkese açık keşif + detay + şirket sayfası)
 Route::get('/isler', [JobBrowseController::class, 'index'])->name('jobs.index');
@@ -129,6 +136,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/panel/etkinlik/{event}/duzenle', [EventController::class, 'edit'])->name('panel.events.edit');
     Route::match(['put', 'patch'], '/panel/etkinlik/{event}', [EventController::class, 'update'])->name('panel.events.update');
     Route::delete('/panel/etkinlik/{event}', [EventController::class, 'destroy'])->name('panel.events.destroy');
+    Route::post('/panel/etkinlik/{event}/medya/{media}/onayla', [EventController::class, 'approveMedia'])->name('panel.events.media.approve');
+    Route::delete('/panel/etkinlik/{event}/medya/{media}', [EventController::class, 'destroyMedia'])->name('panel.events.media.destroy');
+    Route::post('/panel/etkinlik/{event}/misafir/{guest}/engelle', [EventController::class, 'toggleGuestBlock'])->name('panel.events.guests.block');
 
     // Kayıtlı aramalar
     Route::get('/panel/aramalarim', [SavedSearchController::class, 'index'])->name('panel.saved-searches.index');

@@ -78,6 +78,10 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('rsvp', fn (Request $request) => Limit::perMinute(15)->by($request->ip())
         );
 
+        // Anı akışı yüklemeleri de hesapsız — IP bazlı (istek başına 10 dosya zaten sınırlı)
+        RateLimiter::for('event-upload', fn (Request $request) => Limit::perMinute(10)->by($request->ip())
+        );
+
         RateLimiter::for('review-store', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
         );
 

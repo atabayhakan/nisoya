@@ -24,11 +24,33 @@ class EventInvitationController extends Controller
 
         // Bu tarayıcıdan daha önce LCV verildiyse formu doldurup "güncelle" moduna geç
         $myGuest = $this->guestFromCookie($request, $event);
+        $isHost = $request->user()?->id === $event->user_id;
+
+        // Anı akışı: yayındakiler herkese; misafir kendi bekleyenlerini,
+        // ev sahibi tüm bekleyenleri de görür (moderasyon panelde ayrıca var)
+        $media = null;
+        if ($event->streamIsOpen()) {
+            $media = $event->media()
+                ->with('guest')
+                ->where(function ($q) use ($myGuest, $isHost) {
+                    if ($isHost) {
+                        return; // hepsi
+                    }
+                    $q->where('status', 'yayinda');
+                    if ($myGuest) {
+                        $q->orWhere('event_guest_id', $myGuest->id);
+                    }
+                })
+                ->latest('id')
+                ->paginate(24);
+        }
 
         return view('davet.show', [
             'event' => $event,
             'theme' => $event->themeConfig(),
             'myGuest' => $myGuest,
+            'isHost' => $isHost,
+            'media' => $media,
             'statuses' => RsvpStatus::cases(),
         ]);
     }

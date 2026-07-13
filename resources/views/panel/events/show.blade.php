@@ -54,6 +54,46 @@
             </div>
         </div>
 
+        {{-- Anı akışı moderasyonu --}}
+        <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="font-semibold text-stone-800 dark:text-stone-100">📸 Anı Akışı</h2>
+                <span class="text-xs text-stone-400 dark:text-stone-500">
+                    {{ $mediaCount }} paylaşım · {{ number_format($mediaBytes / 1048576, 1) }} MB / {{ number_format(\App\Models\EventMedia::MAX_TOTAL_BYTES_PER_EVENT / 1073741824, 0) }} GB
+                </span>
+            </div>
+            <p class="mt-1 text-xs text-stone-400 dark:text-stone-500">
+                {{ $event->allow_uploads ? ($event->require_approval ? 'Paylaşımlar önce senin onayına düşüyor.' : 'Paylaşımlar doğrudan yayınlanıyor.') : 'Anı akışı kapalı.' }}
+                Akış etkinlik gününden itibaren davet sayfasında görünür — <a href="{{ $event->inviteUrl() }}" target="_blank" class="text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400">akışı gör</a>.
+            </p>
+
+            @if ($pendingMedia->isNotEmpty())
+                <h3 class="mt-4 text-sm font-medium text-amber-700 dark:text-amber-400">Onay bekleyenler ({{ $pendingMedia->count() }})</h3>
+                <div class="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-5">
+                    @foreach ($pendingMedia as $item)
+                        <div class="overflow-hidden rounded-xl border border-amber-200 dark:border-amber-800">
+                            @if ($item->type === 'image')
+                                <img src="{{ Storage::disk(\App\Models\EventMedia::DISK)->url($item->path_thumb) }}" alt="" loading="lazy" class="aspect-square w-full object-cover">
+                            @else
+                                <video preload="metadata" class="aspect-square w-full object-cover" src="{{ Storage::disk(\App\Models\EventMedia::DISK)->url($item->path) }}"></video>
+                            @endif
+                            <div class="truncate px-1.5 pt-1 text-[10px] text-stone-500 dark:text-stone-400">{{ $item->uploaderName() }}</div>
+                            <div class="flex items-center justify-between px-1.5 pb-1.5 pt-0.5 text-[11px]">
+                                <form method="POST" action="{{ route('panel.events.media.approve', [$event, $item]) }}">
+                                    @csrf
+                                    <button type="submit" class="font-semibold text-emerald-700 hover:underline dark:text-emerald-400">Onayla</button>
+                                </form>
+                                <form method="POST" action="{{ route('panel.events.media.destroy', [$event, $item]) }}">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="font-medium text-red-600 hover:underline dark:text-red-400">Sil</button>
+                                </form>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
         {{-- Davetli listesi --}}
         <div class="mt-6 rounded-2xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
             <div class="border-b border-stone-100 px-5 py-4 dark:border-stone-800">
@@ -73,12 +113,24 @@
                                     <div class="truncate text-xs text-stone-400 dark:text-stone-500">"{{ $guest->note }}"</div>
                                 @endif
                             </div>
-                            <span @class([
-                                'shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium',
-                                'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' => $guest->status->value === 'geliyor',
-                                'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' => $guest->status->value === 'belki',
-                                'bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400' => $guest->status->value === 'gelmiyor',
-                            ])>{{ $guest->status->getLabel() }}</span>
+                            <div class="flex shrink-0 items-center gap-2">
+                                @if ($guest->is_blocked)
+                                    <span class="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-600 dark:bg-red-900/40 dark:text-red-400">Engelli</span>
+                                @endif
+                                <span @class([
+                                    'rounded-full px-2.5 py-0.5 text-xs font-medium',
+                                    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' => $guest->status->value === 'geliyor',
+                                    'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' => $guest->status->value === 'belki',
+                                    'bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400' => $guest->status->value === 'gelmiyor',
+                                ])>{{ $guest->status->getLabel() }}</span>
+                                <form method="POST" action="{{ route('panel.events.guests.block', [$event, $guest]) }}"
+                                      @unless ($guest->is_blocked) onsubmit="return confirm('{{ $guest->name }} engellensin mi? Tüm paylaşımları ({{ $guest->media_count }}) silinir.');" @endunless>
+                                    @csrf
+                                    <button type="submit" class="text-xs font-medium {{ $guest->is_blocked ? 'text-stone-500 hover:text-stone-700 dark:text-stone-400' : 'text-red-600 hover:text-red-700 dark:text-red-400' }}">
+                                        {{ $guest->is_blocked ? 'Engeli kaldır' : 'Engelle' }}
+                                    </button>
+                                </form>
+                            </div>
                         </li>
                     @endforeach
                 </ul>

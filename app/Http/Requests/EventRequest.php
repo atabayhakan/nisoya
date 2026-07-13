@@ -26,6 +26,8 @@ class EventRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:2000'],
             'theme' => ['nullable', Rule::in(array_keys(config('event_themes')))],
             'is_active' => ['nullable', 'boolean'],
+            'allow_uploads' => ['nullable', 'boolean'],
+            'require_approval' => ['nullable', 'boolean'],
             'website' => ['prohibited'], // honeypot
         ];
     }

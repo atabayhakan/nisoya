@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\RsvpStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 /**
@@ -21,6 +22,7 @@ class EventGuest extends Model
         'party_size',
         'note',
         'token',
+        'is_blocked',
     ];
 
     protected function casts(): array
@@ -28,7 +30,14 @@ class EventGuest extends Model
         return [
             'status' => RsvpStatus::class,
             'party_size' => 'integer',
+            'is_blocked' => 'boolean',
         ];
+    }
+
+    /** @return HasMany<EventMedia, $this> */
+    public function media(): HasMany
+    {
+        return $this->hasMany(EventMedia::class);
     }
 
     protected static function booted(): void
