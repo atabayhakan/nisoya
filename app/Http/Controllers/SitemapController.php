@@ -21,6 +21,7 @@ class SitemapController extends Controller
             ['loc' => route('vehicles.index'), 'priority' => '0.9'],
             ['loc' => route('jobs.index'), 'priority' => '0.9'],
             ['loc' => route('candidates.index'), 'priority' => '0.6'],
+            ['loc' => route('happy-moments'), 'priority' => '0.5'],
             ['loc' => route('pages.how'), 'priority' => '0.4'],
             ['loc' => route('pages.contact'), 'priority' => '0.3'],
             // '/gizlilik' artık CMS'teki bir Page kaydı — aşağıdaki döngüden gelir, burada tekrar eklenmez.

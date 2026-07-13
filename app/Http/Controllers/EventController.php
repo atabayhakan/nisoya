@@ -7,9 +7,16 @@ use App\Http\Requests\EventRequest;
 use App\Models\Event;
 use App\Models\EventGuest;
 use App\Models\EventMedia;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Ev sahibinin davetiye/etkinlik yönetimi (panel).
@@ -64,6 +71,71 @@ class EventController extends Controller
             'mediaCount' => $event->media()->count(),
             'mediaBytes' => (int) $event->media()->sum('size_bytes'),
         ]);
+    }
+
+    /** Yazdırılabilir QR masa kartı: okutunca davet/anı akışı sayfası açılır. */
+    public function qr(Request $request, Event $event): View
+    {
+        abort_unless($event->user_id === $request->user()->id, 403);
+
+        $renderer = new ImageRenderer(
+            new RendererStyle(320, 1),
+            new SvgImageBackEnd,
+        );
+        $svg = (new Writer($renderer))->writeString($event->inviteUrl());
+
+        return view('panel.events.qr', [
+            'event' => $event,
+            'qrSvg' => $svg,
+        ]);
+    }
+
+    /**
+     * Albümü ZIP indir: yayındaki tüm medya (görsellerin large varyantı +
+     * videolar). Medya zaten sıkıştırılmış olduğu için STORE modu (hız).
+     * 12 aylık saklama süresi dolmadan ev sahibinin anılarını almasını sağlar.
+     */
+    public function downloadAlbum(Request $request, Event $event): BinaryFileResponse|RedirectResponse
+    {
+        abort_unless($event->user_id === $request->user()->id, 403);
+
+        $media = $event->media()->where('status', 'yayinda')->get();
+
+        if ($media->isEmpty()) {
+            return back()->with('status', 'Albümde indirilecek paylaşım yok.');
+        }
+
+        $zipPath = tempnam(sys_get_temp_dir(), 'album');
+        $zip = new \ZipArchive;
+        $zip->open($zipPath, \ZipArchive::OVERWRITE);
+
+        $disk = Storage::disk(EventMedia::DISK);
+        $added = 0;
+
+        foreach ($media as $index => $item) {
+            $source = $item->type === 'image' ? $item->path_large : $item->path;
+
+            if (! $source || ! $disk->exists($source)) {
+                continue;
+            }
+
+            $name = sprintf('%03d-%s.%s', $index + 1, Str::slug($item->uploaderName()), pathinfo($source, PATHINFO_EXTENSION));
+            $zip->addFile($disk->path($source), $name);
+            $zip->setCompressionName($name, \ZipArchive::CM_STORE);
+            $added++;
+        }
+
+        $zip->close();
+
+        if ($added === 0) {
+            @unlink($zipPath);
+
+            return back()->with('status', 'Albümde indirilecek dosya bulunamadı.');
+        }
+
+        $fileName = Str::slug($event->title).'-albumu.zip';
+
+        return response()->download($zipPath, $fileName)->deleteFileAfterSend(true);
     }
 
     /** Onay bekleyen medyayı yayına al. */
@@ -131,6 +203,7 @@ class EventController extends Controller
             'is_active' => $request->boolean('is_active'),
             'allow_uploads' => $request->boolean('allow_uploads'),
             'require_approval' => $request->boolean('require_approval'),
+            'album_is_public' => $request->boolean('album_is_public'),
         ]);
 
         return redirect()->route('panel.events.show', $event)

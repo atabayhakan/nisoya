@@ -27,6 +27,15 @@
                            class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
                     Paylaşımlar önce onayımdan geçsin (kalabalık etkinliklerde önerilir)
                 </label>
+                <label class="flex items-start gap-2 text-sm text-stone-700 dark:text-stone-300">
+                    <input type="hidden" name="album_is_public" value="0">
+                    <input type="checkbox" name="album_is_public" value="1" @checked(old('album_is_public', $event->album_is_public))
+                           class="mt-0.5 rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
+                    <span>
+                        Albümü herkese aç — <a href="{{ route('happy-moments') }}" target="_blank" class="text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400">Mutlu Anlar</a> vitrininde yer alır.
+                        <span class="block text-xs text-stone-400 dark:text-stone-500">Açmadan önce fotoğraflardaki kişilerin rızası olduğundan emin ol — sorumluluk etkinlik sahibine aittir.</span>
+                    </span>
+                </label>
             </div>
 
             <div class="flex items-center gap-3 pt-2">

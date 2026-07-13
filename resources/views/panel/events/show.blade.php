@@ -30,6 +30,8 @@
                         class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-900 dark:bg-stone-700 dark:hover:bg-stone-600">Kopyala</button>
                 <a href="https://wa.me/?text={{ urlencode($event->title.' davetiyesi 💌 '.$event->inviteUrl()) }}" target="_blank" rel="noopener"
                    class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">WhatsApp'ta Paylaş</a>
+                <a href="{{ route('panel.events.qr', $event) }}" target="_blank"
+                   class="rounded-lg border border-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 dark:hover:bg-emerald-900/40">🔳 QR Masa Kartı</a>
             </div>
             <p class="mt-2 text-xs text-emerald-700/80 dark:text-emerald-400/80">Linki alan herkes davetiyeyi görüp LCV verebilir — yalnızca davet etmek istediklerinle paylaş.</p>
         </div>
@@ -66,6 +68,12 @@
                 {{ $event->allow_uploads ? ($event->require_approval ? 'Paylaşımlar önce senin onayına düşüyor.' : 'Paylaşımlar doğrudan yayınlanıyor.') : 'Anı akışı kapalı.' }}
                 Akış etkinlik gününden itibaren davet sayfasında görünür — <a href="{{ $event->inviteUrl() }}" target="_blank" class="text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400">akışı gör</a>.
             </p>
+            @if ($mediaCount > 0)
+                <a href="{{ route('panel.events.album', $event) }}"
+                   class="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">
+                    ⬇️ Albümü ZIP indir
+                </a>
+            @endif
 
             @if ($pendingMedia->isNotEmpty())
                 <h3 class="mt-4 text-sm font-medium text-amber-700 dark:text-amber-400">Onay bekleyenler ({{ $pendingMedia->count() }})</h3>

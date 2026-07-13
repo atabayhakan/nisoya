@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Models\EventGuest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\View\View;
 
@@ -18,9 +19,14 @@ use Illuminate\View\View;
  */
 class EventInvitationController extends Controller
 {
+    /** Davetiye arayüzünün desteklediği diller (misafirin eşi/arkadaşı için). */
+    private const LOCALES = ['tr', 'en', 'de'];
+
     public function show(Request $request, string $token): View
     {
         $event = Event::query()->where('token', $token)->where('is_active', true)->firstOrFail();
+
+        $locale = $this->applyLocale($request);
 
         // Bu tarayıcıdan daha önce LCV verildiyse formu doldurup "güncelle" moduna geç
         $myGuest = $this->guestFromCookie($request, $event);
@@ -52,7 +58,63 @@ class EventInvitationController extends Controller
             'isHost' => $isHost,
             'media' => $media,
             'statuses' => RsvpStatus::cases(),
+            'locale' => $locale,
+            'locales' => self::LOCALES,
         ]);
+    }
+
+    /** Takvime ekle: RFC 5545 uyumlu .ics dosyası (yerel "duvar saati" — TZ'siz). */
+    public function ics(string $token): Response
+    {
+        $event = Event::query()->where('token', $token)->where('is_active', true)->firstOrFail();
+
+        $escape = fn (?string $text) => str_replace(
+            ['\\', ';', ',', "\n"],
+            ['\\\\', '\;', '\,', '\n'],
+            (string) $text,
+        );
+
+        $location = trim(implode(' — ', array_filter([$event->venue_name, $event->venue_address])));
+
+        $lines = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Nisoya//Davetiye//TR',
+            'BEGIN:VEVENT',
+            'UID:davet-'.$event->token.'@nisoya.com',
+            'DTSTAMP:'.now()->utc()->format('Ymd\THis\Z'),
+            'DTSTART:'.$event->starts_at->format('Ymd\THis'),
+            'DTEND:'.$event->starts_at->copy()->addHours(4)->format('Ymd\THis'),
+            'SUMMARY:'.$escape($event->title),
+            $location !== '' ? 'LOCATION:'.$escape($location) : null,
+            $event->description ? 'DESCRIPTION:'.$escape($event->description) : null,
+            'URL:'.$event->inviteUrl(),
+            'END:VEVENT',
+            'END:VCALENDAR',
+        ];
+
+        return response(implode("\r\n", array_filter($lines)), 200, [
+            'Content-Type' => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="davetiye.ics"',
+        ]);
+    }
+
+    /**
+     * ?dil= parametresine göre istek yerelini ayarla (Carbon tarihleri dahil).
+     * Geçersiz/eksik değerde açıkça 'tr'ye sıfırlanır — locale, uzun ömürlü
+     * süreçlerde (test, octane) bir önceki istekten sızmasın.
+     */
+    private function applyLocale(Request $request): string
+    {
+        $locale = $request->string('dil')->toString();
+
+        if (! in_array($locale, self::LOCALES, true)) {
+            $locale = 'tr';
+        }
+
+        app()->setLocale($locale);
+
+        return $locale;
     }
 
     public function rsvp(Request $request, string $token): RedirectResponse
@@ -83,8 +145,13 @@ class EventInvitationController extends Controller
                 : 'Yanıtın iletildi, teşekkürler. 💚';
         }
 
-        // Misafir token'ı 90 gün çerezde kalır (yanıt güncelleme + D2'de yükleme sahipliği)
-        return redirect()->route('davet.show', $event->token)
+        // Misafir token'ı 90 gün çerezde kalır (yanıt güncelleme + yükleme sahipliği)
+        $params = ['token' => $event->token];
+        if (in_array($request->input('dil'), self::LOCALES, true)) {
+            $params['dil'] = $request->input('dil');
+        }
+
+        return redirect()->route('davet.show', $params)
             ->with('rsvp_status', $message)
             ->withCookie(cookie($this->cookieName($event), $guest->token, 60 * 24 * 90));
     }

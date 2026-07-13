@@ -33,6 +33,7 @@ class Event extends Model
         'is_active',
         'allow_uploads',
         'require_approval',
+        'album_is_public',
         'media_purge_warned_at',
     ];
 
@@ -44,6 +45,7 @@ class Event extends Model
             'is_active' => 'boolean',
             'allow_uploads' => 'boolean',
             'require_approval' => 'boolean',
+            'album_is_public' => 'boolean',
             'media_purge_warned_at' => 'datetime',
         ];
     }

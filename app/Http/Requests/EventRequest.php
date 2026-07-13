@@ -28,6 +28,7 @@ class EventRequest extends FormRequest
             'is_active' => ['nullable', 'boolean'],
             'allow_uploads' => ['nullable', 'boolean'],
             'require_approval' => ['nullable', 'boolean'],
+            'album_is_public' => ['nullable', 'boolean'],
             'website' => ['prohibited'], // honeypot
         ];
     }

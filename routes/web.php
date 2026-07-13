@@ -11,6 +11,7 @@ use App\Http\Controllers\EventMediaController;
 use App\Http\Controllers\ExifMapController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FeatureController;
+use App\Http\Controllers\HappyMomentsController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InviteController;
@@ -52,12 +53,14 @@ Route::get('/harita', [MapController::class, 'index'])->name('listings.map');
 Route::get('/ilanlar/kategori/{category:slug}', [BrowseController::class, 'category'])->name('listings.category');
 Route::get('/uye/{user:username}', [ProfileController::class, 'show'])->name('profiles.show');
 Route::get('/nabiz', [NabizController::class, 'index'])->name('nabiz');
+Route::get('/mutlu-anlar', [HappyMomentsController::class, 'index'])->name('happy-moments');
 
 // Herkese açık ilan detayı
 Route::get('/ilan/{listing}/{slug?}', [ListingController::class, 'show'])->name('listings.show');
 
 // Davetiye (herkese açık — misafirler hesap açmadan LCV verir)
 Route::get('/davet/{token}', [EventInvitationController::class, 'show'])->name('davet.show');
+Route::get('/davet/{token}/takvim.ics', [EventInvitationController::class, 'ics'])->name('davet.ics');
 Route::post('/davet/{token}/lcv', [EventInvitationController::class, 'rsvp'])
     ->middleware(['honeypot', 'throttle:rsvp'])
     ->name('davet.rsvp');
@@ -136,6 +139,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/panel/etkinlik/{event}/duzenle', [EventController::class, 'edit'])->name('panel.events.edit');
     Route::match(['put', 'patch'], '/panel/etkinlik/{event}', [EventController::class, 'update'])->name('panel.events.update');
     Route::delete('/panel/etkinlik/{event}', [EventController::class, 'destroy'])->name('panel.events.destroy');
+    Route::get('/panel/etkinlik/{event}/qr', [EventController::class, 'qr'])->name('panel.events.qr');
+    Route::get('/panel/etkinlik/{event}/album.zip', [EventController::class, 'downloadAlbum'])->name('panel.events.album');
     Route::post('/panel/etkinlik/{event}/medya/{media}/onayla', [EventController::class, 'approveMedia'])->name('panel.events.media.approve');
     Route::delete('/panel/etkinlik/{event}/medya/{media}', [EventController::class, 'destroyMedia'])->name('panel.events.media.destroy');
     Route::post('/panel/etkinlik/{event}/misafir/{guest}/engelle', [EventController::class, 'toggleGuestBlock'])->name('panel.events.guests.block');
