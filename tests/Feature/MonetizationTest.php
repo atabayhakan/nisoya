@@ -160,6 +160,33 @@ class MonetizationTest extends TestCase
         $response->assertSee('donationModal', false);
     }
 
+    public function test_donation_section_admin_panelden_kapatilabilir(): void
+    {
+        $this->seedBaseData();
+        Settings::setMany(['bagis.aktif' => '0']);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee('Destek Ol')
+            ->assertDontSee('donationModal', false);
+    }
+
+    public function test_donation_section_varsayilan_olarak_acik(): void
+    {
+        $this->seedBaseData();
+
+        $this->get('/')->assertOk()->assertSee('Destek Ol');
+    }
+
+    public function test_donation_section_panel_sayfalarinda_kapaliyken_de_gosterilmez(): void
+    {
+        $this->seedBaseData();
+        $user = User::factory()->create();
+        Settings::setMany(['bagis.aktif' => '0']);
+
+        $this->actingAs($user)->get('/panel')->assertOk()->assertDontSee('Destek Ol');
+    }
+
     public function test_donation_modal_paypal_ve_iban_gorunur(): void
     {
         $this->seedBaseData();

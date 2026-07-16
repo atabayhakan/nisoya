@@ -90,6 +90,7 @@ return [
         'reklam.adsense_aciklama' => ['group' => 'reklam', 'label' => 'Reklam alanı bilgilendirme metni (opsiyonel)', 'type' => 'textarea', 'default' => 'Sitemiz gelirini Google AdSense reklamlarından elde eder. Reklamlar, ilan veren kişilerin masraflarını karşılamamıza ve hizmeti ücretsiz sunmamıza yardımcı olur.'],
 
         // --- Bağış ---
+        'bagis.aktif' => ['group' => 'bagis', 'label' => 'Bağış bölümü (💛 Destek Ol butonu + modal)', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
         'bagis.baslik' => ['group' => 'bagis', 'label' => 'Bağış başlığı', 'type' => 'text', 'default' => 'Nisoya ücretsiz kalacak'],
         'bagis.metin' => ['group' => 'bagis', 'label' => 'Bağış açıklaması', 'type' => 'textarea', 'default' => 'Nisoya tamamen ücretsiz bir hizmettir. Sunucu, alan adı ve bakım giderlerini karşılamak için bağışlarınız bize güç verir. İstediğiniz yöntemi seçebilirsiniz:'],
         'bagis.paypal_me' => ['group' => 'bagis', 'label' => 'PayPal.me bağlantısı (örn: paypal.me/nisoya)', 'type' => 'text', 'default' => ''],

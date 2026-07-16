@@ -293,8 +293,9 @@
     {{-- Bağış modalı + FAB (Nisoya ücretsiz kalır). Panel sayfalarında
          (form doldurma, ilan yönetimi, mesajlaşma vb. asıl site kullanımı)
          gösterilmez — orada mobilde form/aksiyon butonlarının üzerine
-         binip kullanımı engelliyordu. --}}
-    @unless (request()->is('panel*'))
+         binip kullanımı engelliyordu. Admin panelden (İçerik → Bağış →
+         "Bağış bölümü") kapatılabilir — kapalıysa hiç render edilmez. --}}
+    @unless (request()->is('panel*') || setting('bagis.aktif', '1') !== '1')
         <x-donation-modal />
     @endunless
 
