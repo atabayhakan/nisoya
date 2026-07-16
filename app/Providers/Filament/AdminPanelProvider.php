@@ -11,10 +11,14 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
+use Filament\Navigation\NavigationGroup;
+use Filament\Pages\BasePage;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -41,6 +45,27 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->darkMode(true) // Sistem teması ile otomatik senkronize; kullanıcı override edebilir.
             ->defaultThemeMode(ThemeMode::System)
+            // Grup sırası kullanım sıklığına göre: önce günlük içerik
+            // (Pazaryeri, İş İlanları, Topluluk), sonra ara sıra dokunulan
+            // yapılandırma (Site Yönetimi, Tasarım, Ayarlar), en sonda
+            // sadece denetim amaçlı Sistem. Bu, Resource'ların kendi
+            // navigationSort'larından bağımsız olarak grup sırasını sabitler.
+            ->navigationGroups([
+                NavigationGroup::make('Pazaryeri'),
+                NavigationGroup::make('İş İlanları'),
+                NavigationGroup::make('Topluluk'),
+                NavigationGroup::make('Site Yönetimi'),
+                NavigationGroup::make('Tasarım'),
+                NavigationGroup::make('Ayarlar'),
+                NavigationGroup::make('Sistem'),
+            ])
+            ->userMenuItems([
+                MenuItem::make()
+                    ->label('Siteyi Görüntüle')
+                    ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
+                    ->url('/')
+                    ->openUrlInNewTab(),
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -68,6 +93,16 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+
+    public function boot(): void
+    {
+        // Standart Resource Edit/Create sayfalarında Kaydet/İptal butonları
+        // ekranın altına sabitlenir — uzun formlarda kaydetmek için sayfanın
+        // sonuna kadar kaydırmak gerekmez. (Elle yazılmış özel sayfalar,
+        // ör. IcerikAyarlari, bu alt yapıyı kullanmadığı için ayrıca kendi
+        // Blade görünümünde yapışkan bir alt çubukla çözülür.)
+        BasePage::stickyFormActions();
     }
 
     /**

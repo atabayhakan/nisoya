@@ -37,7 +37,7 @@ class NavigationLinkResource extends Resource
 
     protected static ?string $navigationLabel = 'Menü (Header)';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 4;
 
     public static function getModelLabel(): string
     {

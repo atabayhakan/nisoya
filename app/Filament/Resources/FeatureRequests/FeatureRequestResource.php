@@ -18,7 +18,7 @@ class FeatureRequestResource extends Resource
 {
     protected static ?string $model = FeatureRequest::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRocketLaunch;
 
     protected static ?int $navigationSort = 4;
 

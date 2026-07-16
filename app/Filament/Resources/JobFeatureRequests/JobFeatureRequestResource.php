@@ -22,7 +22,7 @@ class JobFeatureRequestResource extends Resource
 {
     protected static ?string $model = JobFeatureRequest::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRocketLaunch;
 
     protected static string|UnitEnum|null $navigationGroup = 'İş İlanları';
 
@@ -30,17 +30,17 @@ class JobFeatureRequestResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return 'Öne Çıkarma Talepleri';
+        return 'İş İlanı Öne Çıkarma';
     }
 
     public static function getModelLabel(): string
     {
-        return 'öne çıkarma talebi';
+        return 'iş ilanı öne çıkarma talebi';
     }
 
     public static function getPluralModelLabel(): string
     {
-        return 'Öne Çıkarma Talepleri';
+        return 'İş İlanı Öne Çıkarma Talepleri';
     }
 
     public static function getNavigationBadge(): ?string
