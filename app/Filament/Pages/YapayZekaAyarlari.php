@@ -75,7 +75,7 @@ class YapayZekaAyarlari extends Page
                         TextInput::make('model')
                             ->label('Model')
                             ->placeholder('openai/gpt-4o-mini')
-                            ->helperText('⚠️ MUTLAKA görüntü (vision) destekleyen bir model seç — özellik fotoğraf gönderir. Önerilen: openai/gpt-4o-mini (ucuz, güvenilir), google/gemini-2.0-flash-001 (çok ucuz). Ücretsiz vision: google/gemini-2.0-flash-exp:free. "tencent/hy3:free" gibi metin-only modeller ÇALIŞMAZ. Boş bırakırsan varsayılan kullanılır.'),
+                            ->helperText('⚠️ MUTLAKA görüntü (vision) destekleyen bir model seç — özellik fotoğraf gönderir. Önerilen: openai/gpt-4o-mini (ucuz, güvenilir, doğrulandı) veya google/gemini-2.0-flash-001 (çok ucuz). "tencent/hy3:free" gibi metin-only modeller ÇALIŞMAZ. Boş bırakırsan varsayılan (openai/gpt-4o-mini) kullanılır.'),
 
                         TextInput::make('api_anahtari')
                             ->label('API anahtarı')
@@ -136,12 +136,11 @@ class YapayZekaAyarlari extends Page
             return;
         }
 
-        // 1×1 saydam PNG ile minimal bir görüntü analizi — yalnızca anahtar/
-        // model/uç doğru mu diye bakar (JSON dönerse başarı sayılır).
-        $pngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+        // Gerçek (küçük ama geçerli) bir görselle test — 1×1 gibi minik
+        // görselleri vision modelleri "desteklenmeyen görsel" diye reddediyor.
         $result = $provider->analyzeImage(
-            $pngBase64,
-            'image/png',
+            $this->testImageBase64(),
+            'image/jpeg',
             'Bu bir bağlantı testidir. Sadece şu JSON nesnesini döndür: {"ok": true}',
         );
 
@@ -164,5 +163,20 @@ class YapayZekaAyarlari extends Page
                 ->persistent()
                 ->send();
         }
+    }
+
+    /** Test için küçük ama geçerli bir JPEG üretir (vision modelleri minik görseli reddeder). */
+    private function testImageBase64(): string
+    {
+        $im = imagecreatetruecolor(256, 256);
+        imagefilledrectangle($im, 0, 0, 255, 255, imagecolorallocate($im, 51, 102, 204));
+        imagefilledrectangle($im, 60, 60, 196, 196, imagecolorallocate($im, 240, 200, 40));
+
+        ob_start();
+        imagejpeg($im, null, 80);
+        $data = (string) ob_get_clean();
+        imagedestroy($im);
+
+        return base64_encode($data);
     }
 }
