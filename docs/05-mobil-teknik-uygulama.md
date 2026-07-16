@@ -219,7 +219,9 @@ sadece `.env` ile değiştirilebilir.
   bu arayüzü konuşur.
 - **Sağlayıcılar** (`app/Services/Ai/`): `AnthropicProvider` (Messages API,
   structured output ile şema zorlaması), `OpenAiProvider` (Chat Completions;
-  `base_url` ile Azure/OpenRouter/yerel uçlar), `GeminiProvider`
+  `base_url` ile Azure/yerel uçlar), `OpenRouterProvider` (OpenAiProvider'ı
+  genişletir — tek uçtan yüzlerce model, HTTP-Referer/X-Title başlıkları,
+  çok-modelli uyumluluk için json_object modu), `GeminiProvider`
   (generateContent, `responseMimeType=json`). Ortak JSON ayrıştırma:
   `AiJson` (```json``` sarmalını da temizler).
 - **Çözümleyici:** `App\Services\Ai\AiManager` — `config('ai.default')`'a göre
@@ -230,8 +232,9 @@ sadece `.env` ile değiştirilebilir.
   `features.quick_listing` (env `AI_QUICK_LISTING`), ve `providers` blokları.
   `.env.example` üç sağlayıcının anahtar/model/base_url alanlarını listeler.
 
-**Sağlayıcı değiştirmek:** `.env`'de `AI_PROVIDER=openai` (veya `gemini`) yap
-ve o sağlayıcının `*_API_KEY`'ini doldur — başka hiçbir şey gerekmez.
+**Sağlayıcı değiştirmek:** `.env`'de `AI_PROVIDER=openrouter` (veya `openai`/
+`gemini`) yap ve o sağlayıcının `*_API_KEY`'ini doldur — başka hiçbir şey
+gerekmez. (Üretimde OpenRouter kullanılıyor.)
 
 **Yeni sağlayıcı eklemek:** `AiProvider`'ı uygulayan bir sınıf yaz →
 `AiManager::$providers`'a bir satır → `config/ai.php`'ye bir `providers` bloğu.

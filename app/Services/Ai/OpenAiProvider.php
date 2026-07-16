@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 class OpenAiProvider implements AiProvider
 {
     /** @param  array<string, mixed>  $config */
-    public function __construct(private readonly array $config) {}
+    public function __construct(protected readonly array $config) {}
 
     public function isConfigured(): bool
     {
@@ -37,21 +37,18 @@ class OpenAiProvider implements AiProvider
                     ['type' => 'image_url', 'image_url' => ['url' => "data:{$mediaType};base64,{$base64Image}"]],
                 ],
             ]],
+            'response_format' => $this->responseFormat($jsonSchema),
         ];
-
-        // Şema verilirse strict json_schema; yoksa yalnızca geçerli-JSON modu.
-        $body['response_format'] = $jsonSchema
-            ? ['type' => 'json_schema', 'json_schema' => ['name' => 'sonuc', 'strict' => true, 'schema' => $jsonSchema]]
-            : ['type' => 'json_object'];
 
         $endpoint = rtrim($this->config['base_url'] ?? 'https://api.openai.com/v1', '/').'/chat/completions';
 
         $response = Http::withToken($this->config['api_key'])
+            ->withHeaders($this->extraHeaders())
             ->timeout(30)
             ->post($endpoint, $body);
 
         if (! $response->successful()) {
-            Log::warning('AI: OpenAI yanıtı başarısız', ['status' => $response->status()]);
+            Log::warning('AI: '.$this->name().' yanıtı başarısız', ['status' => $response->status()]);
 
             return null;
         }
@@ -64,5 +61,30 @@ class OpenAiProvider implements AiProvider
         }
 
         return AiJson::decode($choice['message']['content'] ?? null);
+    }
+
+    /**
+     * Yanıt biçimi. Şema verilirse strict json_schema; yoksa geçerli-JSON modu.
+     * Alt sınıflar (ör. OpenRouter) çok-modelli uyumluluk için override eder.
+     *
+     * @param  array<string, mixed>|null  $jsonSchema
+     * @return array<string, mixed>
+     */
+    protected function responseFormat(?array $jsonSchema): array
+    {
+        return $jsonSchema
+            ? ['type' => 'json_schema', 'json_schema' => ['name' => 'sonuc', 'strict' => true, 'schema' => $jsonSchema]]
+            : ['type' => 'json_object'];
+    }
+
+    /**
+     * İsteğe eklenecek ek başlıklar (alt sınıflar için — ör. OpenRouter
+     * HTTP-Referer / X-Title).
+     *
+     * @return array<string, string>
+     */
+    protected function extraHeaders(): array
+    {
+        return [];
     }
 }

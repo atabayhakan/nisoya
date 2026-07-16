@@ -7,6 +7,7 @@ use App\Services\Ai\AiManager;
 use App\Services\Ai\AnthropicProvider;
 use App\Services\Ai\GeminiProvider;
 use App\Services\Ai\OpenAiProvider;
+use App\Services\Ai\OpenRouterProvider;
 use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
 use Tests\TestCase;
@@ -36,6 +37,7 @@ class AiProviderTest extends TestCase
 
         $this->assertInstanceOf(AnthropicProvider::class, $manager->provider('anthropic'));
         $this->assertInstanceOf(OpenAiProvider::class, $manager->provider('openai'));
+        $this->assertInstanceOf(OpenRouterProvider::class, $manager->provider('openrouter'));
         $this->assertInstanceOf(GeminiProvider::class, $manager->provider('gemini'));
     }
 
@@ -101,6 +103,32 @@ class AiProviderTest extends TestCase
 
         $this->assertSame(['ok' => true], $result);
         Http::assertSent(fn ($r) => str_contains($r->url(), 'proxy.example.com/v1/chat/completions'));
+    }
+
+    public function test_openrouter_provider_hits_openrouter_endpoint_with_headers(): void
+    {
+        Http::fake(['openrouter.ai/*' => Http::response([
+            'choices' => [['finish_reason' => 'stop', 'message' => ['content' => '{"r":42}']]],
+        ])]);
+
+        $result = (new OpenRouterProvider([
+            'api_key' => 'or-key',
+            'model' => 'openai/gpt-4o-mini',
+            'base_url' => 'https://openrouter.ai/api/v1',
+            'referer' => 'https://nisoya.com',
+            'title' => 'Nisoya',
+        ]))->analyzeImage('B', 'image/jpeg', 'p', ['type' => 'object']);
+
+        $this->assertSame(['r' => 42], $result);
+        Http::assertSent(function ($r) {
+            // OpenRouter ucu + Bearer + referer/title başlıkları + json_object modu
+            // (strict şema DEĞİL — çok-modelli uyumluluk).
+            return str_contains($r->url(), 'openrouter.ai/api/v1/chat/completions')
+                && $r->hasHeader('Authorization', 'Bearer or-key')
+                && $r->hasHeader('HTTP-Referer', 'https://nisoya.com')
+                && $r->hasHeader('X-Title', 'Nisoya')
+                && data_get($r->data(), 'response_format.type') === 'json_object';
+        });
     }
 
     public function test_gemini_provider_calls_generate_content(): void

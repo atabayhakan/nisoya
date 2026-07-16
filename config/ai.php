@@ -34,8 +34,18 @@ return [
         'openai' => [
             'api_key' => env('OPENAI_API_KEY'),
             'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
-            // OpenAI-uyumlu (Azure/OpenRouter/yerel) uçlar için değiştirilebilir.
+            // OpenAI-uyumlu (Azure/yerel) uçlar için değiştirilebilir.
             'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
+        ],
+
+        // OpenRouter — OpenAI-uyumlu tek uçtan yüzlerce model. Model adı
+        // sağlayıcı önekli (ör. "openai/gpt-4o-mini", "google/gemini-2.0-flash-001").
+        'openrouter' => [
+            'api_key' => env('OPENROUTER_API_KEY'),
+            'model' => env('OPENROUTER_MODEL', 'openai/gpt-4o-mini'),
+            'base_url' => env('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1'),
+            'referer' => env('APP_URL', 'https://nisoya.com'),
+            'title' => 'Nisoya',
         ],
 
         'gemini' => [

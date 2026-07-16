@@ -19,6 +19,7 @@ class AiManager
     private array $providers = [
         'anthropic' => AnthropicProvider::class,
         'openai' => OpenAiProvider::class,
+        'openrouter' => OpenRouterProvider::class,
         'gemini' => GeminiProvider::class,
     ];
 
