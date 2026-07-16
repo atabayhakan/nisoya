@@ -99,8 +99,20 @@
 </head>
 <body class="min-h-screen bg-stone-50 text-stone-800 antialiased flex flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0 dark:bg-stone-950 dark:text-stone-200">
     {{-- Üst menü --}}
-    <header class="sticky top-0 z-30 border-b border-stone-200 bg-white/90 backdrop-blur dark:border-stone-800 dark:bg-stone-900/90">
-        <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+    {{-- Faz H4: kaydırınca hafifçe küçülür/gölge kazanır, aşağı kaydırırken
+         gizlenir, yukarı kaydırınca hemen geri açılır (bkz. resources/js/app.js
+         headerScroll()). prefers-reduced-motion'da gizleme devre dışı kalır. --}}
+    {{-- NOT: yükseklik auto (içerik bazlı) olduğu için gizleme burada
+         Tailwind'in "translate" utility'siyle (%-tabanlı) değil, klasik
+         transform:translateY() ile yapılıyor — bazı tarayıcılarda yüzde
+         tabanlı translate, auto-height sticky elemanlarda çözümlenmiyor. --}}
+    <header
+        x-data="headerScroll()"
+        @scroll.window.throttle.150ms="onScroll()"
+        :style="hidden ? 'transform: translateY(-100%)' : ''"
+        class="sticky top-0 z-30 border-b border-stone-200 bg-white/90 backdrop-blur transition-transform duration-300 dark:border-stone-800 dark:bg-stone-900/90"
+    >
+        <div :class="scrolled ? 'py-2 shadow-sm' : 'py-3'" class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 transition-all duration-300">
             <a href="{{ url('/') }}" class="group flex items-center gap-2">
                 @if ($logoPath = setting('gorunum.logo_path'))
                     <img src="{{ Storage::disk('public')->url($logoPath) }}" alt="{{ setting('genel.site_adi') }}" class="h-9 w-9 rounded-xl object-cover">
@@ -115,7 +127,7 @@
             <nav class="hidden items-center gap-6 text-sm font-medium text-stone-600 md:flex dark:text-stone-300">
                 <x-mega-menu :items="$navLinksMega" />
                 @foreach ($navLinksSingle as $navLink)
-                    <a href="{{ $navLink->url }}" @if ($navLink->opens_new_tab) target="_blank" rel="noopener noreferrer" @endif class="hover:text-emerald-700 dark:hover:text-emerald-400">{{ $navLink->label }}</a>
+                    <a href="{{ $navLink->url }}" @if ($navLink->opens_new_tab) target="_blank" rel="noopener noreferrer" @endif class="relative py-1 after:absolute after:-bottom-0.5 after:left-0 after:h-0.5 after:w-0 after:bg-emerald-600 after:transition-all after:duration-300 hover:text-emerald-700 hover:after:w-full dark:after:bg-emerald-400 dark:hover:text-emerald-400">{{ $navLink->label }}</a>
                 @endforeach
             </nav>
 
@@ -148,7 +160,8 @@
                 @auth
                     @php($unreadCount = auth()->user()->unreadNotifications()->count())
                     <a href="{{ route('panel.notifications.index') }}" class="relative hidden rounded-lg p-2 text-stone-600 hover:bg-stone-100 md:inline-flex dark:text-stone-300 dark:hover:bg-stone-800" title="Bildirimler">
-                        <x-heroicon-o-bell class="h-5 w-5" />
+                        {{-- Faz H4: okunmamış varsa sayfa yüklenince zil bir kez "çalar" (bkz. app.css nisoya-bell-ring) --}}
+                        <x-heroicon-o-bell class="h-5 w-5 {{ $unreadCount ? 'animate-[nisoya-bell-ring_0.6s_ease-in-out_1]' : '' }}" />
                         @if ($unreadCount)
                             <span class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
                         @endif

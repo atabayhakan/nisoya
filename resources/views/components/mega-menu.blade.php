@@ -9,7 +9,7 @@
         <button
             type="button"
             @click="open = !open"
-            class="flex items-center gap-1 rounded-lg px-1 py-1 hover:text-emerald-700 dark:hover:text-emerald-400"
+            class="relative flex items-center gap-1 rounded-lg px-1 py-1 after:absolute after:-bottom-0.5 after:left-1 after:h-0.5 after:w-0 after:bg-emerald-600 after:transition-all after:duration-300 hover:text-emerald-700 hover:after:w-[calc(100%-0.5rem)] dark:after:bg-emerald-400 dark:hover:text-emerald-400"
             :aria-expanded="open ? 'true' : 'false'"
             aria-haspopup="true"
         >

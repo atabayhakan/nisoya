@@ -101,3 +101,21 @@ header {
         navigation: none;
     }
 }
+
+/* Faz H4 mikro-etkileşim: okunmamış bildirim varsa zil ikonu sayfa
+   yüklendiğinde kısa bir kez "çalar" (bkz. components/layouts/app.blade.php
+   — animate-[nisoya-bell-ring_...] class'ı yalnızca $unreadCount > 0 iken
+   eklenir). prefers-reduced-motion'da tamamen devre dışı. */
+@keyframes nisoya-bell-ring {
+    0%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(14deg); }
+    40% { transform: rotate(-10deg); }
+    60% { transform: rotate(6deg); }
+    80% { transform: rotate(-4deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-\[nisoya-bell-ring_0\.6s_ease-in-out_1\] {
+        animation: none;
+    }
+}

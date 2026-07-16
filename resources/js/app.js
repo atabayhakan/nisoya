@@ -142,5 +142,28 @@ Alpine.data('commandPalette', (staticEntries) => ({
     },
 }));
 
+// Header Faz H4: aşağı kaydırınca hafifçe küçülür (gölge + daha az padding),
+// belli bir eşiği (160px) geçip aşağı kaydırırken tamamen gizlenir, yukarı
+// kaydırınca hemen geri açılır — native-app hissi. prefers-reduced-motion'da
+// gizleme devre dışı kalır (yalnızca gölge/padding geçişi kalır, ani hareket yok).
+Alpine.data('headerScroll', () => ({
+    scrolled: false,
+    hidden: false,
+    lastY: 0,
+
+    onScroll() {
+        const y = window.scrollY;
+        this.scrolled = y > 10;
+
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!reduceMotion && y > 160 && y > this.lastY) {
+            this.hidden = true;
+        } else if (y < this.lastY || y <= 10) {
+            this.hidden = false;
+        }
+        this.lastY = y;
+    },
+}));
+
 window.Alpine = Alpine;
 Alpine.start();
