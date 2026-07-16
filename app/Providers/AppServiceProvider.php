@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Contracts\AiProvider;
 use App\Models\Category;
 use App\Models\City;
 use App\Models\Country;
@@ -12,6 +13,7 @@ use App\Models\User;
 use App\Observers\ListingImageObserver;
 use App\Observers\PortfolioItemObserver;
 use App\Observers\UserObserver;
+use App\Services\Ai\AiManager;
 use App\Services\PerformanceService;
 use App\Services\VisitorLocationService;
 use App\Support\Settings;
@@ -31,6 +33,12 @@ class AppServiceProvider extends ServiceProvider
         // performans logu istek başına iki kez (biri yanlış sorgu sayısıyla)
         // yazılır.
         $this->app->singleton(PerformanceService::class);
+
+        // Yapay zeka katmanı (provider-agnostic). AiProvider tip-ipucu,
+        // config/ai.php'de seçili sağlayıcıya (Claude/OpenAI/Gemini) çözülür —
+        // özellik kodu sağlayıcıyı bilmez. Bkz. App\Services\Ai\AiManager.
+        $this->app->singleton(AiManager::class);
+        $this->app->bind(AiProvider::class, fn ($app) => $app->make(AiManager::class)->provider());
     }
 
     public function boot(): void

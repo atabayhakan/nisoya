@@ -2,37 +2,35 @@
 
 namespace App\Services;
 
+use App\Contracts\AiProvider;
 use App\Models\Category;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Encoders\JpegEncoder;
 use Intervention\Image\ImageManager;
 
 /**
- * Kamera-önce hızlı ilan (Faz M3). Bir ürün fotoğrafından Claude görüntü
- * analizi ile başlık/kategori/açıklama/fiyat önerisi üretir. Sonuç mevcut
- * ilan formuna önceden doldurulur — kullanıcı onaylamadan hiçbir şey
- * yayınlanmaz (bkz. QuickListingController).
+ * Kamera-önce hızlı ilan (Faz M3). Bir ürün fotoğrafından yapay zeka ile
+ * başlık/kategori/açıklama/fiyat önerisi üretir. Sonuç mevcut ilan formuna
+ * önceden doldurulur — kullanıcı onaylamadan hiçbir şey yayınlanmaz
+ * (bkz. QuickListingController).
  *
- * Neden SDK değil de Http: proje dış API'leri (Nominatim, GeocodingService)
- * zaten Laravel Http istemcisiyle çağırıyor; tek bir vision isteği için ayrı
- * bir Composer bağımlılığı eklemek yerine aynı deseni sürdürüyoruz.
+ * Sağlayıcıdan bağımsız: gerçek API çağrısı App\Contracts\AiProvider'a
+ * (Claude/OpenAI/Gemini — config/ai.php ile seçilir) devredilir. Bu sınıf
+ * yalnızca görsel hazırlama, prompt/şema üretimi ve slug→kategori eşlemesini
+ * yapar; hangi AI'ın çalıştığını bilmez.
  */
 class ListingVisionService
 {
-    private const ENDPOINT = 'https://api.anthropic.com/v1/messages';
-
-    private const API_VERSION = '2023-06-01';
-
     /** Analiz maliyetini sınırlamak için görsel bu genişliğe küçültülür. */
     private const MAX_WIDTH = 1024;
 
+    public function __construct(private readonly AiProvider $ai) {}
+
     public function isEnabled(): bool
     {
-        return config('services.anthropic.quick_listing_enabled')
-            && filled(config('services.anthropic.api_key'));
+        return (bool) config('ai.features.quick_listing') && $this->ai->isConfigured();
     }
 
     /**
@@ -50,36 +48,24 @@ class ListingVisionService
             [$base64, $mediaType] = $this->prepareImage($imageRealPath);
             $categories = $this->productCategories();
 
-            $response = Http::withHeaders([
-                'x-api-key' => config('services.anthropic.api_key'),
-                'anthropic-version' => self::API_VERSION,
-                'content-type' => 'application/json',
-            ])
-                ->timeout(30)
-                ->post(self::ENDPOINT, $this->requestBody($base64, $mediaType, $categories));
+            $data = $this->ai->analyzeImage(
+                $base64,
+                $mediaType,
+                $this->buildPrompt($categories),
+                $this->buildSchema($categories),
+            );
 
-            if (! $response->successful()) {
-                Log::warning('Hızlı ilan analizi başarısız (API yanıtı)', [
-                    'status' => $response->status(),
-                ]);
-
-                return null;
-            }
-
-            return $this->parseResponse($response->json(), $categories);
+            return $this->mapResult($data, $categories);
         } catch (\Throwable $e) {
-            Log::warning('Hızlı ilan analizi başarısız (istisna)', [
-                'exception' => $e->getMessage(),
-            ]);
+            Log::warning('Hızlı ilan analizi başarısız (istisna)', ['exception' => $e->getMessage()]);
 
             return null;
         }
     }
 
     /**
-     * Görseli en fazla MAX_WIDTH'e küçültüp EXIF orientation düzeltir ve
-     * JPEG base64 döndürür. EXIF (GPS dahil) strip edilir — API'ye konum
-     * sızmaz.
+     * Görseli en fazla MAX_WIDTH'e küçültüp JPEG base64 döndürür. EXIF (GPS
+     * dahil) strip edilir — sağlayıcıya konum sızmaz.
      *
      * @return array{0: string, 1: string} [base64, mediaType]
      */
@@ -98,12 +84,11 @@ class ListingVisionService
     }
 
     /**
-     * Aktif ürün kategorileri (type=urun|ikisi, alt kategoriler). Model
-     * yalnızca bu slug'lardan seçebilsin diye enum + prompt olarak verilir.
+     * Aktif ürün kategorileri (type=urun|ikisi, alt kategoriler).
      *
      * @return Collection<int, Category>
      */
-    private function productCategories()
+    private function productCategories(): Collection
     {
         return Category::query()
             ->whereNotNull('parent_id')
@@ -114,100 +99,72 @@ class ListingVisionService
             ->get(['id', 'name', 'slug']);
     }
 
-    /** @return array<string, mixed> */
-    private function requestBody(string $base64, string $mediaType, $categories): array
+    /** @param  Collection<int, Category>  $categories */
+    private function buildPrompt(Collection $categories): string
     {
-        $slugs = $categories->pluck('slug')->all();
         $catList = $categories
             ->map(fn (Category $c) => "- {$c->slug}: {$c->name}")
             ->implode("\n");
 
-        $prompt = <<<PROMPT
+        return <<<PROMPT
         Bu fotoğraf, yurt dışındaki Türklerin ikinci el eşya/ürün pazaryerinde
         satılacak bir ürüne ait. Fotoğrafı incele ve ilan taslağı hazırla.
+        SADECE aşağıdaki JSON anahtarlarını içeren bir JSON nesnesi döndür:
 
-        Kurallar:
-        - baslik: en az 5 karakter, Türkçe, ürünü net tanımlayan kısa bir başlık.
+        - baslik: en az 5 karakter, Türkçe, ürünü net tanımlayan kısa başlık.
         - kategori_slug: SADECE aşağıdaki listeden en uygun slug'ı seç.
         - aciklama: en az 20 karakter, Türkçe, ürünün görünen özelliklerini
           (renk, malzeme, tahmini durum) anlatan samimi bir açıklama. Fiyat,
           iletişim veya uydurma teknik detay yazma.
         - durum: ürünün görünen durumu (ör. "Sıfır", "Az kullanılmış", "İyi",
-          "Yıpranmış"); emin değilsen boş bırak.
-        - fiyat_tahmini: ikinci el için makul bir tahmini fiyat (sayı, EUR);
-          emin değilsen null.
+          "Yıpranmış"); emin değilsen null.
+        - fiyat_tahmini: ikinci el için makul tahmini fiyat (sayı, EUR); emin
+          değilsen null.
 
         Kategori listesi:
         {$catList}
         PROMPT;
+    }
 
+    /**
+     * Sağlayıcıya verilecek JSON Schema. Tüm alanlar required + opsiyoneller
+     * nullable — hem Anthropic hem OpenAI strict modu tek şemayı kabul etsin.
+     *
+     * @param  Collection<int, Category>  $categories
+     * @return array<string, mixed>
+     */
+    private function buildSchema(Collection $categories): array
+    {
         return [
-            'model' => config('services.anthropic.model'),
-            'max_tokens' => 1024,
-            'messages' => [[
-                'role' => 'user',
-                'content' => [
-                    [
-                        'type' => 'image',
-                        'source' => [
-                            'type' => 'base64',
-                            'media_type' => $mediaType,
-                            'data' => $base64,
-                        ],
-                    ],
-                    ['type' => 'text', 'text' => $prompt],
-                ],
-            ]],
-            'output_config' => [
-                'format' => [
-                    'type' => 'json_schema',
-                    'schema' => [
-                        'type' => 'object',
-                        'properties' => [
-                            'baslik' => ['type' => 'string'],
-                            'kategori_slug' => ['type' => 'string', 'enum' => array_values($slugs)],
-                            'aciklama' => ['type' => 'string'],
-                            'durum' => ['type' => ['string', 'null']],
-                            'fiyat_tahmini' => ['type' => ['number', 'null']],
-                        ],
-                        'required' => ['baslik', 'kategori_slug', 'aciklama'],
-                        'additionalProperties' => false,
-                    ],
-                ],
+            'type' => 'object',
+            'properties' => [
+                'baslik' => ['type' => 'string'],
+                'kategori_slug' => ['type' => 'string', 'enum' => $categories->pluck('slug')->values()->all()],
+                'aciklama' => ['type' => 'string'],
+                'durum' => ['type' => ['string', 'null']],
+                'fiyat_tahmini' => ['type' => ['number', 'null']],
             ],
+            'required' => ['baslik', 'kategori_slug', 'aciklama', 'durum', 'fiyat_tahmini'],
+            'additionalProperties' => false,
         ];
     }
 
     /**
-     * API yanıtından yapılandırılmış JSON'ı çıkar ve slug'ı category_id'ye
-     * çevir.
+     * Sağlayıcıdan gelen ham JSON'ı form alanlarına çevir; slug→category_id.
      *
+     * @param  array<string, mixed>|null  $data
+     * @param  Collection<int, Category>  $categories
      * @return array{title: string, category_id: ?int, description: string, price: ?float, condition: ?string}|null
      */
-    private function parseResponse(array $json, $categories): ?array
+    private function mapResult(?array $data, Collection $categories): ?array
     {
-        // stop_reason "refusal" ise içerik güvenli değil — sessizce vazgeç.
-        if (($json['stop_reason'] ?? null) === 'refusal') {
-            return null;
-        }
-
-        $text = collect($json['content'] ?? [])
-            ->firstWhere('type', 'text')['text'] ?? null;
-
-        if (! $text) {
-            return null;
-        }
-
-        $data = json_decode($text, true);
         if (! is_array($data) || empty($data['baslik'])) {
             return null;
         }
 
-        $categoryId = $categories->firstWhere('slug', $data['kategori_slug'] ?? null)?->id;
-
         return [
             'title' => trim((string) $data['baslik']),
-            'category_id' => $categoryId,
+            'category_id' => $categories->firstWhere('slug', $data['kategori_slug'] ?? null)?->id,
             'description' => trim((string) ($data['aciklama'] ?? '')),
             'price' => isset($data['fiyat_tahmini']) && is_numeric($data['fiyat_tahmini'])
                 ? (float) $data['fiyat_tahmini']

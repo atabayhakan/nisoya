@@ -185,15 +185,12 @@ makul başlık+kategori önerisi gelir; API kapalıyken normal form akışı
 etkilenmez.
 
 **Uygulandı (2026-07-17):**
-- `config/services.php` → `anthropic` bloğu (`api_key`, `model`
-  varsayılan `claude-haiku-4-5`, `quick_listing_enabled`). API anahtarı
-  yoksa özellik kendiliğinden kapanır; giriş noktası gizlenir.
+- **Sağlayıcıdan bağımsız AI katmanı** (bkz. aşağıdaki bölüm) üzerinden çalışır.
 - `App\Services\ListingVisionService`: Intervention ile görseli 1024px'e
-  küçültüp EXIF strip eder (GPS API'ye sızmaz), Laravel `Http` ile Messages
-  API'sini çağırır (SDK değil — GeocodingService ile aynı desen), structured
-  output (`output_config.format` json_schema) ile başlık/kategori_slug/
-  açıklama/durum/fiyat döner. Kategori enum'u gerçek ürün slug'larından;
-  slug → category_id eşlemesi sunucuda. `refusal`/hata/kapalı → null.
+  küçültüp EXIF strip eder (GPS sağlayıcıya sızmaz), prompt + JSON şema üretir
+  ve `App\Contracts\AiProvider::analyzeImage()`'a devreder — hangi AI'ın
+  çalıştığını bilmez. Slug → category_id eşlemesi sunucuda; `refusal`/hata/
+  kapalı → null.
 - `QuickListingController`: `GET /panel/ilan/hizli` (kamera ekranı),
   `POST /panel/ilan/analiz` (`throttle:quick-listing-analyze` = 10/dk).
   Öneriler `withInput()` ile normal forma taşınır (form zaten `old()`
@@ -202,15 +199,47 @@ etkilenmez.
 - `quick.blade.php`: `capture="environment"` ile kamera-önce ekran,
   önizleme + spinner. Create formunda "Fotoğrafla hızlı doldur" giriş
   kartı (yalnız ürün tipi + özellik açıksa) + prefill banner'ı.
-- Testler: `QuickListingTest` (7 test — Http::fake ile; auth, kapalı
-  fallback, prefill, API hatası, validasyon); tam takım 537 yeşil.
-- **Model seçimi notu:** Plan Haiku 4.5 önerdi (görüntü destekli, en düşük
-  maliyetli Claude; ücretsiz platform bütçesine uygun). `ANTHROPIC_MODEL`
-  ile değiştirilebilir. **Üretimde yapılacak:** `.env`'e `ANTHROPIC_API_KEY`
-  ekle (yoksa özellik kapalı kalır, hiçbir şey kırılmaz).
+- Testler: `QuickListingTest` (8) + `AiProviderTest` (11); tam takım 549 yeşil.
+- **Üretimde yapılacak:** `.env`'e seçili sağlayıcının anahtarını ekle (ör.
+  `ANTHROPIC_API_KEY`) — yoksa özellik kapalı kalır, hiçbir şey kırılmaz.
 - **Gelecek iyileştirme:** analiz edilen fotoğraf şu an ilana otomatik
   eklenmiyor (kullanıcı normal formda tekrar yükler) — sürtünmeyi azaltmak
   için geçici depolama ile taşınabilir.
+
+---
+
+## Yapay Zeka Katmanı — sağlayıcıdan bağımsız (2026-07-17)
+
+Sisteme eklenen **her** AI özelliği tek bir soyutlamadan geçer; böylece
+sağlayıcı (Claude / OpenAI / Gemini / gelecekte başkası) kod değiştirmeden,
+sadece `.env` ile değiştirilebilir.
+
+- **Sözleşme:** `App\Contracts\AiProvider` — `isConfigured()`, `name()`,
+  `analyzeImage(base64, mediaType, prompt, ?schema)`. Özellik kodu yalnızca
+  bu arayüzü konuşur.
+- **Sağlayıcılar** (`app/Services/Ai/`): `AnthropicProvider` (Messages API,
+  structured output ile şema zorlaması), `OpenAiProvider` (Chat Completions;
+  `base_url` ile Azure/OpenRouter/yerel uçlar), `GeminiProvider`
+  (generateContent, `responseMimeType=json`). Ortak JSON ayrıştırma:
+  `AiJson` (```json``` sarmalını da temizler).
+- **Çözümleyici:** `App\Services\Ai\AiManager` — `config('ai.default')`'a göre
+  sağlayıcıyı seçer; `register()` ile çalışma zamanında yeni sağlayıcı eklenir.
+  `AppServiceProvider`'da `AiProvider::class` bu manager'ın seçtiği sağlayıcıya
+  bağlanır (tip-ipucu = seçili sağlayıcı).
+- **Yapılandırma:** `config/ai.php` — `default` (env `AI_PROVIDER`),
+  `features.quick_listing` (env `AI_QUICK_LISTING`), ve `providers` blokları.
+  `.env.example` üç sağlayıcının anahtar/model/base_url alanlarını listeler.
+
+**Sağlayıcı değiştirmek:** `.env`'de `AI_PROVIDER=openai` (veya `gemini`) yap
+ve o sağlayıcının `*_API_KEY`'ini doldur — başka hiçbir şey gerekmez.
+
+**Yeni sağlayıcı eklemek:** `AiProvider`'ı uygulayan bir sınıf yaz →
+`AiManager::$providers`'a bir satır → `config/ai.php`'ye bir `providers` bloğu.
+
+**Yeni AI özelliği eklemek:** özelliğin servisine `AiProvider` enjekte et,
+`analyzeImage(...)` (veya arayüze eklenecek yeni bir metodu) çağır — sağlayıcı
+seçimi otomatik gelir. Yeni bir operasyon türü gerekiyorsa arayüze metot ekle
+ve üç sağlayıcıda uygula.
 
 ---
 

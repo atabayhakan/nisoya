@@ -103,20 +103,7 @@ return [
         'database_path' => storage_path('app/geoip/GeoLite2-Country.mmdb'),
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Anthropic (Claude) — Kamera-önce hızlı ilan (Faz M3)
-    |--------------------------------------------------------------------------
-    | Fotoğraftan başlık/kategori/fiyat önerisi üretir (görüntü analizi).
-    | API anahtarı yoksa özellik kendiliğinden kapanır; giriş noktası gizlenir.
-    | Model varsayılanı: Claude Haiku 4.5 — görüntü destekli, en düşük maliyetli
-    | Claude modeli. Ücretsiz platform bütçesine uygun; .env ile değiştirilebilir.
-    */
-    'anthropic' => [
-        'api_key' => env('ANTHROPIC_API_KEY'),
-        'model' => env('ANTHROPIC_MODEL', 'claude-haiku-4-5'),
-        // Anahtar varsa varsayılan açık; ANTHROPIC_QUICK_LISTING=false ile kapatılır.
-        'quick_listing_enabled' => (bool) env('ANTHROPIC_QUICK_LISTING', true),
-    ],
+    // Yapay zeka sağlayıcıları (Claude/OpenAI/Gemini) → bkz. config/ai.php.
+    // Sağlayıcıdan bağımsız katman; özellik kodu App\Contracts\AiProvider konuşur.
 
 ];
