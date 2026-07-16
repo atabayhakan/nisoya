@@ -328,6 +328,20 @@ yazıyor göstergesi görünür; fotoğraflı mesaj gönderilir.
 Gerçek AR (USDZ/WebXR) ancak 3D model üretimi ucuzlarsa gündeme alınır;
 ikinci el eşya fotoğrafından otomatik 3D bugün hâlâ pahalı/kalitesiz.
 
+**Uygulandı (2026-07-17) — düşük efor sürümü (boyut karşılaştırma):**
+- Migration: `listings`'e `width_cm` + `height_cm` (unsignedSmallInteger,
+  nullable). Yalnızca ürün tipinde doldurulur (controller guard).
+- Ürün formunda opsiyonel "Boyut (cm)" en/yükseklik alanları; ListingRequest
+  validasyonu (1–2000 cm).
+- `x-size-compare` bileşeni: ürünün en×yükseklik kutusunu 170 cm insan
+  silüetiyle **ölçekli** SVG olarak yan yana çizer (aynı cm→px oranı, ortak
+  zemin çizgisi). İlan sayfasında yalnız ürün + en az bir ölçü varsa gösterilir.
+  Gerçek AR yok — dış bağımlılık/3D yok, saf SVG.
+- Bonus (M6 köprüsü): ürün JSON-LD'sine `width`/`height` (QuantitativeValue,
+  unitCode CMT) + `itemCondition: UsedCondition` eklendi.
+- Test: `SizeCompareFaqTest` (kaydetme, hizmette yok sayma, göster/gizle,
+  JSON-LD). 571 yeşil.
+
 ## Faz M6 — Akıllı bildirim & asistan hazırlığı
 
 - `users`'a bildirim tercihleri (anlık / günlük özet / kapalı) —
@@ -338,6 +352,21 @@ ikinci el eşya fotoğrafından otomatik 3D bugün hâlâ pahalı/kalitesiz.
 - JSON-LD genişletme: `Offer`/`priceValidUntil`, `FAQPage` (Nasıl
   Çalışır sayfası), `SearchAction` — asistanların site içeriğini eylem
   olarak tanıması için temel.
+
+**Uygulandı (2026-07-17) — asistan/SEO hazırlığı odaklı:**
+- **FAQPage** (`/nasil-calisir`): 6 SSS tek kaynaktan hem görünür açılır-kapanır
+  (details/summary) bölüm hem `FAQPage` JSON-LD olarak üretiliyor — Google
+  zengin sonuçlar + AI asistanları "Nisoya nasıl çalışır" sorusunu yanıtlar.
+- Ürün JSON-LD zenginleştirmesi: `itemCondition: UsedCondition` (ikinci el
+  sinyali) + fiziksel boyutlar (M5). İlan sayfalarında Product/Offer/
+  availability/BreadcrumbList JSON-LD zaten vardı.
+- **Bilinçli ertelenen (over-engineering değil):** günlük bildirim özeti +
+  tür-bazlı bildirim tercihleri. Gerekçe: (1) M1 push aç/kapa düğmesi zaten
+  aç/kapa kontrolü veriyor; (2) toplu gönderilecek yinelenen bildirim akışı
+  yok (yalnız gerçek-zamanlı yeni mesaj push'ı var) — saat dilimine duyarlı
+  özet zamanlayıcısı şu an "zamanlayacak içeriği olmayan altyapı" olur.
+  Kayıtlı-arama/bölge uyarısı push'ı eklendiğinde gündeme alınır (M4'te
+  Reverb'ü erteleme kararıyla aynı disiplin).
 
 ---
 

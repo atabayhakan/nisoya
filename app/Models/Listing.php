@@ -41,6 +41,8 @@ class Listing extends Model
         'longitude',
         'is_remote',
         'stock',
+        'width_cm',
+        'height_cm',
         'status',
         'is_featured',
         'featured_until',

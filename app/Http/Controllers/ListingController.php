@@ -62,6 +62,8 @@ class ListingController extends Controller
             'longitude' => $coords['longitude'],
             'is_remote' => $type === 'hizmet' ? $request->boolean('is_remote') : false,
             'stock' => $type === 'urun' ? ($data['stock'] ?? null) : null,
+            'width_cm' => $type === 'urun' ? ($data['width_cm'] ?? null) : null,
+            'height_cm' => $type === 'urun' ? ($data['height_cm'] ?? null) : null,
             'status' => ListingStatus::Aktif->value,
         ]);
 
@@ -109,6 +111,8 @@ class ListingController extends Controller
             'longitude' => $coords['longitude'],
             'is_remote' => $listing->type->value === 'hizmet' ? $request->boolean('is_remote') : false,
             'stock' => $listing->type->value === 'urun' ? ($data['stock'] ?? null) : null,
+            'width_cm' => $listing->type->value === 'urun' ? ($data['width_cm'] ?? null) : null,
+            'height_cm' => $listing->type->value === 'urun' ? ($data['height_cm'] ?? null) : null,
         ]);
 
         $this->syncPropertyDetail($listing, $request);

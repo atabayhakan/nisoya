@@ -106,6 +106,27 @@
         @error('stock') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
         <p class="mt-1 text-xs text-stone-400 dark:text-stone-500">Teslimat/kargo bilgilerini açıklamaya ekleyebilirsin.</p>
     </div>
+
+    {{-- Faz M5: opsiyonel boyutlar → ilan sayfasında "Boyut karşılaştır" görseli
+         (170cm insan silüetiyle ölçekli kıyas). Özellikle mobilya/beyaz eşya
+         gibi büyük ürünlerde alıcı ölçek hissi kazanır. --}}
+    <div>
+        <span class="block text-sm font-medium text-stone-700 dark:text-stone-300">Boyut <span class="text-stone-400 dark:text-stone-500">(ops., cm — girersen ilanda ölçek karşılaştırması gösterilir)</span></span>
+        <div class="mt-1 grid gap-4 sm:grid-cols-2 sm:max-w-md">
+            <div>
+                <label for="width_cm" class="block text-xs text-stone-500 dark:text-stone-400">Genişlik (cm)</label>
+                <input id="width_cm" name="width_cm" type="number" min="1" max="2000" value="{{ old('width_cm', $listing?->width_cm) }}"
+                       placeholder="ör. 120" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                @error('width_cm') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="height_cm" class="block text-xs text-stone-500 dark:text-stone-400">Yükseklik (cm)</label>
+                <input id="height_cm" name="height_cm" type="number" min="1" max="2000" value="{{ old('height_cm', $listing?->height_cm) }}"
+                       placeholder="ör. 75" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                @error('height_cm') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+        </div>
+    </div>
 @elseif (($type ?? 'hizmet') === 'emlak')
     @php
         $detail = $listing?->propertyDetail;

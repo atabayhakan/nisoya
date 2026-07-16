@@ -32,6 +32,9 @@ class ListingRequest extends FormRequest
             'city' => ['nullable', 'string', 'max:255'],
             'is_remote' => ['nullable', 'boolean'],
             'stock' => ['nullable', 'integer', 'min:0', 'max:1000000'],
+            // Faz M5: ürün boyutları (cm) — boyut karşılaştırma görseli için
+            'width_cm' => ['nullable', 'integer', 'min:1', 'max:2000'],
+            'height_cm' => ['nullable', 'integer', 'min:1', 'max:2000'],
             'images' => ['nullable', 'array', 'max:8'],
             'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'website' => ['prohibited'], // honeypot

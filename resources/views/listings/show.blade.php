@@ -40,17 +40,20 @@
             ] : null,
         ]" />
     @elseif ($listing->type->value === 'urun')
-        <x-json-ld type="Product" :data="[
+        <x-json-ld type="Product" :data="array_filter([
             'name' => $listing->title,
             'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
             'image' => $listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null,
+            'itemCondition' => 'https://schema.org/UsedCondition',
+            'width' => $listing->width_cm ? ['@type' => 'QuantitativeValue', 'value' => $listing->width_cm, 'unitCode' => 'CMT'] : null,
+            'height' => $listing->height_cm ? ['@type' => 'QuantitativeValue', 'value' => $listing->height_cm, 'unitCode' => 'CMT'] : null,
             'offers' => [
                 '@type' => 'Offer',
                 'price' => $listing->price ?? 0,
                 'priceCurrency' => $listing->currency,
                 'availability' => ($listing->stock && $listing->stock > 0) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             ],
-        ]" />
+        ])" />
     @else
         <x-json-ld type="Service" :data="[
             'name' => $listing->title,
@@ -253,6 +256,13 @@
                 <div class="prose prose-stone mt-6 max-w-none text-stone-700 dark:prose-invert dark:text-stone-300">
                     {!! nl2br(e($listing->description)) !!}
                 </div>
+
+                {{-- Faz M5: boyut karşılaştırma (yalnızca ürün + en az bir ölçü girilmişse) --}}
+                @if ($listing->type->value === 'urun' && ($listing->width_cm || $listing->height_cm))
+                    <div class="mt-6">
+                        <x-size-compare :width="$listing->width_cm" :height="$listing->height_cm" />
+                    </div>
+                @endif
 
                 {{-- Emlak/vasıta dolandırıcılık uyarısı --}}
                 @if ($listing->type->value === 'emlak')
