@@ -6,6 +6,8 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class LiveMessagingTest extends TestCase
@@ -159,5 +161,104 @@ class LiveMessagingTest extends TestCase
             ->getJson("/panel/mesajlar/{$conv->id}/akis?after={$old->id}")
             ->assertOk()
             ->assertJsonFragment(['recalled' => [$old->id]]);
+    }
+
+    // --- Faz M4: zengin mesajlaşma (fotoğraf / konum / yazıyor) ---
+
+    public function test_empty_text_message_is_rejected(): void
+    {
+        $a = User::factory()->create();
+        $b = User::factory()->create();
+        $conv = $this->conversation($a, $b);
+
+        $this->actingAs($a)
+            ->postJson("/panel/mesajlar/{$conv->id}", ['body' => '   '])
+            ->assertStatus(422);
+
+        $this->assertDatabaseCount('messages', 0);
+    }
+
+    public function test_user_can_send_photo_message(): void
+    {
+        Storage::fake('public');
+        $a = User::factory()->create();
+        $b = User::factory()->create();
+        $conv = $this->conversation($a, $b);
+
+        $response = $this->actingAs($a)->post("/panel/mesajlar/{$conv->id}", [
+            'photo' => UploadedFile::fake()->image('urun.jpg', 1600, 1200),
+        ], ['Accept' => 'application/json']);
+
+        $response->assertOk()->assertJson(['type' => 'image', 'mine' => true]);
+        $this->assertNotNull($response->json('image'));
+
+        $message = Message::first();
+        $this->assertSame('image', $message->type);
+        $this->assertNotNull($message->attachment_path);
+        Storage::disk('public')->assertExists($message->attachment_path);
+    }
+
+    public function test_user_can_send_location_message(): void
+    {
+        $a = User::factory()->create();
+        $b = User::factory()->create();
+        $conv = $this->conversation($a, $b);
+
+        $response = $this->actingAs($a)->postJson("/panel/mesajlar/{$conv->id}", [
+            'lat' => 52.520008,
+            'lng' => 13.404954,
+        ]);
+
+        $response->assertOk()->assertJson([
+            'type' => 'location',
+            'lat' => 52.520008,
+            'lng' => 13.404954,
+        ]);
+
+        $message = Message::first();
+        $this->assertSame('location', $message->type);
+        $this->assertSame('52.520008,13.404954', $message->body);
+    }
+
+    public function test_location_out_of_range_is_rejected(): void
+    {
+        $a = User::factory()->create();
+        $b = User::factory()->create();
+        $conv = $this->conversation($a, $b);
+
+        $this->actingAs($a)
+            ->postJson("/panel/mesajlar/{$conv->id}", ['lat' => 200, 'lng' => 13.4])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('lat');
+    }
+
+    public function test_typing_flag_shows_in_stream_for_other_participant(): void
+    {
+        $a = User::factory()->create();
+        $b = User::factory()->create();
+        $conv = $this->conversation($a, $b);
+
+        // Başlangıçta yazan yok.
+        $this->actingAs($a)->getJson("/panel/mesajlar/{$conv->id}/akis")
+            ->assertOk()->assertJsonFragment(['typing' => false]);
+
+        // b yazıyor sinyali gönderir.
+        $this->actingAs($b)->postJson("/panel/mesajlar/{$conv->id}/yaziyor")->assertOk();
+
+        // a'nın akışında karşı taraf (b) yazıyor görünür.
+        $this->actingAs($a)->getJson("/panel/mesajlar/{$conv->id}/akis")
+            ->assertOk()->assertJsonFragment(['typing' => true]);
+    }
+
+    public function test_typing_endpoint_is_participant_only(): void
+    {
+        $a = User::factory()->create();
+        $b = User::factory()->create();
+        $stranger = User::factory()->create();
+        $conv = $this->conversation($a, $b);
+
+        $this->actingAs($stranger)
+            ->postJson("/panel/mesajlar/{$conv->id}/yaziyor")
+            ->assertForbidden();
     }
 }

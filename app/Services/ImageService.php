@@ -292,6 +292,28 @@ class ImageService
     }
 
     /**
+     * Tek varyantlı optimize görsel sakla (sohbet ekleri gibi 3 boyut
+     * gerektirmeyen yerler için). EXIF orientation uygulanır, tüm metadata
+     * (GPS dahil) strip edilir — sohbette paylaşılan fotoğraftan konum sızmaz.
+     * İşlenmiş webp yolunu döndürür.
+     */
+    public function storeSingle(UploadedFile $file, string $dir, int $maxWidth = 1280, int $quality = self::DEFAULT_QUALITY): string
+    {
+        $manager = new ImageManager(new Driver);
+        $image = $manager->decode($file->getRealPath());
+        $this->applyExifOrientation($image);
+
+        if ($image->width() > $maxWidth) {
+            $image->scaleDown(width: $maxWidth);
+        }
+
+        $path = $dir.'/'.Str::uuid()->toString().'.webp';
+        Storage::disk('public')->put($path, (string) $image->encode(new WebpEncoder(quality: $quality, strip: true)));
+
+        return $path;
+    }
+
+    /**
      * Bir görselin tüm varyantlarını disk'ten sil.
      */
     public function deleteVariants(array $paths): void

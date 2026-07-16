@@ -71,6 +71,11 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('message-start', fn (Request $request) => Limit::perMinute(20)->by($request->user()?->id ?: $request->ip())
         );
 
+        // "Yazıyor..." sinyali (Faz M4) — istemci ~2.5 sn'de bir pingler;
+        // cömert ama sınırlı: kullanıcı başına 40/dk.
+        RateLimiter::for('message-typing', fn (Request $request) => Limit::perMinute(40)->by($request->user()?->id ?: $request->ip())
+        );
+
         RateLimiter::for('event-create', fn (Request $request) => Limit::perMinute(6)->by($request->user()?->id ?: $request->ip())
         );
 

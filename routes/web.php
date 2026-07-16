@@ -177,6 +177,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/panel/mesajlar', [MessageController::class, 'index'])->name('panel.messages.index');
     Route::get('/panel/mesajlar/{conversation}', [MessageController::class, 'show'])->name('panel.messages.show');
     Route::get('/panel/mesajlar/{conversation}/akis', [MessageController::class, 'stream'])->name('panel.messages.stream');
+    Route::post('/panel/mesajlar/{conversation}/yaziyor', [MessageController::class, 'typing'])
+        ->middleware('throttle:message-typing')
+        ->name('panel.messages.typing');
     Route::post('/panel/mesajlar/{conversation}', [MessageController::class, 'store'])
         ->middleware(['honeypot', 'throttle:message-send'])
         ->name('panel.messages.store');

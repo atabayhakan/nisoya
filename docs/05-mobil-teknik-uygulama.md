@@ -272,6 +272,38 @@ ve üç sağlayıcıda uygula.
 **Bitti sayılır:** İki telefon arasında mesaj yenilemesiz akar;
 yazıyor göstergesi görünür; fotoğraflı mesaj gönderilir.
 
+**Uygulandı (2026-07-17) — TRANSPORT KARARI: Reverb YOK, mevcut polling.**
+- **M4.1 (Reverb) bilinçli olarak atlandı.** Mesajlaşma zaten çalışan bir
+  polling akışına sahipti (`MessageController::stream`, 5 sn). Tek düğümlü
+  ücretsiz platformda Reverb = ayrı systemd daemon + nginx WS proxy +
+  ölçekleme derdi; marjinal gecikme kazancı için orantısız altyapı.
+  Değerli olan zengin özellikler transport'tan bağımsız; onları mevcut
+  polling üzerine kurduk. Poll aralığı 5 sn → 3 sn. (Reverb ileride bir
+  optimizasyon olarak eklenebilir; gerekli değil.)
+- **M4.2 zengin mesajlaşma (uygulandı):**
+  - Migration: `messages`'a `type` (text|image|location) + `attachment_path`.
+    `Message` modeli: tür sabitleri, `isImage/isLocation/imageUrl/coords`,
+    ve tek biçim `toChatArray()` (store + stream aynı çıktıyı üretsin diye).
+  - **Fotoğraf:** `ImageService::storeSingle()` — tek varyant webp, EXIF/GPS
+    strip (sohbet fotoğrafından konum sızmaz). `store()` çoklu tür alır
+    (metin/foto/konum), boş metni reddeder. Balon: tıklanınca tam boy açılır.
+  - **Konum:** `navigator.geolocation` → `type=location`, body="lat,lng".
+    Balon: "📍 Konumu haritada aç" → OpenStreetMap linki (gömülü karo/dış
+    çağrı yok — gizlilik + basitlik).
+  - **Yazıyor…:** `POST /panel/mesajlar/{c}/yaziyor` (`throttle:message-typing`
+    40/dk) kısa TTL'li cache bayrağı yazar; `stream()` karşı tarafın bayrağını
+    döndürür (ayrı polling yok — mevcut poll'a piggyback). İstemci ~2.5 sn'de
+    bir pingler.
+  - Validasyon: bootstrap `shouldRenderJsonWhen` yalnızca api/* olduğundan
+    panel fetch uçlarında `$request->validate()` 422 yerine redirect döner —
+    manuel `Validator` ile JSON 422 (M1'deki tuzağın aynısı).
+  - UI: initial render `partials/bubble.blade.php`; JS poll `appendMessage()`
+    üç türü de kurar (ikisi senkron).
+- Testler: `LiveMessagingTest` +6 (boş red, foto, konum, konum aralık, yazıyor
+  görünüm/yetki); tam takım 555 yeşil.
+- **Üretimde:** ek altyapı YOK. `storage:link` zaten var (foto URL'leri).
+  Cache sürücüsü mevcut (yazıyor bayrağı); Reverb daemon'ı gerekmiyor.
+
 ---
 
 ## Faz M5 — AR / boyut önizleme (deneysel)

@@ -24,32 +24,14 @@
             <span class="flex shrink-0 items-center gap-1 text-xs text-stone-400 dark:text-stone-500"><span class="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span> canlı</span>
         </div>
 
-        {{-- Mesajlar: SABİT yükseklikli, KENDİ İÇİNDE kaydırılan kutu.
-             (Eskiden window.scrollTo tüm sayfayı en alta kaydırıyordu — sayfa
-             zıplaması sorunu buradan geliyordu. Artık sadece bu kutu kayıyor.) --}}
+        {{-- Mesajlar: SABİT yükseklikli, KENDİ İÇİNDE kaydırılan kutu. --}}
         <div id="thread"
              class="mt-4 h-[58vh] min-h-[280px] space-y-3 overflow-y-auto rounded-2xl border border-stone-200 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-950/40"
              data-url="{{ route('panel.messages.stream', $conversation) }}"
              data-recall-url="{{ url('/panel/mesajlar/'.$conversation->id.'/mesaj') }}"
              data-last="{{ $lastId }}">
             @forelse ($conversation->messages->sortBy('created_at') as $message)
-                @php($mine = $message->sender_id === $me)
-                <div class="msg flex {{ $mine ? 'justify-end' : 'justify-start' }}" data-id="{{ $message->id }}" data-mine="{{ $mine ? '1' : '0' }}">
-                    @if ($message->isRecalled())
-                        <div class="max-w-[75%] rounded-2xl px-4 py-2 text-sm italic text-stone-400 ring-1 ring-stone-200 dark:text-stone-500 dark:ring-stone-700">
-                            <span class="select-none">🚫</span> Bu mesaj geri alındı
-                        </div>
-                    @else
-                        <div class="max-w-[75%] rounded-2xl px-4 py-2 {{ $mine ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900' : 'bg-white text-stone-800 ring-1 ring-stone-200 dark:bg-stone-800 dark:text-stone-100 dark:ring-stone-700' }}">
-                            <p class="body whitespace-pre-line break-words text-sm">{{ $message->body }}</p>
-                            <p class="meta mt-1 flex items-center justify-end gap-1.5 text-[10px] {{ $mine ? 'text-emerald-100' : 'text-stone-400 dark:text-stone-500' }}">
-                                <span>{{ $message->created_at->format('d.m H:i') }}</span>
-                                @if ($mine && $message->read_at)<span class="read-mark">· okundu</span>@endif
-                                @if ($mine)<button type="button" class="recall-btn font-medium underline decoration-dotted underline-offset-2 hover:no-underline">· geri al</button>@endif
-                            </p>
-                        </div>
-                    @endif
-                </div>
+                @include('panel.messages.partials.bubble', ['message' => $message, 'mine' => $message->sender_id === $me])
             @empty
                 <div id="thread-empty" class="flex h-full items-center justify-center text-center text-sm text-stone-400 dark:text-stone-500">
                     Henüz mesaj yok — ilk mesajı sen yaz.
@@ -57,10 +39,30 @@
             @endforelse
         </div>
 
+        {{-- "Yazıyor..." göstergesi (Faz M4) --}}
+        <div id="typing-indicator" class="mt-2 hidden px-2 text-xs text-stone-400 dark:text-stone-500">
+            <span class="italic">{{ $other?->name ?? 'Kullanıcı' }} yazıyor…</span>
+        </div>
+
         {{-- Gönder --}}
-        <form id="send-form" data-url="{{ route('panel.messages.store', $conversation) }}" class="mt-3 flex items-end gap-2">
+        <form id="send-form"
+              data-url="{{ route('panel.messages.store', $conversation) }}"
+              data-typing-url="{{ route('panel.messages.typing', $conversation) }}"
+              class="mt-3 flex items-end gap-2">
             @csrf
-            <textarea name="body" rows="2" required maxlength="2000" placeholder="Mesaj yaz... (Enter ile gönder, Shift+Enter ile alt satır)"
+
+            {{-- Fotoğraf ekle --}}
+            <label class="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-stone-300 text-stone-500 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800" title="Fotoğraf gönder">
+                <x-heroicon-o-photo class="h-5 w-5" />
+                <input id="photo-input" type="file" accept="image/*" class="sr-only">
+            </label>
+
+            {{-- Konum paylaş --}}
+            <button type="button" id="location-btn" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-stone-300 text-stone-500 transition hover:bg-stone-50 disabled:opacity-50 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800" title="Konum gönder">
+                <x-heroicon-o-map-pin class="h-5 w-5" />
+            </button>
+
+            <textarea name="body" rows="2" maxlength="2000" placeholder="Mesaj yaz... (Enter ile gönder, Shift+Enter ile alt satır)"
                       class="flex-1 resize-none rounded-xl border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"></textarea>
             <button type="submit" class="shrink-0 rounded-xl bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Gönder</button>
         </form>
@@ -70,17 +72,20 @@
         (function () {
             const thread = document.getElementById('thread');
             const form = document.getElementById('send-form');
+            const photoInput = document.getElementById('photo-input');
+            const locationBtn = document.getElementById('location-btn');
+            const typingEl = document.getElementById('typing-indicator');
             const csrf = document.querySelector('meta[name=csrf-token]').content;
+            const typingUrl = form.dataset.typingUrl;
             let last = parseInt(thread.dataset.last) || 0;
             let busy = false;
+            let lastTypingPing = 0;
 
-            // Sadece bu kutuyu en alta kaydır — pencereyi ASLA kaydırma.
+            const MINE = 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900';
+            const THEIRS = 'bg-white text-stone-800 ring-1 ring-stone-200 dark:bg-stone-800 dark:text-stone-100 dark:ring-stone-700';
+
             const scrollBottom = () => { thread.scrollTop = thread.scrollHeight; };
-
-            function removeEmpty() {
-                const e = document.getElementById('thread-empty');
-                if (e) e.remove();
-            }
+            const removeEmpty = () => { const e = document.getElementById('thread-empty'); if (e) e.remove(); };
 
             function recalledBubble() {
                 const b = document.createElement('div');
@@ -89,28 +94,7 @@
                 return b;
             }
 
-            function appendMessage(m) {
-                removeEmpty();
-                const wrap = document.createElement('div');
-                wrap.className = 'msg flex ' + (m.mine ? 'justify-end' : 'justify-start');
-                wrap.dataset.id = m.id;
-                wrap.dataset.mine = m.mine ? '1' : '0';
-
-                if (m.recalled) {
-                    wrap.append(recalledBubble());
-                    thread.append(wrap);
-                    return;
-                }
-
-                const bubble = document.createElement('div');
-                bubble.className = 'max-w-[75%] rounded-2xl px-4 py-2 ' + (m.mine
-                    ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900'
-                    : 'bg-white text-stone-800 ring-1 ring-stone-200 dark:bg-stone-800 dark:text-stone-100 dark:ring-stone-700');
-
-                const body = document.createElement('p');
-                body.className = 'body whitespace-pre-line break-words text-sm';
-                body.textContent = m.body;
-
+            function metaEl(m) {
                 const meta = document.createElement('p');
                 meta.className = 'meta mt-1 flex items-center justify-end gap-1.5 text-[10px] ' + (m.mine ? 'text-emerald-100' : 'text-stone-400 dark:text-stone-500');
                 const t = document.createElement('span');
@@ -123,13 +107,60 @@
                     btn.textContent = '· geri al';
                     meta.append(btn);
                 }
+                return meta;
+            }
 
-                bubble.append(body, meta);
+            function fillBubble(bubble, m) {
+                if (m.type === 'image' && m.image) {
+                    const a = document.createElement('a');
+                    a.href = m.image; a.target = '_blank'; a.rel = 'noopener';
+                    const img = document.createElement('img');
+                    img.src = m.image; img.loading = 'lazy';
+                    img.className = 'max-h-64 w-auto rounded-lg';
+                    a.append(img);
+                    bubble.append(a);
+                    if (m.body) {
+                        const cap = document.createElement('p');
+                        cap.className = 'body mt-1 whitespace-pre-line break-words text-sm';
+                        cap.textContent = m.body;
+                        bubble.append(cap);
+                    }
+                } else if (m.type === 'location' && m.lat != null) {
+                    bubble.append(locationNode(m.lat, m.lng, m.mine));
+                } else {
+                    const body = document.createElement('p');
+                    body.className = 'body whitespace-pre-line break-words text-sm';
+                    body.textContent = m.body;
+                    bubble.append(body);
+                }
+            }
+
+            function locationNode(lat, lng, mine) {
+                const a = document.createElement('a');
+                a.href = 'https://www.openstreetmap.org/?mlat=' + lat + '&mlon=' + lng + '#map=16/' + lat + '/' + lng;
+                a.target = '_blank'; a.rel = 'noopener';
+                a.className = 'flex items-center gap-2 text-sm font-medium ' + (mine ? 'text-white' : 'text-emerald-700 dark:text-emerald-400');
+                a.innerHTML = '<span class="select-none">📍</span> Konumu haritada aç';
+                return a;
+            }
+
+            function appendMessage(m) {
+                removeEmpty();
+                const wrap = document.createElement('div');
+                wrap.className = 'msg flex ' + (m.mine ? 'justify-end' : 'justify-start');
+                wrap.dataset.id = m.id;
+                wrap.dataset.mine = m.mine ? '1' : '0';
+
+                if (m.recalled) { wrap.append(recalledBubble()); thread.append(wrap); return; }
+
+                const bubble = document.createElement('div');
+                bubble.className = 'max-w-[75%] rounded-2xl px-4 py-2 ' + (m.mine ? MINE : THEIRS);
+                fillBubble(bubble, m);
+                bubble.append(metaEl(m));
                 wrap.append(bubble);
                 thread.append(wrap);
             }
 
-            // Var olan bir mesajı "geri alındı" görünümüne çevir.
             function markRecalled(id) {
                 const wrap = thread.querySelector('.msg[data-id="' + id + '"]');
                 if (!wrap || wrap.dataset.recalled === '1') return;
@@ -138,7 +169,6 @@
                 wrap.append(recalledBubble());
             }
 
-            // Geri al butonu (mevcut + dinamik mesajlar için olay delegasyonu).
             thread.addEventListener('click', async (e) => {
                 const btn = e.target.closest('.recall-btn');
                 if (!btn) return;
@@ -169,49 +199,87 @@
                     if (data.recalled && data.recalled.length) {
                         data.recalled.forEach((id) => markRecalled(id));
                     }
+                    typingEl.classList.toggle('hidden', !data.typing);
                     if (grew) scrollBottom();
                 } catch (e) { /* sessizce yoksay */ }
             }
 
-            async function send() {
-                const ta = form.querySelector('textarea');
-                const text = ta.value.trim();
-                if (!text || busy) return;
+            // Tüm gönderimler FormData ile (metin / fotoğraf / konum ortak yol).
+            async function postForm(formData) {
+                if (busy) return;
                 busy = true;
                 const btn = form.querySelector('button[type=submit]');
                 btn.disabled = true;
                 try {
                     const res = await fetch(form.dataset.url, {
                         method: 'POST',
-                        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ body: text }),
+                        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+                        body: formData,
                     });
                     if (res.ok) {
                         const m = await res.json();
                         appendMessage(m);
                         last = Math.max(last, m.id);
-                        ta.value = '';
                         scrollBottom();
+                        return true;
                     }
                 } catch (e) { /* yoksay */ } finally {
                     busy = false;
                     btn.disabled = false;
-                    ta.focus();
                 }
+                return false;
             }
 
-            form.addEventListener('submit', (e) => { e.preventDefault(); send(); });
+            async function sendText() {
+                const ta = form.querySelector('textarea');
+                const text = ta.value.trim();
+                if (!text) return;
+                const fd = new FormData();
+                fd.append('body', text);
+                if (await postForm(fd)) { ta.value = ''; ta.focus(); }
+            }
 
-            // Enter ile gönder, Shift+Enter ile alt satır.
-            form.querySelector('textarea').addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    send();
+            form.addEventListener('submit', (e) => { e.preventDefault(); sendText(); });
+
+            const ta = form.querySelector('textarea');
+            ta.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); }
+            });
+
+            // "Yazıyor..." pingi — en fazla 2.5 sn'de bir.
+            ta.addEventListener('input', () => {
+                const now = Date.now();
+                if (now - lastTypingPing > 2500 && ta.value.trim()) {
+                    lastTypingPing = now;
+                    fetch(typingUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' } }).catch(() => {});
                 }
             });
 
+            // Fotoğraf seçilince hemen gönder.
+            photoInput.addEventListener('change', () => {
+                if (!photoInput.files.length) return;
+                const fd = new FormData();
+                fd.append('photo', photoInput.files[0]);
+                postForm(fd).finally(() => { photoInput.value = ''; });
+            });
+
+            // Konum paylaş.
+            locationBtn.addEventListener('click', () => {
+                if (!navigator.geolocation) { alert('Cihazın konum paylaşımını desteklemiyor.'); return; }
+                locationBtn.disabled = true;
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    const fd = new FormData();
+                    fd.append('lat', pos.coords.latitude.toFixed(6));
+                    fd.append('lng', pos.coords.longitude.toFixed(6));
+                    postForm(fd).finally(() => { locationBtn.disabled = false; });
+                }, () => {
+                    alert('Konum alınamadı. Tarayıcı iznini kontrol et.');
+                    locationBtn.disabled = false;
+                }, { enableHighAccuracy: true, timeout: 10000 });
+            });
+
             scrollBottom();
-            setInterval(poll, 5000);
+            setInterval(poll, 3000);
         })();
     </script>
 </x-layouts.app>

@@ -8,10 +8,13 @@ use App\Models\Conversation;
 use App\Models\Listing;
 use App\Models\Message;
 use App\Notifications\NewMessageNotification;
+use App\Services\ImageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class MessageController extends Controller
@@ -53,29 +56,91 @@ class MessageController extends Controller
     {
         abort_unless($conversation->isParticipant($request->user()), 403);
 
-        $data = $request->validate(['body' => ['required', 'string', 'max:2000']]);
+        // Manuel Validator: bootstrap/app.php'deki shouldRenderJsonWhen yalnızca
+        // api/* için JSON döndürüyor; panel fetch uçlarında $request->validate()
+        // 422 yerine redirect üretir. Bu yüzden hataları elle JSON'a çeviriyoruz.
+        $validator = Validator::make($request->all(), [
+            'body' => ['nullable', 'string', 'max:2000'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:8192'],
+            'lat' => ['nullable', 'numeric', 'between:-90,90', 'required_with:lng'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180', 'required_with:lat'],
+        ]);
+
+        if ($validator->fails()) {
+            return $request->wantsJson()
+                ? response()->json(['errors' => $validator->errors()], 422)
+                : back()->withErrors($validator)->withInput();
+        }
+
+        $data = $validator->validated();
+
+        $type = Message::TYPE_TEXT;
+        $body = trim((string) ($data['body'] ?? ''));
+        $attachmentPath = null;
+
+        if ($request->hasFile('photo')) {
+            // Sohbet fotoğrafı: EXIF/GPS strip edilir (konum sızmasın).
+            $type = Message::TYPE_IMAGE;
+            $attachmentPath = app(ImageService::class)->storeSingle(
+                $request->file('photo'),
+                'message-attachments/'.$conversation->id,
+            );
+        } elseif (isset($data['lat'], $data['lng'])) {
+            $type = Message::TYPE_LOCATION;
+            $body = $data['lat'].','.$data['lng'];
+        } elseif ($body === '') {
+            // Boş metin mesajı — reddet.
+            return $request->wantsJson()
+                ? response()->json(['message' => 'Mesaj boş olamaz.'], 422)
+                : back();
+        }
 
         $message = $conversation->messages()->create([
             'sender_id' => $request->user()->id,
-            'body' => $data['body'],
+            'type' => $type,
+            'body' => $body,
+            'attachment_path' => $attachmentPath,
         ]);
         $conversation->update(['last_message_at' => now()]);
 
+        // Yazıyor bayrağını temizle (mesaj gönderildi).
+        Cache::forget($this->typingKey($conversation, $request->user()->id));
+
         $conversation->other($request->user())?->notify(
-            new NewMessageNotification($message->body, $request->user()->name, $conversation->id)
+            new NewMessageNotification($this->notificationPreview($message), $request->user()->name, $conversation->id)
         );
 
         if ($request->wantsJson()) {
-            return response()->json([
-                'id' => $message->id,
-                'body' => $message->body,
-                'mine' => true,
-                'recalled' => false,
-                'time' => $message->created_at->format('d.m H:i'),
-            ]);
+            return response()->json($message->toChatArray($request->user()->id));
         }
 
         return redirect()->route('panel.messages.show', $conversation);
+    }
+
+    /** Bildirim önizlemesi: metin gövdesi ya da tür etiketi. */
+    private function notificationPreview(Message $message): string
+    {
+        return match ($message->type) {
+            Message::TYPE_IMAGE => '📷 Fotoğraf',
+            Message::TYPE_LOCATION => '📍 Konum',
+            default => $message->body,
+        };
+    }
+
+    /** "Yazıyor..." bayrağı için cache anahtarı (konuşma + kullanıcı). */
+    private function typingKey(Conversation $conversation, int $userId): string
+    {
+        return "chat-typing:{$conversation->id}:{$userId}";
+    }
+
+    /** Kullanıcı yazıyor sinyali — kısa TTL'li cache bayrağı (poll'a piggyback). */
+    public function typing(Request $request, Conversation $conversation): JsonResponse
+    {
+        abort_unless($conversation->isParticipant($request->user()), 403);
+
+        Cache::put($this->typingKey($conversation, $request->user()->id), true, now()->addSeconds(6));
+
+        return response()->json(['ok' => true]);
     }
 
     /**
@@ -113,13 +178,7 @@ class MessageController extends Controller
             ->where('id', '>', $after)
             ->orderBy('id')
             ->get()
-            ->map(fn (Message $m) => [
-                'id' => $m->id,
-                'body' => $m->displayBody(),
-                'mine' => $m->sender_id === $me,
-                'recalled' => $m->isRecalled(),
-                'time' => $m->created_at->format('d.m H:i'),
-            ]);
+            ->map(fn (Message $m) => $m->toChatArray($me));
 
         // Mevcut (daha önce çekilmiş) mesajlardan geri alınanların id'leri —
         // karşı taraf açık ekranda geri almayı görebilsin diye.
@@ -128,7 +187,15 @@ class MessageController extends Controller
             ->where('id', '<=', $after)
             ->pluck('id');
 
-        return response()->json(['messages' => $messages, 'recalled' => $recalledIds]);
+        // Karşı taraf yazıyor mu? (kısa TTL'li cache bayrağı)
+        $otherId = $conversation->other($request->user())?->id;
+        $typing = $otherId ? Cache::has($this->typingKey($conversation, $otherId)) : false;
+
+        return response()->json([
+            'messages' => $messages,
+            'recalled' => $recalledIds,
+            'typing' => $typing,
+        ]);
     }
 
     /** İlan detayından satıcıya ilk mesajı gönder. */
