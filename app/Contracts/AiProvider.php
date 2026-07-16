@@ -18,6 +18,9 @@ interface AiProvider
     /** İnsan tarafından okunabilir sağlayıcı adı (log/hata mesajları için). */
     public function name(): string;
 
+    /** Son başarısız çağrının insan-okur hata nedeni (başarılıysa/hiç çağrılmadıysa null). */
+    public function lastError(): ?string;
+
     /**
      * Bir görseli + metin yönergesini analiz edip yapılandırılmış JSON döndürür.
      * Yönerge (prompt) beklenen JSON anahtarlarını tam olarak tarif etmelidir.

@@ -3,6 +3,7 @@
 namespace App\Services\Ai;
 
 use App\Contracts\AiProvider;
+use App\Services\Ai\Concerns\TracksLastError;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\Log;
  */
 class OpenAiProvider implements AiProvider
 {
+    use TracksLastError;
+
     /** @param  array<string, mixed>  $config */
     public function __construct(protected readonly array $config) {}
 
@@ -48,7 +51,10 @@ class OpenAiProvider implements AiProvider
             ->post($endpoint, $body);
 
         if (! $response->successful()) {
-            Log::warning('AI: '.$this->name().' yanıtı başarısız', ['status' => $response->status()]);
+            // OpenAI/OpenRouter hata gövdesi genelde {"error":{"message":...}}.
+            $detail = $response->json('error.message') ?? mb_substr($response->body(), 0, 200);
+            $this->lastError = 'HTTP '.$response->status().': '.$detail;
+            Log::error('AI: '.$this->name().' yanıtı başarısız', ['status' => $response->status(), 'detail' => $detail]);
 
             return null;
         }
@@ -57,10 +63,17 @@ class OpenAiProvider implements AiProvider
 
         // İçerik filtresi tetiklendiyse güvenli değil.
         if (($choice['finish_reason'] ?? null) === 'content_filter') {
+            $this->lastError = 'İçerik güvenlik filtresine takıldı.';
+
             return null;
         }
 
-        return AiJson::decode($choice['message']['content'] ?? null);
+        $decoded = AiJson::decode($choice['message']['content'] ?? null);
+        if ($decoded === null) {
+            $this->lastError = 'Yanıt geçerli JSON değil (model JSON döndürmedi).';
+        }
+
+        return $decoded;
     }
 
     /**

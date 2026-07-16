@@ -3,6 +3,7 @@
 namespace App\Services\Ai;
 
 use App\Contracts\AiProvider;
+use App\Services\Ai\Concerns\TracksLastError;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\Log;
  */
 class AnthropicProvider implements AiProvider
 {
+    use TracksLastError;
+
     private const ENDPOINT = 'https://api.anthropic.com/v1/messages';
 
     private const API_VERSION = '2023-06-01';
@@ -57,7 +60,9 @@ class AnthropicProvider implements AiProvider
         ])->timeout(30)->post(self::ENDPOINT, $body);
 
         if (! $response->successful()) {
-            Log::warning('AI: Anthropic yanıtı başarısız', ['status' => $response->status()]);
+            $detail = $response->json('error.message') ?? mb_substr($response->body(), 0, 200);
+            $this->lastError = 'HTTP '.$response->status().': '.$detail;
+            Log::error('AI: Anthropic yanıtı başarısız', ['status' => $response->status(), 'detail' => $detail]);
 
             return null;
         }
@@ -66,11 +71,18 @@ class AnthropicProvider implements AiProvider
 
         // Güvenlik sınıflandırıcısı reddettiyse içerik yok.
         if (($json['stop_reason'] ?? null) === 'refusal') {
+            $this->lastError = 'İçerik güvenlik filtresine takıldı.';
+
             return null;
         }
 
         $text = collect($json['content'] ?? [])->firstWhere('type', 'text')['text'] ?? null;
 
-        return AiJson::decode($text);
+        $decoded = AiJson::decode($text);
+        if ($decoded === null) {
+            $this->lastError = 'Yanıt geçerli JSON değil.';
+        }
+
+        return $decoded;
     }
 }

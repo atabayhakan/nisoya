@@ -75,7 +75,7 @@ class YapayZekaAyarlari extends Page
                         TextInput::make('model')
                             ->label('Model')
                             ->placeholder('openai/gpt-4o-mini')
-                            ->helperText('OpenRouter için önekli: openai/gpt-4o-mini, google/gemini-2.0-flash-001, anthropic/claude-3.5-sonnet. Boş bırakırsan varsayılan kullanılır. Görüntü destekleyen (vision) bir model seç.'),
+                            ->helperText('⚠️ MUTLAKA görüntü (vision) destekleyen bir model seç — özellik fotoğraf gönderir. Önerilen: openai/gpt-4o-mini (ucuz, güvenilir), google/gemini-2.0-flash-001 (çok ucuz). Ücretsiz vision: google/gemini-2.0-flash-exp:free. "tencent/hy3:free" gibi metin-only modeller ÇALIŞMAZ. Boş bırakırsan varsayılan kullanılır.'),
 
                         TextInput::make('api_anahtari')
                             ->label('API anahtarı')
@@ -152,10 +152,16 @@ class YapayZekaAyarlari extends Page
                 ->success()
                 ->send();
         } else {
+            $error = $provider->lastError() ?? 'Sağlayıcı yanıt vermedi.';
+            $hint = str_contains(mb_strtolower($error), 'image')
+                ? ' → Bu model görüntü (vision) desteklemiyor. Görüntü destekleyen bir model seç (ör. openai/gpt-4o-mini, google/gemini-2.0-flash-001).'
+                : '';
+
             Notification::make()
                 ->title('Bağlantı kurulamadı')
-                ->body('Sağlayıcı yanıt vermedi. API anahtarını, model adını ve hesabındaki krediyi kontrol et. Ayrıntı için sunucu logu: storage/logs/laravel.log')
+                ->body($error.$hint)
                 ->danger()
+                ->persistent()
                 ->send();
         }
     }

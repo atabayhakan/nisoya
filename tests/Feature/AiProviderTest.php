@@ -145,6 +145,24 @@ class AiProviderTest extends TestCase
             && $r->hasHeader('x-goog-api-key', 'k'));
     }
 
+    public function test_provider_records_last_error_on_http_failure(): void
+    {
+        Http::fake(['openrouter.ai/*' => Http::response([
+            'error' => ['message' => 'No endpoints found that support image input', 'code' => 404],
+        ], 404)]);
+
+        $provider = new OpenRouterProvider([
+            'api_key' => 'k',
+            'model' => 'tencent/hy3:free',
+            'base_url' => 'https://openrouter.ai/api/v1',
+        ]);
+        $result = $provider->analyzeImage('B', 'image/jpeg', 'p');
+
+        $this->assertNull($result);
+        $this->assertNotNull($provider->lastError());
+        $this->assertStringContainsString('image input', $provider->lastError());
+    }
+
     public function test_gemini_provider_returns_null_when_blocked(): void
     {
         Http::fake(['generativelanguage.googleapis.com/*' => Http::response([
@@ -171,6 +189,11 @@ class FakeAiProvider implements AiProvider
     public function name(): string
     {
         return 'Sahte';
+    }
+
+    public function lastError(): ?string
+    {
+        return null;
     }
 
     public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null): ?array

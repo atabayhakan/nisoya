@@ -3,6 +3,7 @@
 namespace App\Services\Ai;
 
 use App\Contracts\AiProvider;
+use App\Services\Ai\Concerns\TracksLastError;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Log;
  */
 class GeminiProvider implements AiProvider
 {
+    use TracksLastError;
+
     private const BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
     /** @param  array<string, mixed>  $config */
@@ -49,7 +52,9 @@ class GeminiProvider implements AiProvider
             ->post($endpoint, $body);
 
         if (! $response->successful()) {
-            Log::warning('AI: Gemini yanıtı başarısız', ['status' => $response->status()]);
+            $detail = $response->json('error.message') ?? mb_substr($response->body(), 0, 200);
+            $this->lastError = 'HTTP '.$response->status().': '.$detail;
+            Log::error('AI: Gemini yanıtı başarısız', ['status' => $response->status(), 'detail' => $detail]);
 
             return null;
         }
@@ -58,9 +63,16 @@ class GeminiProvider implements AiProvider
 
         // Güvenlik nedeniyle engellendiyse (SAFETY/PROHIBITED_CONTENT) içerik yok.
         if (in_array($candidate['finishReason'] ?? null, ['SAFETY', 'PROHIBITED_CONTENT', 'BLOCKLIST'], true)) {
+            $this->lastError = 'İçerik güvenlik filtresine takıldı.';
+
             return null;
         }
 
-        return AiJson::decode($candidate['content']['parts'][0]['text'] ?? null);
+        $decoded = AiJson::decode($candidate['content']['parts'][0]['text'] ?? null);
+        if ($decoded === null) {
+            $this->lastError = 'Yanıt geçerli JSON değil.';
+        }
+
+        return $decoded;
     }
 }
