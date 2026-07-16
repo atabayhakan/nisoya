@@ -91,6 +91,9 @@
     {{-- Marka rengi override'ı (admin panelden — Site Yönetimi → İçerik → Görünüm) --}}
     <x-brand-theme />
 
+    {{-- Tasarım modu override'ı (admin panelden — Tasarım → Tasarım Modu) --}}
+    <x-tasarim-theme />
+
     {{-- Header özel kodu (admin panelden — Site Yönetimi → İçerik).
          GÜVENLİK: Yalnızca admin rolü yazabilir. --}}
     @if (config('services.custom_head_code'))

@@ -17,6 +17,10 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 
+    /* 2. Tasarım (Faz İ1 pilotu) başlık yazı tipi — bkz. components/tasarim-theme.blade.php.
+       font-serif utility'si Tailwind tarafından bu token'dan otomatik üretilir. */
+    --font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+
     /* Markaya özel yumuşak gölgeler — kartların/butonların hover durumunda
        generik gri shadow-md yerine hafif emerald tonlu bir "kalkma" hissi
        verir (2026-27 tasarım dilinde bir marka rengiyle uyumlu gölge, sade

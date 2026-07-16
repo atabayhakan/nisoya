@@ -13,7 +13,9 @@
                 <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                     {{ setting('home.hero_badge') }}
                 </span>
-                <h1 class="mt-5 text-4xl font-extrabold tracking-tight text-stone-900 sm:text-5xl md:text-6xl dark:text-stone-50">
+                {{-- "2. Tasarım" modunda (bkz. /yonetim Tasarım Modu) başlık Instrument
+                     Serif italik ile — 2027 vizyon pilotunun tek somut tipografi izi. --}}
+                <h1 class="mt-5 text-4xl tracking-tight text-stone-900 sm:text-5xl md:text-6xl dark:text-stone-50 {{ setting('gorunum.tasarim_modu', 'eski') === 'yeni' ? 'font-serif italic font-normal' : 'font-extrabold' }}">
                     {{ setting('home.hero_satir1') }}<br>
                     <span class="text-emerald-600 dark:text-emerald-400">{{ setting('home.hero_vurgu') }}</span> {{ setting('home.hero_satir2') }}
                 </h1>
