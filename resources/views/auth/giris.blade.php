@@ -38,6 +38,32 @@
         </button>
     </form>
 
+    {{-- Passkey ile giriş (Faz M2) — WebAuthn desteklenmiyorsa hiç görünmez.
+         E-posta alanı doluysa o hesabın passkey'i, boşsa cihazın hatırladığı
+         passkey kullanılır. JS: resources/js/app.js → passkeyLogin(). --}}
+    <div
+        x-data="passkeyLogin(@js(route('webauthn.login.options')), @js(route('webauthn.login')))"
+        x-show="supported"
+        x-cloak
+    >
+        <div class="my-4 flex items-center gap-3 text-xs text-stone-400">
+            <span class="h-px flex-1 bg-stone-200 dark:bg-stone-700"></span>
+            veya
+            <span class="h-px flex-1 bg-stone-200 dark:bg-stone-700"></span>
+        </div>
+
+        <button
+            type="button"
+            @click="login()"
+            :disabled="busy"
+            class="flex w-full items-center justify-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2.5 font-semibold text-stone-700 transition hover:bg-stone-50 disabled:opacity-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
+        >
+            <x-heroicon-o-finger-print class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <span x-text="busy ? 'Doğrulanıyor...' : 'Parmak izi / Yüz tanıma ile gir'"></span>
+        </button>
+        <p x-show="error" x-text="error" class="mt-2 text-sm text-red-600" x-cloak></p>
+    </div>
+
     <p class="mt-6 text-center text-sm text-stone-500">
         Hesabın yok mu?
         <a href="{{ route('register') }}" class="font-medium text-emerald-700 hover:underline">Kayıt ol</a>

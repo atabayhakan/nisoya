@@ -28,6 +28,8 @@ class TwoFactorController extends Controller
         return view('panel.profile.two-factor', [
             'user' => $user,
             'enabled' => $enabled,
+            // Passkey yönetimi de bu güvenlik sayfasında (Faz M2)
+            'passkeys' => $user->webAuthnCredentials()->latest('created_at')->get(),
         ]);
     }
 

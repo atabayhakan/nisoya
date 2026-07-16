@@ -132,6 +132,30 @@ istemi çıkar; uçak modunda `/cevrimdisi` görünür; test push'ı cihaza dü�
 **Bitti sayılır:** Bir telefonda kayıt + Face ID/parmak iziyle giriş
 uçtan uca çalışır; credential silme çalışır; parola girişi bozulmamıştır.
 
+**Uygulandı (2026-07-17):**
+- `laragear/webauthn` v5 + `@laragear/webpass` (npm, JS tarafı);
+  `webauthn_credentials` migration'ı çalıştı. `User` →
+  `WebAuthnAuthenticatable` + `WebAuthnAuthentication`.
+- Giriş: `POST /webauthn/giris(/secenekler)` (guest, `throttle:login`) —
+  `WebAuthnLoginController`; başarıda `last_seen_at` güncellenir ve
+  `{redirect}` JSON'ı döner. E-posta boşsa discoverable credential.
+- Yönetim: `POST/DELETE /panel/profil/passkey*` — kayıt + kendi
+  credential'ını silme; UI 2FA sayfasında (`two-factor.blade.php`):
+  cihaz listesi (alias + tarih), isteğe bağlı cihaz adı, silme onayı.
+  Alias query string ile taşınır (webpass'in body birleştirme
+  davranışına bağımlılık yok — `MakeWebAuthnCredential` `response.alias`
+  bekliyor, webpass üst seviyeye koyuyor).
+- Giriş sayfasında "Parmak izi / Yüz tanıma ile gir" düğmesi (WebAuthn
+  desteklenmiyorsa görünmez); guest layout'a eksik CSRF meta eklendi.
+- 2FA kararı: girişte OTP sınaması zaten yok (2FA yalnızca kurulum
+  altyapısı), passkey doğrudan oturum açar — ek koşul gerekmedi.
+- Testler: `PasskeyTest` (8 test — auth koşulları, challenge üretimi,
+  kendi/başkasının credential silme yetkisi); tam takım 530 yeşil.
+- **Canlıda yapılacak:** gerçek cihazla (telefon) kayıt + giriş seremonisi
+  doğrulanmalı — yerel gömülü tarayıcıda platform authenticator yok.
+  `config/webauthn.php` RP id'si üretimde `nisoya.com` olarak env'den
+  doğrulanmalı (varsayılan APP_URL'den türetilir).
+
 ---
 
 ## Faz M3 — Kamera-önce ilan oluşturma

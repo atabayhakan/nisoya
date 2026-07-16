@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\WebAuthn\WebAuthnLoginController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -16,6 +17,14 @@ Route::middleware('guest')->group(function () {
 
     Route::get('giris', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('giris', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:login');
+
+    // Passkey ile giriş (Faz M2, WebAuthn assertion)
+    Route::post('webauthn/giris/secenekler', [WebAuthnLoginController::class, 'options'])
+        ->middleware('throttle:login')
+        ->name('webauthn.login.options');
+    Route::post('webauthn/giris', [WebAuthnLoginController::class, 'login'])
+        ->middleware('throttle:login')
+        ->name('webauthn.login');
 
     Route::get('sifremi-unuttum', [PasswordResetLinkController::class, 'create'])->name('password.request');
     Route::post('sifremi-unuttum', [PasswordResetLinkController::class, 'store'])

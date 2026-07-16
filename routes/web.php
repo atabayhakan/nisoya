@@ -43,6 +43,7 @@ use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StoryController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\VehicleBrowseController;
+use App\Http\Controllers\WebAuthn\WebAuthnRegisterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -257,6 +258,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/panel/profil/iki-faktor/kur', [TwoFactorController::class, 'setup'])->name('panel.profile.2fa.setup');
     Route::post('/panel/profil/iki-faktor/onayla', [TwoFactorController::class, 'confirm'])->name('panel.profile.2fa.confirm');
     Route::post('/panel/profil/iki-faktor/kapat', [TwoFactorController::class, 'disable'])->name('panel.profile.2fa.disable');
+
+    // Passkey kayıt/yönetim (Faz M2, WebAuthn attestation)
+    Route::post('/panel/profil/passkey/secenekler', [WebAuthnRegisterController::class, 'options'])->name('panel.profile.passkey.options');
+    Route::post('/panel/profil/passkey', [WebAuthnRegisterController::class, 'register'])->name('panel.profile.passkey.register');
+    Route::delete('/panel/profil/passkey/{credentialId}', [WebAuthnRegisterController::class, 'destroy'])->name('panel.profile.passkey.destroy');
 });
 
 require __DIR__.'/auth.php';

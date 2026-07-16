@@ -95,5 +95,67 @@
                 @endif
             </section>
         @endif
+
+        {{-- Passkey yönetimi (Faz M2). WebAuthn desteklemeyen tarayıcıda
+             ekleme düğmesi gizlenir ama mevcut liste görünür kalır. --}}
+        <section
+            x-data="passkeyManage(@js(route('panel.profile.passkey.options')), @js(route('panel.profile.passkey.register')))"
+            class="mt-6 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none"
+        >
+            <header>
+                <h2 class="flex items-center gap-2 font-semibold text-stone-900 dark:text-stone-100">
+                    <x-heroicon-o-finger-print class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    Passkey (Parmak İzi / Yüz Tanıma ile Giriş)
+                </h2>
+                <p class="mt-1 text-sm text-stone-600 dark:text-stone-400">
+                    Şifre yazmadan, telefonunun kilidini açar gibi giriş yap. Passkey'in bu cihazda
+                    (veya cihaz hesabında) güvenle saklanır — Nisoya şifreni hiç görmez.
+                </p>
+            </header>
+
+            @if ($passkeys->isNotEmpty())
+                <ul class="divide-y divide-stone-100 rounded-xl border border-stone-200 dark:divide-stone-800 dark:border-stone-700">
+                    @foreach ($passkeys as $passkey)
+                        <li class="flex items-center justify-between gap-3 px-4 py-3">
+                            <div class="min-w-0">
+                                <div class="truncate text-sm font-medium text-stone-800 dark:text-stone-100">
+                                    {{ $passkey->alias ?: 'Passkey' }}
+                                </div>
+                                <div class="text-xs text-stone-400 dark:text-stone-500">
+                                    Eklendi: {{ $passkey->created_at->format('d.m.Y') }}
+                                </div>
+                            </div>
+                            <form method="POST" action="{{ route('panel.profile.passkey.destroy', $passkey->getKey()) }}" onsubmit="return confirm('Bu passkey silinsin mi? Bu cihazla şifresiz giriş yapamazsın.')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="rounded-lg p-2 text-stone-400 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400" title="Passkey'i sil">
+                                    <x-heroicon-o-trash class="h-4 w-4" />
+                                </button>
+                            </form>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+
+            <div x-show="supported" x-cloak class="space-y-3 border-t border-stone-100 pt-4 dark:border-stone-800">
+                <div>
+                    <label for="passkey_alias" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Cihaz adı (isteğe bağlı)</label>
+                    <input id="passkey_alias" x-model="alias" type="text" maxlength="50" placeholder="örn. Telefonum"
+                           class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                </div>
+                <button
+                    type="button"
+                    @click="add()"
+                    :disabled="busy"
+                    class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900"
+                >
+                    <span x-text="busy ? 'Cihaz doğrulanıyor...' : 'Bu cihazı ekle'"></span>
+                </button>
+                <p x-show="error" x-text="error" class="text-sm text-red-600" x-cloak></p>
+            </div>
+            <p x-show="!supported" class="border-t border-stone-100 pt-4 text-sm text-stone-400 dark:border-stone-800 dark:text-stone-500" x-cloak>
+                Bu tarayıcı passkey desteklemiyor — telefonundan veya güncel bir tarayıcıdan deneyebilirsin.
+            </p>
+        </section>
     </div>
 </x-layouts.app>

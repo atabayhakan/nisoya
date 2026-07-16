@@ -1,4 +1,5 @@
 import Alpine from 'alpinejs';
+import Webpass from '@laragear/webpass';
 
 // Hafif scroll-reveal: eleman görünüme girdiğinde hafifçe belirir/yükselir.
 // JS çalışmazsa hiçbir static class eklenmediği için içerik normal
@@ -324,6 +325,61 @@ function urlBase64ToUint8Array(base64String) {
     const raw = window.atob(base64);
     return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
 }
+
+// Passkey ile giriş (Faz M2). Giriş sayfasındaki düğme — e-posta alanı
+// doluysa o hesabın passkey'leri, boşsa cihazın hatırladığı (discoverable)
+// passkey kullanılır. Sunucu: App\Http\Controllers\WebAuthn\WebAuthnLoginController.
+Alpine.data('passkeyLogin', (optionsUrl, loginUrl) => ({
+    supported: Webpass.isSupported(),
+    busy: false,
+    error: null,
+
+    async login() {
+        if (this.busy) return;
+        this.busy = true;
+        this.error = null;
+
+        const email = document.getElementById('email')?.value.trim();
+        const { data, success } = await Webpass.assert(
+            { path: optionsUrl, body: email ? { email } : {} },
+            loginUrl,
+        );
+
+        this.busy = false;
+        if (success && data?.redirect) {
+            window.location.href = data.redirect;
+            return;
+        }
+        this.error = 'Passkey ile giriş yapılamadı. Şifrenle giriş yapabilir veya tekrar deneyebilirsin.';
+    },
+}));
+
+// Passkey ekleme (Faz M2, 2FA/güvenlik sayfası). Alias'ı query string ile
+// taşıyoruz — sunucu tarafındaki gerekçe için bkz. WebAuthnRegisterController.
+Alpine.data('passkeyManage', (optionsUrl, registerUrl) => ({
+    supported: Webpass.isSupported(),
+    busy: false,
+    error: null,
+    alias: '',
+
+    async add() {
+        if (this.busy) return;
+        this.busy = true;
+        this.error = null;
+
+        const url = this.alias.trim()
+            ? `${registerUrl}?alias=${encodeURIComponent(this.alias.trim())}`
+            : registerUrl;
+        const { success } = await Webpass.attest(optionsUrl, url);
+
+        this.busy = false;
+        if (success) {
+            window.location.reload();
+            return;
+        }
+        this.error = 'Passkey eklenemedi. Cihazın desteklemiyor olabilir veya işlem iptal edildi.';
+    },
+}));
 
 // PWA yükleme ipucu (Faz M1.4). Chrome/Android'de beforeinstallprompt
 // yakalanır; iOS'ta bu event yok, Safari tespitiyle "Ana Ekrana Ekle"
