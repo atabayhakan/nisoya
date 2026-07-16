@@ -58,14 +58,13 @@
             </div>
             @if ($loop->last)</div>{{ $listings->links() }}@endif
         @empty
-            <div class="mt-10 rounded-2xl border border-dashed border-stone-300 bg-white p-10 text-center dark:border-stone-700 dark:bg-stone-900">
-                <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
-                    <x-heroicon-o-clipboard-document-list class="h-6 w-6" />
-                </span>
-                <h2 class="mt-3 text-lg font-semibold text-stone-800 dark:text-stone-100">Henüz ilanın yok</h2>
-                <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">İlk ilanını ver, yeteneğini paraya dönüştür.</p>
-                <a href="{{ route('panel.listings.create') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">+ İlk İlanını Ver</a>
-            </div>
+            <x-empty-state
+                illustration="listing"
+                title="Henüz ilanın yok"
+                description="İlk ilanını ver, yeteneğini paraya dönüştür."
+                cta-text="+ İlk İlanını Ver"
+                :cta-href="route('panel.listings.create')"
+            />
         @endforelse
     </div>
 </x-layouts.app>

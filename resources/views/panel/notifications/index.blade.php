@@ -22,13 +22,11 @@
             </div>
             <div class="mt-6">{{ $notifications->links() }}</div>
         @else
-            <div class="mt-10 rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center dark:border-stone-700 dark:bg-stone-900">
-                <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
-                    <x-heroicon-o-bell class="h-6 w-6" />
-                </span>
-                <h2 class="mt-3 text-lg font-semibold text-stone-800 dark:text-stone-100">Bildirim yok</h2>
-                <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Yeni mesaj, değerlendirme ve ilan güncellemeleri burada görünecek.</p>
-            </div>
+            <x-empty-state
+                illustration="bell"
+                title="Bildirim yok"
+                description="Yeni mesaj, değerlendirme ve ilan güncellemeleri burada görünecek."
+            />
         @endif
     </div>
 </x-layouts.app>

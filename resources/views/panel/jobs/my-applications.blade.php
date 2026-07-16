@@ -28,12 +28,13 @@
             </div>
             <div class="mt-6">{{ $applications->links() }}</div>
         @else
-            <div class="mt-8 rounded-2xl border border-dashed border-stone-300 bg-white p-10 text-center dark:border-stone-700 dark:bg-stone-900">
-                <div class="text-4xl">🔍</div>
-                <h2 class="mt-3 text-lg font-semibold text-stone-800 dark:text-stone-100">Henüz başvurmadın</h2>
-                <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Sana uygun işleri keşfet ve başvur.</p>
-                <a href="{{ route('jobs.index') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İş ilanlarına göz at</a>
-            </div>
+            <x-empty-state
+                illustration="inbox"
+                title="Henüz başvurmadın"
+                description="Sana uygun işleri keşfet ve başvur."
+                cta-text="İş ilanlarına göz at"
+                :cta-href="route('jobs.index')"
+            />
         @endif
     </div>
 </x-layouts.app>

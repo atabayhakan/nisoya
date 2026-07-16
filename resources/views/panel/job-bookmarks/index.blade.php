@@ -15,14 +15,13 @@
             </div>
             <div class="mt-8">{{ $jobs->links() }}</div>
         @else
-            <div class="mt-10 rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center dark:border-stone-700 dark:bg-stone-900">
-                <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
-                    <x-heroicon-o-bookmark class="h-6 w-6" />
-                </span>
-                <h2 class="mt-3 text-lg font-semibold text-stone-800 dark:text-stone-100">Henüz yer imin yok</h2>
-                <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Beğendiğin iş ilanlarını yer imi butonuna tıklayarak buraya kaydedebilirsin.</p>
-                <a href="{{ route('jobs.index') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İş ilanlarına göz at</a>
-            </div>
+            <x-empty-state
+                illustration="heart"
+                title="Henüz yer imin yok"
+                description="Beğendiğin iş ilanlarını yer imi butonuna tıklayarak buraya kaydedebilirsin."
+                cta-text="İş ilanlarına göz at"
+                :cta-href="route('jobs.index')"
+            />
         @endif
     </div>
 </x-layouts.app>

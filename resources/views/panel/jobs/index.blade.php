@@ -80,12 +80,13 @@
             </div>
             <div class="mt-6">{{ $jobs->links() }}</div>
         @else
-            <div class="mt-8 rounded-2xl border border-dashed border-stone-300 bg-white p-10 text-center dark:border-stone-700 dark:bg-stone-900">
-                <div class="text-4xl">💼</div>
-                <h2 class="mt-3 text-lg font-semibold text-stone-800 dark:text-stone-100">Henüz ilanın yok</h2>
-                <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">İlk iş ilanını yayınlayarak aday bulmaya başla.</p>
-                <a href="{{ route('panel.jobs.create') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan ver</a>
-            </div>
+            <x-empty-state
+                illustration="listing"
+                title="Henüz ilanın yok"
+                description="İlk iş ilanını yayınlayarak aday bulmaya başla."
+                cta-text="İlan ver"
+                :cta-href="route('panel.jobs.create')"
+            />
         @endif
     </div>
 </x-layouts.app>

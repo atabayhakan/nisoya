@@ -106,6 +106,28 @@ header {
     }
 }
 
+/* Faz İ4: dokunmatik cihazlarda (masaüstü fare hover'ıyla çakışmasın diye
+   sadece "hover:none"/"pointer:coarse" ortamda) her buton/link/açılır
+   öğeye anlık bir "basılma" geri bildirimi — native-app dokunma hissi.
+   prefers-reduced-motion'da tamamen devre dışı. */
+@media (hover: none), (pointer: coarse) {
+    @media (prefers-reduced-motion: no-preference) {
+        a,
+        button,
+        [role='button'],
+        summary {
+            transition: transform 120ms ease-out;
+        }
+
+        a:active,
+        button:active,
+        [role='button']:active,
+        summary:active {
+            transform: scale(0.96);
+        }
+    }
+}
+
 /* Faz H4 mikro-etkileşim: okunmamış bildirim varsa zil ikonu sayfa
    yüklendiğinde kısa bir kez "çalar" (bkz. components/layouts/app.blade.php
    — animate-[nisoya-bell-ring_...] class'ı yalnızca $unreadCount > 0 iken
