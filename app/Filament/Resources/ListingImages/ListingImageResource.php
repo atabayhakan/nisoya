@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ListingImages;
 
+use App\Enums\ListingStatus;
 use App\Filament\Resources\ListingImages\Pages\ListListingImages;
 use App\Filament\Resources\ListingImages\Pages\ViewListingImage;
 use App\Models\Country;
@@ -147,6 +148,17 @@ class ListingImageResource extends Resource
                     ->label('Kapak')
                     ->boolean(),
 
+                IconColumn::make('is_flagged')
+                    ->label('AI Moderasyon')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-flag')
+                    ->falseIcon('heroicon-o-check-circle')
+                    ->trueColor('danger')
+                    ->falseColor('success')
+                    ->tooltip(fn (ListingImage $record) => $record->is_flagged
+                        ? '⚠️ AI tarafından uygunsuz işaretlendi: '.($record->flagged_reason ?? 'sebep belirtilmedi')
+                        : 'AI moderasyonundan geçti'),
+
                 TextColumn::make('created_at')
                     ->label('Yüklendi')
                     ->dateTime('d.m.Y H:i')
@@ -269,6 +281,12 @@ class ListingImageResource extends Resource
                     ->label('Sadece kapak görselleri')
                     ->placeholder('Tümü'),
 
+                TernaryFilter::make('is_flagged')
+                    ->label('AI moderasyonu')
+                    ->trueLabel('İşaretlenenler (inceleme bekliyor)')
+                    ->falseLabel('Temiz')
+                    ->placeholder('Tümü'),
+
                 Filter::make('with_exif')
                     ->label('EXIF metadata olan')
                     ->query(fn ($query) => $query->whereNotNull('exif_metadata')->where('exif_metadata', '!=', '{}')),
@@ -294,6 +312,32 @@ class ListingImageResource extends Resource
             ->actions([
                 ViewAction::make()
                     ->label('EXIF Detay'),
+                Action::make('approve_flagged')
+                    ->label('Onayla (işareti kaldır)')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn (ListingImage $record) => $record->is_flagged)
+                    ->requiresConfirmation()
+                    ->modalHeading('Görseli onayla')
+                    ->modalDescription('AI işareti kaldırılır. İlan "Onay bekliyor" durumundaysa tekrar "Aktif" yapılır.')
+                    ->action(function (ListingImage $record) {
+                        $record->update(['is_flagged' => false, 'flagged_reason' => null]);
+
+                        if ($record->listing && $record->listing->status === ListingStatus::Beklemede) {
+                            $record->listing->update(['status' => ListingStatus::Aktif]);
+                        }
+
+                        activity('image')
+                            ->performedOn($record)
+                            ->causedBy(auth()->user())
+                            ->log('Admin AI işaretini onayladı, kaldırdı');
+
+                        Notification::make()
+                            ->title('Görsel onaylandı')
+                            ->body('AI işareti kaldırıldı, ilan tekrar aktif.')
+                            ->success()
+                            ->send();
+                    }),
                 DeleteAction::make(),
                 Action::make('redact_gps')
                     ->label('GPS Bilgisini Sil')

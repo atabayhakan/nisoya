@@ -49,6 +49,7 @@ class YapayZekaAyarlari extends Page
             'api_anahtari' => Settings::get('ai.api_anahtari') ?: '',
             'model' => Settings::get('ai.model') ?: '',
             'hizli_ilan_aktif' => (Settings::get('ai.hizli_ilan_aktif') ?? '1') === '1',
+            'moderasyon_aktif' => (Settings::get('ai.moderasyon_aktif') ?? '1') === '1',
         ]);
     }
 
@@ -89,6 +90,11 @@ class YapayZekaAyarlari extends Page
                             ->label('Fotoğrafla hızlı ilan özelliği açık')
                             ->helperText('Kapatırsan anahtar girili olsa bile özellik gizlenir.')
                             ->columnSpanFull(),
+
+                        Toggle::make('moderasyon_aktif')
+                            ->label('Görsel moderasyonu açık (uygunsuz içerik ön-elemesi)')
+                            ->helperText('İlan görselleri ve sohbet fotoğrafları aynı AI ile otomatik taranır. Uygunsuz bulunan ilan görselleri SİLİNMEZ — ilan incelemeye alınır (Onay bekliyor); sohbette uygunsuz fotoğraf gönderilemez. Nihai karar her zaman admin panelinden (Görseller) verilir.')
+                            ->columnSpanFull(),
                     ]),
             ])
             ->statePath('data');
@@ -103,6 +109,7 @@ class YapayZekaAyarlari extends Page
             'ai.api_anahtari' => $state['api_anahtari'] ?? '',
             'ai.model' => $state['model'] ?? '',
             'ai.hizli_ilan_aktif' => ! empty($state['hizli_ilan_aktif']) ? '1' : '0',
+            'ai.moderasyon_aktif' => ! empty($state['moderasyon_aktif']) ? '1' : '0',
         ]);
 
         Notification::make()

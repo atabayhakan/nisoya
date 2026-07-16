@@ -2,7 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Enums\ListingStatus;
 use App\Models\Listing;
+use App\Notifications\ListingFlaggedNotification;
+use App\Services\ImageModerationService;
 use App\Services\ImageService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -40,7 +43,7 @@ class ProcessListingImage implements ShouldQueue
         public ?int $causerId = null,
     ) {}
 
-    public function handle(ImageService $imageService): void
+    public function handle(ImageService $imageService, ImageModerationService $moderation): void
     {
         $listing = Listing::find($this->listingId);
 
@@ -98,7 +101,39 @@ class ProcessListingImage implements ShouldQueue
                 ->log('GPS içeren görsel yüklendi (EXIF temizlendi)');
         }
 
+        $this->moderate($listing, $image, $moderation);
+
         Storage::disk($this->rawDisk)->delete($this->rawPath);
+    }
+
+    /**
+     * AI ile uygunsuz içerik ön-elemesi. Görsel SİLİNMEZ — yalnızca
+     * işaretlenir ve ilan (henüz aktifse) incelemeye alınır; nihai karar
+     * admin'e ait. AI kapalı/başarısızsa fail-open (hiçbir şey yapılmaz).
+     */
+    private function moderate(Listing $listing, $image, ImageModerationService $moderation): void
+    {
+        $result = $moderation->check(Storage::disk('public')->path($image->path_large));
+
+        if (! $result || ! $result['flagged']) {
+            return;
+        }
+
+        $image->update(['is_flagged' => true, 'flagged_reason' => $result['reason']]);
+
+        activity('image')
+            ->performedOn($image)
+            ->withProperties(['listing_id' => $listing->id, 'reason' => $result['reason']])
+            ->log('AI moderasyonu görseli uygunsuz olarak işaretledi');
+
+        if ($listing->status === ListingStatus::Aktif) {
+            $listing->update(['status' => ListingStatus::Beklemede]);
+
+            $listing->user?->notify(new ListingFlaggedNotification(
+                $listing->title,
+                route('panel.listings.index'),
+            ));
+        }
     }
 
     /** Tüm denemeler tükendiğinde ham dosyayı diskte bırakma. */

@@ -8,12 +8,14 @@ use App\Models\Conversation;
 use App\Models\Listing;
 use App\Models\Message;
 use App\Notifications\NewMessageNotification;
+use App\Services\ImageModerationService;
 use App\Services\ImageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
@@ -85,6 +87,17 @@ class MessageController extends Controller
                 $request->file('photo'),
                 'message-attachments/'.$conversation->id,
             );
+
+            // AI moderasyonu: uygunsuz bulunursa mesaj hiç oluşturulmaz (fail-open
+            // — AI kapalı/başarısızsa buradan hiç geçmeden devam eder).
+            $moderation = app(ImageModerationService::class)->check(Storage::disk('public')->path($attachmentPath));
+            if ($moderation && $moderation['flagged']) {
+                Storage::disk('public')->delete($attachmentPath);
+
+                return $request->wantsJson()
+                    ? response()->json(['message' => 'Bu fotoğraf gönderilemedi.'], 422)
+                    : back()->withErrors(['photo' => 'Bu fotoğraf gönderilemedi.']);
+            }
         } elseif (isset($data['lat'], $data['lng'])) {
             $type = Message::TYPE_LOCATION;
             $body = $data['lat'].','.$data['lng'];

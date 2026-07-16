@@ -116,6 +116,7 @@ return [
         'ai.api_anahtari' => ['group' => 'yapay_zeka', 'label' => 'API anahtarı', 'type' => 'password', 'default' => ''],
         'ai.model' => ['group' => 'yapay_zeka', 'label' => 'Model', 'type' => 'text', 'default' => ''],
         'ai.hizli_ilan_aktif' => ['group' => 'yapay_zeka', 'label' => 'Fotoğrafla hızlı ilan', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
+        'ai.moderasyon_aktif' => ['group' => 'yapay_zeka', 'label' => 'Görsel moderasyonu (uygunsuz içerik ön-elemesi)', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
 
         // --- Nisoya Nabzı: topluluk hedefi + şehir elçileri ---
         'nabiz.hedef_sayi' => ['group' => 'nabiz', 'label' => 'Hedef sayı (0 = özelliği tamamen gizle)', 'type' => 'text', 'default' => '0'],

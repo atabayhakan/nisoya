@@ -51,10 +51,10 @@
               class="mt-3 flex items-end gap-2">
             @csrf
 
-            {{-- Fotoğraf ekle --}}
-            <label class="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-stone-300 text-stone-500 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800" title="Fotoğraf gönder">
+            {{-- Fotoğraf ekle (birden fazla seçilebilir — her biri ayrı mesaj olarak sırayla gönderilir) --}}
+            <label class="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-stone-300 text-stone-500 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800" title="Fotoğraf gönder (birden fazla seçebilirsin)">
                 <x-heroicon-o-photo class="h-5 w-5" />
-                <input id="photo-input" type="file" accept="image/*" class="sr-only">
+                <input id="photo-input" type="file" accept="image/*" multiple class="sr-only">
             </label>
 
             {{-- Konum paylaş --}}
@@ -256,11 +256,17 @@
             });
 
             // Fotoğraf seçilince hemen gönder.
-            photoInput.addEventListener('change', () => {
-                if (!photoInput.files.length) return;
-                const fd = new FormData();
-                fd.append('photo', photoInput.files[0]);
-                postForm(fd).finally(() => { photoInput.value = ''; });
+            // Birden fazla fotoğraf seçilebilir (iPhone/Android galeri çoklu-seçim) —
+            // her biri ayrı bir mesaj olduğu için sırayla (önceki bitince sonraki)
+            // gönderiyoruz; postForm zaten aynı anda tek istek olmasını garanti ediyor.
+            photoInput.addEventListener('change', async () => {
+                const files = [...photoInput.files];
+                photoInput.value = '';
+                for (const file of files) {
+                    const fd = new FormData();
+                    fd.append('photo', file);
+                    await postForm(fd);
+                }
             });
 
             // Konum paylaş.

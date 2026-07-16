@@ -156,6 +156,24 @@ uçtan uca çalışır; credential silme çalışır; parola girişi bozulmamı�
   `config/webauthn.php` RP id'si üretimde `nisoya.com` olarak env'den
   doğrulanmalı (varsayılan APP_URL'den türetilir).
 
+**Bulunan gerçek üretim sorunu (2026-07-17) — düzeltildi:** Kullanıcı
+"Outlook" uygulamasının kendi iç tarayıcısında (WKWebView) linki açıp
+passkey eklemeyi denedi; sunucu loglarında hiç webauthn isteği yoktu —
+yani `navigator.credentials.create()` sunucuya hiç ulaşmadan tarayıcı
+tarafında (`NotAllowedError`) reddediliyordu. iOS'ta uygulama-içi
+tarayıcılar (Outlook, Gmail, Instagram vb.) Face ID/Touch ID ceremonisine
+izin vermiyor — kod hatası değil, platform kısıtı.
+- `resources/js/app.js`: `passkeyErrorMessage()` yardımcı fonksiyonu —
+  webpass'in `{error}` nesnesindeki DOMException adını (`error.cause.name`)
+  okuyup `NotAllowedError`/`SecurityError`/`AbortError` için özel, eyleme
+  geçirilebilir mesaj üretir ("Safari/Chrome'da doğrudan aç veya ana
+  ekrana ekle" ipucuyla). Hem `passkeyLogin` hem `passkeyManage` kullanıyor.
+- `two-factor.blade.php`: passkey kartına kalıcı, proaktif uyarı eklendi
+  (denemeden önce bilgilendirir).
+- Tarayıcıda `navigator.credentials.create` sahte `NotAllowedError`
+  fırlatacak şekilde override edilip uçtan uca doğrulandı — doğru mesaj
+  üretildiğini teyit ettik.
+
 ---
 
 ## Faz M3 — Kamera-önce ilan oluşturma
@@ -205,6 +223,46 @@ etkilenmez.
 - **Gelecek iyileştirme:** analiz edilen fotoğraf şu an ilana otomatik
   eklenmiyor (kullanıcı normal formda tekrar yükler) — sürtünmeyi azaltmak
   için geçici depolama ile taşınabilir.
+
+**Uygulandı (2026-07-17) — çoklu fotoğraf seçimi (sohbet):**
+- `panel/messages/show.blade.php`: sohbet fotoğraf input'una `multiple`
+  eklendi. JS `change` işleyicisi artık seçilen tüm dosyaları sırayla
+  (biri bitmeden diğeri başlamadan) ayrı mesajlar olarak gönderiyor —
+  mesaj sırası korunur, sunucu aynı anda tek istekle karşılaşır.
+- İlan görselleri (`create/edit.blade.php`) zaten `multiple` destekliyordu
+  (en fazla 8) — değişiklik gerekmedi. Avatar/şirket logosu/portfolyo
+  görseli/şirket galerisi (kendi başlığı olan) bilinçli olarak **tekil**
+  bırakıldı — bunlar semantik olarak tek dosya (bir avatar, bir logo) ya
+  da görsel başına ayrı açıklama alanı gerektiriyor (galeri), toplu seçim
+  bu akışları bozar.
+
+**Uygulandı (2026-07-17) — AI görsel moderasyonu:**
+- Yeni `App\Services\ImageModerationService` — mevcut `AiProvider`
+  soyutlamasını (Faz M3'te kurulan, aynı admin panel anahtarı) kullanarak
+  görseli vision modeline gönderip yapılandırılmış JSON
+  (`{uygunsuz, kategori}`) döndürür. **Fail-open**: AI kapalı/yapılandırılmamış/
+  başarısızsa `null` döner, hiçbir şeyi engellemez — bu bir güvenlik ağı,
+  sert bir zorunluluk değil.
+- **İlan görselleri** (`ProcessListingImage` job'ı, kuyrukta/async):
+  görsel işlenip `ListingImage` kaydı oluşturulduktan sonra moderasyon
+  çalışır. Uygunsuz bulunursa: **görsel silinmez**, `is_flagged`/
+  `flagged_reason` işaretlenir, ilan `aktif` ise `beklemede`'ye (Onay
+  bekliyor) çekilir ve sahibine yumuşak dilli bir bildirim
+  (`ListingFlaggedNotification`) gönderilir. Admin panelinde (Görseller
+  → AI Moderasyon sütunu/filtresi → "Onayla" aksiyonu) işaret kaldırılıp
+  ilan tekrar aktif edilebilir.
+- **Sohbet fotoğrafları** (`MessageController::store`, senkron): moderasyon
+  mesaj oluşturulmadan ÖNCE çalışır; uygunsuz bulunursa dosya silinir ve
+  mesaj hiç oluşturulmaz (422/hata — kullanıcı deneyimi bir doğrulama
+  hatası gibi).
+- Admin panelden aç/kapa: **Yapay Zeka** sayfasında "Görsel moderasyonu"
+  toggle'ı (`ai.moderasyon_aktif`, varsayılan açık) — quick-listing
+  toggle'ıyla aynı desen, `AppServiceProvider::mergeAiConfig()` üzerinden
+  runtime'da uygulanır.
+- Migration: `listing_images`'e `is_flagged` (bool) + `flagged_reason`
+  (string, nullable).
+- Test: `ImageModerationTest` (8 — fail-open, flagged/clean ilan akışı,
+  moderasyon kapalıyken AI çağrısı yapılmadığı, sohbet foto red/kabul).
 
 ---
 

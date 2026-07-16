@@ -31,12 +31,15 @@ class ListingImage extends Model
         'reverse_geocoded_at',
         'sort_order',
         'is_cover',
+        'is_flagged',
+        'flagged_reason',
     ];
 
     protected function casts(): array
     {
         return [
             'is_cover' => 'boolean',
+            'is_flagged' => 'boolean',
             'had_gps' => 'boolean',
             'has_sensitive_exif' => 'boolean',
             'width' => 'integer',

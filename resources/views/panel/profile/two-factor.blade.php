@@ -111,6 +111,10 @@
                     Şifre yazmadan, telefonunun kilidini açar gibi giriş yap. Passkey'in bu cihazda
                     (veya cihaz hesabında) güvenle saklanır — Nisoya şifreni hiç görmez.
                 </p>
+                <p class="mt-2 flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+                    <x-heroicon-o-exclamation-triangle class="mt-0.5 h-4 w-4 shrink-0" />
+                    Bu sayfayı bir e-posta/uygulama içi tarayıcıda (ör. Outlook, Gmail) açtıysan Face ID/parmak izi çalışmaz. Safari veya Chrome'da doğrudan aç, ya da Nisoya'yı ana ekranına ekleyip oradan kullan.
+                </p>
             </header>
 
             @if ($passkeys->isNotEmpty())

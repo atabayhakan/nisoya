@@ -21,6 +21,10 @@ return [
     // zaten kapanır; bu bayrak anahtar varken bile kapatmak için.
     'features' => [
         'quick_listing' => (bool) env('AI_QUICK_LISTING', true),
+        // İlan görselleri + sohbet fotoğrafları için otomatik uygunsuz içerik
+        // ön-elemesi. Görsel SİLİNMEZ — yalnızca işaretlenir/incelemeye alınır
+        // (bkz. App\Services\ImageModerationService).
+        'image_moderation' => (bool) env('AI_IMAGE_MODERATION', true),
     ],
 
     'providers' => [

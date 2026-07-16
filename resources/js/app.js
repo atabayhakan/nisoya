@@ -329,6 +329,28 @@ function urlBase64ToUint8Array(base64String) {
 // Passkey ile giriş (Faz M2). Giriş sayfasındaki düğme — e-posta alanı
 // doluysa o hesabın passkey'leri, boşsa cihazın hatırladığı (discoverable)
 // passkey kullanılır. Sunucu: App\Http\Controllers\WebAuthn\WebAuthnLoginController.
+// webpass'in attest()/assert() döndürdüğü {error} nesnesini insan-okur bir
+// mesaja çevirir. En sık görülen gerçek neden: sayfa bir e-posta/uygulama içi
+// tarayıcıda (Outlook, Gmail, Instagram vb. WKWebView) açılmış — bu tür
+// gömülü tarayıcılar Face ID/Touch ID ceremonisine izin vermiyor ve
+// navigator.credentials.create()/get() sunucuya hiç ulaşmadan NotAllowedError
+// ile reddediyor (bkz. webpass kaynağı: DOMException .cause üzerinde saklanır).
+function passkeyErrorMessage(error) {
+    const domName = error?.cause?.name || error?.name;
+    const inAppHint = 'Bu bağlantıyı bir e-posta/uygulama içi tarayıcıda (ör. Outlook, Gmail) açtıysan Face ID/parmak izi çalışmaz — Safari veya Chrome\'da doğrudan aç, ya da Nisoya\'yı ana ekranına ekleyip oradan kullan.';
+
+    if (domName === 'NotAllowedError') {
+        return 'İşlem tamamlanamadı veya izin verilmedi. ' + inAppHint;
+    }
+    if (domName === 'SecurityError') {
+        return 'Bu sayfa adresi passkey için güvenli kabul edilmedi. nisoya.com adresinden doğrudan eriştiğinden emin ol.';
+    }
+    if (domName === 'AbortError') {
+        return 'İşlem zaman aşımına uğradı veya iptal edildi. Tekrar dene.';
+    }
+    return 'Passkey işlemi tamamlanamadı. Cihazın desteklemiyor olabilir. ' + inAppHint;
+}
+
 Alpine.data('passkeyLogin', (optionsUrl, loginUrl) => ({
     supported: Webpass.isSupported(),
     busy: false,
@@ -340,7 +362,7 @@ Alpine.data('passkeyLogin', (optionsUrl, loginUrl) => ({
         this.error = null;
 
         const email = document.getElementById('email')?.value.trim();
-        const { data, success } = await Webpass.assert(
+        const { data, success, error } = await Webpass.assert(
             { path: optionsUrl, body: email ? { email } : {} },
             loginUrl,
         );
@@ -350,7 +372,7 @@ Alpine.data('passkeyLogin', (optionsUrl, loginUrl) => ({
             window.location.href = data.redirect;
             return;
         }
-        this.error = 'Passkey ile giriş yapılamadı. Şifrenle giriş yapabilir veya tekrar deneyebilirsin.';
+        this.error = passkeyErrorMessage(error);
     },
 }));
 
@@ -370,14 +392,14 @@ Alpine.data('passkeyManage', (optionsUrl, registerUrl) => ({
         const url = this.alias.trim()
             ? `${registerUrl}?alias=${encodeURIComponent(this.alias.trim())}`
             : registerUrl;
-        const { success } = await Webpass.attest(optionsUrl, url);
+        const { success, error } = await Webpass.attest(optionsUrl, url);
 
         this.busy = false;
         if (success) {
             window.location.reload();
             return;
         }
-        this.error = 'Passkey eklenemedi. Cihazın desteklemiyor olabilir veya işlem iptal edildi.';
+        this.error = passkeyErrorMessage(error);
     },
 }));
 

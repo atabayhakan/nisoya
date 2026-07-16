@@ -202,5 +202,10 @@ class AppServiceProvider extends ServiceProvider
         if ($quickListing !== null && $quickListing !== '') {
             Config::set('ai.features.quick_listing', $quickListing === '1');
         }
+
+        $moderation = Settings::get('ai.moderasyon_aktif');
+        if ($moderation !== null && $moderation !== '') {
+            Config::set('ai.features.image_moderation', $moderation === '1');
+        }
     }
 }
