@@ -133,5 +133,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // debounce'lu canlı sorgu; scrape/kötüye kullanıma karşı 60/dk.
         RateLimiter::for('quick-search', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip())
         );
+
+        // Kamera-önce hızlı ilan analizi (Faz M3) — her analiz bir Claude
+        // vision çağrısı (maliyetli); kullanıcı başına 10/dk.
+        RateLimiter::for('quick-listing-analyze', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
+        );
     })
     ->create();

@@ -27,7 +27,6 @@ use App\Http\Controllers\MapController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NabizController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\PaymentLinkController;
@@ -35,6 +34,8 @@ use App\Http\Controllers\PortfolioItemController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileSettingsController;
 use App\Http\Controllers\PropertyBrowseController;
+use App\Http\Controllers\PushSubscriptionController;
+use App\Http\Controllers\QuickListingController;
 use App\Http\Controllers\QuickSearchController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
@@ -121,6 +122,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // İlan yönetimi
     Route::get('/panel/ilanlarim', [ListingController::class, 'index'])->name('panel.listings.index');
     Route::get('/panel/ilan/yeni', [ListingController::class, 'create'])->name('panel.listings.create');
+
+    // Kamera-önce hızlı ilan (Faz M3)
+    Route::get('/panel/ilan/hizli', [QuickListingController::class, 'create'])->name('panel.listings.quick');
+    Route::post('/panel/ilan/analiz', [QuickListingController::class, 'analyze'])
+        ->middleware('throttle:quick-listing-analyze')
+        ->name('panel.listings.analyze');
     Route::post('/panel/ilan', [ListingController::class, 'store'])
         ->middleware(['honeypot', 'throttle:listing-create'])
         ->name('panel.listings.store');

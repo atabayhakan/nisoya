@@ -12,6 +12,30 @@
         </div>
         <p class="mt-3 text-sm text-stone-500 dark:text-stone-400">{{ match ($type) { 'urun' => 'Evde ürettiğin ürünü sergile, alıcılarla buluş.', 'emlak' => 'Evini kirala, sat veya kısa dönem misafir ağırla — kendi insanınla güvenle.', 'vasita' => 'Arabanı sat veya kirala — kendi insanınla güvenle, dil sorunu olmadan.', default => 'Yeteneğini/hizmetini anlat, bulunduğun ülkedeki Türklerle buluş.' } }}</p>
 
+        {{-- Faz M3: prefill başarı banner'ı (fotoğraftan otomatik dolduruldu) --}}
+        @if (session('quick_prefill'))
+            <div class="mt-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">
+                <x-heroicon-o-sparkles class="mt-0.5 h-5 w-5 shrink-0" />
+                <span>Fotoğrafından bir taslak hazırladık ✨ Aşağıdaki bilgileri kontrol edip düzenle, sonra yayınla.</span>
+            </div>
+        @endif
+
+        {{-- Faz M3: kamera-önce hızlı ilan giriş noktası (yalnızca ürün tipinde
+             ve özellik açıksa) --}}
+        @if ($type === 'urun' && app(\App\Services\ListingVisionService::class)->isEnabled())
+            <a href="{{ route('panel.listings.quick') }}"
+               class="mt-4 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 px-4 py-3 text-left transition hover:bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/40">
+                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white dark:bg-emerald-500">
+                    <x-heroicon-o-camera class="h-5 w-5" />
+                </span>
+                <span class="min-w-0 flex-1">
+                    <span class="block text-sm font-semibold text-stone-800 dark:text-stone-100">Fotoğrafla hızlı doldur</span>
+                    <span class="block text-xs text-stone-500 dark:text-stone-400">Ürünün fotoğrafını çek, formu senin için hazırlayalım</span>
+                </span>
+                <x-heroicon-o-chevron-right class="h-5 w-5 shrink-0 text-emerald-500" />
+            </a>
+        @endif
+
         <form method="POST" action="{{ route('panel.listings.store') }}" enctype="multipart/form-data" class="mt-6 space-y-5">
             @csrf
             @include('panel.listings.partials.form-fields', ['listing' => null])

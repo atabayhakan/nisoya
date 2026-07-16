@@ -184,6 +184,34 @@ uçtan uca çalışır; credential silme çalışır; parola girişi bozulmamı�
 makul başlık+kategori önerisi gelir; API kapalıyken normal form akışı
 etkilenmez.
 
+**Uygulandı (2026-07-17):**
+- `config/services.php` → `anthropic` bloğu (`api_key`, `model`
+  varsayılan `claude-haiku-4-5`, `quick_listing_enabled`). API anahtarı
+  yoksa özellik kendiliğinden kapanır; giriş noktası gizlenir.
+- `App\Services\ListingVisionService`: Intervention ile görseli 1024px'e
+  küçültüp EXIF strip eder (GPS API'ye sızmaz), Laravel `Http` ile Messages
+  API'sini çağırır (SDK değil — GeocodingService ile aynı desen), structured
+  output (`output_config.format` json_schema) ile başlık/kategori_slug/
+  açıklama/durum/fiyat döner. Kategori enum'u gerçek ürün slug'larından;
+  slug → category_id eşlemesi sunucuda. `refusal`/hata/kapalı → null.
+- `QuickListingController`: `GET /panel/ilan/hizli` (kamera ekranı),
+  `POST /panel/ilan/analiz` (`throttle:quick-listing-analyze` = 10/dk).
+  Öneriler `withInput()` ile normal forma taşınır (form zaten `old()`
+  okuyor — partial'a dokunulmadı); onaylamadan yayınlanmaz. API
+  başarısızsa zarifçe normal forma düşer.
+- `quick.blade.php`: `capture="environment"` ile kamera-önce ekran,
+  önizleme + spinner. Create formunda "Fotoğrafla hızlı doldur" giriş
+  kartı (yalnız ürün tipi + özellik açıksa) + prefill banner'ı.
+- Testler: `QuickListingTest` (7 test — Http::fake ile; auth, kapalı
+  fallback, prefill, API hatası, validasyon); tam takım 537 yeşil.
+- **Model seçimi notu:** Plan Haiku 4.5 önerdi (görüntü destekli, en düşük
+  maliyetli Claude; ücretsiz platform bütçesine uygun). `ANTHROPIC_MODEL`
+  ile değiştirilebilir. **Üretimde yapılacak:** `.env`'e `ANTHROPIC_API_KEY`
+  ekle (yoksa özellik kapalı kalır, hiçbir şey kırılmaz).
+- **Gelecek iyileştirme:** analiz edilen fotoğraf şu an ilana otomatik
+  eklenmiyor (kullanıcı normal formda tekrar yükler) — sürtünmeyi azaltmak
+  için geçici depolama ile taşınabilir.
+
 ---
 
 ## Faz M4 — Gerçek zamanlı & zengin mesajlaşma
