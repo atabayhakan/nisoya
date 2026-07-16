@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Listing;
 use App\Models\User;
 use App\Services\NabizService;
 use App\Support\Settings;
+use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -119,5 +121,33 @@ class NabizTest extends TestCase
         // "Nisoya Nabzı" footer linkinde her zaman görünür; hedef kartına
         // özgü metni (başlık) kontrol ederek kartın gizlendiğini doğrula.
         $this->get('/')->assertDontSee('Bu ay hedefimiz');
+    }
+
+    public function test_country_activity_maps_real_coordinates_and_listing_counts(): void
+    {
+        $this->seed(CategorySeeder::class);
+        $seller = User::factory()->create(['country_code' => 'DE']);
+        Listing::factory()->count(2)->for($seller)->create(['status' => 'aktif', 'country_code' => 'DE']);
+
+        $activity = collect(app(NabizService::class)->countryActivity());
+        $de = $activity->firstWhere('code', 'DE');
+
+        $this->assertNotNull($de);
+        $this->assertSame(2, $de['count']);
+        $this->assertGreaterThanOrEqual(0.0, $de['x']);
+        $this->assertLessThanOrEqual(1.0, $de['x']);
+        $this->assertGreaterThanOrEqual(0.0, $de['y']);
+        $this->assertLessThanOrEqual(1.0, $de['y']);
+    }
+
+    public function test_country_activity_excludes_inactive_listings(): void
+    {
+        $this->seed(CategorySeeder::class);
+        $seller = User::factory()->create(['country_code' => 'NL']);
+        Listing::factory()->for($seller)->create(['status' => 'beklemede', 'country_code' => 'NL']);
+
+        $activity = collect(app(NabizService::class)->countryActivity());
+
+        $this->assertSame(0, $activity->firstWhere('code', 'NL')['count']);
     }
 }

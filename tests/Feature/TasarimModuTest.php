@@ -95,4 +95,16 @@ class TasarimModuTest extends TestCase
             ->assertOk()
             ->assertDontSee('#0f5c42', false);
     }
+
+    public function test_homepage_shows_pulse_map_only_in_yeni_mode(): void
+    {
+        // assertSee 2. parametresiz varsayılan olarak metni HTML-escape eder
+        // (apostrof → &#039;) — bileşendeki ham apostrofla eşleşmesi için
+        // escape=false gerekiyor.
+        $this->get('/')->assertOk()->assertDontSee("Nisoya'nın Nabzı", false);
+
+        Settings::setMany(['gorunum.tasarim_modu' => 'yeni']);
+
+        $this->get('/')->assertOk()->assertSee("Nisoya'nın Nabzı", false);
+    }
 }

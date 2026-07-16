@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\StoryStatus;
+use App\Models\Country;
 use App\Models\Listing;
 use App\Models\Story;
 use App\Models\User;
@@ -87,6 +88,43 @@ class NabizService
         });
 
         return collect($ambassadors)->map(fn (array $item) => (object) $item);
+    }
+
+    /**
+     * "Nabız Haritası" (Faz İ2, "2. Tasarım" pilotu) için ülke başına aktif
+     * ilan sayısı — ülkenin gerçek enlem/boylamı basit bir eşdik-açılı
+     * (equirectangular) izdüşümle 0-1 aralığında x/y'ye çevrilir. Süs değil,
+     * gerçek veri: nokta boyutu/parlaklığı o ülkedeki aktif ilan sayısını
+     * yansıtır (bkz. components/pulse-map.blade.php).
+     *
+     * @return array<int, array{code: string, name: string, emoji: ?string, x: float, y: float, count: int}>
+     */
+    public function countryActivity(): array
+    {
+        return Cache::remember('nabiz_country_activity', self::CACHE_TTL_SECONDS, function () {
+            $counts = Listing::query()->active()
+                ->whereNotNull('country_code')
+                ->select('country_code', DB::raw('count(*) as toplam'))
+                ->groupBy('country_code')
+                ->pluck('toplam', 'country_code');
+
+            return Country::query()
+                ->where('is_active', true)
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->orderBy('sort_order')
+                ->get(['code', 'name_tr', 'emoji', 'latitude', 'longitude'])
+                ->map(fn (Country $country) => [
+                    'code' => $country->code,
+                    'name' => $country->name_tr,
+                    'emoji' => $country->emoji,
+                    'x' => round(($country->longitude + 180) / 360, 4),
+                    'y' => round((90 - $country->latitude) / 180, 4),
+                    'count' => (int) ($counts[$country->code] ?? 0),
+                ])
+                ->values()
+                ->all();
+        });
     }
 
     /** "Gurbet Günlüğü" hikaye duvarı admin panelden açık mı? */

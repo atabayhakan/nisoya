@@ -168,6 +168,17 @@
         </div>
     </section>
 
+    {{-- Faz İ2 ("2. Tasarım" pilotu): istatistik kartındaki "22 ülke" metnini
+         gerçek veriyle gösteren Nabız Haritası. Sadece yeni tasarım modunda —
+         bkz. /yonetim Tasarım Modu. --}}
+    @if (setting('gorunum.tasarim_modu', 'eski') === 'yeni')
+        <section class="border-b border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-950">
+            <div class="mx-auto max-w-6xl px-4 py-14">
+                <x-pulse-map :countries="$pulseCountries" />
+            </div>
+        </section>
+    @endif
+
     {{-- Kategoriler --}}
     <section class="mx-auto max-w-6xl px-4 py-14" x-data x-reveal>
         <div class="flex items-end justify-between">

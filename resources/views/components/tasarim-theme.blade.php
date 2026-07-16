@@ -23,6 +23,9 @@
             --color-emerald-900: #09291e;
             --color-emerald-950: #061a13;
             --color-stone-50: #f3eee4;
+            /* Tailwind ailesi değil, tek amaçlı özel bir jeton — Mühür Kızılı.
+               bkz. components/pulse-map.blade.php (canlı nabız rengi). */
+            --nisoya-seal: #c1440e;
         }
     </style>
 @endif

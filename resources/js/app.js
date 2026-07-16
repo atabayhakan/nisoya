@@ -165,5 +165,83 @@ Alpine.data('headerScroll', () => ({
     },
 }));
 
+// Nabız Haritası (Faz İ2, "2. Tasarım" pilotu). Süs değil veri: her nokta
+// gerçek bir ülkenin enlem/boylamından gelen konumda, boyutu o ülkedeki
+// aktif ilan sayısıyla orantılı (bkz. App\Services\NabizService::countryActivity).
+// prefers-reduced-motion'da nabız animasyonu durur, noktalar sabit kalır.
+Alpine.data('pulseMap', (countries) => ({
+    init() {
+        const canvas = this.$refs.canvas;
+        const ctx = canvas.getContext('2d');
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const maxCount = Math.max(1, ...countries.map((c) => c.count));
+        const seeds = countries.map(() => Math.random() * 3000);
+        const start = performance.now();
+
+        const resize = () => {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        };
+        resize();
+        window.addEventListener('resize', resize);
+
+        const colors = () => {
+            const s = getComputedStyle(document.documentElement);
+            return {
+                dot: s.getPropertyValue('--color-emerald-600').trim() || '#0f5c42',
+                pulse: s.getPropertyValue('--nisoya-seal').trim() || '#c1440e',
+                ink: s.getPropertyValue('--color-stone-500').trim() || '#78716c',
+            };
+        };
+
+        const frame = (t) => {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const w = rect.width;
+            const h = rect.height;
+            const c = colors();
+            ctx.clearRect(0, 0, w, h);
+
+            countries.forEach((country, i) => {
+                const px = country.x * w;
+                const py = country.y * h;
+                const weight = country.count / maxCount;
+                const radius = 2.5 + weight * 4.5;
+                const phase = reduceMotion ? 0 : ((t - start + seeds[i]) % 2800) / 2800;
+                const pulse = reduceMotion ? 0.4 : Math.sin(phase * Math.PI * 2) * 0.5 + 0.5;
+
+                if (!reduceMotion && country.count > 0) {
+                    ctx.beginPath();
+                    ctx.arc(px, py, radius + pulse * 12, 0, Math.PI * 2);
+                    ctx.strokeStyle = c.pulse;
+                    ctx.globalAlpha = (1 - pulse) * 0.4;
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                }
+
+                ctx.beginPath();
+                ctx.arc(px, py, radius, 0, Math.PI * 2);
+                ctx.fillStyle = country.count > 0 ? c.dot : c.ink;
+                ctx.globalAlpha = country.count > 0 ? 0.9 : 0.35;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            });
+
+            if (!reduceMotion) {
+                this.frameId = requestAnimationFrame(frame);
+            }
+        };
+        this.frameId = requestAnimationFrame(frame);
+
+        this.$el.addEventListener('alpine:destroy', () => {
+            cancelAnimationFrame(this.frameId);
+            window.removeEventListener('resize', resize);
+        });
+    },
+}));
+
 window.Alpine = Alpine;
 Alpine.start();

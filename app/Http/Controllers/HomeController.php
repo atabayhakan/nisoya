@@ -45,6 +45,7 @@ class HomeController extends Controller
                 ]),
             'nabizGoal' => $nabiz->goalProgress(),
             'nabizAmbassadors' => $nabiz->cityAmbassadors(3),
+            'pulseCountries' => $nabiz->countryActivity(),
         ]);
     }
 }
