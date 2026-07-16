@@ -36,7 +36,11 @@
                 <div class="min-w-0 flex-1">
                     <h1 class="flex items-center gap-2 text-2xl font-bold text-stone-900 dark:text-stone-50">
                         {{ $user->name }}
-                        @if ($user->is_verified)<span title="Doğrulanmış üye" class="text-base text-emerald-600 dark:text-emerald-400">✓ Doğrulanmış</span>@endif
+                        @if ($user->is_verified)
+                            <span class="inline-flex items-center gap-1 text-base text-emerald-600 dark:text-emerald-400">
+                                <x-verified-badge size="base" /> Doğrulanmış
+                            </span>
+                        @endif
                     </h1>
                     <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
                         @if ($user->city){{ $user->city }} · @endif{{ $user->country_code }} · Üyelik: {{ $user->created_at->translatedFormat('F Y') }}

@@ -386,7 +386,7 @@
                             <div class="min-w-0">
                                 <div class="flex items-center gap-1 font-semibold text-stone-800 dark:text-stone-100">
                                     {{ $listing->user->name }}
-                                    @if ($listing->user->is_verified)<span title="Doğrulanmış üye" class="text-emerald-600 dark:text-emerald-400">✓</span>@endif
+                                    @if ($listing->user->is_verified)<x-verified-badge />@endif
                                 </div>
                                 <div class="text-xs text-stone-500 dark:text-stone-400">Üyelik: {{ $listing->user->created_at->translatedFormat('F Y') }}</div>
                                 @if ($sellerRating['count'] > 0)

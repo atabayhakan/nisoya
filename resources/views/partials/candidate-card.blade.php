@@ -11,7 +11,7 @@
         <div class="min-w-0 flex-1">
             <h3 class="flex items-center gap-1.5 truncate font-semibold text-stone-800 group-hover:text-emerald-700 dark:text-stone-100 dark:group-hover:text-emerald-400">
                 {{ $candidate->name }}
-                @if ($candidate->is_verified)<span title="Doğrulanmış üye" class="text-xs text-emerald-600 dark:text-emerald-400">✓</span>@endif
+                @if ($candidate->is_verified)<x-verified-badge size="xs" />@endif
             </h3>
 
             <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-400 dark:text-stone-500">
