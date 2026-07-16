@@ -113,7 +113,7 @@
                              width="800"
                              height="420"
                              fetchpriority="high"
-                             style="--listing-transition-name: listing-image-{{ $listing->id }}"
+                             style="--listing-transition-name: listing-image-{{ $listing->id }}; object-position: {{ $hero->objectPosition() }}"
                              class="listing-cover-transition max-h-[420px] w-full object-cover">
                     </div>
                     @if ($listing->images->count() > 1)
@@ -128,6 +128,7 @@
                                      height="120"
                                      loading="lazy"
                                      decoding="async"
+                                     style="object-position: {{ $image->objectPosition() }}"
                                      class="aspect-square w-full rounded-lg object-cover">
                             @endforeach
                         </div>
@@ -386,13 +387,7 @@
 
                     <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
                         <div class="flex items-center gap-3">
-                            <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-lg font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                                @if ($listing->user->avatar_path)
-                                    <img src="{{ Storage::url($listing->user->avatar_path) }}" alt="" class="h-full w-full object-cover">
-                                @else
-                                    {{ mb_strtoupper(mb_substr($listing->user->name, 0, 1)) }}
-                                @endif
-                            </div>
+                            <x-avatar :user="$listing->user" size="h-12 w-12" text="text-lg" />
                             <div class="min-w-0">
                                 <div class="flex items-center gap-1 font-semibold text-stone-800 dark:text-stone-100">
                                     {{ $listing->user->name }}

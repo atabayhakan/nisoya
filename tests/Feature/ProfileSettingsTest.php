@@ -129,4 +129,35 @@ class ProfileSettingsTest extends TestCase
             'password_confirmation' => 'yeni-sifre1',
         ])->assertSessionHasErrors('current_password');
     }
+
+    /** Sürükleyerek hizalama (Faz M7): profil fotoğrafının odak noktası. */
+    public function test_user_can_align_avatar_focal_point(): void
+    {
+        $user = User::factory()->create(['avatar_path' => 'avatars/foto.jpg', 'avatar_focal_x' => 50, 'avatar_focal_y' => 50]);
+
+        $this->actingAs($user)->patch('/panel/profil/avatar-hizala', [
+            'focal_x' => 20,
+            'focal_y' => 80,
+        ])->assertOk()->assertJson(['status' => 'ok']);
+
+        $user->refresh();
+        $this->assertSame(20, $user->avatar_focal_x);
+        $this->assertSame(80, $user->avatar_focal_y);
+    }
+
+    public function test_avatar_align_rejects_out_of_range_values(): void
+    {
+        $user = User::factory()->create(['avatar_path' => 'avatars/foto.jpg']);
+
+        $this->actingAs($user)->patch('/panel/profil/avatar-hizala', [
+            'focal_x' => 101,
+            'focal_y' => -1,
+        ])->assertSessionHasErrors(['focal_x', 'focal_y']);
+    }
+
+    public function test_guest_cannot_align_avatar(): void
+    {
+        $this->patch('/panel/profil/avatar-hizala', ['focal_x' => 10, 'focal_y' => 10])
+            ->assertRedirect(route('login'));
+    }
 }

@@ -17,6 +17,7 @@ use App\Models\Report;
 use App\Models\Review;
 use App\Models\SavedSearch;
 use App\Services\ImageService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -103,6 +104,22 @@ class ProfileSettingsController extends Controller
         $user->update($data);
 
         return back()->with('status', 'Profilin güncellendi.');
+    }
+
+    /** Profil fotoğrafının kırpma odağını kaydet (parmak/fare ile sürükleyerek hizalama). */
+    public function alignAvatar(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'focal_x' => ['required', 'integer', 'min:0', 'max:100'],
+            'focal_y' => ['required', 'integer', 'min:0', 'max:100'],
+        ]);
+
+        $request->user()->update([
+            'avatar_focal_x' => $data['focal_x'],
+            'avatar_focal_y' => $data['focal_y'],
+        ]);
+
+        return response()->json(['status' => 'ok']);
     }
 
     public function password(Request $request): RedirectResponse

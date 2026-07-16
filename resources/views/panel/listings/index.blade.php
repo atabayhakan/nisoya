@@ -19,7 +19,9 @@
                 <div class="flex items-center gap-4">
                     <div class="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-stone-100 dark:bg-stone-800">
                         @if ($listing->coverImage)
-                            <img src="{{ Storage::url($listing->coverImage->path) }}" alt="" class="h-full w-full object-cover">
+                            <img src="{{ $listing->coverImage->url('thumb') }}" alt=""
+                                 style="object-position: {{ $listing->coverImage->objectPosition() }}"
+                                 class="h-full w-full object-cover">
                         @else
                             @php($fallbackIcon = \App\Support\CategoryIcon::heroicon($listing->category?->parent?->icon ?? $listing->category?->icon))
                             <div class="flex h-full w-full items-center justify-center text-stone-300 dark:text-stone-600">

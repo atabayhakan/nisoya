@@ -16,7 +16,7 @@
                  height="300"
                  loading="lazy"
                  decoding="async"
-                 style="--listing-transition-name: listing-image-{{ $listing->id }}"
+                 style="--listing-transition-name: listing-image-{{ $listing->id }}; object-position: {{ $listing->coverImage->objectPosition() }}"
                  class="listing-cover-transition h-full w-full object-cover transition duration-300 group-hover:scale-105">
         @else
             @php($fallbackIcon = \App\Support\CategoryIcon::heroicon($listing->category?->parent?->icon ?? $listing->category?->icon))

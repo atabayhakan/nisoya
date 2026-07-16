@@ -35,6 +35,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
         'phone',
         'password',
         'avatar_path',
+        'avatar_focal_x',
+        'avatar_focal_y',
         'bio',
         'skills',
         'is_searchable',
@@ -71,7 +73,15 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
             'status' => UserStatus::class,
             'account_type' => AccountType::class,
             'skills' => 'array',
+            'avatar_focal_x' => 'integer',
+            'avatar_focal_y' => 'integer',
         ];
+    }
+
+    /** Avatar görselinin kırpma odağı (bkz. x-avatar bileşeni, "sürükleyerek hizala"). */
+    public function avatarObjectPosition(): string
+    {
+        return $this->avatar_focal_x.'% '.$this->avatar_focal_y.'%';
     }
 
     protected static function booted(): void

@@ -305,6 +305,61 @@ Alpine.data('pushToggle', (vapidKey, subscribeUrl, unsubscribeUrl) => ({
     },
 }));
 
+// Profil/ürün fotoğrafı odak noktası: parmak (touch) ya da fare (mouse) ile
+// sürükleyerek hizalama (bkz. panel/profile/edit.blade.php + panel/listings/edit.blade.php).
+// Pointer Events tek bir API ile hem dokunmatik hem fareyi kapsar — ayrı
+// touchstart/mousedown dinleyicisi gerekmez. Sürükleme, DELTA tabanlı: fotoğrafı
+// gerçekten "kaydırıyormuş" hissi versin diye, parmak sağa gittikçe object-position
+// yüzdesi AZALIR (görselin sol kısmı ortaya çıkar) — bu yüzden işaret ters (-).
+Alpine.data('focalDrag', (initialX, initialY, saveUrl) => ({
+    x: initialX,
+    y: initialY,
+    dragging: false,
+    saved: false,
+    startClientX: 0,
+    startClientY: 0,
+    startX: 0,
+    startY: 0,
+    frameWidth: 0,
+    frameHeight: 0,
+
+    get objectPosition() {
+        return this.x + '% ' + this.y + '%';
+    },
+
+    startDrag(e) {
+        const rect = this.$refs.frame.getBoundingClientRect();
+        this.frameWidth = rect.width;
+        this.frameHeight = rect.height;
+        this.startClientX = e.clientX;
+        this.startClientY = e.clientY;
+        this.startX = this.x;
+        this.startY = this.y;
+        this.dragging = true;
+        this.saved = false;
+    },
+
+    onDrag(e) {
+        if (!this.dragging) return;
+        const dx = e.clientX - this.startClientX;
+        const dy = e.clientY - this.startClientY;
+        this.x = clampPercent(this.startX - (dx / this.frameWidth) * 100);
+        this.y = clampPercent(this.startY - (dy / this.frameHeight) * 100);
+    },
+
+    async endDrag() {
+        if (!this.dragging) return;
+        this.dragging = false;
+        await postJson(saveUrl, 'PATCH', { focal_x: Math.round(this.x), focal_y: Math.round(this.y) });
+        this.saved = true;
+        setTimeout(() => { this.saved = false; }, 1500);
+    },
+}));
+
+function clampPercent(value) {
+    return Math.max(0, Math.min(100, Math.round(value)));
+}
+
 function postJson(url, method, body) {
     return fetch(url, {
         method,

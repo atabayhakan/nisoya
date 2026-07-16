@@ -123,6 +123,64 @@ class ListingTest extends TestCase
         $this->assertDatabaseMissing('listings', ['id' => $listing->id]);
     }
 
+    /** Sürükleyerek hizalama (Faz M7): ürün fotoğrafının odak noktası. */
+    public function test_owner_can_align_listing_image_focal_point(): void
+    {
+        $user = $this->verifiedUser();
+        $listing = Listing::factory()->for($user)->create();
+        $image = $listing->images()->create(['sort_order' => 0, 'is_cover' => true, 'focal_x' => 50, 'focal_y' => 50]);
+
+        $this->actingAs($user)
+            ->patch("/panel/ilan/{$listing->id}/gorsel/{$image->id}/hizala", ['focal_x' => 30, 'focal_y' => 70])
+            ->assertOk()->assertJson(['status' => 'ok']);
+
+        $image->refresh();
+        $this->assertSame(30, $image->focal_x);
+        $this->assertSame(70, $image->focal_y);
+    }
+
+    public function test_non_owner_cannot_align_listing_image(): void
+    {
+        $owner = $this->verifiedUser();
+        $intruder = $this->verifiedUser();
+        $listing = Listing::factory()->for($owner)->create();
+        $image = $listing->images()->create(['sort_order' => 0, 'is_cover' => true]);
+
+        $this->actingAs($intruder)
+            ->patch("/panel/ilan/{$listing->id}/gorsel/{$image->id}/hizala", ['focal_x' => 10, 'focal_y' => 10])
+            ->assertForbidden();
+    }
+
+    public function test_align_rejects_image_belonging_to_another_listing(): void
+    {
+        $user = $this->verifiedUser();
+        $listingA = Listing::factory()->for($user)->create();
+        $listingB = Listing::factory()->for($user)->create();
+        $imageOfB = $listingB->images()->create(['sort_order' => 0, 'is_cover' => true]);
+
+        $this->actingAs($user)
+            ->patch("/panel/ilan/{$listingA->id}/gorsel/{$imageOfB->id}/hizala", ['focal_x' => 10, 'focal_y' => 10])
+            ->assertNotFound();
+    }
+
+    /** Görsel önizlemesinde artık dropped 'path' sütununa değil path_medium/thumb/large'a bakılıyor. */
+    public function test_edit_and_index_pages_render_existing_listing_images_without_error(): void
+    {
+        Storage::fake('public');
+        $user = $this->verifiedUser();
+        $listing = Listing::factory()->for($user)->create();
+        $listing->images()->create([
+            'sort_order' => 0,
+            'is_cover' => true,
+            'path_thumb' => 'listings/foto-thumb.jpg',
+            'path_medium' => 'listings/foto-medium.jpg',
+            'path_large' => 'listings/foto-large.jpg',
+        ]);
+
+        $this->actingAs($user)->get('/panel/ilanlarim')->assertOk();
+        $this->actingAs($user)->get("/panel/ilan/{$listing->id}/duzenle")->assertOk();
+    }
+
     public function test_public_can_view_active_listing_and_views_increment(): void
     {
         $listing = Listing::factory()->for($this->verifiedUser())->create([

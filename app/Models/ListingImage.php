@@ -30,6 +30,8 @@ class ListingImage extends Model
         'reverse_state',
         'reverse_geocoded_at',
         'sort_order',
+        'focal_x',
+        'focal_y',
         'is_cover',
         'is_flagged',
         'flagged_reason',
@@ -44,6 +46,8 @@ class ListingImage extends Model
             'has_sensitive_exif' => 'boolean',
             'width' => 'integer',
             'height' => 'integer',
+            'focal_x' => 'integer',
+            'focal_y' => 'integer',
             'size_bytes' => 'integer',
             'exif_metadata' => 'array',
             'gps_lat' => 'float',
@@ -282,6 +286,12 @@ class ListingImage extends Model
         $decimal = $degrees + ($minutes / 60) + ($seconds / 3600);
 
         return in_array($ref, ['S', 'W'], true) ? -$decimal : $decimal;
+    }
+
+    /** Görselin kırpma odağı (bkz. "sürükleyerek hizala" — panel/listings/edit.blade.php). */
+    public function objectPosition(): string
+    {
+        return $this->focal_x.'% '.$this->focal_y.'%';
     }
 
     /**

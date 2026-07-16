@@ -141,6 +141,19 @@ class EventInvitationTest extends TestCase
         $this->assertSame(2, $summary['geliyor']['entries']);
         $this->assertSame(6, $summary['expected_people']); // 5 geliyor + 1 belki
 
+        // guests() ilişkisi normal listeleme için orderByDesc('id') taşır;
+        // groupBy() sorgusuna bu miras kalırsa MySQL'in only_full_group_by
+        // modunda SQLSTATE[42000] (1055) hatası verir (SQLite bu kısıtlamayı
+        // uygulamadığından çalıştırma bazlı bir test bunu YAKALAYAMAZ — bu
+        // yüzden üretilen SQL'i doğrudan denetliyoruz). 2026-07-17 üretim
+        // raporu: "davetiye oluştur" sonrası yönlendirilen show sayfası bu
+        // yüzden 500 veriyordu.
+        $sql = $event->guests()->reorder()
+            ->selectRaw('status, count(*) as entries, sum(party_size) as people')
+            ->groupBy('status')
+            ->toSql();
+        $this->assertStringNotContainsString('order by', mb_strtolower($sql));
+
         $this->actingAs($host)
             ->get('/panel/etkinlik/'.$event->id)
             ->assertOk()

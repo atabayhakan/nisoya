@@ -13,13 +13,28 @@
             @endif
 
             <div class="flex items-center gap-4">
-                <div class="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                    @if ($user->avatar_path)
-                        <img src="{{ Storage::url($user->avatar_path) }}" alt="" class="h-full w-full object-cover">
-                    @else
+                @if ($user->avatar_path)
+                    {{-- Sürükleyerek hizala: Pointer Events hem dokunmatik hem fareyi kapsar. --}}
+                    <div x-data="focalDrag({{ $user->avatar_focal_x }}, {{ $user->avatar_focal_y }}, '{{ route('panel.profile.avatar-align') }}')" class="shrink-0">
+                        <div
+                            x-ref="frame"
+                            @pointerdown="startDrag($event); $event.target.setPointerCapture($event.pointerId)"
+                            @pointermove="onDrag($event)"
+                            @pointerup="endDrag($event)"
+                            @pointercancel="dragging = false"
+                            class="grid h-24 w-24 cursor-move touch-none select-none place-items-center overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/40"
+                        >
+                            <img src="{{ Storage::url($user->avatar_path) }}" alt="" draggable="false"
+                                 class="h-full w-full object-cover" :style="{ objectPosition: objectPosition }">
+                        </div>
+                        <p class="mt-1 text-center text-[11px] text-stone-400 dark:text-stone-500" x-show="!saved">Sürükleyerek hizala</p>
+                        <p class="mt-1 text-center text-[11px] font-medium text-emerald-600 dark:text-emerald-400" x-show="saved">Kaydedildi ✓</p>
+                    </div>
+                @else
+                    <div class="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-3xl font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                         {{ mb_strtoupper(mb_substr($user->name, 0, 1)) }}
-                    @endif
-                </div>
+                    </div>
+                @endif
                 <div>
                     <label for="avatar" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Profil fotoğrafı</label>
                     <input id="avatar" name="avatar" type="file" accept="image/*" class="mt-1 text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">

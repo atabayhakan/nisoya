@@ -124,6 +124,21 @@ class AuthTest extends TestCase
         $this->actingAs($user)->get('/panel')->assertOk()->assertSee('Merhaba');
     }
 
+    /**
+     * Masaüstü header'daki Çıkış formu 'hidden md:block' ile mobilde gizli —
+     * mobil kullanıcının çıkış yapabileceği tek yer bu sayfa (2026-07-17
+     * kullanıcı raporu: mobilde hiçbir yerde Çıkış Yap butonu yoktu).
+     */
+    public function test_dashboard_has_visible_logout_button(): void
+    {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+
+        $this->actingAs($user)->get('/panel')
+            ->assertOk()
+            ->assertSee('Çıkış Yap')
+            ->assertSee(route('logout'), false);
+    }
+
     public function test_guest_cannot_access_panel(): void
     {
         $this->get('/panel')->assertRedirect(route('login'));

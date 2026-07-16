@@ -134,6 +134,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/panel/ilan/{listing}/duzenle', [ListingController::class, 'edit'])->name('panel.listings.edit');
     Route::match(['put', 'patch'], '/panel/ilan/{listing}', [ListingController::class, 'update'])->name('panel.listings.update');
     Route::delete('/panel/ilan/{listing}', [ListingController::class, 'destroy'])->name('panel.listings.destroy');
+    Route::patch('/panel/ilan/{listing}/gorsel/{image}/hizala', [ListingController::class, 'alignImage'])->name('panel.listings.images.align');
     Route::post('/panel/ilan/{listing}/one-cikar', [FeatureController::class, 'store'])->name('panel.listings.feature')->middleware('throttle:listing-feature');
     Route::post('/panel/ilan/{listing}/takvim', [ListingAvailabilityController::class, 'store'])->name('panel.listings.availability.store');
     Route::delete('/panel/ilan/{listing}/takvim/{range}', [ListingAvailabilityController::class, 'destroy'])->name('panel.listings.availability.destroy');
@@ -201,6 +202,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/panel/profil', [ProfileSettingsController::class, 'edit'])->name('panel.profile.edit');
     Route::put('/panel/profil', [ProfileSettingsController::class, 'update'])->name('panel.profile.update');
     Route::put('/panel/profil/sifre', [ProfileSettingsController::class, 'password'])->name('panel.profile.password');
+    Route::patch('/panel/profil/avatar-hizala', [ProfileSettingsController::class, 'alignAvatar'])->name('panel.profile.avatar-align');
 
     // Ödeme linki/QR kodu (Nisoya para akışını görmez — sadece satıcının kendi ödeme sayfasına yönlendirir)
     Route::post('/panel/profil/odeme-linki', [PaymentLinkController::class, 'store'])->name('panel.payment-links.store');

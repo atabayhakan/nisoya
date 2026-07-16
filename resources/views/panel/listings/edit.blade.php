@@ -11,19 +11,34 @@
             @if ($listing->images->isNotEmpty())
                 <div>
                     <span class="block text-sm font-medium text-stone-700 dark:text-stone-300">Mevcut görseller</span>
-                    <p class="text-xs text-stone-400 dark:text-stone-500">Silmek istediklerini işaretle.</p>
+                    <p class="text-xs text-stone-400 dark:text-stone-500">Sürükleyerek hizala, silmek istediklerini işaretle.</p>
                     <div class="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-4">
                         @foreach ($listing->images as $image)
-                            <label class="group relative block cursor-pointer overflow-hidden rounded-lg border border-stone-200 dark:border-stone-700">
-                                <img src="{{ Storage::url($image->path) }}" alt="" class="aspect-square w-full object-cover">
+                            <div
+                                x-data="focalDrag({{ $image->focal_x }}, {{ $image->focal_y }}, '{{ route('panel.listings.images.align', [$listing, $image]) }}')"
+                                class="group relative overflow-hidden rounded-lg border border-stone-200 dark:border-stone-700"
+                            >
+                                <div
+                                    x-ref="frame"
+                                    @pointerdown="startDrag($event); $event.target.setPointerCapture($event.pointerId)"
+                                    @pointermove="onDrag($event)"
+                                    @pointerup="endDrag($event)"
+                                    @pointercancel="dragging = false"
+                                    class="aspect-square w-full cursor-move touch-none select-none"
+                                >
+                                    <img src="{{ $image->url('medium') }}" alt="" draggable="false"
+                                         class="h-full w-full object-cover" :style="{ objectPosition: objectPosition }">
+                                </div>
                                 @if ($image->is_cover)
-                                    <span class="absolute left-1 top-1 rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-semibold text-white dark:bg-emerald-500 dark:text-stone-900">Kapak</span>
+                                    <span class="pointer-events-none absolute left-1 top-1 rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-semibold text-white dark:bg-emerald-500 dark:text-stone-900">Kapak</span>
                                 @endif
-                                <span class="absolute inset-x-0 bottom-0 flex items-center gap-1 bg-white/90 px-2 py-1 text-xs text-red-600 dark:bg-stone-900/90 dark:text-red-400">
+                                <span class="pointer-events-none absolute right-1 top-1 rounded bg-stone-900/70 px-1.5 py-0.5 text-[10px] font-medium text-white opacity-0 transition group-hover:opacity-100" x-show="!saved">Sürükle</span>
+                                <span class="pointer-events-none absolute right-1 top-1 rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-medium text-white" x-show="saved">Kaydedildi ✓</span>
+                                <label class="absolute inset-x-0 bottom-0 flex cursor-pointer items-center gap-1 bg-white/90 px-2 py-1 text-xs text-red-600 dark:bg-stone-900/90 dark:text-red-400">
                                     <input type="checkbox" name="delete_images[]" value="{{ $image->id }}" class="rounded border-stone-300 text-red-600 focus:ring-red-500 dark:border-stone-600 dark:bg-stone-800">
                                     Sil
-                                </span>
-                            </label>
+                                </label>
+                            </div>
                         @endforeach
                     </div>
                 </div>

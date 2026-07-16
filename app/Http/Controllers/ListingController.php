@@ -11,8 +11,10 @@ use App\Models\Category;
 use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Listing;
+use App\Models\ListingImage;
 use App\Services\GeocodingService;
 use App\Services\ImageService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -133,6 +135,28 @@ class ListingController extends Controller
 
         return redirect()->route('panel.listings.index')
             ->with('status', 'İlan güncellendi.');
+    }
+
+    /** Ürün görselinin kırpma odağını kaydet (parmak/fare ile sürükleyerek hizalama). */
+    public function alignImage(Request $request, Listing $listing, ListingImage $image): JsonResponse
+    {
+        Gate::authorize('update', $listing);
+
+        if ($image->listing_id !== $listing->id) {
+            abort(404);
+        }
+
+        $data = $request->validate([
+            'focal_x' => ['required', 'integer', 'min:0', 'max:100'],
+            'focal_y' => ['required', 'integer', 'min:0', 'max:100'],
+        ]);
+
+        $image->update([
+            'focal_x' => $data['focal_x'],
+            'focal_y' => $data['focal_y'],
+        ]);
+
+        return response()->json(['status' => 'ok']);
     }
 
     public function destroy(Listing $listing): RedirectResponse

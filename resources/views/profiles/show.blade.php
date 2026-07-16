@@ -26,13 +26,7 @@
         {{-- Satıcı başlığı --}}
         <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
             <div class="flex flex-wrap items-center gap-4">
-                <div class="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-3xl font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                    @if ($user->avatar_path)
-                        <img src="{{ Storage::url($user->avatar_path) }}" alt="" class="h-full w-full object-cover">
-                    @else
-                        {{ mb_strtoupper(mb_substr($user->name, 0, 1)) }}
-                    @endif
-                </div>
+                <x-avatar :user="$user" size="h-20 w-20" text="text-3xl" />
                 <div class="min-w-0 flex-1">
                     <h1 class="flex items-center gap-2 text-2xl font-bold text-stone-900 dark:text-stone-50">
                         {{ $user->name }}

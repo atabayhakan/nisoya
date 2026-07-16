@@ -34,6 +34,29 @@
     display: none !important;
 }
 
+/* date/datetime-local/time input'larının native takvim/saat widget'ı iOS
+   Safari'de "color-scheme" belirtilmezse iç segment yazısını (gün/ay/yıl,
+   saat/dakika) sayfanın color'ından bağımsız, tahmin ettiği bir temayla
+   çiziyor — bazı durumlarda arka planla aynı renkte kalıp görünmez oluyor
+   (2026-07-17 üretim raporu: davetiye tarih alanı "boş" görünüyordu ama
+   tıklanınca seçici açılıyordu — metin görünmezdi, alan çalışıyordu).
+   color-scheme site'ın gerçek tema durumuna (.dark class) bağlanır. */
+input[type='date'],
+input[type='datetime-local'],
+input[type='time'],
+input[type='month'],
+input[type='week'] {
+    color-scheme: light;
+}
+
+.dark input[type='date'],
+.dark input[type='datetime-local'],
+.dark input[type='time'],
+.dark input[type='month'],
+.dark input[type='week'] {
+    color-scheme: dark;
+}
+
 /* Sayfa geçişleri: tarayıcı-native View Transitions API (Cross-Document).
    Yeni JS/kütüphane gerekmiyor — desteklemeyen tarayıcılarda (Safari/Firefox)
    bu at-rule sessizce yok sayılır, sayfa normal şekilde geçer. */

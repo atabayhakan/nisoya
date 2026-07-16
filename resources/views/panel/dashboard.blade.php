@@ -55,5 +55,20 @@
         <p class="mt-8 text-sm text-stone-400 dark:text-stone-500">
             Not: Panel bölümleri (ilan ekleme, mesajlar, favoriler, profil) sonraki adımlarda devreye girecek.
         </p>
+
+        {{-- Çıkış Yap: masaüstü header'da (md+) zaten var, ama mobilde alt
+             sekme çubuğuna taşınacağı belirtilip hiç eklenmemişti — mobil
+             kullanıcının hesaptan çıkacak hiçbir yolu yoktu (2026-07-17
+             kullanıcı raporu). "Panelim" sekmesi doğrudan bu sayfaya
+             indiği için en garantili keşfedilebilir yer burası. --}}
+        <div class="mt-6 border-t border-stone-200 pt-6 dark:border-stone-800">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-xl border border-stone-200 px-4 py-3 text-sm font-medium text-stone-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-stone-800 dark:text-stone-400 dark:hover:border-red-900 dark:hover:bg-red-950/30 dark:hover:text-red-400">
+                    <x-heroicon-o-arrow-right-start-on-rectangle class="h-4 w-4" />
+                    Çıkış Yap
+                </button>
+            </form>
+        </div>
     </div>
 </x-layouts.app>

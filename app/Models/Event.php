@@ -93,7 +93,13 @@ class Event extends Model
     /** LCV sayaçları: durum bazlı davetli satırı + toplam kişi (parti boyutu toplamı). */
     public function rsvpSummary(): array
     {
+        // reorder(): guests() ilişkisi normal listeleme için orderByDesc('id')
+        // taşıyor; bu groupBy() sorgusuna miras kaldığında MySQL'in
+        // only_full_group_by modu SQLSTATE[42000] (1055) hatası veriyordu
+        // (SQLite'ta kısıtlama olmadığı için yerel testlerde görünmüyordu —
+        // 2026-07-17 üretim raporu: davetiye oluşturunca 500 hatası).
         $rows = $this->guests()
+            ->reorder()
             ->selectRaw('status, count(*) as entries, sum(party_size) as people')
             ->groupBy('status')
             ->get()
