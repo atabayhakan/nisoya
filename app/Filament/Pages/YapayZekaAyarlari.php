@@ -1,0 +1,162 @@
+<?php
+
+namespace App\Filament\Pages;
+
+use App\Services\Ai\AiManager;
+use App\Support\Settings;
+use BackedEnum;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
+use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use UnitEnum;
+
+/**
+ * Yapay zeka sağlayıcı ayarları (kamera-önce hızlı ilan görüntü analizi).
+ * Sağlayıcı + API anahtarı + model buradan girilir; DB'ye yazılır ve
+ * AppServiceProvider::mergeRuntimeConfig() ile config('ai.*') runtime'da
+ * override edilir — DEĞİŞİKLİK ANINDA GEÇERLİ olur, config:cache/SSH gerekmez.
+ *
+ * Sağlayıcı katmanı için bkz. App\Contracts\AiProvider + config/ai.php.
+ */
+class YapayZekaAyarlari extends Page
+{
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSparkles;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Site Yönetimi';
+
+    protected static ?string $navigationLabel = 'Yapay Zeka';
+
+    protected static ?int $navigationSort = 3;
+
+    protected string $view = 'filament.pages.yapay-zeka-ayarlari';
+
+    public ?array $data = [];
+
+    public function getTitle(): string
+    {
+        return 'Yapay Zeka Ayarları';
+    }
+
+    public function mount(): void
+    {
+        $this->form->fill([
+            'saglayici' => Settings::get('ai.saglayici') ?: config('ai.default', 'openrouter'),
+            'api_anahtari' => Settings::get('ai.api_anahtari') ?: '',
+            'model' => Settings::get('ai.model') ?: '',
+            'hizli_ilan_aktif' => (Settings::get('ai.hizli_ilan_aktif') ?? '1') === '1',
+        ]);
+    }
+
+    public function form(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Section::make('Sağlayıcı ve Anahtar')
+                    ->description('Fotoğrafla hızlı ilan özelliği için kullanılacak yapay zeka. Anahtarı girdiğinde özellik anında aktifleşir — sunucuya erişmene gerek yok.')
+                    ->columns(2)
+                    ->schema([
+                        Select::make('saglayici')
+                            ->label('Sağlayıcı')
+                            ->options([
+                                'openrouter' => 'OpenRouter (tek uçtan yüzlerce model — önerilen)',
+                                'openai' => 'OpenAI',
+                                'anthropic' => 'Anthropic (Claude)',
+                                'gemini' => 'Google Gemini',
+                            ])
+                            ->required()
+                            ->native(false)
+                            ->helperText('OpenRouter tek API anahtarıyla birçok modele erişim verir.'),
+
+                        TextInput::make('model')
+                            ->label('Model')
+                            ->placeholder('openai/gpt-4o-mini')
+                            ->helperText('OpenRouter için önekli: openai/gpt-4o-mini, google/gemini-2.0-flash-001, anthropic/claude-3.5-sonnet. Boş bırakırsan varsayılan kullanılır. Görüntü destekleyen (vision) bir model seç.'),
+
+                        TextInput::make('api_anahtari')
+                            ->label('API anahtarı')
+                            ->password()
+                            ->revealable()
+                            ->autocomplete('new-password')
+                            ->helperText('Sağlayıcının panelinden aldığın gizli anahtar. Sunucuda güvenle saklanır; kimseye gösterilmez.')
+                            ->columnSpanFull(),
+
+                        Toggle::make('hizli_ilan_aktif')
+                            ->label('Fotoğrafla hızlı ilan özelliği açık')
+                            ->helperText('Kapatırsan anahtar girili olsa bile özellik gizlenir.')
+                            ->columnSpanFull(),
+                    ]),
+            ])
+            ->statePath('data');
+    }
+
+    public function save(): void
+    {
+        $state = $this->form->getState();
+
+        Settings::setMany([
+            'ai.saglayici' => $state['saglayici'] ?? '',
+            'ai.api_anahtari' => $state['api_anahtari'] ?? '',
+            'ai.model' => $state['model'] ?? '',
+            'ai.hizli_ilan_aktif' => ! empty($state['hizli_ilan_aktif']) ? '1' : '0',
+        ]);
+
+        Notification::make()
+            ->title('Yapay zeka ayarları kaydedildi')
+            ->body('Değişiklik canlı sitede anında geçerli — fotoğrafla hızlı ilan özelliği güncellendi.')
+            ->success()
+            ->send();
+    }
+
+    /** Anahtarın gerçekten çalıştığını doğrulamak için sağlayıcıya minik bir çağrı yapar. */
+    public function testEt(): void
+    {
+        // Formdaki (henüz kaydedilmemiş olabilir) değerlerle sağlayıcıyı kur —
+        // temel config'in üzerine form değerlerini yaz.
+        $state = $this->form->getState();
+        $name = $state['saglayici'] ?: config('ai.default', 'openrouter');
+        $config = array_merge(config("ai.providers.{$name}", []), array_filter([
+            'api_key' => $state['api_anahtari'] ?? null,
+            'model' => ($state['model'] ?? '') ?: null,
+        ]));
+
+        $provider = app(AiManager::class)->make($name, $config);
+
+        if (! $provider->isConfigured()) {
+            Notification::make()
+                ->title('Anahtar girilmemiş')
+                ->body('Önce API anahtarını girip kaydet.')
+                ->warning()
+                ->send();
+
+            return;
+        }
+
+        // 1×1 saydam PNG ile minimal bir görüntü analizi — yalnızca anahtar/
+        // model/uç doğru mu diye bakar (JSON dönerse başarı sayılır).
+        $pngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+        $result = $provider->analyzeImage(
+            $pngBase64,
+            'image/png',
+            'Bu bir bağlantı testidir. Sadece şu JSON nesnesini döndür: {"ok": true}',
+        );
+
+        if ($result !== null) {
+            Notification::make()
+                ->title('Bağlantı başarılı ✓')
+                ->body($provider->name().' yanıt verdi. Ayarlar çalışıyor.')
+                ->success()
+                ->send();
+        } else {
+            Notification::make()
+                ->title('Bağlantı kurulamadı')
+                ->body('Sağlayıcı yanıt vermedi. API anahtarını, model adını ve hesabındaki krediyi kontrol et. Ayrıntı için sunucu logu: storage/logs/laravel.log')
+                ->danger()
+                ->send();
+        }
+    }
+}

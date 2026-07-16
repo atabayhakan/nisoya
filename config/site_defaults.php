@@ -100,6 +100,22 @@ return [
         'bagis.maliyet2' => ['group' => 'bagis', 'label' => 'Maliyet kalemi 2 (örn: Alan adı — yılda ~15€)', 'type' => 'text', 'default' => ''],
         'bagis.maliyet3' => ['group' => 'bagis', 'label' => 'Maliyet kalemi 3 (örn: Bakım ve geliştirme — gönüllü)', 'type' => 'text', 'default' => ''],
 
+        // --- Yapay Zeka (kamera-önce ilan görüntü analizi) ---
+        // NOT: bu alanlar bilinçli olarak 'groups' listesine EKLENMEDİ — genel
+        // İçerik formunda render edilmezler; kendi sayfaları var (YapayZekaAyarlari).
+        // Varsayılanlar boş: DB boşsa Settings::get boş döner → mergeRuntimeConfig
+        // env/config varsayılanına düşer (DB > env > kod). API anahtarı hassas
+        // olduğundan varsayılanı boş.
+        'ai.saglayici' => ['group' => 'yapay_zeka', 'label' => 'Sağlayıcı', 'type' => 'select', 'options' => [
+            'openrouter' => 'OpenRouter',
+            'openai' => 'OpenAI',
+            'anthropic' => 'Anthropic (Claude)',
+            'gemini' => 'Google Gemini',
+        ], 'default' => ''],
+        'ai.api_anahtari' => ['group' => 'yapay_zeka', 'label' => 'API anahtarı', 'type' => 'password', 'default' => ''],
+        'ai.model' => ['group' => 'yapay_zeka', 'label' => 'Model', 'type' => 'text', 'default' => ''],
+        'ai.hizli_ilan_aktif' => ['group' => 'yapay_zeka', 'label' => 'Fotoğrafla hızlı ilan', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
+
         // --- Nisoya Nabzı: topluluk hedefi + şehir elçileri ---
         'nabiz.hedef_sayi' => ['group' => 'nabiz', 'label' => 'Hedef sayı (0 = özelliği tamamen gizle)', 'type' => 'text', 'default' => '0'],
         'nabiz.hedef_metrik' => ['group' => 'nabiz', 'label' => 'Hedef neyi sayar?', 'type' => 'select', 'options' => ['yeni_uye' => 'Bu ay yeni üye', 'yeni_ilan' => 'Bu ay yeni ilan'], 'default' => 'yeni_uye'],

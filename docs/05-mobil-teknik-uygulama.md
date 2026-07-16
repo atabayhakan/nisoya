@@ -244,6 +244,15 @@ gerekmez. (Üretimde OpenRouter kullanılıyor.)
 seçimi otomatik gelir. Yeni bir operasyon türü gerekiyorsa arayüze metot ekle
 ve üç sağlayıcıda uygula.
 
+**Admin panelinden yönetim (2026-07-17):** `/yonetim` → "Site Yönetimi →
+Yapay Zeka" (`YapayZekaAyarlari` Filament sayfası). Sağlayıcı + API anahtarı
+(maskeli password alanı) + model + aç/kapa buradan girilir; `site_settings`
+tablosuna yazılır. `AppServiceProvider::mergeAiConfig()` bunları
+`config('ai.*')` üzerine **runtime'da** yazar (öncelik: DB > env > kod). Yani
+admin panelden anahtar girilince özellik **ANINDA aktifleşir** — config:cache
+ya da SSH gerekmez. Sayfadaki "Bağlantıyı test et" düğmesi 1×1 test görseliyle
+sağlayıcıya minik bir çağrı yapıp anahtarın/modelin çalıştığını doğrular.
+
 ---
 
 ## Faz M4 — Gerçek zamanlı & zengin mesajlaşma

@@ -42,6 +42,20 @@ class AiManager
     }
 
     /**
+     * Verilen config ile bir sağlayıcı örneği kur (config'ten okumadan).
+     * Admin panelinde "test et" gibi, henüz kaydedilmemiş değerleri denemek için.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function make(string $name, array $config): AiProvider
+    {
+        $class = $this->providers[$name]
+            ?? throw new InvalidArgumentException("Bilinmeyen AI sağlayıcısı: [{$name}].");
+
+        return new $class($config);
+    }
+
+    /**
      * Çalışma zamanında yeni bir sağlayıcı kaydet (ör. paket/test).
      *
      * @param  class-string<AiProvider>  $class

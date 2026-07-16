@@ -168,5 +168,39 @@ class AppServiceProvider extends ServiceProvider
         if ($analyticsId) {
             Config::set('services.analytics.enabled', true);
         }
+
+        $this->mergeAiConfig();
+    }
+
+    /**
+     * Yapay zeka ayarlarını (admin panel → Yapay Zeka) config('ai.*') üzerine
+     * runtime'da yaz. Öncelik: DB > env > kod varsayılanı. config:cache
+     * gerektirmez — admin panelden anahtar girilince özellik ANINDA aktifleşir.
+     */
+    protected function mergeAiConfig(): void
+    {
+        $provider = Settings::get('ai.saglayici');
+        if ($provider) {
+            Config::set('ai.default', $provider);
+        }
+
+        // Seçili sağlayıcının anahtar/modelini yalnızca DB'de değer varsa ez
+        // (boşsa env/config varsayılanı korunur).
+        $active = config('ai.default');
+
+        $apiKey = Settings::get('ai.api_anahtari');
+        if ($apiKey) {
+            Config::set("ai.providers.{$active}.api_key", $apiKey);
+        }
+
+        $model = Settings::get('ai.model');
+        if ($model) {
+            Config::set("ai.providers.{$active}.model", $model);
+        }
+
+        $quickListing = Settings::get('ai.hizli_ilan_aktif');
+        if ($quickListing !== null && $quickListing !== '') {
+            Config::set('ai.features.quick_listing', $quickListing === '1');
+        }
     }
 }
