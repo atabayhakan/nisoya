@@ -27,6 +27,7 @@ use App\Http\Controllers\MapController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NabizController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\PaymentLinkController;
@@ -131,6 +132,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Bildirimler
     Route::get('/panel/bildirimler', [NotificationController::class, 'index'])->name('panel.notifications.index');
+
+    // Web push aboneliği (Faz M1.3)
+    Route::post('/panel/push-abonelik', [PushSubscriptionController::class, 'store'])->name('push.subscribe');
+    Route::delete('/panel/push-abonelik', [PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
 
     // Davet / referans
     Route::get('/panel/davet', [InviteController::class, 'index'])->name('panel.invite');

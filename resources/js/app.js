@@ -243,5 +243,126 @@ Alpine.data('pulseMap', (countries) => ({
     },
 }));
 
+// Web push aboneliği (Faz M1.3). Bildirim izni SADECE kullanıcı düğmeye
+// basınca istenir (sayfa açılışında asla — tarayıcılar bunu cezalandırıyor,
+// marka tonuna da aykırı). vapidKey Blade'den config('webpush.vapid.public_key')
+// ile gelir; uçlar: routes/web.php → push.subscribe / push.unsubscribe.
+Alpine.data('pushToggle', (vapidKey, subscribeUrl, unsubscribeUrl) => ({
+    supported: false,
+    subscribed: false,
+    busy: false,
+    denied: false,
+
+    async init() {
+        this.supported = !!(vapidKey && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window);
+        if (!this.supported) return;
+        this.denied = Notification.permission === 'denied';
+        const reg = await navigator.serviceWorker.ready;
+        this.subscribed = !!(await reg.pushManager.getSubscription());
+    },
+
+    async toggle() {
+        if (this.busy || this.denied) return;
+        this.busy = true;
+        try {
+            this.subscribed ? await this.unsubscribe() : await this.subscribe();
+        } catch (e) {
+            this.denied = Notification.permission === 'denied';
+        } finally {
+            this.busy = false;
+        }
+    },
+
+    async subscribe() {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            this.denied = permission === 'denied';
+            return;
+        }
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidKey),
+        });
+        const json = sub.toJSON();
+        await postJson(subscribeUrl, 'POST', {
+            endpoint: json.endpoint,
+            keys: json.keys,
+            content_encoding: (PushManager.supportedContentEncodings || ['aesgcm'])[0],
+        });
+        this.subscribed = true;
+    },
+
+    async unsubscribe() {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+            await postJson(unsubscribeUrl, 'DELETE', { endpoint: sub.endpoint });
+            await sub.unsubscribe();
+        }
+        this.subscribed = false;
+    },
+}));
+
+function postJson(url, method, body) {
+    return fetch(url, {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+        },
+        body: JSON.stringify(body),
+    });
+}
+
+// PushManager.subscribe VAPID anahtarını Uint8Array ister; anahtar
+// URL-safe base64 string olarak gelir.
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = window.atob(base64);
+    return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
+}
+
+// PWA yükleme ipucu (Faz M1.4). Chrome/Android'de beforeinstallprompt
+// yakalanır; iOS'ta bu event yok, Safari tespitiyle "Ana Ekrana Ekle"
+// talimatı gösterilir (bkz. mobile-tab-bar.blade.php Keşfet sayfası).
+const DISMISS_KEY = 'nisoya-install-dismissed';
+Alpine.store('pwa', {
+    installEvent: null,
+    isIos: /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream,
+    isStandalone: window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true,
+    dismissedAt: Number(localStorage.getItem(DISMISS_KEY) || 0),
+
+    get visible() {
+        if (this.isStandalone) return false;
+        if (Date.now() - this.dismissedAt < 30 * 24 * 60 * 60 * 1000) return false;
+        return !!this.installEvent || this.isIos;
+    },
+
+    async install() {
+        if (!this.installEvent) return;
+        this.installEvent.prompt();
+        const { outcome } = await this.installEvent.userChoice;
+        if (outcome !== 'accepted') this.dismiss();
+        this.installEvent = null;
+    },
+
+    dismiss() {
+        this.dismissedAt = Date.now();
+        localStorage.setItem(DISMISS_KEY, String(this.dismissedAt));
+    },
+});
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    Alpine.store('pwa').installEvent = e;
+});
+window.addEventListener('appinstalled', () => {
+    Alpine.store('pwa').installEvent = null;
+    Alpine.store('pwa').isStandalone = true;
+});
+
 window.Alpine = Alpine;
 Alpine.start();

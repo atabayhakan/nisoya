@@ -7,6 +7,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
+use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class NewMessageNotification extends Notification implements ShouldQueue
 {
@@ -21,7 +23,26 @@ class NewMessageNotification extends Notification implements ShouldQueue
     /** @return array<int, string> */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        $channels = ['mail', 'database'];
+
+        // VAPID anahtarları tanımlı değilse (örn. üretim .env'i henüz
+        // güncellenmediyse) kanal hiç eklenmez — kuyruk job'ı patlamaz.
+        if (config('webpush.vapid.public_key') && config('webpush.vapid.private_key')) {
+            $channels[] = WebPushChannel::class;
+        }
+
+        return $channels;
+    }
+
+    public function toWebPush(object $notifiable): WebPushMessage
+    {
+        return (new WebPushMessage)
+            ->title($this->senderName.' sana mesaj gönderdi')
+            ->body(Str::limit($this->body, 120))
+            ->icon('/icons/icon-192.png')
+            ->badge('/icons/icon-192.png')
+            ->tag('conversation-'.$this->conversationId) // aynı sohbetin push'ları üst üste binmesin, sonuncusu görünsün
+            ->data(['url' => route('panel.messages.show', $this->conversationId)]);
     }
 
     /** @return array<string, mixed> */

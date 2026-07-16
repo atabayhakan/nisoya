@@ -100,6 +100,36 @@
                         @endforeach
                     </div>
                 @endif
+
+                {{-- PWA yükleme ipucu (Faz M1.4). Android'de native yükleme
+                     istemi (beforeinstallprompt), iOS'ta "Ana Ekrana Ekle"
+                     talimatı. Yüklüyse veya 30 gün içinde kapatıldıysa
+                     görünmez — bkz. resources/js/app.js → Alpine.store('pwa'). --}}
+                <template x-if="$store.pwa.visible">
+                    <div x-data="{ iosHelp: false }" class="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3 dark:border-emerald-900 dark:bg-emerald-900/20">
+                        <div class="flex items-center gap-3">
+                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white dark:bg-emerald-500">
+                                <x-heroicon-o-device-phone-mobile class="h-5 w-5" />
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <div class="text-sm font-semibold text-stone-800 dark:text-stone-100">Nisoya'yı uygulama olarak yükle</div>
+                                <div class="text-xs text-stone-500 dark:text-stone-400">Ana ekranından tek dokunuşla aç</div>
+                            </div>
+                            <button
+                                type="button"
+                                @click="$store.pwa.installEvent ? $store.pwa.install() : iosHelp = !iosHelp"
+                                class="shrink-0 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600"
+                            >Yükle</button>
+                            <button type="button" @click="$store.pwa.dismiss()" class="shrink-0 p-1 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200" aria-label="Kapat">
+                                <x-heroicon-o-x-mark class="h-4 w-4" />
+                            </button>
+                        </div>
+                        <div x-show="iosHelp" x-transition.opacity.duration.150ms class="mt-2 text-xs leading-relaxed text-stone-600 dark:text-stone-300">
+                            Safari'de alttaki <strong>Paylaş</strong> düğmesine (kare + ok) dokun,
+                            sonra <strong>"Ana Ekrana Ekle"</strong>yi seç.
+                        </div>
+                    </div>
+                </template>
             </div>
         </div>
     </template>

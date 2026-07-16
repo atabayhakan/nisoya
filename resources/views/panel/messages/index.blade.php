@@ -4,7 +4,10 @@
     @endphp
     <div class="mx-auto max-w-3xl px-4 py-10">
         <x-panel.back-link />
-        <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Mesajlar</h1>
+        <div class="flex items-center justify-between gap-3">
+            <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Mesajlar</h1>
+            <x-push-toggle />
+        </div>
 
         @if ($conversations->isNotEmpty())
             <div class="mt-6 divide-y divide-stone-100 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm dark:divide-stone-800 dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
