@@ -174,6 +174,21 @@ izin vermiyor — kod hatası değil, platform kısıtı.
   fırlatacak şekilde override edilip uçtan uca doğrulandı — doğru mesaj
   üretildiğini teyit ettik.
 
+**Bulunan ikinci üretim sorunu (2026-07-17) — düzeltildi: "Uygulama olarak
+yükle" butonu iPhone'da tepki vermiyormuş gibi görünüyordu.** Kök neden kod
+hatası değil, yanıltıcı UX: Apple'da `beforeinstallprompt` API'si YOK, yani
+iOS'ta "Yükle" butonuna basınca aslında hiçbir gerçek eylem tetiklenmiyordu
+— sadece butonun altında küçük, gri, kolayca gözden kaçan bir talimat metni
+beliriyordu (`iosHelp` toggle). Android'in verdiği net sistem diyaloğu
+beklenirken bu neredeyse fark edilmiyordu. Alpine mantığının kendisinin
+doğru çalıştığını (tıklamada state gerçekten `false→true` değişiyor)
+doğrudan state/DOM incelemesiyle doğruladık — düzeltme UX'i basitleştirmek:
+- `mobile-tab-bar.blade.php`: iOS'ta artık tıklanacak bir "Yükle" butonu YOK
+  — zaten tetiklenecek bir API olmadığından talimat (Paylaş ikonuyla)
+  **doğrudan ve koşulsuz** gösteriliyor. "Yükle" butonu yalnızca
+  `$store.pwa.installEvent` doluysa (Android/Chrome — gerçek native istem
+  tetikleyecekse) render ediliyor.
+
 ---
 
 ## Faz M3 — Kamera-önce ilan oluşturma
@@ -263,6 +278,19 @@ etkilenmez.
   (string, nullable).
 - Test: `ImageModerationTest` (8 — fail-open, flagged/clean ilan akışı,
   moderasyon kapalıyken AI çağrısı yapılmadığı, sohbet foto red/kabul).
+
+**Bulunan üçüncü üretim sorunu (2026-07-17) — düzeltildi: mobilde profil
+fotoğrafı "ince bir sütun" gibi görünüyordu.** Kök neden: avatar dairesi
+(`h-16 w-16 overflow-hidden rounded-full`) bir `flex` satırının içinde ama
+`shrink-0` sınıfı eksikti. Yanındaki eleman (dosya seçici/isim/puan metni)
+dar mobil ekranda yer isteyince flexbox varsayılan davranışıyla sabit
+genişlikli daireyi YÜKSEKLİĞİ sabit kalırken GENİŞLİĞİNDEN sıkıştırıyordu
+— kare/daire yerine ince bir dikey şerit. Aynı kopyala-yapıştır desen üç
+yerde tekrarlanmıştı, üçü de `shrink-0` eklenerek düzeltildi:
+`panel/profile/edit.blade.php` (profil ayarları — bildirilen asıl yer),
+`profiles/show.blade.php` (herkese açık profil), `listings/show.blade.php`
+(ilan sayfasındaki satıcı kartı). Tarayıcıda 64×64 tam kare olduğu
+doğrulandı.
 
 ---
 

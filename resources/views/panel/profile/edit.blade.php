@@ -13,7 +13,7 @@
             @endif
 
             <div class="flex items-center gap-4">
-                <div class="grid h-16 w-16 place-items-center overflow-hidden rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                <div class="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                     @if ($user->avatar_path)
                         <img src="{{ Storage::url($user->avatar_path) }}" alt="" class="h-full w-full object-cover">
                     @else

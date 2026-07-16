@@ -386,7 +386,7 @@
 
                     <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
                         <div class="flex items-center gap-3">
-                            <div class="grid h-12 w-12 place-items-center overflow-hidden rounded-full bg-emerald-100 text-lg font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                            <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-lg font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                                 @if ($listing->user->avatar_path)
                                     <img src="{{ Storage::url($listing->user->avatar_path) }}" alt="" class="h-full w-full object-cover">
                                 @else

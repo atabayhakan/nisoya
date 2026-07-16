@@ -26,7 +26,7 @@
         {{-- Satıcı başlığı --}}
         <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
             <div class="flex flex-wrap items-center gap-4">
-                <div class="grid h-20 w-20 place-items-center overflow-hidden rounded-full bg-emerald-100 text-3xl font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                <div class="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-3xl font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                     @if ($user->avatar_path)
                         <img src="{{ Storage::url($user->avatar_path) }}" alt="" class="h-full w-full object-cover">
                     @else
