@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Widgets\ExifPrivacyWidget;
 use App\Filament\Widgets\StatsOverview;
 use App\Filament\Widgets\SystemHealthWidget;
+use App\Support\Settings;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -21,6 +22,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -34,7 +36,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('Nisoya Yönetim')
             ->login()
             ->colors([
-                'primary' => Color::Emerald,
+                'primary' => $this->resolveBrandColor(),
             ])
             ->darkMode(true) // Sistem teması ile otomatik senkronize; kullanıcı override edebilir.
             ->defaultThemeMode(ThemeMode::System)
@@ -65,5 +67,35 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+
+    /**
+     * Faz İ5 — admin panelinin marka rengini genel site ayarına bağlar
+     * (Site Yönetimi → İçerik → Görünüm). Sabit "Emerald" yerine admin
+     * hangi rengi seçtiyse panel de o rengi kullanır. Migration öncesi
+     * (fresh install/CI) tabloya dokunmadan güvenle "Emerald"a düşer.
+     */
+    protected function resolveBrandColor(): array
+    {
+        $key = 'emerald';
+
+        if (Schema::hasTable('site_settings')) {
+            $key = Settings::get('gorunum.marka_rengi', 'emerald');
+        }
+
+        if (! array_key_exists($key, config('brand_colors', []))) {
+            $key = 'emerald';
+        }
+
+        return match ($key) {
+            'blue' => Color::Blue,
+            'rose' => Color::Rose,
+            'amber' => Color::Amber,
+            'violet' => Color::Violet,
+            'teal' => Color::Teal,
+            'indigo' => Color::Indigo,
+            'orange' => Color::Orange,
+            default => Color::Emerald,
+        };
     }
 }
