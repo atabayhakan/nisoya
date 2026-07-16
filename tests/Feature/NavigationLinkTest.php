@@ -19,7 +19,7 @@ class NavigationLinkTest extends TestCase
 
         $labels = NavigationLink::query()->orderBy('sort_order')->pluck('label')->all();
 
-        $this->assertSame(['İlanlar', 'Emlak', 'Vasıta', 'İş İlanları', 'Harita', 'Nasıl Çalışır?', 'Yetenek Havuzu'], $labels);
+        $this->assertSame(['İlanlar', 'Yetenek Havuzu', 'İş İlanları', 'Emlak', 'Vasıta', 'Anılar & Davetiyeler', 'Harita', 'Nasıl Çalışır?'], $labels);
     }
 
     public function test_seeder_does_not_duplicate_or_overwrite_admin_edits(): void
@@ -30,7 +30,7 @@ class NavigationLinkTest extends TestCase
 
         $this->seed(NavigationLinkSeeder::class);
 
-        $this->assertSame(7, NavigationLink::count());
+        $this->assertSame(8, NavigationLink::count());
         $this->assertDatabaseHas('navigation_links', ['label' => 'İlanlar', 'is_active' => false]);
     }
 
@@ -50,6 +50,17 @@ class NavigationLinkTest extends TestCase
         NavigationLink::create(['label' => 'ÖzelMenüLinki', 'url' => '/ozel', 'sort_order' => 1, 'is_active' => true]);
 
         $this->get('/')->assertOk()->assertSee('ÖzelMenüLinki');
+    }
+
+    public function test_header_groups_kesfet_links_into_mega_menu_and_keeps_singles_direct(): void
+    {
+        $this->seed(NavigationLinkSeeder::class);
+
+        $this->get('/')->assertOk()
+            ->assertSee('Keşfet')
+            ->assertSee('Anılar & Davetiyeler')
+            ->assertSee('Etkinlik anılarını keşfet')
+            ->assertSee('Harita');
     }
 
     public function test_admin_can_manage_navigation_links(): void

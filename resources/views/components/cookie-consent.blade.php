@@ -12,7 +12,7 @@
     x-cloak
     x-show="!accepted && decided === null"
     x-transition.opacity.duration.200ms
-    class="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-2xl rounded-2xl border border-stone-200 bg-white p-4 shadow-2xl ring-1 ring-stone-200 sm:p-5"
+    class="fixed inset-x-3 bottom-20 z-50 mx-auto max-w-2xl rounded-2xl border border-stone-200 bg-white p-4 shadow-2xl ring-1 ring-stone-200 sm:p-5 md:bottom-3"
     role="dialog"
     aria-live="polite"
     aria-label="Çerez tercihleri"

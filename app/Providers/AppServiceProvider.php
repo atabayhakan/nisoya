@@ -105,9 +105,16 @@ class AppServiceProvider extends ServiceProvider
 
             // Header menü linkleri (bkz. App\Models\NavigationLink) — admin
             // panelden ekleyip/çıkarabildiği, sürükle-bırakla sıraladığı liste.
-            $view->with('navLinks', Schema::hasTable('navigation_links')
+            $navLinks = Schema::hasTable('navigation_links')
                 ? NavigationLink::activeCached()
-                : collect());
+                : collect();
+            $view->with('navLinks', $navLinks);
+
+            // Masaüstü header Faz H1 (mega menü): group_key dolu linkler tek
+            // bir "Keşfet" açılırında toplanır, boş olanlar tekil link olarak
+            // kalır. Mobil şerit henüz bölünmüyor (bkz. Faz H3 planı).
+            $view->with('navLinksMega', $navLinks->where('group_key', NavigationLink::GROUP_KESFET)->values());
+            $view->with('navLinksSingle', $navLinks->whereNull('group_key')->values());
         });
 
         // Reklam & bağış ayarlarını DB'den (varsa) env'in üzerine yaz.

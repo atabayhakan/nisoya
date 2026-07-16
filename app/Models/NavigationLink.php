@@ -15,9 +15,15 @@ class NavigationLink extends Model
 {
     public const CACHE_KEY = 'navigation_links_active';
 
+    /** Bu grup anahtarına sahip linkler header'da "Keşfet" mega menüsünde kart olarak gösterilir. */
+    public const GROUP_KESFET = 'kesfet';
+
     protected $fillable = [
         'label',
         'url',
+        'group_key',
+        'icon',
+        'description',
         'sort_order',
         'is_active',
         'opens_new_tab',

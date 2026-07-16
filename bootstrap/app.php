@@ -128,5 +128,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Çok büyük dataset için rate limit gerekli (1000+ marker'ın scrape'i).
         RateLimiter::for('exif-map', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip())
         );
+
+        // Header hızlı arama (Cmd+K komut paleti, Faz H2) — herkese açık,
+        // debounce'lu canlı sorgu; scrape/kötüye kullanıma karşı 60/dk.
+        RateLimiter::for('quick-search', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip())
+        );
     })
     ->create();

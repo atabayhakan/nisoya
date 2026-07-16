@@ -40,5 +40,107 @@ Alpine.data('activityTicker', (count) => ({
     },
 }));
 
+// Header komut paleti (Cmd+K, Faz H2). Statik girdiler (nav linkleri, sık
+// kullanılan sayfalar) sunucudan gelen küçük bir dizi üzerinde anında
+// alt-dize eşleşir — ağ isteği yok. Canlı sonuçlar 300ms debounce ile
+// /arama/hizli'ye gider (bkz. App\Http\Controllers\QuickSearchController).
+Alpine.data('commandPalette', (staticEntries) => ({
+    open: false,
+    query: '',
+    liveResults: [],
+    loading: false,
+    activeIndex: 0,
+    debounceTimer: null,
+
+    get staticMatches() {
+        const q = this.query.trim().toLocaleLowerCase('tr');
+        if (!q) return [];
+
+        return staticEntries
+            .filter((entry) => entry.title.toLocaleLowerCase('tr').includes(q))
+            .slice(0, 6);
+    },
+
+    get results() {
+        return [...this.staticMatches, ...this.liveResults];
+    },
+
+    openPalette() {
+        this.open = true;
+        this.activeIndex = 0;
+        this.$nextTick(() => this.$refs.input?.focus());
+    },
+
+    closePalette() {
+        this.open = false;
+        this.query = '';
+        this.liveResults = [];
+        this.activeIndex = 0;
+        clearTimeout(this.debounceTimer);
+    },
+
+    onInput() {
+        this.activeIndex = 0;
+        clearTimeout(this.debounceTimer);
+        const q = this.query.trim();
+        if (q.length < 2) {
+            this.liveResults = [];
+            return;
+        }
+        this.debounceTimer = setTimeout(() => this.fetchResults(q), 300);
+    },
+
+    async fetchResults(q) {
+        this.loading = true;
+        try {
+            const response = await fetch(`/arama/hizli?q=${encodeURIComponent(q)}`, {
+                headers: { Accept: 'application/json' },
+            });
+            const data = await response.json();
+            if (this.query.trim() === q) {
+                this.liveResults = data.results ?? [];
+            }
+        } catch (e) {
+            this.liveResults = [];
+        } finally {
+            this.loading = false;
+        }
+    },
+
+    move(delta) {
+        if (!this.results.length) return;
+        this.activeIndex = (this.activeIndex + delta + this.results.length) % this.results.length;
+    },
+
+    choose(index = this.activeIndex) {
+        const item = this.results[index];
+        if (!item) return;
+        this.closePalette();
+        if (item.action === 'toggleTheme') {
+            window.toggleTheme && window.toggleTheme();
+            return;
+        }
+        window.location.href = item.url;
+    },
+
+    // Minimal odak tuzağı: yeni bir bağımlılık eklemeden Tab'ı panel
+    // içindeki ilk/son odaklanabilir elemanlar arasında döndürür.
+    trapFocus(event) {
+        const focusables = this.$refs.panel.querySelectorAll('input, a[href], button:not([disabled])');
+        if (!focusables.length) return;
+
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    },
+}));
+
 window.Alpine = Alpine;
 Alpine.start();

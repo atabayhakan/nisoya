@@ -19,7 +19,7 @@
     <div
         x-show="showThanks"
         x-transition.opacity
-        class="fixed bottom-24 right-4 z-40 max-w-sm rounded-2xl border border-emerald-200 bg-white p-4 shadow-2xl"
+        class="fixed bottom-40 right-4 z-40 max-w-sm rounded-2xl border border-emerald-200 bg-white p-4 shadow-2xl md:bottom-24"
         role="status"
         aria-live="polite"
     >
@@ -46,7 +46,7 @@
     <div
         x-show="!dismissed"
         x-transition.opacity
-        class="fixed bottom-4 right-4 z-40 flex items-center gap-1"
+        class="fixed bottom-20 right-4 z-40 flex items-center gap-1 md:bottom-4"
     >
         <button
             type="button"

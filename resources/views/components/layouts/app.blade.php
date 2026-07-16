@@ -97,7 +97,7 @@
         {!! config('services.custom_head_code') !!}
     @endif
 </head>
-<body class="min-h-screen bg-stone-50 text-stone-800 antialiased flex flex-col dark:bg-stone-950 dark:text-stone-200">
+<body class="min-h-screen bg-stone-50 text-stone-800 antialiased flex flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0 dark:bg-stone-950 dark:text-stone-200">
     {{-- Üst menü --}}
     <header class="sticky top-0 z-30 border-b border-stone-200 bg-white/90 backdrop-blur dark:border-stone-800 dark:bg-stone-900/90">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
@@ -113,12 +113,15 @@
             </a>
 
             <nav class="hidden items-center gap-6 text-sm font-medium text-stone-600 md:flex dark:text-stone-300">
-                @foreach ($navLinks as $navLink)
+                <x-mega-menu :items="$navLinksMega" />
+                @foreach ($navLinksSingle as $navLink)
                     <a href="{{ $navLink->url }}" @if ($navLink->opens_new_tab) target="_blank" rel="noopener noreferrer" @endif class="hover:text-emerald-700 dark:hover:text-emerald-400">{{ $navLink->label }}</a>
                 @endforeach
             </nav>
 
             <div class="flex items-center gap-2">
+                <x-command-palette :nav-links="$navLinks" />
+
                 <x-visitor-country-badge :country="$visitorCountry" />
 
                 <x-emergency-button
@@ -139,15 +142,18 @@
                     <x-heroicon-o-sun class="hidden h-5 w-5 dark:inline" />
                 </button>
 
+                {{-- Faz H3: bildirim/profil/Panelim/İlan Ver/Giriş-Kayıt-Çıkış
+                     mobilde alt sekme çubuğuna taşındı (bkz. x-mobile-tab-bar) —
+                     burada yalnızca masaüstünde (md+) görünür. --}}
                 @auth
                     @php($unreadCount = auth()->user()->unreadNotifications()->count())
-                    <a href="{{ route('panel.notifications.index') }}" class="relative inline-flex rounded-lg p-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800" title="Bildirimler">
+                    <a href="{{ route('panel.notifications.index') }}" class="relative hidden rounded-lg p-2 text-stone-600 hover:bg-stone-100 md:inline-flex dark:text-stone-300 dark:hover:bg-stone-800" title="Bildirimler">
                         <x-heroicon-o-bell class="h-5 w-5" />
                         @if ($unreadCount)
                             <span class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
                         @endif
                     </a>
-                    <a href="{{ route('panel.profile.edit') }}" class="flex items-center gap-2 rounded-lg py-1.5 pl-1.5 pr-2 text-stone-700 hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800" title="Hesabım">
+                    <a href="{{ route('panel.profile.edit') }}" class="hidden items-center gap-2 rounded-lg py-1.5 pl-1.5 pr-2 text-stone-700 hover:bg-stone-100 md:flex dark:text-stone-200 dark:hover:bg-stone-800" title="Hesabım">
                         <span class="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-xs font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                             @if (auth()->user()->avatar_path)
                                 <img src="{{ Storage::url(auth()->user()->avatar_path) }}" alt="" class="h-full w-full object-cover">
@@ -155,34 +161,21 @@
                                 {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
                             @endif
                         </span>
-                        <span class="hidden max-w-[110px] truncate text-sm font-medium sm:inline">{{ auth()->user()->name }}</span>
+                        <span class="hidden max-w-[110px] truncate text-sm font-medium md:inline">{{ auth()->user()->name }}</span>
                     </a>
-                    <a href="{{ route('dashboard') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 sm:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Panelim</a>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
-                    <form method="POST" action="{{ route('logout') }}" class="hidden sm:block">
+                    <a href="{{ route('dashboard') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Panelim</a>
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand md:inline-block dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
+                    <form method="POST" action="{{ route('logout') }}" class="hidden md:block">
                         @csrf
                         <button type="submit" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Çıkış</button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 sm:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Giriş</a>
-                    <a href="{{ route('register') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 sm:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Kayıt</a>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
+                    <a href="{{ route('login') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Giriş</a>
+                    <a href="{{ route('register') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Kayıt</a>
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand md:inline-block dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
                 @endauth
             </div>
         </div>
-
-        {{-- Mobil gezinme --}}
-        <nav class="flex items-center gap-5 overflow-x-auto border-t border-stone-100 px-4 py-2 text-sm font-medium text-stone-600 md:hidden dark:border-stone-800 dark:text-stone-300">
-            @foreach ($navLinks as $navLink)
-                <a href="{{ $navLink->url }}" @if ($navLink->opens_new_tab) target="_blank" rel="noopener noreferrer" @endif class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">{{ $navLink->label }}</a>
-            @endforeach
-            @guest
-                <a href="{{ route('login') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">Giriş</a>
-                <a href="{{ route('register') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">Kayıt</a>
-            @else
-                <a href="{{ route('dashboard') }}" class="whitespace-nowrap hover:text-emerald-700 dark:hover:text-emerald-400">Panelim</a>
-            @endguest
-        </nav>
     </header>
 
     <main class="flex-1">
@@ -288,6 +281,10 @@
     @unless (request()->is('panel*'))
         <x-donation-modal />
     @endunless
+
+    {{-- Mobil alt sekme çubuğu (Faz H3) — panel sayfaları dahil her yerde;
+         bağış FAB'ının aksine kendi yerini body padding'iyle ayırıyor, taşmıyor. --}}
+    <x-mobile-tab-bar :nav-links-mega="$navLinksMega" :nav-links-single="$navLinksSingle" />
 
     <script>
         if ('serviceWorker' in navigator) {

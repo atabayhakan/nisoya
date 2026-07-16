@@ -34,6 +34,7 @@ use App\Http\Controllers\PortfolioItemController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileSettingsController;
 use App\Http\Controllers\PropertyBrowseController;
+use App\Http\Controllers\QuickSearchController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SavedSearchController;
@@ -76,6 +77,11 @@ Route::get('/isler', [JobBrowseController::class, 'index'])->name('jobs.index');
 Route::get('/is/{job}/{slug?}', [JobListingController::class, 'show'])->name('jobs.show');
 Route::get('/sirket/{company}', [CompanyController::class, 'show'])->name('companies.show');
 Route::get('/adaylar', [CandidateController::class, 'index'])->name('candidates.index');
+
+// Hızlı arama (header komut paleti / Cmd+K, Faz H2) — herkese açık, salt-okunur JSON
+Route::get('/arama/hizli', [QuickSearchController::class, 'index'])
+    ->middleware('throttle:quick-search')
+    ->name('search.quick');
 
 // Statik sayfalar (işlevsel olanlar kodda kalır; kurumsal metinler yönetilebilir sayfalara taşındı)
 Route::get('/nasil-calisir', [PagesController::class, 'nasilCalisir'])->name('pages.how');
