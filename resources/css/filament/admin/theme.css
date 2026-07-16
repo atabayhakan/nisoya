@@ -1,0 +1,12 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+@theme {
+    /* Tasarım Modu önizlemesindeki "font-serif" örneği için — asıl @font-face
+       ana site paketinde (resources/css/app.css) tanımlı; admin ayrı bir Vite
+       girişi olduğundan burada sadece aile adı eşleşsin diye tekrar edildi.
+       Yüklenmemişse zarifçe Georgia'ya düşer, yanlış bir şey söylemez. */
+    --font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+}

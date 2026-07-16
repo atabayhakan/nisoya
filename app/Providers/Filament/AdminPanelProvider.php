@@ -35,6 +35,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('yonetim')
             ->brandName('Nisoya Yönetim')
             ->login()
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
                 'primary' => $this->resolveBrandColor(),
             ])
