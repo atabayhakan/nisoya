@@ -12,35 +12,82 @@
                 <div class="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">{{ session('status') }}</div>
             @endif
 
-            <div class="flex items-center gap-4">
-                @if ($user->avatar_path)
-                    {{-- Sürükleyerek hizala: Pointer Events hem dokunmatik hem fareyi kapsar. --}}
-                    <div x-data="focalDrag({{ $user->avatar_focal_x }}, {{ $user->avatar_focal_y }}, '{{ route('panel.profile.avatar-align') }}')" class="shrink-0">
-                        <div
-                            x-ref="frame"
-                            @pointerdown="startDrag($event); $event.target.setPointerCapture($event.pointerId)"
-                            @pointermove="onDrag($event)"
-                            @pointerup="endDrag($event)"
-                            @pointercancel="dragging = false"
-                            class="grid h-24 w-24 cursor-move touch-none select-none place-items-center overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/40"
-                        >
-                            <img src="{{ Storage::url($user->avatar_path) }}" alt="" draggable="false"
-                                 class="h-full w-full object-cover" :style="{ objectPosition: objectPosition }">
-                        </div>
-                        <p class="mt-1 text-center text-[11px] text-stone-400 dark:text-stone-500" x-show="!saved">Sürükleyerek hizala</p>
-                        <p class="mt-1 text-center text-[11px] font-medium text-emerald-600 dark:text-emerald-400" x-show="saved">Kaydedildi ✓</p>
+            @if ($user->avatar_path)
+                {{-- Hizalama artık ayrı bir modalda: küçük daire burada sadece önizleme,
+                     sürükleme "Profil fotoğrafını düzenle" ile açılan büyük daire üzerinde olur. --}}
+                <div x-data="avatarAlignModal({{ $user->avatar_focal_x }}, {{ $user->avatar_focal_y }}, '{{ route('panel.profile.avatar-align') }}')" class="flex items-center gap-4">
+                    <div class="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/40">
+                        <img src="{{ Storage::url($user->avatar_path) }}" alt="" class="h-full w-full object-cover" :style="{ objectPosition: objectPosition }">
                     </div>
-                @else
+                    <div>
+                        <label for="avatar" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Profil fotoğrafı</label>
+                        <input id="avatar" name="avatar" type="file" accept="image/*" class="mt-1 text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
+                        @error('avatar') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <button type="button" @click="openModal()" class="mt-2 flex items-center gap-1 text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">
+                            <span aria-hidden="true">✏️</span> Profil fotoğrafını düzenle
+                        </button>
+                    </div>
+
+                    <template x-teleport="body">
+                        <div
+                            x-show="open"
+                            x-transition.opacity.duration.150ms
+                            class="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4"
+                            @click.self="cancel()"
+                            @keydown.escape.window="open && cancel()"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="avatar-align-title"
+                            x-cloak
+                        >
+                            <div
+                                x-show="open"
+                                x-transition.duration.150ms
+                                class="w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-stone-200 dark:bg-stone-900 dark:ring-stone-800"
+                            >
+                                <div class="flex items-center justify-between gap-4 border-b border-stone-100 px-5 py-4 dark:border-stone-800">
+                                    <h2 id="avatar-align-title" class="font-semibold text-stone-800 dark:text-stone-100">Profil fotoğrafını hizala</h2>
+                                    <button type="button" @click="cancel()" class="rounded-full p-1.5 text-stone-400 transition hover:bg-stone-100 dark:hover:bg-stone-800" aria-label="Kapat">
+                                        <x-heroicon-o-x-mark class="h-5 w-5" />
+                                    </button>
+                                </div>
+                                <div class="flex flex-col items-center gap-3 px-5 py-6">
+                                    <div
+                                        x-ref="frame"
+                                        @pointerdown="startDrag($event); $event.target.setPointerCapture($event.pointerId)"
+                                        @pointermove="onDrag($event)"
+                                        @pointerup="endDrag($event)"
+                                        @pointercancel="dragging = false"
+                                        class="grid h-64 w-64 max-w-full cursor-move touch-none select-none place-items-center overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/40"
+                                    >
+                                        <img src="{{ Storage::url($user->avatar_path) }}" alt="" draggable="false"
+                                             class="h-full w-full object-cover" :style="{ objectPosition: objectPosition }">
+                                    </div>
+                                    <p class="text-center text-xs text-stone-400 dark:text-stone-500">Dokunarak veya fareyle sürükleyerek fotoğrafı hizala.</p>
+                                </div>
+                                <div class="flex items-center justify-end gap-2 border-t border-stone-100 px-5 py-3 dark:border-stone-800">
+                                    <button type="button" @click="cancel()" class="rounded-lg px-4 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">İptal</button>
+                                    <button type="button" @click="save()" :disabled="saving" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
+                                        <span x-show="!saving">Kaydet</span>
+                                        <span x-show="saving">Kaydediliyor...</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            @else
+                <div class="flex items-center gap-4">
                     <div class="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-3xl font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                         {{ mb_strtoupper(mb_substr($user->name, 0, 1)) }}
                     </div>
-                @endif
-                <div>
-                    <label for="avatar" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Profil fotoğrafı</label>
-                    <input id="avatar" name="avatar" type="file" accept="image/*" class="mt-1 text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
-                    @error('avatar') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    <div>
+                        <label for="avatar" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Profil fotoğrafı</label>
+                        <input id="avatar" name="avatar" type="file" accept="image/*" class="mt-1 text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
+                        @error('avatar') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
                 </div>
-            </div>
+            @endif
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>

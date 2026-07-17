@@ -356,6 +356,82 @@ Alpine.data('focalDrag', (initialX, initialY, saveUrl) => ({
     },
 }));
 
+// Profil fotoğrafı hizalama modalı: "Profil fotoğrafını düzenle" butonuyla
+// açılır, büyük bir daire üzerinde sürükleme yapılır (aynı delta mantığı,
+// bkz. focalDrag) ama focalDrag'in aksine PATCH isteği sürükleme bırakılınca
+// DEĞİL, kullanıcı "Kaydet"e basınca gider — "İptal" ile son kaydedilen
+// değere döner. savedX/Y, sayfa yüklenirken gelen sunucu değeriyle başlar ve
+// her başarılı kayıttan sonra güncellenir (bir sonraki iptalin nereye
+// döneceğini bilmesi için).
+Alpine.data('avatarAlignModal', (initialX, initialY, saveUrl) => ({
+    open: false,
+    x: initialX,
+    y: initialY,
+    savedX: initialX,
+    savedY: initialY,
+    dragging: false,
+    saving: false,
+    startClientX: 0,
+    startClientY: 0,
+    startX: 0,
+    startY: 0,
+    frameWidth: 0,
+    frameHeight: 0,
+
+    get objectPosition() {
+        return this.x + '% ' + this.y + '%';
+    },
+
+    openModal() {
+        this.x = this.savedX;
+        this.y = this.savedY;
+        this.open = true;
+    },
+
+    cancel() {
+        if (this.dragging) return;
+        this.x = this.savedX;
+        this.y = this.savedY;
+        this.open = false;
+    },
+
+    startDrag(e) {
+        const rect = this.$refs.frame.getBoundingClientRect();
+        this.frameWidth = rect.width;
+        this.frameHeight = rect.height;
+        this.startClientX = e.clientX;
+        this.startClientY = e.clientY;
+        this.startX = this.x;
+        this.startY = this.y;
+        this.dragging = true;
+    },
+
+    onDrag(e) {
+        if (!this.dragging) return;
+        const dx = e.clientX - this.startClientX;
+        const dy = e.clientY - this.startClientY;
+        this.x = clampPercent(this.startX - (dx / this.frameWidth) * 100);
+        this.y = clampPercent(this.startY - (dy / this.frameHeight) * 100);
+    },
+
+    endDrag() {
+        this.dragging = false;
+    },
+
+    async save() {
+        if (this.saving) return;
+        this.saving = true;
+        try {
+            await postJson(saveUrl, 'PATCH', { focal_x: Math.round(this.x), focal_y: Math.round(this.y) });
+            this.savedX = this.x;
+            this.savedY = this.y;
+            this.open = false;
+        } finally {
+            this.saving = false;
+        }
+    },
+}));
+
 function clampPercent(value) {
     return Math.max(0, Math.min(100, Math.round(value)));
 }
