@@ -25,7 +25,7 @@
                     @csrf
                     <div>
                         <label for="disable_password" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Mevcut şifren</label>
-                        <input id="disable_password" name="current_password" type="password" required class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                        <x-password-input id="disable_password" name="current_password" required class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 pr-10 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100" />
                         @error('current_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>

@@ -239,18 +239,18 @@
 
             <div>
                 <label for="current_password" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Mevcut şifre</label>
-                <input id="current_password" name="current_password" type="password" autocomplete="current-password" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                <x-password-input id="current_password" name="current_password" autocomplete="current-password" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 pr-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100" />
                 @error('current_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
                     <label for="new_password" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Yeni şifre</label>
-                    <input id="new_password" name="password" type="password" autocomplete="new-password" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                    <x-password-input id="new_password" name="password" autocomplete="new-password" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 pr-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100" />
                     @error('password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="password_confirmation" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Yeni şifre (tekrar)</label>
-                    <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                    <x-password-input id="password_confirmation" name="password_confirmation" autocomplete="new-password" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 pr-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100" />
                 </div>
             </div>
 
@@ -330,7 +330,7 @@
 
                 <div>
                     <label for="delete_current_password" class="block text-sm font-medium text-red-800 dark:text-red-200">Mevcut şifren</label>
-                    <input id="delete_current_password" name="current_password" type="password" required class="mt-1 w-full rounded-lg border-red-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:ring-red-500 dark:border-red-700 dark:bg-red-950/40 dark:text-red-100">
+                    <x-password-input id="delete_current_password" name="current_password" required class="mt-1 w-full rounded-lg border-red-300 px-3 py-2 pr-10 text-sm shadow-sm focus:border-red-500 focus:ring-red-500 dark:border-red-700 dark:bg-red-950/40 dark:text-red-100" />
                     @error('current_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 

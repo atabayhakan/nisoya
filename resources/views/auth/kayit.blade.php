@@ -59,15 +59,15 @@
 
         <div>
             <label for="password" class="block text-sm font-medium text-stone-700">Şifre</label>
-            <input id="password" name="password" type="password" required autocomplete="new-password"
-                   class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+            <x-password-input id="password" name="password" required autocomplete="new-password"
+                   class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 pr-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" />
             @error('password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>
             <label for="password_confirmation" class="block text-sm font-medium text-stone-700">Şifre (tekrar)</label>
-            <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password"
-                   class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+            <x-password-input id="password_confirmation" name="password_confirmation" required autocomplete="new-password"
+                   class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 pr-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" />
         </div>
 
         <label class="flex items-start gap-2 text-sm text-stone-600">
