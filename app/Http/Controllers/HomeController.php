@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\HomeHighlight;
 use App\Models\Listing;
 use App\Services\NabizService;
 use App\Support\CategoryIcon;
@@ -46,6 +47,8 @@ class HomeController extends Controller
             'nabizGoal' => $nabiz->goalProgress(),
             'nabizAmbassadors' => $nabiz->cityAmbassadors(3),
             'pulseCountries' => $nabiz->countryActivity(),
+            'bigHighlights' => HomeHighlight::forSlot(HomeHighlight::SLOT_BIG),
+            'smallHighlights' => HomeHighlight::forSlot(HomeHighlight::SLOT_SMALL),
         ]);
     }
 }

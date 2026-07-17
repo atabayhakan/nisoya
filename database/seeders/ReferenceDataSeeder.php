@@ -31,6 +31,7 @@ class ReferenceDataSeeder extends Seeder
             JobCategorySeeder::class,
             ZoneSeeder::class,
             NavigationLinkSeeder::class,
+            HomeHighlightSeeder::class,
         ]);
     }
 }
