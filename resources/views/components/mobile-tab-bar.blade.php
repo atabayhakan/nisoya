@@ -117,8 +117,12 @@
                                 <x-heroicon-o-device-phone-mobile class="h-5 w-5" />
                             </span>
                             <div class="min-w-0 flex-1">
-                                <div class="text-sm font-semibold text-stone-800 dark:text-stone-100">Nisoya'yı uygulama olarak yükle</div>
-                                <div class="text-xs text-stone-500 dark:text-stone-400">Ana ekranından tek dokunuşla aç</div>
+                                {{-- iOS'ta gerçek bir "yükleme" yok (Apple beforeinstallprompt'u
+                                     desteklemiyor) — sadece Safari'nin "Ana Ekrana Ekle" kısayolu.
+                                     Android'deki gibi "uygulama olarak yükle" demek yanlış beklenti
+                                     yaratıyordu; iOS'ta metin buna göre değişiyor. --}}
+                                <div class="text-sm font-semibold text-stone-800 dark:text-stone-100" x-text="$store.pwa.isIos ? 'Ana ekrana kısayol ekle' : 'Nisoya\'yı uygulama olarak yükle'"></div>
+                                <div class="text-xs text-stone-500 dark:text-stone-400" x-text="$store.pwa.isIos ? 'Hızlı erişim için ekranına ekle' : 'Ana ekranından tek dokunuşla aç'"></div>
                             </div>
                             <template x-if="$store.pwa.installEvent">
                                 <button
