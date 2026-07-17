@@ -16,8 +16,9 @@
                 {{-- Hizalama artık ayrı bir modalda: küçük daire burada sadece önizleme,
                      sürükleme "Profil fotoğrafını düzenle" ile açılan büyük daire üzerinde olur. --}}
                 <div x-data="avatarAlignModal({{ $user->avatar_focal_x }}, {{ $user->avatar_focal_y }}, '{{ route('panel.profile.avatar-align') }}')" class="flex items-center gap-4">
-                    <div class="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/40">
-                        <img src="{{ Storage::url($user->avatar_path) }}" alt="" class="h-full w-full object-cover" :style="{ objectPosition: objectPosition }">
+                    {{-- img `absolute inset-0` şart — gerekçe için bkz. components/avatar.blade.php --}}
+                    <div class="relative h-24 w-24 shrink-0 overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/40">
+                        <img src="{{ Storage::url($user->avatar_path) }}" alt="" class="absolute inset-0 h-full w-full object-cover" :style="{ objectPosition: objectPosition }">
                     </div>
                     <div>
                         <label for="avatar" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Profil fotoğrafı</label>
@@ -52,29 +53,17 @@
                                     </button>
                                 </div>
                                 <div class="flex flex-col items-center gap-3 px-5 py-6">
+                                    {{-- img `absolute inset-0` şart — gerekçe için bkz. components/avatar.blade.php --}}
                                     <div
                                         x-ref="frame"
                                         @pointerdown="startDrag($event)"
                                         @dragstart.prevent="null"
-                                        class="focal-drag-frame grid h-64 w-64 max-w-full cursor-move touch-none select-none place-items-center overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/40"
+                                        class="focal-drag-frame relative h-64 w-64 max-w-full cursor-move touch-none select-none overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/40"
                                     >
                                         <img src="{{ Storage::url($user->avatar_path) }}" alt="" draggable="false"
-                                             class="h-full w-full object-cover" :style="{ objectPosition: objectPosition }">
+                                             class="absolute inset-0 h-full w-full object-cover" :style="{ objectPosition: objectPosition }">
                                     </div>
                                     <p class="text-center text-xs text-stone-400 dark:text-stone-500">Dokunarak veya fareyle sürükleyerek fotoğrafı hizala.</p>
-                                    {{-- GEÇİCİ TEŞHİS (2026-07-17): sürükleme sorunu gerçek cihazda üç
-                                         düzeltmeye rağmen sürüyor — hangi olayın hiç gelmediğini görmek
-                                         için sayaç gösteriliyor. Kök neden bulununca kaldırılacak. --}}
-                                    <p class="rounded-lg bg-amber-50 px-2 py-1 text-center font-mono text-[10px] text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-                                        🔧 down:<span x-text="dbgDown"></span>
-                                        move:<span x-text="dbgMove"></span>
-                                        up:<span x-text="dbgUp"></span>
-                                        type:<span x-text="dbgType"></span>
-                                        rect:<span x-text="dbgRectW + 'x' + dbgRectH"></span>
-                                        x:<span x-text="x"></span>
-                                        y:<span x-text="y"></span>
-                                        drag:<span x-text="dragging ? 'evet' : 'hayır'"></span>
-                                    </p>
                                 </div>
                                 <div class="flex items-center justify-end gap-2 border-t border-stone-100 px-5 py-3 dark:border-stone-800">
                                     <button type="button" @click="cancel()" class="rounded-lg px-4 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">İptal</button>

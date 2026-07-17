@@ -413,17 +413,6 @@ Alpine.data('avatarAlignModal', (initialX, initialY, saveUrl) => ({
     _boundMove: null,
     _boundEnd: null,
 
-    // GEÇİCİ TEŞHİS SAYAÇLARI (2026-07-17): üç canlı düzeltme de gerçek
-    // cihazda sonuçsuz kaldı — hangi olayın hiç tetiklenmediğini görmek için
-    // modalda küçük bir sayaç gösteriliyor (bkz. panel/profile/edit.blade.php).
-    // Kök neden bulununca kaldırılacak.
-    dbgDown: 0,
-    dbgMove: 0,
-    dbgUp: 0,
-    dbgType: '-',
-    dbgRectW: 0,
-    dbgRectH: 0,
-
     get objectPosition() {
         return this.x + '% ' + this.y + '%';
     },
@@ -444,9 +433,6 @@ Alpine.data('avatarAlignModal', (initialX, initialY, saveUrl) => ({
     // move/up dinleyicileri window'a bağlanır — bkz. focalDrag'teki aynı gerekçe;
     // modal tam ekran bir overlay olduğundan bu özellikle önemli.
     startDrag(e) {
-        this.dbgDown++;
-        this.dbgType = e.pointerType || '?';
-
         // bkz. focalDrag.startDrag'teki aynı gerekçe — native drag/callout
         // hijack'ini preventDefault() ile engelle, setPointerCapture ile
         // pointer'ı bu elemente sabitle (opsiyonel, başarısız olursa yok say).
@@ -460,8 +446,6 @@ Alpine.data('avatarAlignModal', (initialX, initialY, saveUrl) => ({
         const rect = this.$refs.frame.getBoundingClientRect();
         this.frameWidth = rect.width;
         this.frameHeight = rect.height;
-        this.dbgRectW = Math.round(rect.width);
-        this.dbgRectH = Math.round(rect.height);
         this.startClientX = e.clientX;
         this.startClientY = e.clientY;
         this.startX = this.x;
@@ -476,7 +460,6 @@ Alpine.data('avatarAlignModal', (initialX, initialY, saveUrl) => ({
     },
 
     onDrag(e) {
-        this.dbgMove++;
         if (!this.dragging) return;
         const dx = e.clientX - this.startClientX;
         const dy = e.clientY - this.startClientY;
@@ -485,7 +468,6 @@ Alpine.data('avatarAlignModal', (initialX, initialY, saveUrl) => ({
     },
 
     endDrag() {
-        this.dbgUp++;
         if (!this.dragging) return;
         this.dragging = false;
         window.removeEventListener('pointermove', this._boundMove);
