@@ -21,7 +21,8 @@
                                 <div
                                     x-ref="frame"
                                     @pointerdown="startDrag($event)"
-                                    class="aspect-square w-full cursor-move touch-none select-none"
+                                    @dragstart.prevent="null"
+                                    class="focal-drag-frame aspect-square w-full cursor-move touch-none select-none"
                                 >
                                     <img src="{{ $image->url('medium') }}" alt="" draggable="false"
                                          class="h-full w-full object-cover" :style="{ objectPosition: objectPosition }">

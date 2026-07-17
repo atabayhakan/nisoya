@@ -57,6 +57,25 @@ input[type='week'] {
     color-scheme: dark;
 }
 
+/* Sürükleyerek hizalama (focalDrag / avatarAlignModal, bkz. app.js +
+   panel/profile/edit.blade.php + panel/listings/edit.blade.php): gerçek
+   parmak/fare girdisiyle tarayıcının kendi resim sürükleme mekanizması
+   (-webkit-user-drag) ya da iOS'un uzun-basma "Kaydet/Kopyala" callout'u
+   (-webkit-touch-callout), pointerdown'dan hemen sonra gesture'ı devralıp
+   pointermove akışını tamamen kesebiliyor — img[draggable=false] ve
+   Tailwind'in touch-none/select-none'u bu ikisini KAPSAMAZ (ikisi de
+   sadece scroll/pan/zoom ve metin seçimini engeller). Bu, synthetic
+   dispatchEvent() testleriyle asla yakalanmaz çünkü isTrusted:false
+   olayları tarayıcının native gesture recognizer'larını tetiklemez —
+   2026-07-17 üretim raporu: iki canlı düzeltme de bu yüzden sonuçsuz
+   kaldı. */
+.focal-drag-frame,
+.focal-drag-frame img {
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+}
+
 /* Sayfa geçişleri: tarayıcı-native View Transitions API (Cross-Document).
    Yeni JS/kütüphane gerekmiyor — desteklemeyen tarayıcılarda (Safari/Firefox)
    bu at-rule sessizce yok sayılır, sayfa normal şekilde geçer. */

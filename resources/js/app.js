@@ -333,6 +333,25 @@ Alpine.data('focalDrag', (initialX, initialY, saveUrl) => ({
     },
 
     startDrag(e) {
+        // Gerçek (trusted) pointerdown'da tarayıcının kendi resim sürükleme
+        // hazırlığı (native dragstart) ya da iOS callout'u bu gesture'ı
+        // devralıp pointermove'un hiç gelmemesine yol açabiliyor —
+        // preventDefault() bunu tetiklenmeden önce keser. Synthetic
+        // dispatchEvent() testleri native gesture recognizer'ları hiç
+        // tetiklemediği için bu sorun testlerde görünmez kalıyordu
+        // (bkz. app.css .focal-drag-frame). setPointerCapture, dokunmatikte
+        // parmak dairenin dışına taşsa bile bu pointer'ın olaylarının bu
+        // elemente yönlendirilmesini garanti eder; desteklenmiyorsa/
+        // başarısız olursa sessizce yok sayılır — window'daki move/up
+        // dinleyicileri zaten çalışmaya devam eder.
+        e.preventDefault();
+        try {
+            e.currentTarget.setPointerCapture(e.pointerId);
+        } catch (_) {
+            // Pointer capture opsiyonel bir sağlamlaştırma — desteklenmiyorsa
+            // sürükleme window dinleyicileriyle yine de çalışır.
+        }
+
         const rect = this.$refs.frame.getBoundingClientRect();
         this.frameWidth = rect.width;
         this.frameHeight = rect.height;
@@ -414,6 +433,16 @@ Alpine.data('avatarAlignModal', (initialX, initialY, saveUrl) => ({
     // move/up dinleyicileri window'a bağlanır — bkz. focalDrag'teki aynı gerekçe;
     // modal tam ekran bir overlay olduğundan bu özellikle önemli.
     startDrag(e) {
+        // bkz. focalDrag.startDrag'teki aynı gerekçe — native drag/callout
+        // hijack'ini preventDefault() ile engelle, setPointerCapture ile
+        // pointer'ı bu elemente sabitle (opsiyonel, başarısız olursa yok say).
+        e.preventDefault();
+        try {
+            e.currentTarget.setPointerCapture(e.pointerId);
+        } catch (_) {
+            // Sessizce yok say — window dinleyicileri yine de çalışır.
+        }
+
         const rect = this.$refs.frame.getBoundingClientRect();
         this.frameWidth = rect.width;
         this.frameHeight = rect.height;
