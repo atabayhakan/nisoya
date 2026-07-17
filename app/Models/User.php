@@ -35,8 +35,12 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
         'phone',
         'password',
         'avatar_path',
+        'avatar_cropped_path',
         'avatar_focal_x',
         'avatar_focal_y',
+        'avatar_crop_x',
+        'avatar_crop_y',
+        'avatar_crop_size',
         'bio',
         'skills',
         'is_searchable',
@@ -75,6 +79,9 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
             'skills' => 'array',
             'avatar_focal_x' => 'integer',
             'avatar_focal_y' => 'integer',
+            'avatar_crop_x' => 'integer',
+            'avatar_crop_y' => 'integer',
+            'avatar_crop_size' => 'integer',
         ];
     }
 
@@ -82,6 +89,24 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
     public function avatarObjectPosition(): string
     {
         return $this->avatar_focal_x.'% '.$this->avatar_focal_y.'%';
+    }
+
+    /**
+     * Gösterilecek avatar dosyası: varsa sunucuda üretilmiş KARE kırpım
+     * (yakınlaştırmalı hizalama), yoksa orijinal (eski odak-noktası sistemi
+     * ile object-position uygulanır — bkz. x-avatar bileşeni). Kırpım henüz
+     * yapılmamış eski avatarlar böylece davranış değiştirmeden görünmeye
+     * devam eder.
+     */
+    public function avatarDisplayPath(): ?string
+    {
+        return $this->avatar_cropped_path ?? $this->avatar_path;
+    }
+
+    /** Eski (kırpımsız) avatarlarda object-position gerekli mi? */
+    public function avatarUsesLegacyFocal(): bool
+    {
+        return $this->avatar_cropped_path === null;
     }
 
     protected static function booted(): void

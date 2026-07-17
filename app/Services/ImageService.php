@@ -314,6 +314,45 @@ class ImageService
     }
 
     /**
+     * Public diskteki bir görselden KARE kırpım üretir (avatar hizalama).
+     * $x/$y/$size kaynak görselin piksel koordinatlarındadır; sınırlar
+     * burada da doğrulanır (istemciden gelen değere körü körüne güvenme).
+     * Kaynak zaten işlenmiş (EXIF'i temizlenmiş) bir dosya olduğundan ek
+     * metadata temizliği gerekmez ama encode yine strip ile yapılır.
+     * İşlenmiş webp yolunu döndürür; kaynak okunamaz ya da kırpım sınır
+     * dışıysa RuntimeException fırlatır.
+     */
+    public function cropSquare(string $sourcePath, int $x, int $y, int $size, string $destDir, int $maxWidth = 400): string
+    {
+        if (! Storage::disk('public')->exists($sourcePath)) {
+            throw new RuntimeException('Kaynak görsel bulunamadı: '.$sourcePath);
+        }
+
+        $manager = new ImageManager(new Driver);
+
+        try {
+            $image = $manager->decode(Storage::disk('public')->path($sourcePath));
+        } catch (\Throwable $e) {
+            throw new RuntimeException('Kaynak görsel okunamadı.', previous: $e);
+        }
+
+        if ($size < 1 || $x < 0 || $y < 0 || $x + $size > $image->width() || $y + $size > $image->height()) {
+            throw new RuntimeException('Kırpım karesi görsel sınırlarının dışında.');
+        }
+
+        $image->crop($size, $size, $x, $y);
+
+        if ($image->width() > $maxWidth) {
+            $image->scaleDown(width: $maxWidth);
+        }
+
+        $path = $destDir.'/'.Str::uuid()->toString().'.webp';
+        Storage::disk('public')->put($path, (string) $image->encode(new WebpEncoder(quality: self::DEFAULT_QUALITY, strip: true)));
+
+        return $path;
+    }
+
+    /**
      * Bir görselin tüm varyantlarını disk'ten sil.
      */
     public function deleteVariants(array $paths): void

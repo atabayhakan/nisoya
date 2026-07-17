@@ -13,12 +13,21 @@
             @endif
 
             @if ($user->avatar_path)
-                {{-- Hizalama artık ayrı bir modalda: küçük daire burada sadece önizleme,
-                     sürükleme "Profil fotoğrafını düzenle" ile açılan büyük daire üzerinde olur. --}}
-                <div x-data="avatarAlignModal({{ $user->avatar_focal_x }}, {{ $user->avatar_focal_y }}, '{{ route('panel.profile.avatar-align') }}')" class="flex items-center gap-4">
+                {{-- Hizalama ayrı bir modalda: kaydır + yakınlaştır (WhatsApp tarzı).
+                     Küçük daire salt önizleme — kayıttan sonra previewUrl ile tazelenir. --}}
+                <div
+                    x-data="avatarCropModal({ x: {{ $user->avatar_crop_x ?? 'null' }}, y: {{ $user->avatar_crop_y ?? 'null' }}, size: {{ $user->avatar_crop_size ?? 'null' }} }, '{{ route('panel.profile.avatar-align') }}')"
+                    class="flex items-center gap-4"
+                >
                     {{-- img `absolute inset-0` şart — gerekçe için bkz. components/avatar.blade.php --}}
                     <div class="relative h-24 w-24 shrink-0 overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/40">
-                        <img src="{{ Storage::url($user->avatar_path) }}" alt="" class="absolute inset-0 h-full w-full object-cover" :style="{ objectPosition: objectPosition }">
+                        <img
+                            :src="previewUrl || '{{ Storage::url($user->avatarDisplayPath()) }}'"
+                            src="{{ Storage::url($user->avatarDisplayPath()) }}"
+                            alt=""
+                            class="absolute inset-0 h-full w-full object-cover"
+                            @if ($user->avatarUsesLegacyFocal()) style="object-position: {{ $user->avatarObjectPosition() }}" @endif
+                        >
                     </div>
                     <div>
                         <label for="avatar" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Profil fotoğrafı</label>
@@ -53,17 +62,43 @@
                                     </button>
                                 </div>
                                 <div class="flex flex-col items-center gap-3 px-5 py-6">
-                                    {{-- img `absolute inset-0` şart — gerekçe için bkz. components/avatar.blade.php --}}
+                                    {{-- Fotoğraf çerçeveden BÜYÜK çizilir (translate + piksel genişlik);
+                                         daire overflow-hidden ile pencere görevi görür. object-position
+                                         DEĞİL transform kullanılır — bkz. app.js avatarCropModal. --}}
+                                    {{-- x-init ile eleman kaydı: $refs teleport dışından (düzenle butonu)
+                                         teleport içindeki ref'lere erişemiyor — bkz. app.js avatarCropModal. --}}
                                     <div
-                                        x-ref="frame"
+                                        x-init="registerFrame($el)"
                                         @pointerdown="startDrag($event)"
+                                        @wheel.prevent="onWheel($event)"
                                         @dragstart.prevent="null"
                                         class="focal-drag-frame relative h-64 w-64 max-w-full cursor-move touch-none select-none overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/40"
                                     >
-                                        <img src="{{ Storage::url($user->avatar_path) }}" alt="" draggable="false"
-                                             class="absolute inset-0 h-full w-full object-cover" :style="{ objectPosition: objectPosition }">
+                                        <img
+                                            x-init="registerPhoto($el)"
+                                            src="{{ Storage::url($user->avatar_path) }}"
+                                            alt=""
+                                            draggable="false"
+                                            class="absolute left-0 top-0 origin-top-left"
+                                            :style="imgStyle"
+                                            x-show="ready"
+                                        >
                                     </div>
-                                    <p class="text-center text-xs text-stone-400 dark:text-stone-500">Dokunarak veya fareyle sürükleyerek fotoğrafı hizala.</p>
+                                    <label class="flex w-full max-w-64 items-center gap-2 text-stone-400 dark:text-stone-500">
+                                        <x-heroicon-o-magnifying-glass-minus class="h-4 w-4 shrink-0" />
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="3"
+                                            step="0.01"
+                                            :value="zoom"
+                                            @input="onSlider($event.target.value)"
+                                            class="w-full accent-emerald-600"
+                                            aria-label="Yakınlaştırma"
+                                        >
+                                        <x-heroicon-o-magnifying-glass-plus class="h-4 w-4 shrink-0" />
+                                    </label>
+                                    <p class="text-center text-xs text-stone-400 dark:text-stone-500">Sürükleyerek kaydır; iki parmakla sıkıştırarak veya kaydırıcıyla yakınlaştır.</p>
                                 </div>
                                 <div class="flex items-center justify-end gap-2 border-t border-stone-100 px-5 py-3 dark:border-stone-800">
                                     <button type="button" @click="cancel()" class="rounded-lg px-4 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">İptal</button>

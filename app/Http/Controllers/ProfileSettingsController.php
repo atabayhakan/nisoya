@@ -23,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -84,7 +85,6 @@ class ProfileSettingsController extends Controller
             ->all() ?: null;
 
         if ($request->hasFile('avatar')) {
-            // Avatar için sadece tek varyant (400x400, orijinal aspect ratio korunur)
             // EXIF orientation düzeltilir + metadata temizlenir (gizlilik)
             $imageService = app(ImageService::class);
 
@@ -97,7 +97,40 @@ class ProfileSettingsController extends Controller
             if ($user->avatar_path) {
                 $imageService->deleteVariants(array_values($imageService->siblingVariantPaths($user->avatar_path)));
             }
+            if ($user->avatar_cropped_path) {
+                $imageService->deleteVariants([$user->avatar_cropped_path]);
+            }
             $data['avatar_path'] = $result['large'];
+
+            // Yeni fotoğrafa hemen ORTALANMIŞ kare kırpım üret: gösterim her
+            // yerde baştan itibaren kare dosya kullanır; kullanıcı "düzenle"
+            // ile sonradan istediği gibi kaydırıp yakınlaştırabilir.
+            [$w, $h] = [$result['original_dimensions']['width'], $result['original_dimensions']['height']];
+            // large varyantı 1600px'e küçültülmüş olabilir — kırpım o dosya
+            // üzerinden yapılacağı için boyutları dosyadan tazele.
+            $largeSize = @getimagesize(Storage::disk('public')->path($result['large']));
+            if ($largeSize) {
+                [$w, $h] = [$largeSize[0], $largeSize[1]];
+            }
+            $size = min($w, $h);
+            $x = intdiv($w - $size, 2);
+            $y = intdiv($h - $size, 2);
+
+            try {
+                $data['avatar_cropped_path'] = $imageService->cropSquare($result['large'], $x, $y, $size, 'avatars/cropped');
+                $data['avatar_crop_x'] = $x;
+                $data['avatar_crop_y'] = $y;
+                $data['avatar_crop_size'] = $size;
+            } catch (\RuntimeException) {
+                // Kırpım üretilemezse eski odak-noktası gösterimine düş —
+                // yükleme yine başarılı sayılır.
+                $data['avatar_cropped_path'] = null;
+                $data['avatar_crop_x'] = null;
+                $data['avatar_crop_y'] = null;
+                $data['avatar_crop_size'] = null;
+            }
+            $data['avatar_focal_x'] = 50;
+            $data['avatar_focal_y'] = 50;
         }
 
         unset($data['avatar']);
@@ -106,20 +139,56 @@ class ProfileSettingsController extends Controller
         return back()->with('status', 'Profilin güncellendi.');
     }
 
-    /** Profil fotoğrafının kırpma odağını kaydet (parmak/fare ile sürükleyerek hizalama). */
+    /**
+     * Profil fotoğrafı hizalama (kaydır + yakınlaştır, bkz. avatarCropModal).
+     * İstemci, modaldaki pan/zum durumunu orijinal görselin piksel
+     * koordinatlarında KARE bir kırpım dikdörtgenine çevirip gönderir; sunucu
+     * sınırları doğrulayıp kare dosyayı üretir. Gösterim her yerde bu dosyayı
+     * kullandığı için transform matematiği tek yerde (burada) çözülür.
+     */
     public function alignAvatar(Request $request): JsonResponse
     {
+        $user = $request->user();
+
+        if (! $user->avatar_path) {
+            return response()->json(['message' => 'Önce bir profil fotoğrafı yükle.'], 422);
+        }
+
         $data = $request->validate([
-            'focal_x' => ['required', 'integer', 'min:0', 'max:100'],
-            'focal_y' => ['required', 'integer', 'min:0', 'max:100'],
+            'crop_x' => ['required', 'integer', 'min:0'],
+            'crop_y' => ['required', 'integer', 'min:0'],
+            'crop_size' => ['required', 'integer', 'min:16'],
         ]);
 
-        $request->user()->update([
-            'avatar_focal_x' => $data['focal_x'],
-            'avatar_focal_y' => $data['focal_y'],
+        $imageService = app(ImageService::class);
+
+        try {
+            $croppedPath = $imageService->cropSquare(
+                $user->avatar_path,
+                $data['crop_x'],
+                $data['crop_y'],
+                $data['crop_size'],
+                'avatars/cropped',
+            );
+        } catch (\RuntimeException) {
+            return response()->json(['message' => 'Kırpım uygulanamadı — sayfayı yenileyip tekrar dene.'], 422);
+        }
+
+        if ($user->avatar_cropped_path) {
+            $imageService->deleteVariants([$user->avatar_cropped_path]);
+        }
+
+        $user->update([
+            'avatar_cropped_path' => $croppedPath,
+            'avatar_crop_x' => $data['crop_x'],
+            'avatar_crop_y' => $data['crop_y'],
+            'avatar_crop_size' => $data['crop_size'],
         ]);
 
-        return response()->json(['status' => 'ok']);
+        return response()->json([
+            'status' => 'ok',
+            'cropped_url' => Storage::url($croppedPath),
+        ]);
     }
 
     public function password(Request $request): RedirectResponse
@@ -156,9 +225,12 @@ class ProfileSettingsController extends Controller
         DB::transaction(function () use ($request, $user) {
             $imageService = app(ImageService::class);
 
-            // Avatarı sil (tüm varyantlar: thumb/medium/large)
+            // Avatarı sil (tüm varyantlar: thumb/medium/large + kare kırpım)
             if ($user->avatar_path) {
                 $imageService->deleteVariants(array_values($imageService->siblingVariantPaths($user->avatar_path)));
+            }
+            if ($user->avatar_cropped_path) {
+                $imageService->deleteVariants([$user->avatar_cropped_path]);
             }
 
             // Ödeme linki QR kodlarını sil, sonra kayıtları temizle
@@ -236,6 +308,7 @@ class ProfileSettingsController extends Controller
                 'phone' => null,
                 'password' => bcrypt(Str::random(64)),
                 'avatar_path' => null,
+                'avatar_cropped_path' => null,
                 'bio' => null,
                 'skills' => null,
                 'city' => null,

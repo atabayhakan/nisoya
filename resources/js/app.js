@@ -389,100 +389,249 @@ Alpine.data('focalDrag', (initialX, initialY, saveUrl) => ({
     },
 }));
 
-// Profil fotoğrafı hizalama modalı: "Profil fotoğrafını düzenle" butonuyla
-// açılır, büyük bir daire üzerinde sürükleme yapılır (aynı delta mantığı,
-// bkz. focalDrag) ama focalDrag'in aksine PATCH isteği sürükleme bırakılınca
-// DEĞİL, kullanıcı "Kaydet"e basınca gider — "İptal" ile son kaydedilen
-// değere döner. savedX/Y, sayfa yüklenirken gelen sunucu değeriyle başlar ve
-// her başarılı kayıttan sonra güncellenir (bir sonraki iptalin nereye
-// döneceğini bilmesi için).
-Alpine.data('avatarAlignModal', (initialX, initialY, saveUrl) => ({
+// Profil fotoğrafı hizalama modalı (kaydır + yakınlaştır). Fotoğraf,
+// çerçeveden BÜYÜK gösterilir (WhatsApp/Instagram avatar editörü deseni):
+// durum = {panX, panY, zoom}; görsel `translate(panX, panY)` + piksel
+// genişlikle çizilir, "İptal" son kaydedilen duruma döner. "Kaydet"
+// pan/zum'u ORİJİNAL görselin piksel koordinatlarında kare bir kırpım
+// dikdörtgenine çevirip sunucuya gönderir; sunucu kare dosyayı üretir
+// (bkz. ProfileSettingsController::alignAvatar) ve gösterim her yerde o
+// dosyayı kullanır — transform matematiği başka hiçbir yerde tekrarlanmaz.
+// zoom=1 "cover" ölçeğidir (çerçeveyi tam doldurur), üst sınır 3x.
+// Dokunmatikte iki parmakla sıkıştırarak, masaüstünde tekerlek ya da
+// kaydırıcı ile yakınlaştırılır.
+Alpine.data('avatarCropModal', (crop, saveUrl) => ({
     open: false,
-    x: initialX,
-    y: initialY,
-    savedX: initialX,
-    savedY: initialY,
-    dragging: false,
+    ready: false,
     saving: false,
-    startClientX: 0,
-    startClientY: 0,
-    startX: 0,
-    startY: 0,
-    frameWidth: 0,
-    frameHeight: 0,
+    panX: 0,
+    panY: 0,
+    zoom: 1,
+    natW: 0,
+    natH: 0,
+    frameW: 0,
+    frameH: 0,
+    previewUrl: null,
+    // Aktif pointer'lar (pointerId -> {x, y}); 1 pointer = kaydırma,
+    // 2 pointer = sıkıştırarak yakınlaştırma.
+    _pointers: null,
+    _pinchDist: 0,
     _boundMove: null,
     _boundEnd: null,
+    // Çerçeve/fotoğraf elemanları x-init ile buraya kaydedilir: $refs,
+    // teleport DIŞINDAN (openModal'ı tetikleyen buton) teleport İÇİNDEKİ
+    // ref'lere erişemiyor (bilinen Alpine x-teleport sınırlaması).
+    _frameEl: null,
+    _photoEl: null,
 
-    get objectPosition() {
-        return this.x + '% ' + this.y + '%';
+    registerFrame(el) {
+        this._frameEl = el;
     },
 
-    openModal() {
-        this.x = this.savedX;
-        this.y = this.savedY;
+    registerPhoto(el) {
+        this._photoEl = el;
+    },
+
+    // Çerçeveyi tam dolduran minimum ölçek ("cover").
+    get coverScale() {
+        if (!this.natW || !this.natH) return 1;
+        return Math.max(this.frameW / this.natW, this.frameH / this.natH);
+    },
+
+    get scale() {
+        return this.coverScale * this.zoom;
+    },
+
+    get imgStyle() {
+        return {
+            width: this.natW * this.scale + 'px',
+            height: this.natH * this.scale + 'px',
+            transform: 'translate(' + this.panX + 'px, ' + this.panY + 'px)',
+            maxWidth: 'none',
+        };
+    },
+
+    async openModal() {
         this.open = true;
+        await this.$nextTick();
+
+        const img = this._photoEl;
+        if (!img || !this._frameEl) return;
+        // complete=true resmin YÜKLENDİĞİ değil, yüklemenin BİTTİĞİ anlamına
+        // gelir (başarısız olsa da) — bitmediyse bekle, bittiyse bekleme
+        // (aksi halde hatalı resimde sonsuza dek beklenirdi).
+        if (!img.complete) {
+            await new Promise((resolve) => {
+                img.addEventListener('load', resolve, { once: true });
+                img.addEventListener('error', resolve, { once: true });
+            });
+        }
+        this.natW = img.naturalWidth;
+        this.natH = img.naturalHeight;
+
+        const rect = this._frameEl.getBoundingClientRect();
+        this.frameW = rect.width;
+        this.frameH = rect.height;
+
+        this.restoreState();
+        this.ready = this.natW > 0 && this.frameW > 0;
+    },
+
+    // Kaydedilmiş kırpım karesinden pan/zum durumunu geri kur; yoksa
+    // ortalanmış zoom=1 ile başla.
+    restoreState() {
+        if (crop.size && crop.size > 0 && this.natW > 0) {
+            const s = this.frameW / crop.size;
+            this.zoom = Math.max(1, Math.min(3, s / this.coverScale));
+            this.panX = -crop.x * this.scale;
+            this.panY = -crop.y * this.scale;
+        } else {
+            this.zoom = 1;
+            this.panX = (this.frameW - this.natW * this.scale) / 2;
+            this.panY = (this.frameH - this.natH * this.scale) / 2;
+        }
+        this.clampPan();
     },
 
     cancel() {
-        if (this.dragging) return;
-        this.x = this.savedX;
-        this.y = this.savedY;
+        if (this._pointers && this._pointers.size) return;
         this.open = false;
+        this.ready = false;
     },
 
-    // move/up dinleyicileri window'a bağlanır — bkz. focalDrag'teki aynı gerekçe;
-    // modal tam ekran bir overlay olduğundan bu özellikle önemli.
+    // Görsel kenarları çerçevenin içine giremez.
+    clampPan() {
+        const imgW = this.natW * this.scale;
+        const imgH = this.natH * this.scale;
+        this.panX = Math.min(0, Math.max(this.frameW - imgW, this.panX));
+        this.panY = Math.min(0, Math.max(this.frameH - imgH, this.panY));
+    },
+
+    // (px, py) çerçeve-noktası sabit kalacak şekilde yakınlaştır.
+    zoomAt(px, py, newZoom) {
+        const clamped = Math.max(1, Math.min(3, newZoom));
+        const imgPointX = (px - this.panX) / this.scale;
+        const imgPointY = (py - this.panY) / this.scale;
+        this.zoom = clamped;
+        this.panX = px - imgPointX * this.scale;
+        this.panY = py - imgPointY * this.scale;
+        this.clampPan();
+    },
+
+    onWheel(e) {
+        if (!this.ready) return;
+        const rect = this._frameEl.getBoundingClientRect();
+        const factor = e.deltaY < 0 ? 1.08 : 1 / 1.08;
+        this.zoomAt(e.clientX - rect.left, e.clientY - rect.top, this.zoom * factor);
+    },
+
+    onSlider(value) {
+        if (!this.ready) return;
+        this.zoomAt(this.frameW / 2, this.frameH / 2, Number(value));
+    },
+
     startDrag(e) {
-        // bkz. focalDrag.startDrag'teki aynı gerekçe — native drag/callout
-        // hijack'ini preventDefault() ile engelle, setPointerCapture ile
-        // pointer'ı bu elemente sabitle (opsiyonel, başarısız olursa yok say).
+        if (!this.ready) return;
+        // Native resim sürükleme/callout hijack'ini kes (bkz. focalDrag) —
+        // synthetic testlerde görünmeyen, yalnızca gerçek girdide tetiklenen
+        // tarayıcı davranışı.
         e.preventDefault();
         try {
             e.currentTarget.setPointerCapture(e.pointerId);
         } catch (_) {
-            // Sessizce yok say — window dinleyicileri yine de çalışır.
+            // Opsiyonel sağlamlaştırma — window dinleyicileri yine de çalışır.
         }
 
-        const rect = this.$refs.frame.getBoundingClientRect();
-        this.frameWidth = rect.width;
-        this.frameHeight = rect.height;
-        this.startClientX = e.clientX;
-        this.startClientY = e.clientY;
-        this.startX = this.x;
-        this.startY = this.y;
-        this.dragging = true;
+        if (!this._pointers) this._pointers = new Map();
+        this._pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
-        this._boundMove = (ev) => this.onDrag(ev);
-        this._boundEnd = () => this.endDrag();
-        window.addEventListener('pointermove', this._boundMove);
-        window.addEventListener('pointerup', this._boundEnd);
-        window.addEventListener('pointercancel', this._boundEnd);
+        if (this._pointers.size === 2) {
+            const [a, b] = [...this._pointers.values()];
+            this._pinchDist = Math.hypot(a.x - b.x, a.y - b.y);
+        }
+
+        if (this._pointers.size === 1) {
+            this._boundMove = (ev) => this.onMove(ev);
+            this._boundEnd = (ev) => this.endDrag(ev);
+            window.addEventListener('pointermove', this._boundMove);
+            window.addEventListener('pointerup', this._boundEnd);
+            window.addEventListener('pointercancel', this._boundEnd);
+        }
     },
 
-    onDrag(e) {
-        if (!this.dragging) return;
-        const dx = e.clientX - this.startClientX;
-        const dy = e.clientY - this.startClientY;
-        this.x = clampPercent(this.startX - (dx / this.frameWidth) * 100);
-        this.y = clampPercent(this.startY - (dy / this.frameHeight) * 100);
+    onMove(e) {
+        if (!this._pointers || !this._pointers.has(e.pointerId)) return;
+        const prev = this._pointers.get(e.pointerId);
+        const dx = e.clientX - prev.x;
+        const dy = e.clientY - prev.y;
+        this._pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        if (this._pointers.size >= 2) {
+            // İki parmak: sıkıştırarak yakınlaştır (orta nokta sabit kalır)
+            // + orta nokta kayarsa görüntüyü de kaydır.
+            const [a, b] = [...this._pointers.values()];
+            const dist = Math.hypot(a.x - b.x, a.y - b.y);
+            const rect = this._frameEl.getBoundingClientRect();
+            const midX = (a.x + b.x) / 2 - rect.left;
+            const midY = (a.y + b.y) / 2 - rect.top;
+            if (this._pinchDist > 0 && dist > 0) {
+                this.zoomAt(midX, midY, this.zoom * (dist / this._pinchDist));
+            }
+            this._pinchDist = dist;
+            this.panX += dx / 2;
+            this.panY += dy / 2;
+            this.clampPan();
+        } else {
+            // Tek parmak/fare: fotoğrafı kaydır — parmak nereye, fotoğraf oraya.
+            this.panX += dx;
+            this.panY += dy;
+            this.clampPan();
+        }
     },
 
-    endDrag() {
-        if (!this.dragging) return;
-        this.dragging = false;
-        window.removeEventListener('pointermove', this._boundMove);
-        window.removeEventListener('pointerup', this._boundEnd);
-        window.removeEventListener('pointercancel', this._boundEnd);
+    endDrag(e) {
+        if (!this._pointers) return;
+        this._pointers.delete(e.pointerId);
+
+        if (this._pointers.size === 1) {
+            this._pinchDist = 0;
+        }
+        if (this._pointers.size === 0) {
+            window.removeEventListener('pointermove', this._boundMove);
+            window.removeEventListener('pointerup', this._boundEnd);
+            window.removeEventListener('pointercancel', this._boundEnd);
+        }
+    },
+
+    // Pan/zum durumunu kaynak görselin piksel koordinatlarında kare kırpıma çevir.
+    cropRect() {
+        const size = Math.round(this.frameW / this.scale);
+        const x = Math.round(-this.panX / this.scale);
+        const y = Math.round(-this.panY / this.scale);
+        return {
+            crop_size: Math.max(16, Math.min(size, Math.min(this.natW, this.natH))),
+            crop_x: Math.max(0, Math.min(x, this.natW - size)),
+            crop_y: Math.max(0, Math.min(y, this.natH - size)),
+        };
     },
 
     async save() {
-        if (this.saving) return;
+        if (this.saving || !this.ready) return;
         this.saving = true;
         try {
-            await postJson(saveUrl, 'PATCH', { focal_x: Math.round(this.x), focal_y: Math.round(this.y) });
-            this.savedX = this.x;
-            this.savedY = this.y;
-            this.open = false;
+            const response = await postJson(saveUrl, 'PATCH', this.cropRect());
+            if (response.ok) {
+                const data = await response.json();
+                if (data.cropped_url) {
+                    this.previewUrl = data.cropped_url + '?t=' + Date.now();
+                }
+                const rect = this.cropRect();
+                crop.x = rect.crop_x;
+                crop.y = rect.crop_y;
+                crop.size = rect.crop_size;
+                this.open = false;
+                this.ready = false;
+            }
         } finally {
             this.saving = false;
         }

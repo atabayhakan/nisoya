@@ -6,7 +6,9 @@ use App\Models\User;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ProfileSettingsTest extends TestCase
@@ -130,34 +132,138 @@ class ProfileSettingsTest extends TestCase
         ])->assertSessionHasErrors('current_password');
     }
 
-    /** Sürükleyerek hizalama (Faz M7): profil fotoğrafının odak noktası. */
-    public function test_user_can_align_avatar_focal_point(): void
+    /**
+     * Public diske bilinen boyutlarda gerçek bir test görseli koyar
+     * (kaydır+zum hizalama sunucuda GERÇEK dosyayı kırptığı için sahte
+     * path yetmez) ve avatarı bu dosya olan bir kullanıcı döndürür.
+     */
+    private function userWithRealAvatar(int $width = 400, int $height = 800): User
     {
-        $user = User::factory()->create(['avatar_path' => 'avatars/foto.jpg', 'avatar_focal_x' => 50, 'avatar_focal_y' => 50]);
+        Storage::fake('public');
 
-        $this->actingAs($user)->patch('/panel/profil/avatar-hizala', [
-            'focal_x' => 20,
-            'focal_y' => 80,
-        ])->assertOk()->assertJson(['status' => 'ok']);
+        $image = imagecreatetruecolor($width, $height);
+        imagefilledrectangle($image, 0, 0, $width, $height, imagecolorallocate($image, 40, 120, 80));
+        ob_start();
+        imagepng($image);
+        Storage::disk('public')->put('avatars/large/test-avatar.png', ob_get_clean());
 
-        $user->refresh();
-        $this->assertSame(20, $user->avatar_focal_x);
-        $this->assertSame(80, $user->avatar_focal_y);
+        return User::factory()->create(['avatar_path' => 'avatars/large/test-avatar.png']);
     }
 
-    public function test_avatar_align_rejects_out_of_range_values(): void
+    /** Kaydır+zum hizalama: kırpım karesi sunucuda gerçek KARE dosya üretir. */
+    public function test_user_can_crop_avatar(): void
     {
-        $user = User::factory()->create(['avatar_path' => 'avatars/foto.jpg']);
+        $user = $this->userWithRealAvatar(400, 800);
+
+        $response = $this->actingAs($user)->patch('/panel/profil/avatar-hizala', [
+            'crop_x' => 0,
+            'crop_y' => 200,
+            'crop_size' => 400,
+        ]);
+
+        $response->assertOk()->assertJson(['status' => 'ok'])->assertJsonStructure(['cropped_url']);
+
+        $user->refresh();
+        $this->assertSame(0, $user->avatar_crop_x);
+        $this->assertSame(200, $user->avatar_crop_y);
+        $this->assertSame(400, $user->avatar_crop_size);
+        $this->assertNotNull($user->avatar_cropped_path);
+        Storage::disk('public')->assertExists($user->avatar_cropped_path);
+
+        // Üretilen dosya gerçekten kare olmalı.
+        $size = getimagesizefromstring(Storage::disk('public')->get($user->avatar_cropped_path));
+        $this->assertSame($size[0], $size[1]);
+    }
+
+    public function test_avatar_crop_replaces_previous_cropped_file(): void
+    {
+        $user = $this->userWithRealAvatar(400, 800);
+
+        $this->actingAs($user)->patch('/panel/profil/avatar-hizala', ['crop_x' => 0, 'crop_y' => 0, 'crop_size' => 400])->assertOk();
+        $firstPath = $user->refresh()->avatar_cropped_path;
+
+        $this->actingAs($user)->patch('/panel/profil/avatar-hizala', ['crop_x' => 0, 'crop_y' => 400, 'crop_size' => 400])->assertOk();
+
+        $this->assertNotSame($firstPath, $user->refresh()->avatar_cropped_path);
+        Storage::disk('public')->assertMissing($firstPath);
+        Storage::disk('public')->assertExists($user->avatar_cropped_path);
+    }
+
+    public function test_avatar_crop_rejects_rect_outside_image_bounds(): void
+    {
+        $user = $this->userWithRealAvatar(400, 800);
+
+        // 300 + 200 > 400 (genişlik) — kare görsel sınırlarının dışına taşıyor.
+        $this->actingAs($user)->patch('/panel/profil/avatar-hizala', [
+            'crop_x' => 300,
+            'crop_y' => 0,
+            'crop_size' => 200,
+        ])->assertStatus(422);
+
+        $this->assertNull($user->refresh()->avatar_cropped_path);
+    }
+
+    public function test_avatar_crop_rejects_invalid_values(): void
+    {
+        $user = $this->userWithRealAvatar();
 
         $this->actingAs($user)->patch('/panel/profil/avatar-hizala', [
-            'focal_x' => 101,
-            'focal_y' => -1,
-        ])->assertSessionHasErrors(['focal_x', 'focal_y']);
+            'crop_x' => -5,
+            'crop_y' => 0,
+            'crop_size' => 4,
+        ])->assertSessionHasErrors(['crop_x', 'crop_size']);
+    }
+
+    public function test_avatar_crop_requires_existing_avatar(): void
+    {
+        $user = User::factory()->create(['avatar_path' => null]);
+
+        $this->actingAs($user)->patch('/panel/profil/avatar-hizala', [
+            'crop_x' => 0,
+            'crop_y' => 0,
+            'crop_size' => 100,
+        ])->assertStatus(422);
     }
 
     public function test_guest_cannot_align_avatar(): void
     {
-        $this->patch('/panel/profil/avatar-hizala', ['focal_x' => 10, 'focal_y' => 10])
+        $this->patch('/panel/profil/avatar-hizala', ['crop_x' => 0, 'crop_y' => 0, 'crop_size' => 100])
             ->assertRedirect(route('login'));
+    }
+
+    /** Yeni avatar yüklemesi otomatik ORTALANMIŞ kare kırpım üretir. */
+    public function test_avatar_upload_generates_centered_square_crop(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $image = imagecreatetruecolor(300, 600);
+        imagefilledrectangle($image, 0, 0, 300, 600, imagecolorallocate($image, 200, 60, 60));
+        ob_start();
+        imagepng($image);
+        $png = ob_get_clean();
+
+        $file = UploadedFile::fake()->createWithContent('avatar.png', $png);
+
+        $this->actingAs($user)->put('/panel/profil', [
+            'name' => $user->name,
+            'username' => $user->username,
+            'country_code' => 'DE',
+            'preferred_currency' => 'EUR',
+            'avatar' => $file,
+        ])->assertSessionHasNoErrors();
+
+        $user->refresh();
+        $this->assertNotNull($user->avatar_path);
+        $this->assertNotNull($user->avatar_cropped_path);
+        Storage::disk('public')->assertExists($user->avatar_cropped_path);
+
+        // Ortalanmış kare: 300x600 kaynakta size=300, x=0, y=150.
+        $this->assertSame(300, $user->avatar_crop_size);
+        $this->assertSame(0, $user->avatar_crop_x);
+        $this->assertSame(150, $user->avatar_crop_y);
+
+        $size = getimagesizefromstring(Storage::disk('public')->get($user->avatar_cropped_path));
+        $this->assertSame($size[0], $size[1]);
     }
 }
