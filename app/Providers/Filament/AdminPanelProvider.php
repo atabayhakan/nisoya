@@ -54,6 +54,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Pazaryeri'),
                 NavigationGroup::make('İş İlanları'),
                 NavigationGroup::make('Topluluk'),
+                NavigationGroup::make('İletişim'),
                 NavigationGroup::make('Site Yönetimi'),
                 NavigationGroup::make('Tasarım'),
                 NavigationGroup::make('Ayarlar'),

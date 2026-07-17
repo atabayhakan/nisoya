@@ -5,6 +5,7 @@ use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyGalleryController;
 use App\Http\Controllers\CompanyReviewController;
+use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventInvitationController;
 use App\Http\Controllers\EventMediaController;
@@ -89,6 +90,9 @@ Route::get('/arama/hizli', [QuickSearchController::class, 'index'])
 // Statik sayfalar (işlevsel olanlar kodda kalır; kurumsal metinler yönetilebilir sayfalara taşındı)
 Route::get('/nasil-calisir', [PagesController::class, 'nasilCalisir'])->name('pages.how');
 Route::get('/iletisim', [PagesController::class, 'iletisim'])->name('pages.contact');
+Route::post('/iletisim', [ContactMessageController::class, 'store'])
+    ->middleware(['honeypot', 'throttle:contact-store'])
+    ->name('contact.store');
 
 // Çerez tercihleri (kodda sabit; gizlilik sayfası Faz B'de CMS'e taşındı — bkz. StaticPagesSeeder)
 Route::view('/cerez-tercihleri', 'pages.cerez-tercihleri')->name('pages.cookie-preferences');

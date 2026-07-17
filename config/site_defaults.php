@@ -17,6 +17,7 @@ return [
         'header' => 'Üst Menü (Header)',
         'footer' => 'Alt Bilgi (Footer)',
         'genel' => 'Genel',
+        'iletisim' => 'İletişim Sayfası',
         'reklam' => 'Reklam & Analiz',
         'bagis' => 'Bağış',
         'nabiz' => 'Nisoya Nabzı',
@@ -28,6 +29,14 @@ return [
         // --- Genel ---
         'genel.site_adi' => ['group' => 'genel', 'label' => 'Site adı', 'type' => 'text', 'default' => 'Nisoya'],
         'genel.slogan' => ['group' => 'genel', 'label' => 'Slogan', 'type' => 'text', 'default' => 'Ne İş Olursa Yaparım'],
+
+        // --- İletişim sayfası ---
+        // 'iletisim.eposta' aynı zamanda yeni mesaj bildirimlerinin gönderileceği
+        // adres olarak da kullanılır (bkz. ContactMessageController).
+        'iletisim.eposta' => ['group' => 'iletisim', 'label' => 'İletişim e-postası', 'type' => 'text', 'default' => 'destek@nisoya.com'],
+        'iletisim.telefon' => ['group' => 'iletisim', 'label' => 'Telefon (ops. — boşsa gösterilmez)', 'type' => 'text', 'default' => ''],
+        'iletisim.adres' => ['group' => 'iletisim', 'label' => 'Adres (ops. — boşsa gösterilmez)', 'type' => 'textarea', 'default' => ''],
+        'iletisim.calisma_saatleri' => ['group' => 'iletisim', 'label' => 'Yanıt süresi / çalışma saatleri notu (ops.)', 'type' => 'text', 'default' => 'Genelde 24 saat içinde dönüş yaparız.'],
 
         // --- Anasayfa: Hero ---
         'home.hero_badge' => ['group' => 'anasayfa', 'label' => 'Hero rozet metni', 'type' => 'text', 'default' => '🌍 Yurt dışındaki Türkler için'],

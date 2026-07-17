@@ -99,6 +99,11 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('story-store', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
         );
 
+        // İletişim formu misafirlere de açık (login gerekmez) — sadece IP bazlı,
+        // daha sıkı bir limit (spam riski diğer login-gerektiren formlara göre daha yüksek).
+        RateLimiter::for('contact-store', fn (Request $request) => Limit::perMinute(5)->by($request->ip())
+        );
+
         RateLimiter::for('job-create', fn (Request $request) => Limit::perMinute(12)->by($request->user()?->id ?: $request->ip())
         );
 
