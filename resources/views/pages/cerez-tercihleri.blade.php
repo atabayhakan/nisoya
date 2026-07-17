@@ -129,6 +129,16 @@
                     document.documentElement.dataset.consentAds = this.prefs.ads ? 'granted' : 'denied';
                     document.documentElement.dataset.consentAnalytics = this.prefs.analytics ? 'granted' : 'denied';
 
+                    // Onaylanan kategorinin script'lerini şimdi gerçekten yükle
+                    // (bkz. app.blade.php — onay öncesi bu script'ler <template>
+                    // içinde inert'tir, hiç çalışmaz/ağ isteği atmaz).
+                    if (this.prefs.analytics && typeof window.nisoyaActivateConsent === 'function') {
+                        window.nisoyaActivateConsent('analytics');
+                    }
+                    if (this.prefs.ads && typeof window.nisoyaActivateConsent === 'function') {
+                        window.nisoyaActivateConsent('ads');
+                    }
+
                     if (typeof gtag === 'function') {
                         gtag('consent', 'update', {
                             ad_storage: this.prefs.ads ? 'granted' : 'denied',
@@ -138,13 +148,8 @@
                         });
                     }
 
-                    // AdSense'i yeniden tetikle (reklam onay verildiyse)
-                    if (this.prefs.ads) {
-                        try {
-                            (window.adsbygoogle = window.adsbygoogle || []).push({});
-                        } catch (e) {}
-                    } else {
-                        // Reddedildiyse slot'ları temizle
+                    if (!this.prefs.ads) {
+                        // Reddedildiyse (ya da geri alındıysa) slot'ları temizle
                         document.querySelectorAll('.adsense-slot').forEach((el) => {
                             el.innerHTML = '';
                         });

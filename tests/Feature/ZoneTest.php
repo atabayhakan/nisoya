@@ -107,6 +107,12 @@ class ZoneTest extends TestCase
         // boş render ediyordu (bkz. ad-slot.blade.php); regresyonu burada sabitliyoruz.
         $this->assertStringContainsString('data-ad-slot="999"', $html);
         $this->assertStringContainsString('data-ad-client="ca-pub-123"', $html);
+
+        // <ins class="adsbyblock"> yanlış class adı yüzünden adsbygoogle.js
+        // reklam birimini asla bulup dolduramıyordu — Google'ın script'i
+        // yalnızca tam olarak "adsbygoogle" class'ını arar.
+        $this->assertStringContainsString('class="adsbygoogle', $html);
+        $this->assertStringNotContainsString('adsbyblock', $html);
     }
 
     public function test_zone_scheduling_window(): void

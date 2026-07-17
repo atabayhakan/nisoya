@@ -54,53 +54,55 @@
         return {
             accepted: false,
             decided: null,
-            KEY: 'nisoya_consent',
+            // /cerez-tercihleri sayfasıyla AYNI anahtar (nisoya_consent_v1) ve
+            // AYNI {analytics, ads} formatı kullanılır. Eskiden bu banner ayrı
+            // bir "nisoya_consent" anahtarına düz 'accepted'/'rejected' string'i
+            // yazıyordu — kullanıcı detaylı sayfada tercihini kaydetse bile bu
+            // banner onu göremiyor, tekrar tekrar çıkıyordu (ve tam tersi).
+            KEY: 'nisoya_consent_v1',
             init() {
                 try {
-                    const stored = localStorage.getItem(this.KEY);
-                    if (stored === 'accepted') {
-                        this.accepted = true;
-                        this.decided = 'accepted';
-                        this.applyConsent(true);
-                    } else if (stored === 'rejected') {
-                        this.decided = 'rejected';
-                        this.applyConsent(false);
+                    const stored = JSON.parse(localStorage.getItem(this.KEY) || 'null');
+                    if (stored) {
+                        this.accepted = !!stored.analytics || !!stored.ads;
+                        this.decided = 'set';
+                        this.applyConsent(!!stored.analytics, !!stored.ads);
                     }
                 } catch (e) {}
             },
             accept() {
                 this.accepted = true;
                 this.decided = 'accepted';
-                try { localStorage.setItem(this.KEY, 'accepted'); } catch (e) {}
-                this.applyConsent(true);
-                this.reloadAdsIfNeeded();
+                this.store(true, true);
+                this.applyConsent(true, true);
             },
             reject() {
                 this.accepted = false;
                 this.decided = 'rejected';
-                try { localStorage.setItem(this.KEY, 'rejected'); } catch (e) {}
-                this.applyConsent(false);
+                this.store(false, false);
+                this.applyConsent(false, false);
             },
-            applyConsent(granted) {
-                document.documentElement.dataset.consentAds = granted ? 'granted' : 'denied';
-                document.documentElement.dataset.consentAnalytics = granted ? 'granted' : 'denied';
+            store(analytics, ads) {
+                try { localStorage.setItem(this.KEY, JSON.stringify({ analytics, ads })); } catch (e) {}
+            },
+            applyConsent(analyticsGranted, adsGranted) {
+                document.documentElement.dataset.consentAnalytics = analyticsGranted ? 'granted' : 'denied';
+                document.documentElement.dataset.consentAds = adsGranted ? 'granted' : 'denied';
+
+                // Onaylanan kategorinin script'lerini şimdi gerçekten yükle
+                // (bkz. app.blade.php — onay öncesi bu script'ler <template>
+                // içinde inert'tir, hiç çalışmaz/ağ isteği atmaz).
+                if (analyticsGranted) window.nisoyaActivateConsent('analytics');
+                if (adsGranted) window.nisoyaActivateConsent('ads');
 
                 if (typeof gtag === 'function') {
                     gtag('consent', 'update', {
-                        ad_storage: granted ? 'granted' : 'denied',
-                        ad_user_data: granted ? 'granted' : 'denied',
-                        ad_personalization: granted ? 'granted' : 'denied',
-                        analytics_storage: granted ? 'granted' : 'denied',
+                        ad_storage: adsGranted ? 'granted' : 'denied',
+                        ad_user_data: adsGranted ? 'granted' : 'denied',
+                        ad_personalization: adsGranted ? 'granted' : 'denied',
+                        analytics_storage: analyticsGranted ? 'granted' : 'denied',
                     });
                 }
-            },
-            reloadAdsIfNeeded() {
-                // AdSense auto ads zaten yüklüyse ek bir şey yapma; aksi durumda yeniden tetikle
-                try {
-                    if (window.adsbygoogle && Array.isArray(window.adsbygoogle)) {
-                        window.adsbygoogle.push({});
-                    }
-                } catch (e) {}
             },
         };
     }

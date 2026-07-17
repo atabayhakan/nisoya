@@ -66,25 +66,60 @@
         <meta name="google-adsense-account" content="{{ config('services.adsense.publisher_id') }}">
     @endif
 
-    {{-- Google Analytics 4 — yalnızca analytics etkinse ve ölçüm id varsa --}}
+    {{-- Google Analytics 4 — yalnızca analytics etkinse ve ölçüm id varsa.
+         GİZLİLİK: Bu script'ler kullanıcı çerez onayı vermeden ÇALIŞMAZ.
+         <template> içeriği tarayıcı tarafından inert kabul edilir — script
+         çalışmaz, hiçbir ağ isteği atılmaz. window.nisoyaActivateConsent()
+         (aşağıda tanımlı) kullanıcı onay verdiğinde bu içeriği gerçek
+         <script> elemanlarına çevirip DOM'a ekler. Bkz. cookie-consent.blade.php
+         ve cerez-tercihleri.blade.php. --}}
     @if (config('services.analytics.enabled') && config('services.analytics.measurement_id'))
-        <script async src="https://www.googletagmanager.com/gtag/js?id={{ config('services.analytics.measurement_id') }}"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', @json(config('services.analytics.measurement_id')), { anonymize_ip: true });
-        </script>
-        {{-- Analytics özel kodu (admin panelden — Site Yönetimi → İçerik).
-             GÜVENLİK: Bu alana sadece admin rolündeki kullanıcılar yazabilir
-             (Filament `canAccessPanel()` ile korunur). Üretim ortamında
-             admin'in kendi itibarı ve KVKK gereği sadece güvenilir 3. parti
-             (AdSense, Analytics, vb.) kodları eklemesi beklenir. Bilinmeyen
-             kullanıcıya bu alanı kullandırmayın. --}}
-        @if (config('services.analytics.custom_code'))
-            {!! config('services.analytics.custom_code') !!}
-        @endif
+        <template id="nisoya-consent-analytics">
+            <script async src="https://www.googletagmanager.com/gtag/js?id={{ config('services.analytics.measurement_id') }}"></script>
+            <script>
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', @json(config('services.analytics.measurement_id')), { anonymize_ip: true });
+            </script>
+            {{-- Analytics özel kodu (admin panelden — Site Yönetimi → İçerik).
+                 GÜVENLİK: Bu alana sadece admin rolündeki kullanıcılar yazabilir
+                 (Filament `canAccessPanel()` ile korunur). Üretim ortamında
+                 admin'in kendi itibarı ve KVKK gereği sadece güvenilir 3. parti
+                 (AdSense, Analytics, vb.) kodları eklemesi beklenir. Bilinmeyen
+                 kullanıcıya bu alanı kullandırmayın. --}}
+            @if (config('services.analytics.custom_code'))
+                {!! config('services.analytics.custom_code') !!}
+            @endif
+        </template>
     @endif
+
+    {{-- Çerez onayına bağlı script'leri etkinleştiren paylaşılan fonksiyon.
+         cookie-consent.blade.php (banner) ve cerez-tercihleri.blade.php
+         (detaylı tercihler sayfası) bunu çağırır. <template> içeriğini
+         klonlayıp gerçek <script> elemanlarına çevirmek ZORUNLU: script
+         elemanları innerHTML/cloneNode ile eklendiğinde tarayıcı bunları
+         çalıştırmaz — bu yüzden her script manuel olarak yeniden oluşturulur. --}}
+    <script>
+        window.nisoyaActivateConsent = function (category) {
+            var tpl = document.getElementById('nisoya-consent-' + category);
+            if (!tpl || tpl.dataset.activated === 'true') return;
+            tpl.dataset.activated = 'true';
+            var clone = tpl.content.cloneNode(true);
+            clone.querySelectorAll('script').forEach(function (oldScript) {
+                var newScript = document.createElement('script');
+                for (var i = 0; i < oldScript.attributes.length; i++) {
+                    newScript.setAttribute(oldScript.attributes[i].name, oldScript.attributes[i].value);
+                }
+                newScript.textContent = oldScript.textContent;
+                oldScript.replaceWith(newScript);
+            });
+            document.body.appendChild(clone);
+            if (category === 'ads') {
+                window.dispatchEvent(new Event('nisoya:consent-ads-granted'));
+            }
+        };
+    </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -270,15 +305,19 @@
         {!! config('services.custom_footer_code') !!}
     @endif
 
-    {{-- Google AdSense Auto Ads — kullanıcı çerez onayı verdikten sonra yüklenir.
-         Admin panelden Auto Ads kodu girildiyse onu kullan (adsbygoogle.js'i
-         zaten kendi içinde yükler); yoksa temel script'e düş. --}}
+    {{-- Google AdSense — kullanıcı reklam çerezi onayı verene kadar bu
+         script hiç yüklenmez/çalışmaz (bkz. yukarıdaki nisoyaActivateConsent
+         ve <template> açıklaması). Admin panelden Auto Ads kodu girildiyse
+         onu kullan (adsbygoogle.js'i zaten kendi içinde yükler); yoksa temel
+         script'e düş. --}}
     @if (config('services.adsense.enabled') && config('services.adsense.publisher_id'))
-        @if (config('services.adsense.auto_ads_code'))
-            {!! config('services.adsense.auto_ads_code') !!}
-        @else
-            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ config('services.adsense.publisher_id') }}" crossorigin="anonymous" data-consent="ads"></script>
-        @endif
+        <template id="nisoya-consent-ads">
+            @if (config('services.adsense.auto_ads_code'))
+                {!! config('services.adsense.auto_ads_code') !!}
+            @else
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ config('services.adsense.publisher_id') }}" crossorigin="anonymous"></script>
+            @endif
+        </template>
     @endif
 
     {{-- Çerez onayı banner'ı (AdSense + Analytics için) --}}

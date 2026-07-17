@@ -30,7 +30,7 @@
         data-ads-loaded="false"
     >
         <ins
-            class="adsbyblock block"
+            class="adsbygoogle block"
             style="display:block; min-height: {{ $placeholderHeight }}px;"
             data-ad-client="{{ $publisher }}"
             data-ad-slot="{{ $slotId }}"
@@ -43,15 +43,8 @@
     </div>
     <script>
         (function () {
-            if (document.documentElement.dataset.consentAds !== 'granted') {
-                return;
-            }
-
-            // IntersectionObserver ile ekrana gelince yükle (performans + CLS)
             const slot = document.querySelector('[data-ad-slot="{{ $slotId }}"]');
             if (!slot) return;
-
-            if (slot.dataset.adsLoaded === 'true') return;
 
             const loadAd = () => {
                 if (slot.dataset.adsLoaded === 'true') return;
@@ -61,20 +54,33 @@
                 } catch (e) {}
             };
 
-            // Tarayıcı destekliyorsa viewport'a girince tetikle
-            if ('IntersectionObserver' in window) {
-                const obs = new IntersectionObserver((entries, observer) => {
-                    entries.forEach((entry) => {
-                        if (entry.isIntersecting) {
-                            loadAd();
-                            observer.unobserve(entry.target);
-                        }
-                    });
-                }, { rootMargin: '200px' });
-                obs.observe(slot);
+            const startObserving = () => {
+                if (slot.dataset.adsLoaded === 'true') return;
+                // Tarayıcı destekliyorsa viewport'a girince tetikle
+                if ('IntersectionObserver' in window) {
+                    const obs = new IntersectionObserver((entries, observer) => {
+                        entries.forEach((entry) => {
+                            if (entry.isIntersecting) {
+                                loadAd();
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    }, { rootMargin: '200px' });
+                    obs.observe(slot);
+                } else {
+                    // Eski tarayıcı fallback: doğrudan yükle
+                    loadAd();
+                }
+            };
+
+            // Sayfa yüklendiğinde onay zaten verilmişse hemen başla; henüz
+            // verilmemişse, kullanıcı sonradan onay verdiğinde (bkz.
+            // window.nisoyaActivateConsent('ads') içindeki dispatch) tekrar
+            // denenir — sayfa yenilenmesini beklemeye gerek kalmaz.
+            if (document.documentElement.dataset.consentAds === 'granted') {
+                startObserving();
             } else {
-                // Eski tarayıcı fallback: doğrudan yükle
-                loadAd();
+                window.addEventListener('nisoya:consent-ads-granted', startObserving, { once: true });
             }
         })();
     </script>

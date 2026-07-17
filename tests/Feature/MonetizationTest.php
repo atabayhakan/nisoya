@@ -82,6 +82,31 @@ class MonetizationTest extends TestCase
         $response->assertSee('adsbygoogle.js', false);
     }
 
+    public function test_layout_adsense_scripti_onay_verilene_kadar_inert_template_icinde(): void
+    {
+        // GİZLİLİK: adsbygoogle.js onay öncesi <script> olarak DEĞİL, inert bir
+        // <template> içinde yer almalı — aksi halde tarayıcı çerez onayı
+        // alınmadan script'i çalıştırır (GDPR / Google EU User Consent Policy
+        // ihlali). Bu test, script'in gerçek bir <script> tag'i olarak DEĞİL,
+        // yalnızca <template id="nisoya-consent-ads"> içinde göründüğünü doğrular.
+        $this->seedBaseData();
+
+        config(['services.adsense.publisher_id' => 'ca-pub-1234567890123456']);
+        config(['services.adsense.enabled' => true]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/<template id="nisoya-consent-ads">.*adsbygoogle\.js.*<\/template>/s',
+            $html
+        );
+
+        // Template AÇILIŞINDAN ÖNCE (yani gerçek, aktif bir <script> olarak)
+        // adsbygoogle.js görünmemeli.
+        $beforeTemplate = strstr($html, '<template id="nisoya-consent-ads">', true);
+        $this->assertStringNotContainsString('adsbygoogle.js', $beforeTemplate);
+    }
+
     public function test_layout_analytics_aktifken_gtag_yukler(): void
     {
         $this->seedBaseData();
@@ -97,6 +122,32 @@ class MonetizationTest extends TestCase
         $response = $this->get('/')->assertOk();
         $response->assertSee('G-TESTID1234', false);
         $response->assertSee('gtag/js', false);
+    }
+
+    public function test_layout_analytics_scripti_onay_verilene_kadar_inert_template_icinde(): void
+    {
+        $this->seedBaseData();
+
+        config(['services.analytics.measurement_id' => 'G-TESTID1234']);
+        config(['services.analytics.enabled' => true]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/<template id="nisoya-consent-analytics">.*gtag\/js.*<\/template>/s',
+            $html
+        );
+
+        $beforeTemplate = strstr($html, '<template id="nisoya-consent-analytics">', true);
+        $this->assertStringNotContainsString('gtag/js', $beforeTemplate);
+    }
+
+    public function test_layout_consent_activation_fonksiyonu_her_zaman_mevcut(): void
+    {
+        $this->seedBaseData();
+
+        $response = $this->get('/')->assertOk();
+        $response->assertSee('window.nisoyaActivateConsent', false);
     }
 
     public function test_adsense_auto_ads_kodu_temel_script_yerine_kullanilir(): void
