@@ -7,6 +7,10 @@ use App\Enums\ContactMessageStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property ContactCategory $category
+ * @property ContactMessageStatus $status
+ */
 class ContactMessage extends Model
 {
     protected $fillable = [

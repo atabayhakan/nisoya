@@ -87,11 +87,12 @@ class ProfileSettingsController extends Controller
 
         $oldAvatarPath = null;
         $oldCroppedPath = null;
+        // Yalnızca yeni avatar yüklenirken değil, aşağıda eski dosyaları
+        // silerken de kullanılıyor — koşulun dışında, en başta çözülür.
+        $imageService = app(ImageService::class);
 
         if ($request->hasFile('avatar')) {
             // EXIF orientation düzeltilir + metadata temizlenir (gizlilik)
-            $imageService = app(ImageService::class);
-
             try {
                 $result = $imageService->storeOptimized($request->file('avatar'), 'avatars', 400, 85);
             } catch (\RuntimeException) {

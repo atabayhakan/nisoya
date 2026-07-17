@@ -323,8 +323,9 @@ class ListingImageResource extends Resource
                     ->action(function (ListingImage $record) {
                         $record->update(['is_flagged' => false, 'flagged_reason' => null]);
 
-                        if ($record->listing && $record->listing->status === ListingStatus::Beklemede) {
-                            $record->listing->update(['status' => ListingStatus::Aktif]);
+                        $listing = $record->listing;
+                        if ($listing && $listing->status === ListingStatus::Beklemede) {
+                            $listing->update(['status' => ListingStatus::Aktif]);
                         }
 
                         activity('image')

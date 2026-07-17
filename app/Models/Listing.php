@@ -18,7 +18,9 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
+ * @property ListingType $type
  * @property Carbon|null $featured_until
+ * @property-read User|null $user
  */
 class Listing extends Model
 {

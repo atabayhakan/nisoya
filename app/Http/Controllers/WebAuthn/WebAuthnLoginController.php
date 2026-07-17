@@ -27,14 +27,15 @@ class WebAuthnLoginController
      */
     public function login(AssertedRequest $request): JsonResponse
     {
-        $user = $request->login();
-
-        if (! $user) {
+        if (! $request->login()) {
             return response()->json(['message' => 'Passkey doğrulanamadı.'], 422);
         }
 
         // Parola girişiyle aynı davranış (AuthenticatedSessionController@store).
-        $user->forceFill(['last_seen_at' => now()])->save();
+        // login() dönüşü WebAuthnAuthenticatable arayüzü (Eloquent Model değil);
+        // oturum artık açık olduğu için $request->user() ile gerçek App\Models\User
+        // örneğini alıyoruz.
+        $request->user()->forceFill(['last_seen_at' => now()])->save();
 
         return response()->json([
             'redirect' => session()->pull('url.intended', route('dashboard')),
