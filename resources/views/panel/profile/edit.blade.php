@@ -54,10 +54,7 @@
                                 <div class="flex flex-col items-center gap-3 px-5 py-6">
                                     <div
                                         x-ref="frame"
-                                        @pointerdown="startDrag($event); $event.target.setPointerCapture($event.pointerId)"
-                                        @pointermove="onDrag($event)"
-                                        @pointerup="endDrag($event)"
-                                        @pointercancel="dragging = false"
+                                        @pointerdown="startDrag($event)"
                                         class="grid h-64 w-64 max-w-full cursor-move touch-none select-none place-items-center overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/40"
                                     >
                                         <img src="{{ Storage::url($user->avatar_path) }}" alt="" draggable="false"

@@ -20,10 +20,7 @@
                             >
                                 <div
                                     x-ref="frame"
-                                    @pointerdown="startDrag($event); $event.target.setPointerCapture($event.pointerId)"
-                                    @pointermove="onDrag($event)"
-                                    @pointerup="endDrag($event)"
-                                    @pointercancel="dragging = false"
+                                    @pointerdown="startDrag($event)"
                                     class="aspect-square w-full cursor-move touch-none select-none"
                                 >
                                     <img src="{{ $image->url('medium') }}" alt="" draggable="false"

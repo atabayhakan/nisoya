@@ -311,6 +311,9 @@ Alpine.data('pushToggle', (vapidKey, subscribeUrl, unsubscribeUrl) => ({
 // touchstart/mousedown dinleyicisi gerekmez. Sürükleme, DELTA tabanlı: fotoğrafı
 // gerçekten "kaydırıyormuş" hissi versin diye, parmak sağa gittikçe object-position
 // yüzdesi AZALIR (görselin sol kısmı ortaya çıkar) — bu yüzden işaret ters (-).
+// move/up dinleyicileri `window`'a bağlanır (sadece frame'e değil): kullanıcı
+// küçük daireyi sürüklerken parmak/imleç doğal olarak dairenin dışına taşıyor,
+// window'a bağlamak imlecin nerede olduğundan bağımsız çalışmasını garantiler.
 Alpine.data('focalDrag', (initialX, initialY, saveUrl) => ({
     x: initialX,
     y: initialY,
@@ -322,6 +325,8 @@ Alpine.data('focalDrag', (initialX, initialY, saveUrl) => ({
     startY: 0,
     frameWidth: 0,
     frameHeight: 0,
+    _boundMove: null,
+    _boundEnd: null,
 
     get objectPosition() {
         return this.x + '% ' + this.y + '%';
@@ -337,6 +342,12 @@ Alpine.data('focalDrag', (initialX, initialY, saveUrl) => ({
         this.startY = this.y;
         this.dragging = true;
         this.saved = false;
+
+        this._boundMove = (ev) => this.onDrag(ev);
+        this._boundEnd = () => this.endDrag();
+        window.addEventListener('pointermove', this._boundMove);
+        window.addEventListener('pointerup', this._boundEnd);
+        window.addEventListener('pointercancel', this._boundEnd);
     },
 
     onDrag(e) {
@@ -350,6 +361,9 @@ Alpine.data('focalDrag', (initialX, initialY, saveUrl) => ({
     async endDrag() {
         if (!this.dragging) return;
         this.dragging = false;
+        window.removeEventListener('pointermove', this._boundMove);
+        window.removeEventListener('pointerup', this._boundEnd);
+        window.removeEventListener('pointercancel', this._boundEnd);
         await postJson(saveUrl, 'PATCH', { focal_x: Math.round(this.x), focal_y: Math.round(this.y) });
         this.saved = true;
         setTimeout(() => { this.saved = false; }, 1500);
@@ -377,6 +391,8 @@ Alpine.data('avatarAlignModal', (initialX, initialY, saveUrl) => ({
     startY: 0,
     frameWidth: 0,
     frameHeight: 0,
+    _boundMove: null,
+    _boundEnd: null,
 
     get objectPosition() {
         return this.x + '% ' + this.y + '%';
@@ -395,6 +411,8 @@ Alpine.data('avatarAlignModal', (initialX, initialY, saveUrl) => ({
         this.open = false;
     },
 
+    // move/up dinleyicileri window'a bağlanır — bkz. focalDrag'teki aynı gerekçe;
+    // modal tam ekran bir overlay olduğundan bu özellikle önemli.
     startDrag(e) {
         const rect = this.$refs.frame.getBoundingClientRect();
         this.frameWidth = rect.width;
@@ -404,6 +422,12 @@ Alpine.data('avatarAlignModal', (initialX, initialY, saveUrl) => ({
         this.startX = this.x;
         this.startY = this.y;
         this.dragging = true;
+
+        this._boundMove = (ev) => this.onDrag(ev);
+        this._boundEnd = () => this.endDrag();
+        window.addEventListener('pointermove', this._boundMove);
+        window.addEventListener('pointerup', this._boundEnd);
+        window.addEventListener('pointercancel', this._boundEnd);
     },
 
     onDrag(e) {
@@ -415,7 +439,11 @@ Alpine.data('avatarAlignModal', (initialX, initialY, saveUrl) => ({
     },
 
     endDrag() {
+        if (!this.dragging) return;
         this.dragging = false;
+        window.removeEventListener('pointermove', this._boundMove);
+        window.removeEventListener('pointerup', this._boundEnd);
+        window.removeEventListener('pointercancel', this._boundEnd);
     },
 
     async save() {
