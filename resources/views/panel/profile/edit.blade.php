@@ -16,7 +16,11 @@
                 {{-- Hizalama ayrı bir modalda: kaydır + yakınlaştır (WhatsApp tarzı).
                      Küçük daire salt önizleme — kayıttan sonra previewUrl ile tazelenir. --}}
                 <div
-                    x-data="avatarCropModal({ x: {{ $user->avatar_crop_x ?? 'null' }}, y: {{ $user->avatar_crop_y ?? 'null' }}, size: {{ $user->avatar_crop_size ?? 'null' }} }, '{{ route('panel.profile.avatar-align') }}')"
+                    x-data="avatarCropModal(
+                        { x: {{ $user->avatar_crop_x ?? 'null' }}, y: {{ $user->avatar_crop_y ?? 'null' }}, size: {{ $user->avatar_crop_size ?? 'null' }} },
+                        { x: {{ $user->avatar_focal_x }}, y: {{ $user->avatar_focal_y }} },
+                        '{{ route('panel.profile.avatar-align') }}'
+                    )"
                     class="flex items-center gap-4"
                 >
                     {{-- img `absolute inset-0` şart — gerekçe için bkz. components/avatar.blade.php --}}
@@ -50,9 +54,15 @@
                             aria-labelledby="avatar-align-title"
                             x-cloak
                         >
+                            {{-- DİKKAT: x-transition.opacity ŞART (scale DEĞİL). openModal() bu panel
+                                 içindeki çerçeveyi getBoundingClientRect() ile ölçüyor; varsayılan Alpine
+                                 geçişi scale(0.95→1) da uygulardı ve ölçüm geçiş bitmeden alınınca çerçeve
+                                 %5 küçük ölçülüp kaydedilen kırpım gerçekte görünenden dar/kaymış çıkardı
+                                 (2026-07-17 karşıt inceleme raporu). Sadece opacity, transform'u hiç
+                                 etkilemez — ölçüm ne zaman yapılırsa yapılsın doğru çıkar. --}}
                             <div
                                 x-show="open"
-                                x-transition.duration.150ms
+                                x-transition.opacity.duration.150ms
                                 class="w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-stone-200 dark:bg-stone-900 dark:ring-stone-800"
                             >
                                 <div class="flex items-center justify-between gap-4 border-b border-stone-100 px-5 py-4 dark:border-stone-800">
@@ -67,12 +77,17 @@
                                          DEĞİL transform kullanılır — bkz. app.js avatarCropModal. --}}
                                     {{-- x-init ile eleman kaydı: $refs teleport dışından (düzenle butonu)
                                          teleport içindeki ref'lere erişemiyor — bkz. app.js avatarCropModal. --}}
+                                    {{-- w-64 + aspect-square (h-64 DEĞİL): dar ekranlarda (<328px) max-w-full
+                                         genişliği kısıtlar ama sabit h-64 yüksekliği kısıtlamazdı — çerçeve
+                                         oval olur, kırpım karesi (frameW tabanlı) görünen alt/yan şeridi
+                                         dışarıda bırakırdı (2026-07-17 karşıt inceleme raporu). aspect-square
+                                         yüksekliği HER ZAMAN gerçek genişliğe eşitler. --}}
                                     <div
                                         x-init="registerFrame($el)"
                                         @pointerdown="startDrag($event)"
                                         @wheel.prevent="onWheel($event)"
                                         @dragstart.prevent="null"
-                                        class="focal-drag-frame relative h-64 w-64 max-w-full cursor-move touch-none select-none overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/40"
+                                        class="focal-drag-frame relative aspect-square w-64 max-w-full cursor-move touch-none select-none overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/40"
                                     >
                                         <img
                                             x-init="registerPhoto($el)"
@@ -99,6 +114,7 @@
                                         <x-heroicon-o-magnifying-glass-plus class="h-4 w-4 shrink-0" />
                                     </label>
                                     <p class="text-center text-xs text-stone-400 dark:text-stone-500">Sürükleyerek kaydır; iki parmakla sıkıştırarak veya kaydırıcıyla yakınlaştır.</p>
+                                    <p x-show="error" x-text="error" class="text-center text-xs font-medium text-red-600 dark:text-red-400"></p>
                                 </div>
                                 <div class="flex items-center justify-end gap-2 border-t border-stone-100 px-5 py-3 dark:border-stone-800">
                                     <button type="button" @click="cancel()" class="rounded-lg px-4 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">İptal</button>

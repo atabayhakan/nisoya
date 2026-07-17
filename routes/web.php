@@ -206,7 +206,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/panel/profil', [ProfileSettingsController::class, 'edit'])->name('panel.profile.edit');
     Route::put('/panel/profil', [ProfileSettingsController::class, 'update'])->name('panel.profile.update');
     Route::put('/panel/profil/sifre', [ProfileSettingsController::class, 'password'])->name('panel.profile.password');
-    Route::patch('/panel/profil/avatar-hizala', [ProfileSettingsController::class, 'alignAvatar'])->name('panel.profile.avatar-align');
+    Route::patch('/panel/profil/avatar-hizala', [ProfileSettingsController::class, 'alignAvatar'])->name('panel.profile.avatar-align')->middleware('throttle:avatar-align');
 
     // Ödeme linki/QR kodu (Nisoya para akışını görmez — sadece satıcının kendi ödeme sayfasına yönlendirir)
     Route::post('/panel/profil/odeme-linki', [PaymentLinkController::class, 'store'])->name('panel.payment-links.store');

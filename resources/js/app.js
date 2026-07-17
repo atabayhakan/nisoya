@@ -400,10 +400,11 @@ Alpine.data('focalDrag', (initialX, initialY, saveUrl) => ({
 // zoom=1 "cover" ölçeğidir (çerçeveyi tam doldurur), üst sınır 3x.
 // Dokunmatikte iki parmakla sıkıştırarak, masaüstünde tekerlek ya da
 // kaydırıcı ile yakınlaştırılır.
-Alpine.data('avatarCropModal', (crop, saveUrl) => ({
+Alpine.data('avatarCropModal', (crop, focal, saveUrl) => ({
     open: false,
     ready: false,
     saving: false,
+    error: null,
     panX: 0,
     panY: 0,
     zoom: 1,
@@ -453,7 +454,15 @@ Alpine.data('avatarCropModal', (crop, saveUrl) => ({
 
     async openModal() {
         this.open = true;
+        this.error = null;
+        // $nextTick, Alpine'ın giriş geçişini (x-transition) BEKLER ve geçiş
+        // bitmeden hemen önceki karede devam eder — panel o anda hâlâ
+        // scale(0.95)'te olabilir. Çerçeveyi transform'dan ETKİLENMEYECEK
+        // şekilde ölçmek için: panel geçişi artık sadece opacity kullanıyor
+        // (bkz. edit.blade.php `x-transition.opacity`), ama yine de bir
+        // sonraki boyama karesini bekleyip GERÇEK layout'u ölçüyoruz.
         await this.$nextTick();
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
         const img = this._photoEl;
         if (!img || !this._frameEl) return;
@@ -473,22 +482,32 @@ Alpine.data('avatarCropModal', (crop, saveUrl) => ({
         this.frameW = rect.width;
         this.frameH = rect.height;
 
+        if (this.natW === 0 || this.natH === 0) {
+            this.error = 'Fotoğraf yüklenemedi. Sayfayı yenileyip tekrar dene.';
+            return;
+        }
+
         this.restoreState();
-        this.ready = this.natW > 0 && this.frameW > 0;
+        this.ready = this.frameW > 0 && this.frameH > 0;
     },
 
-    // Kaydedilmiş kırpım karesinden pan/zum durumunu geri kur; yoksa
-    // ortalanmış zoom=1 ile başla.
+    // Kaydedilmiş kırpım karesinden pan/zum durumunu geri kur; kayıtlı kırpım
+    // yoksa (eski odak-noktası kullanıcıları) eski focal_x/y'yi YAKLAŞIK bir
+    // başlangıç konumuna çevirir — aksi halde editör aniden ortalanmış açılır
+    // ve kullanıcı hiç dokunmadan Kaydet'e basarsa avatar site genelinde
+    // eski konumdan sıçrar.
     restoreState() {
-        if (crop.size && crop.size > 0 && this.natW > 0) {
+        if (crop.size && crop.size > 0) {
             const s = this.frameW / crop.size;
             this.zoom = Math.max(1, Math.min(3, s / this.coverScale));
             this.panX = -crop.x * this.scale;
             this.panY = -crop.y * this.scale;
         } else {
             this.zoom = 1;
-            this.panX = (this.frameW - this.natW * this.scale) / 2;
-            this.panY = (this.frameH - this.natH * this.scale) / 2;
+            const slackX = this.natW * this.scale - this.frameW;
+            const slackY = this.natH * this.scale - this.frameH;
+            this.panX = slackX > 0 ? -slackX * ((focal.x ?? 50) / 100) : (this.frameW - this.natW * this.scale) / 2;
+            this.panY = slackY > 0 ? -slackY * ((focal.y ?? 50) / 100) : (this.frameH - this.natH * this.scale) / 2;
         }
         this.clampPan();
     },
@@ -531,7 +550,7 @@ Alpine.data('avatarCropModal', (crop, saveUrl) => ({
     },
 
     startDrag(e) {
-        if (!this.ready) return;
+        if (!this.ready || this.saving) return;
         // Native resim sürükleme/callout hijack'ini kes (bkz. focalDrag) —
         // synthetic testlerde görünmeyen, yalnızca gerçek girdide tetiklenen
         // tarayıcı davranışı.
@@ -545,7 +564,10 @@ Alpine.data('avatarCropModal', (crop, saveUrl) => ({
         if (!this._pointers) this._pointers = new Map();
         this._pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
-        if (this._pointers.size === 2) {
+        // >= 2 (== değil): 3. parmak inip 2'ye düşünce de (endDrag) taze
+        // mesafe kaydedilir — aksi halde yeni parmak çiftinin gerçek mesafesi
+        // yerine ESKİ çiftten kalma değer kullanılır ve zum aniden sıçrar.
+        if (this._pointers.size >= 2) {
             const [a, b] = [...this._pointers.values()];
             this._pinchDist = Math.hypot(a.x - b.x, a.y - b.y);
         }
@@ -593,7 +615,12 @@ Alpine.data('avatarCropModal', (crop, saveUrl) => ({
         if (!this._pointers) return;
         this._pointers.delete(e.pointerId);
 
-        if (this._pointers.size === 1) {
+        if (this._pointers.size >= 2) {
+            // 3 parmaktan 2'ye düştü: kalan çiftin GERÇEK anlık mesafesiyle
+            // yeniden kalibre et (bkz. startDrag'teki aynı gerekçe).
+            const [a, b] = [...this._pointers.values()];
+            this._pinchDist = Math.hypot(a.x - b.x, a.y - b.y);
+        } else if (this._pointers.size === 1) {
             this._pinchDist = 0;
         }
         if (this._pointers.size === 0) {
@@ -618,20 +645,34 @@ Alpine.data('avatarCropModal', (crop, saveUrl) => ({
     async save() {
         if (this.saving || !this.ready) return;
         this.saving = true;
+        this.error = null;
+        // Tek seferde hesapla ve HEM sunucuya gönder HEM de başarı sonrası
+        // yerel state'e yaz — istek uçuşurken kullanıcı sürüklemeye devam
+        // ederse (aşağıda ayrıca engellendi) sunucunun kaydettiğiyle yerel
+        // durumun AYNI ANA ait olduğundan emin olunur.
+        const rect = this.cropRect();
         try {
-            const response = await postJson(saveUrl, 'PATCH', this.cropRect());
+            const response = await postJson(saveUrl, 'PATCH', rect);
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (_) {
+                // Gövde JSON değilse (ör. 500 HTML sayfası) sessizce yok say.
+            }
             if (response.ok) {
-                const data = await response.json();
-                if (data.cropped_url) {
+                if (data && data.cropped_url) {
                     this.previewUrl = data.cropped_url + '?t=' + Date.now();
                 }
-                const rect = this.cropRect();
                 crop.x = rect.crop_x;
                 crop.y = rect.crop_y;
                 crop.size = rect.crop_size;
                 this.open = false;
                 this.ready = false;
+            } else {
+                this.error = (data && data.message) || 'Kaydedilemedi, lütfen tekrar dene.';
             }
+        } catch (_) {
+            this.error = 'Bağlantı hatası — internetini kontrol edip tekrar dene.';
         } finally {
             this.saving = false;
         }

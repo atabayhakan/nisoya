@@ -97,9 +97,18 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
      * ile object-position uygulanır — bkz. x-avatar bileşeni). Kırpım henüz
      * yapılmamış eski avatarlar böylece davranış değiştirmeden görünmeye
      * devam eder.
+     *
+     * avatar_path NULL ise HER ZAMAN NULL döner — admin panelinden fotoğraf
+     * kaldırıldığında (avatar_cropped_path o akışta dokunulmadan kalır)
+     * "yetim" kırpım dosyasının site genelinde görünmeye devam etmesini
+     * engeller (2026-07-17 karşıt inceleme raporu).
      */
     public function avatarDisplayPath(): ?string
     {
+        if (! $this->avatar_path) {
+            return null;
+        }
+
         return $this->avatar_cropped_path ?? $this->avatar_path;
     }
 

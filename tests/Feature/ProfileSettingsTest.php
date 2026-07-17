@@ -8,6 +8,7 @@ use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -265,5 +266,40 @@ class ProfileSettingsTest extends TestCase
 
         $size = getimagesizefromstring(Storage::disk('public')->get($user->avatar_cropped_path));
         $this->assertSame($size[0], $size[1]);
+    }
+
+    /**
+     * Karşıt inceleme bulgusu (2026-07-17): boyutsuz-alt-sınır olmadan çok
+     * küçük bir avatar yüklenip kabul edilebiliyordu, sonra editörde her
+     * "Kaydet" 422 ile başarısız oluyordu (kırpım karesi minimum 16px'e
+     * yuvarlanıp görselin kendisinden büyük çıkıyordu) — kalıcı, telafisiz
+     * bir kilitlenme. Kabul aşamasında engellenmesi gerekiyor.
+     */
+    public function test_avatar_upload_rejects_tiny_images(): void
+    {
+        $user = User::factory()->create();
+
+        $image = imagecreatetruecolor(12, 12);
+        imagefilledrectangle($image, 0, 0, 12, 12, imagecolorallocate($image, 200, 60, 60));
+        ob_start();
+        imagepng($image);
+        $png = ob_get_clean();
+
+        $this->actingAs($user)->put('/panel/profil', [
+            'name' => $user->name,
+            'username' => $user->username,
+            'country_code' => 'DE',
+            'preferred_currency' => 'EUR',
+            'avatar' => UploadedFile::fake()->createWithContent('avatar.png', $png),
+        ])->assertSessionHasErrors('avatar');
+
+        $this->assertNull($user->fresh()->avatar_path);
+    }
+
+    /** Kırpma ucu artık kullanıcı başına dakikada 20 istekle sınırlı (2026-07-17). */
+    public function test_avatar_align_route_is_throttled(): void
+    {
+        $middleware = collect(Route::getRoutes()->getByName('panel.profile.avatar-align')->middleware());
+        $this->assertTrue($middleware->contains(fn ($m) => str_starts_with($m, 'throttle:avatar-align')));
     }
 }

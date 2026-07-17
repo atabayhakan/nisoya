@@ -148,5 +148,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // vision çağrısı (maliyetli); kullanıcı başına 10/dk.
         RateLimiter::for('quick-listing-analyze', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
         );
+
+        // Avatar kaydır+zum hizalama (2026-07-17) — her istek GD ile tam bir
+        // decode+crop+webp-encode yapıyor (eskiden sadece 2 integer yazan
+        // odak-noktası uçundan çok daha ağır); kullanıcı başına 20/dk normal
+        // düzenleme oturumuna cömert, script'lenmiş kötüye kullanıma sınırlı.
+        RateLimiter::for('avatar-align', fn (Request $request) => Limit::perMinute(20)->by($request->user()?->id ?: $request->ip())
+        );
     })
     ->create();

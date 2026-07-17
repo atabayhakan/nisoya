@@ -16,6 +16,7 @@ use App\Models\Message;
 use App\Models\Report;
 use App\Models\Review;
 use App\Models\SavedSearch;
+use App\Models\User;
 use App\Services\ImageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -63,7 +64,7 @@ class ProfileSettingsController extends Controller
             'country_code' => ['required', 'exists:countries,code'],
             'city' => ['nullable', 'string', 'max:255'],
             'preferred_currency' => ['required', 'exists:currencies,code'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'dimensions:min_width=32,min_height=32'],
             'is_searchable' => ['nullable', 'boolean'],
             'job_category_id' => ['nullable', 'exists:job_categories,id'],
         ], attributes: [
@@ -84,6 +85,9 @@ class ProfileSettingsController extends Controller
             ->values()
             ->all() ?: null;
 
+        $oldAvatarPath = null;
+        $oldCroppedPath = null;
+
         if ($request->hasFile('avatar')) {
             // EXIF orientation düzeltilir + metadata temizlenir (gizlilik)
             $imageService = app(ImageService::class);
@@ -94,12 +98,12 @@ class ProfileSettingsController extends Controller
                 return back()->withErrors(['avatar' => 'Profil fotoğrafı işlenemedi, lütfen başka bir dosyayla tekrar dene.']);
             }
 
-            if ($user->avatar_path) {
-                $imageService->deleteVariants(array_values($imageService->siblingVariantPaths($user->avatar_path)));
-            }
-            if ($user->avatar_cropped_path) {
-                $imageService->deleteVariants([$user->avatar_cropped_path]);
-            }
+            // Eski dosyalar burada SİLİNMEZ — $user->update() başarılı
+            // olana kadar bekletilir (aşağıda). DB yazımı başarısız olursa
+            // kullanıcı kırık bir avatarla kalmasın diye (2026-07-17 karşıt
+            // inceleme raporu).
+            $oldAvatarPath = $user->avatar_path;
+            $oldCroppedPath = $user->avatar_cropped_path;
             $data['avatar_path'] = $result['large'];
 
             // Yeni fotoğrafa hemen ORTALANMIŞ kare kırpım üret: gösterim her
@@ -136,6 +140,14 @@ class ProfileSettingsController extends Controller
         unset($data['avatar']);
         $user->update($data);
 
+        // DB güncellemesi başarıyla tamamlandıktan SONRA eski dosyaları sil.
+        if ($oldAvatarPath) {
+            $imageService->deleteVariants(array_values($imageService->siblingVariantPaths($oldAvatarPath)));
+        }
+        if ($oldCroppedPath) {
+            $imageService->deleteVariants([$oldCroppedPath]);
+        }
+
         return back()->with('status', 'Profilin güncellendi.');
     }
 
@@ -145,50 +157,69 @@ class ProfileSettingsController extends Controller
      * koordinatlarında KARE bir kırpım dikdörtgenine çevirip gönderir; sunucu
      * sınırları doğrulayıp kare dosyayı üretir. Gösterim her yerde bu dosyayı
      * kullandığı için transform matematiği tek yerde (burada) çözülür.
+     *
+     * Sıra ÖNEMLİ: önce yeni dosya üretilir, SONRA DB güncellenir, EN SON eski
+     * dosya silinir. DB güncellemesi (ör. bağlantı hatası) başarısız olursa
+     * eski dosya hâlâ diskte durur — kullanıcı kırık bir avatarla kalmaz
+     * (2026-07-17 karşıt inceleme raporu). Kullanıcı satırı `lockForUpdate`
+     * ile kilitlenip aynı kullanıcıdan gelen eşzamanlı (çift tıklama/script)
+     * istekler sıraya sokulur — aksi halde iki isteğin ikisi de aynı "eski"
+     * yolu görüp onu silmeye çalışır, biri sahipsiz bir dosya bırakır.
      */
     public function alignAvatar(Request $request): JsonResponse
     {
-        $user = $request->user();
-
-        if (! $user->avatar_path) {
+        if (! $request->user()->avatar_path) {
             return response()->json(['message' => 'Önce bir profil fotoğrafı yükle.'], 422);
         }
 
         $data = $request->validate([
-            'crop_x' => ['required', 'integer', 'min:0'],
-            'crop_y' => ['required', 'integer', 'min:0'],
-            'crop_size' => ['required', 'integer', 'min:16'],
+            'crop_x' => ['required', 'integer', 'min:0', 'max:20000'],
+            'crop_y' => ['required', 'integer', 'min:0', 'max:20000'],
+            'crop_size' => ['required', 'integer', 'min:16', 'max:20000'],
         ]);
 
         $imageService = app(ImageService::class);
+        $userId = $request->user()->id;
 
         try {
-            $croppedPath = $imageService->cropSquare(
-                $user->avatar_path,
-                $data['crop_x'],
-                $data['crop_y'],
-                $data['crop_size'],
-                'avatars/cropped',
-            );
+            return DB::transaction(function () use ($userId, $data, $imageService) {
+                $user = User::whereKey($userId)->lockForUpdate()->first();
+
+                if (! $user->avatar_path) {
+                    // Kilit alınana kadar geçen sürede (ör. moderasyon) avatar
+                    // kaldırılmış olabilir — kaynak yoksa devam etme.
+                    throw new \RuntimeException('Profil fotoğrafı artık mevcut değil.');
+                }
+
+                $croppedPath = $imageService->cropSquare(
+                    $user->avatar_path,
+                    $data['crop_x'],
+                    $data['crop_y'],
+                    $data['crop_size'],
+                    'avatars/cropped',
+                );
+
+                $oldCroppedPath = $user->avatar_cropped_path;
+
+                $user->update([
+                    'avatar_cropped_path' => $croppedPath,
+                    'avatar_crop_x' => $data['crop_x'],
+                    'avatar_crop_y' => $data['crop_y'],
+                    'avatar_crop_size' => $data['crop_size'],
+                ]);
+
+                if ($oldCroppedPath) {
+                    $imageService->deleteVariants([$oldCroppedPath]);
+                }
+
+                return response()->json([
+                    'status' => 'ok',
+                    'cropped_url' => Storage::url($croppedPath),
+                ]);
+            });
         } catch (\RuntimeException) {
             return response()->json(['message' => 'Kırpım uygulanamadı — sayfayı yenileyip tekrar dene.'], 422);
         }
-
-        if ($user->avatar_cropped_path) {
-            $imageService->deleteVariants([$user->avatar_cropped_path]);
-        }
-
-        $user->update([
-            'avatar_cropped_path' => $croppedPath,
-            'avatar_crop_x' => $data['crop_x'],
-            'avatar_crop_y' => $data['crop_y'],
-            'avatar_crop_size' => $data['crop_size'],
-        ]);
-
-        return response()->json([
-            'status' => 'ok',
-            'cropped_url' => Storage::url($croppedPath),
-        ]);
     }
 
     public function password(Request $request): RedirectResponse

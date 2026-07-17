@@ -1,13 +1,13 @@
 <x-layouts.app
     :title="$user->name.' — Nisoya'"
     :description="$user->bio ? \Illuminate\Support\Str::limit(strip_tags($user->bio), 150) : ($user->jobCategory ? $user->jobCategory->name.' — '.$user->name.' Nisoya üzerinde hizmet veriyor.' : $user->name.' — Nisoya üzerinde yetenek ve hizmet sunuyor.')"
-    :ogImage="$user->avatar_path ? \Illuminate\Support\Facades\Storage::url($user->avatar_path) : null"
+    :ogImage="$user->avatarDisplayPath() ? \Illuminate\Support\Facades\Storage::url($user->avatarDisplayPath()) : null"
 >
     {{-- JSON-LD: Person --}}
     <x-json-ld type="Person" :data="array_filter([
         'name' => $user->name,
         'description' => $user->bio ? \Illuminate\Support\Str::limit(strip_tags($user->bio), 300) : null,
-        'image' => $user->avatar_path ? \Illuminate\Support\Facades\Storage::url($user->avatar_path) : null,
+        'image' => $user->avatarDisplayPath() ? \Illuminate\Support\Facades\Storage::url($user->avatarDisplayPath()) : null,
         'url' => route('profiles.show', $user->username),
         'jobTitle' => $user->jobCategory?->name,
         'address' => $user->city || $user->country_code ? array_filter([

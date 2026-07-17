@@ -1,13 +1,11 @@
 <a href="{{ route('profiles.show', $candidate->username) }}"
    class="group block rounded-2xl border border-stone-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
     <div class="flex items-start gap-4">
-        <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-            @if ($candidate->avatar_path)
-                <img src="{{ Storage::url($candidate->avatar_path) }}" alt="" class="h-full w-full object-cover">
-            @else
-                {{ mb_strtoupper(mb_substr($candidate->name, 0, 1)) }}
-            @endif
-        </div>
+        {{-- Ortak <x-avatar>: kare kırpım/eski odak-noktası önceliğini burada
+             da uygular — elle yazılan sürüm hem bunu atlıyordu hem de
+             grid+place-items-center'ın img kutusunu bozan aynı hatayı
+             taşıyordu (bkz. components/avatar.blade.php). --}}
+        <x-avatar :user="$candidate" size="h-12 w-12" text="text-base" />
         <div class="min-w-0 flex-1">
             <h3 class="flex items-center gap-1.5 truncate font-semibold text-stone-800 group-hover:text-emerald-700 dark:text-stone-100 dark:group-hover:text-emerald-400">
                 {{ $candidate->name }}

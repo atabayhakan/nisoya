@@ -347,7 +347,15 @@ class ImageService
         }
 
         $path = $destDir.'/'.Str::uuid()->toString().'.webp';
-        Storage::disk('public')->put($path, (string) $image->encode(new WebpEncoder(quality: self::DEFAULT_QUALITY, strip: true)));
+        // public disk 'throw' => false ile yapılandırılı (config/filesystems.php)
+        // — disk dolu/izin hatasında put() sessizce false döner, exception
+        // fırlatmaz. Dönüş değeri kontrol edilmezse DB hiç yazılmamış bir
+        // dosyaya işaret eder (2026-07-17 karşıt inceleme raporu).
+        $written = Storage::disk('public')->put($path, (string) $image->encode(new WebpEncoder(quality: self::DEFAULT_QUALITY, strip: true)));
+
+        if (! $written) {
+            throw new RuntimeException('Kırpım dosyası diske yazılamadı.');
+        }
 
         return $path;
     }
