@@ -26,7 +26,13 @@ class UserForm
                 DateTimePicker::make('email_verified_at'),
                 TextInput::make('password')
                     ->password()
-                    ->required(),
+                    // Oluştururken zorunlu; düzenlerken boş bırakılırsa parola
+                    // DEĞİŞMEZ (dehydrated=false → veri yazılmaz). Eskiden her
+                    // düzenlemede zorunluydu ve admin farkında olmadan parolayı
+                    // değiştiriyordu.
+                    ->required(fn (string $operation): bool => $operation === 'create')
+                    ->dehydrated(fn (?string $state): bool => filled($state))
+                    ->revealable(),
                 TextInput::make('username'),
                 TextInput::make('phone')
                     ->tel(),
@@ -41,7 +47,12 @@ class UserForm
                 Select::make('role')
                     ->options(UserRole::class)
                     ->default('uye')
-                    ->required(),
+                    ->required()
+                    // Rolü yalnızca Admin değiştirebilir. Moderatör için alan
+                    // kilitli görünür VE kaydederken hiç yazılmaz (dehydrated
+                    // false) — aksi halde moderatör kendini Admin'e yükseltebilirdi.
+                    ->disabled(fn (): bool => ! auth()->user()?->isAdmin())
+                    ->dehydrated(fn (): bool => auth()->user()?->isAdmin() ?? false),
                 Toggle::make('is_verified')
                     ->required(),
                 Select::make('status')

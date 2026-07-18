@@ -13,14 +13,16 @@ class JobListingPolicy
         return $user->company !== null && $job->company_id === $user->company->id;
     }
 
+    // Not: Admin, AppServiceProvider'daki Gate::before ile bu policy'ye hiç
+    // uğramadan zaten yetkilidir. Moderatör içerik moderasyonu için eklendi.
     public function update(User $user, JobListing $job): bool
     {
-        return $this->owns($user, $job);
+        return $this->owns($user, $job) || $user->isModerator();
     }
 
     public function delete(User $user, JobListing $job): bool
     {
-        return $this->owns($user, $job);
+        return $this->owns($user, $job) || $user->isModerator();
     }
 
     /** İlana gelen başvuruları görme/yönetme (sadece ilan sahibi işveren). */

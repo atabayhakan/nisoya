@@ -17,6 +17,8 @@ class ToggleUserStatusAction
     public static function make(): Action
     {
         return Action::make('toggleStatus')
+            // Yönetici kendini askıya alıp panelden kilitleyemesin.
+            ->visible(fn (User $record) => $record->id !== auth()->id())
             ->label(fn (User $record) => $record->status === UserStatus::Aktif ? 'Askıya al' : 'Aktifleştir')
             ->icon(fn (User $record) => $record->status === UserStatus::Aktif ? 'heroicon-o-pause-circle' : 'heroicon-o-play-circle')
             ->color(fn (User $record) => $record->status === UserStatus::Aktif ? 'warning' : 'success')

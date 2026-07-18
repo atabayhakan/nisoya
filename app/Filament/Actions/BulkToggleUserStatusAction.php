@@ -33,8 +33,16 @@ class BulkToggleUserStatusAction
             ->modalDescription('Seçili kullanıcıların durumları güncellenecek.')
             ->action(function (array $data, $records) {
                 $count = 0;
+                $skippedSelf = false;
                 foreach ($records as $record) {
                     /** @var User $record */
+                    // Yönetici kendi durumunu toplu işlemle değiştiremez
+                    // (kendini askıya alma/silme koruması).
+                    if ($record->id === auth()->id()) {
+                        $skippedSelf = true;
+
+                        continue;
+                    }
                     if ($record->update(['status' => $data['status']])) {
                         $count++;
                     }
@@ -42,7 +50,8 @@ class BulkToggleUserStatusAction
 
                 Notification::make()
                     ->title("{$count} kullanıcı güncellendi")
-                    ->body('Yeni durum: '.UserStatus::from($data['status'])->getLabel())
+                    ->body('Yeni durum: '.UserStatus::from($data['status'])->getLabel()
+                        .($skippedSelf ? ' (kendi hesabınız atlandı)' : ''))
                     ->success()
                     ->send();
             })

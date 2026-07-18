@@ -5,11 +5,13 @@ namespace App\Providers;
 use App\Contracts\AiProvider;
 use App\Models\Category;
 use App\Models\City;
+use App\Models\Company;
 use App\Models\Country;
 use App\Models\ListingImage;
 use App\Models\NavigationLink;
 use App\Models\PortfolioItem;
 use App\Models\User;
+use App\Observers\CompanyObserver;
 use App\Observers\ListingImageObserver;
 use App\Observers\PortfolioItemObserver;
 use App\Observers\UserObserver;
@@ -19,6 +21,7 @@ use App\Services\VisitorLocationService;
 use App\Support\Settings;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -43,6 +46,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Yönetici (Admin) süper-kullanıcıdır: tüm policy/gate kontrollerini
+        // geçer. Bu olmadan sahiplik-temelli policy'ler (ör. ListingPolicy)
+        // admin'in başkasının ilanını panelden moderasyonunu 403 ile engelliyordu.
+        // null döndürmek "karar verme, normal policy'ye devam et" demektir —
+        // yani moderatör/üye için varsayılan yetkilendirme akışı korunur.
+        Gate::before(fn (User $user) => $user->isAdmin() ? true : null);
+
         // Kullanıcı banlandığında aktif ilanları otomatik pasif yap.
         User::observe(UserObserver::class);
 
@@ -51,6 +61,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Portfolyo görseli silindiğinde thumb/medium/large dosyalarını da temizle.
         PortfolioItem::observe(PortfolioItemObserver::class);
+
+        // Şirket silindiğinde logo/kapak + galeri görsellerini diskten temizle.
+        Company::observe(CompanyObserver::class);
 
         // Şehir önerilerini (ülkeye göre) ilgili formlara paylaş.
         View::composer([

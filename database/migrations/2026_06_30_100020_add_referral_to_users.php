@@ -9,8 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('referral_code', 12)->nullable()->unique()->after('provider_id');
-            $table->foreignId('referred_by')->nullable()->after('referral_code')
+            // NOT: Eskiden ->after('provider_id') vardı ama 'provider_id' kolonu
+            // HİÇBİR migration'da oluşturulmuyor (yalnızca sonraki bir migration
+            // onu drop etmeye çalışıyor). MySQL'de var olmayan kolona ->after
+            // ERROR 1054 verir → taze kurulum patlıyordu (SQLite ->after'ı yok
+            // saydığı için yerelde/testte görünmüyordu). Kolon sırası kozmetik;
+            // ->after kaldırıldı.
+            $table->string('referral_code', 12)->nullable()->unique();
+            $table->foreignId('referred_by')->nullable()
                 ->constrained('users')->nullOnDelete();
         });
     }

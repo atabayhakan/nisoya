@@ -14,13 +14,20 @@ class EnsureUserIsActive
     {
         $user = $request->user();
 
-        if ($user && $user->status === UserStatus::Silinmis) {
+        // Silinmiş VEYA askıya alınmış kullanıcı oturumu sürdüremez. Eskiden
+        // yalnızca "Silinmiş" kontrol ediliyordu; askıdaki kullanıcı giriş yapıp
+        // mesajlaşmaya/başvuruya devam edebiliyordu (yalnızca yeni ilan engelliydi).
+        if ($user && in_array($user->status, [UserStatus::Silinmis, UserStatus::Askida], true)) {
+            $message = $user->status === UserStatus::Askida
+                ? 'Hesabınız askıya alındığı için oturumunuz sonlandırıldı. Ayrıntı için bizimle iletişime geçebilirsiniz.'
+                : 'Hesabınız kapatıldığı için oturumunuz sonlandırıldı.';
+
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
             return redirect()->route('login')
-                ->withErrors(['email' => 'Hesabınız kapatıldığı için oturumunuz sonlandırıldı.']);
+                ->withErrors(['email' => $message]);
         }
 
         return $next($request);

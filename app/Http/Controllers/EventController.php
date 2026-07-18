@@ -214,7 +214,14 @@ class EventController extends Controller
     {
         abort_unless($event->user_id === $request->user()->id, 403);
 
-        $event->delete(); // davetliler FK cascade ile silinir
+        // Medyayı tek tek Eloquent üzerinden sil ki EventMedia::deleting
+        // hook'u (deleteFiles) tetiklensin — aksi halde $event->delete()
+        // event_media satırlarını DB cascade ile siler, dosyalar (etkinlik
+        // başına ~2 GB'a kadar) diskte öksüz kalır. (Aynı desen: destroyMedia,
+        // toggleGuestBlock.)
+        $event->media()->get()->each->delete();
+
+        $event->delete(); // davetliler (event_guests) FK cascade ile silinir
 
         return redirect()->route('panel.events.index')
             ->with('status', 'Etkinlik ve davetli listesi silindi.');

@@ -37,6 +37,13 @@ class YapayZekaAyarlari extends Page
 
     public ?array $data = [];
 
+    /** AI sağlayıcı API anahtarı burada görünür/düzenlenir — yalnızca Admin.
+     *  Moderatör bu sayfaya (menüde ve doğrudan URL ile) erişemez. */
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
     public function getTitle(): string
     {
         return 'Yapay Zeka Ayarları';

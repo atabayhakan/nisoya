@@ -29,6 +29,14 @@ class IcerikAyarlari extends Page
 
     public ?array $data = [];
 
+    /** Bu sayfada ham HTML/JS enjeksiyon alanları var (header/footer özel kod,
+     *  AdSense/Analytics kodu) — sayfaya olduğu gibi basılır. Yalnızca Admin
+     *  erişebilir; moderatör menüde göremez ve doğrudan URL ile açamaz. */
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
     public function getTitle(): string
     {
         return 'İçerik (Metinler)';

@@ -21,10 +21,11 @@ class PasswordResetLinkController extends Controller
             'email' => ['required', 'email'],
         ], attributes: ['email' => 'e-posta']);
 
-        $status = Password::sendResetLink($request->only('email'));
+        // Bağlantı yalnızca e-posta kayıtlıysa gerçekten gönderilir; ama YANIT
+        // her durumda AYNIdır. Eskiden "kullanıcı bulunamadı" hatası dönerek
+        // hangi e-postaların kayıtlı olduğunu sızdırıyordu (account enumeration).
+        Password::sendResetLink($request->only('email'));
 
-        return $status == Password::ResetLinkSent
-            ? back()->with('status', __($status))
-            : back()->withInput($request->only('email'))->withErrors(['email' => __($status)]);
+        return back()->with('status', 'Eğer bu e-posta bir hesaba bağlıysa, şifre sıfırlama bağlantısı gönderildi. Gelen kutunu (ve spam klasörünü) kontrol et.');
     }
 }

@@ -27,12 +27,15 @@ Route::middleware('guest')->group(function () {
         ->name('webauthn.login');
 
     Route::get('sifremi-unuttum', [PasswordResetLinkController::class, 'create'])->name('password.request');
+    // throttle: e-posta bombardımanı/enumeration denemelerine karşı IP başına 6/dk.
     Route::post('sifremi-unuttum', [PasswordResetLinkController::class, 'store'])
-        ->middleware('honeypot')
+        ->middleware(['honeypot', 'throttle:6,1'])
         ->name('password.email');
 
     Route::get('sifre-sifirla/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
-    Route::post('sifre-sifirla', [NewPasswordController::class, 'store'])->name('password.store');
+    Route::post('sifre-sifirla', [NewPasswordController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('password.store');
 });
 
 Route::middleware('auth')->group(function () {

@@ -13,7 +13,11 @@ class EditUser extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            // Kalıcı silme yalnızca Admin'e açık ve kişi kendini silemez
+            // (kendini panelden kilitleme koruması).
+            DeleteAction::make()
+                ->visible(fn (): bool => (auth()->user()?->isAdmin() ?? false)
+                    && $this->getRecord()->getKey() !== auth()->id()),
         ];
     }
 }

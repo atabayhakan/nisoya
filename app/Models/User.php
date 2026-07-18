@@ -154,6 +154,20 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
         return $this->role?->canAccessAdminPanel() ?? false;
     }
 
+    /** Tam yetkili yönetici mi? (Gate::before ile süper-kullanıcı; rol/AI/kod
+     *  alanları yalnızca buna açık.) */
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::Admin;
+    }
+
+    /** İçerik moderatörü mü? (İçerik moderasyonu yapabilir; kullanıcı yönetimi,
+     *  AI anahtarı ve ham kod enjeksiyonu YAPAMAZ — bkz. isAdmin.) */
+    public function isModerator(): bool
+    {
+        return $this->role === UserRole::Moderator;
+    }
+
     /** Activity log: yalnızca önemli alan değişikliklerini logla. */
     public function getActivitylogOptions(): LogOptions
     {

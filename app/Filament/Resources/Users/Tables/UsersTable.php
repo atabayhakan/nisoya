@@ -82,7 +82,11 @@ class UsersTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     BulkToggleUserStatusAction::make(),
-                    DeleteBulkAction::make(),
+                    // Kalıcı toplu silme yalnızca Admin'e açık (moderatör
+                    // kullanıcı silemez). Günlük moderasyon için "Silinmiş"
+                    // durumu (BulkToggleUserStatusAction) kullanılır.
+                    DeleteBulkAction::make()
+                        ->visible(fn (): bool => auth()->user()?->isAdmin() ?? false),
                 ]),
             ]);
     }
