@@ -7,6 +7,7 @@ use App\Models\HomeHighlight;
 use App\Support\HighlightIcon;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Builder as MediaBuilder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -61,7 +62,16 @@ abstract class HomeHighlightResourceBase extends Resource
                 ->label('İkon')
                 ->options(HighlightIcon::OPTIONS)
                 ->native(false)
-                ->required(),
+                ->required()
+                ->helperText('Aşağıya medya eklenirse kartta ikon yerine o gösterilir.'),
+            MediaBuilder::make('media')
+                ->label('Medya (opsiyonel)')
+                ->blocks(HighlightMediaBlocks::schema())
+                ->addActionLabel('Medya ekle')
+                ->maxItems(6)
+                ->collapsible()
+                ->collapsed()
+                ->blockNumbers(false),
             Toggle::make('is_active')
                 ->label('Aktif (kartta göster)')
                 ->default(true),

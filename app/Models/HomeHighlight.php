@@ -19,13 +19,20 @@ class HomeHighlight extends Model
 
     public const SLOT_SMALL = 'kucuk';
 
-    protected $fillable = ['slot', 'title', 'text', 'icon', 'sort_order', 'is_active'];
+    protected $fillable = ['slot', 'title', 'text', 'icon', 'media', 'sort_order', 'is_active'];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'media' => 'array',
         ];
+    }
+
+    /** Medya (resim/video) varsa kartta ikon yerine bu gösterilir. */
+    public function hasMedia(): bool
+    {
+        return ! empty($this->media);
     }
 
     /** Belirli bir konum (büyük/küçük) için aktif mesajlar, sırasına göre. */

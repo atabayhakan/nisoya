@@ -155,9 +155,35 @@
                             x-transition:leave-end="opacity-0"
                             @if ($i > 0) style="display: none" @endif
                         >
-                            <span class="grid h-12 w-12 place-items-center rounded-2xl bg-white/15">
-                                <x-dynamic-component :component="'heroicon-o-'.$highlight->heroicon()" class="h-6 w-6" />
-                            </span>
+                            @if ($highlight->hasMedia())
+                                @php $media = $highlight->media; @endphp
+                                <div
+                                    class="relative h-32 w-full overflow-hidden rounded-2xl bg-black/10 lg:h-40"
+                                    @if (count($media) > 1) x-data="activityTicker({{ count($media) }})" @endif
+                                >
+                                    @foreach ($media as $mi => $item)
+                                        <div
+                                            class="absolute inset-0"
+                                            @if (count($media) > 1)
+                                                x-show="index === {{ $mi }}"
+                                                x-transition:enter="transition ease-out duration-500"
+                                                x-transition:enter-start="opacity-0"
+                                                x-transition:enter-end="opacity-100"
+                                                x-transition:leave="transition ease-in duration-300"
+                                                x-transition:leave-start="opacity-100"
+                                                x-transition:leave-end="opacity-0"
+                                                @if ($mi > 0) style="display: none" @endif
+                                            @endif
+                                        >
+                                            @include('partials.highlight-media', ['item' => $item])
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <span class="grid h-12 w-12 place-items-center rounded-2xl bg-white/15">
+                                    <x-dynamic-component :component="'heroicon-o-'.$highlight->heroicon()" class="h-6 w-6" />
+                                </span>
+                            @endif
                             <h3 class="mt-6 text-2xl font-bold">{{ $highlight->title }}</h3>
                             <p class="mt-2 max-w-xs text-emerald-50">{{ $highlight->text }}</p>
                         </div>
@@ -198,9 +224,35 @@
                             x-transition:leave-end="opacity-0"
                             @if ($i > 0) style="display: none" @endif
                         >
-                            <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
-                                <x-dynamic-component :component="'heroicon-o-'.$highlight->heroicon()" class="h-5 w-5" />
-                            </span>
+                            @if ($highlight->hasMedia())
+                                @php $media = $highlight->media; @endphp
+                                <div
+                                    class="relative h-20 w-full overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800"
+                                    @if (count($media) > 1) x-data="activityTicker({{ count($media) }})" @endif
+                                >
+                                    @foreach ($media as $mi => $item)
+                                        <div
+                                            class="absolute inset-0"
+                                            @if (count($media) > 1)
+                                                x-show="index === {{ $mi }}"
+                                                x-transition:enter="transition ease-out duration-500"
+                                                x-transition:enter-start="opacity-0"
+                                                x-transition:enter-end="opacity-100"
+                                                x-transition:leave="transition ease-in duration-300"
+                                                x-transition:leave-start="opacity-100"
+                                                x-transition:leave-end="opacity-0"
+                                                @if ($mi > 0) style="display: none" @endif
+                                            @endif
+                                        >
+                                            @include('partials.highlight-media', ['item' => $item])
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
+                                    <x-dynamic-component :component="'heroicon-o-'.$highlight->heroicon()" class="h-5 w-5" />
+                                </span>
+                            @endif
                             <h3 class="mt-4 font-semibold text-stone-900 dark:text-stone-100">{{ $highlight->title }}</h3>
                             <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">{{ $highlight->text }}</p>
                         </div>
