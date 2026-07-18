@@ -2,6 +2,7 @@
 
 namespace App\Filament\Support;
 
+use App\Filament\Concerns\RestrictsToAdmins;
 use App\Models\HomeHighlight;
 use App\Support\HighlightIcon;
 use Filament\Actions\DeleteAction;
@@ -27,6 +28,9 @@ use Illuminate\Database\Eloquent\Builder;
  */
 abstract class HomeHighlightResourceBase extends Resource
 {
+    // Ana sayfa vurgu slider'ları site konfigürasyonudur → yalnızca Admin.
+    use RestrictsToAdmins;
+
     protected static ?string $model = HomeHighlight::class;
 
     abstract protected static function slot(): string;

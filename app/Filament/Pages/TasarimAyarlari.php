@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\RestrictsToAdmins;
 use App\Support\Settings;
 use BackedEnum;
 use Filament\Notifications\Notification;
@@ -18,6 +19,8 @@ use UnitEnum;
  */
 class TasarimAyarlari extends Page
 {
+    use RestrictsToAdmins;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSwatch;
 
     protected static string|UnitEnum|null $navigationGroup = 'Tasarım';

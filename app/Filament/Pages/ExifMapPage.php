@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\RestrictsToAdmins;
 use App\Models\ListingImage;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -15,6 +16,8 @@ use Illuminate\Contracts\Support\Htmlable;
  */
 class ExifMapPage extends Page
 {
+    use RestrictsToAdmins;
+
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Pazaryeri';

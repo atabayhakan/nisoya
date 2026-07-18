@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\JobCategories;
 
+use App\Filament\Concerns\RestrictsToAdmins;
 use App\Filament\Resources\JobCategories\Pages\CreateJobCategory;
 use App\Filament\Resources\JobCategories\Pages\EditJobCategory;
 use App\Filament\Resources\JobCategories\Pages\ListJobCategories;
@@ -19,6 +20,8 @@ use Illuminate\Support\Str;
 
 class JobCategoryResource extends Resource
 {
+    use RestrictsToAdmins;
+
     protected static ?string $model = JobCategory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleGroup;

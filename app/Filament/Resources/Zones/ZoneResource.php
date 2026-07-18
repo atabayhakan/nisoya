@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Zones;
 
+use App\Filament\Concerns\RestrictsToAdmins;
 use App\Filament\Resources\Zones\Pages\EditZone;
 use App\Filament\Resources\Zones\Pages\ListZones;
 use App\Filament\Support\ContentBlocks;
@@ -30,6 +31,8 @@ use UnitEnum;
  */
 class ZoneResource extends Resource
 {
+    use RestrictsToAdmins;
+
     protected static ?string $model = Zone::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;

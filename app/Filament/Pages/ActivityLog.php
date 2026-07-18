@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\RestrictsToAdmins;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -25,6 +26,9 @@ class ActivityLog extends Page implements HasForms, HasTable
 {
     use InteractsWithForms;
     use InteractsWithTable;
+
+    // Denetim/işlem geçmişi hassas → yalnızca Admin.
+    use RestrictsToAdmins;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 

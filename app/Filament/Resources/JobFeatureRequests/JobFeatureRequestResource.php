@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\JobFeatureRequests;
 
 use App\Enums\FeatureRequestStatus;
+use App\Filament\Concerns\RestrictsToAdmins;
 use App\Filament\Resources\JobFeatureRequests\Pages\CreateJobFeatureRequest;
 use App\Filament\Resources\JobFeatureRequests\Pages\EditJobFeatureRequest;
 use App\Filament\Resources\JobFeatureRequests\Pages\ListJobFeatureRequests;
@@ -20,6 +21,8 @@ use UnitEnum;
 
 class JobFeatureRequestResource extends Resource
 {
+    use RestrictsToAdmins;
+
     protected static ?string $model = JobFeatureRequest::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRocketLaunch;

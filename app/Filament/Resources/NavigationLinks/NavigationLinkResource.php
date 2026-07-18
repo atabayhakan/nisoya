@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\NavigationLinks;
 
+use App\Filament\Concerns\RestrictsToAdmins;
 use App\Filament\Resources\NavigationLinks\Pages\CreateNavigationLink;
 use App\Filament\Resources\NavigationLinks\Pages\EditNavigationLink;
 use App\Filament\Resources\NavigationLinks\Pages\ListNavigationLinks;
@@ -29,6 +30,8 @@ use UnitEnum;
  */
 class NavigationLinkResource extends Resource
 {
+    use RestrictsToAdmins;
+
     protected static ?string $model = NavigationLink::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBars3;

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FeatureRequests;
 
+use App\Filament\Concerns\RestrictsToAdmins;
 use App\Filament\Resources\FeatureRequests\Pages\CreateFeatureRequest;
 use App\Filament\Resources\FeatureRequests\Pages\EditFeatureRequest;
 use App\Filament\Resources\FeatureRequests\Pages\ListFeatureRequests;
@@ -16,6 +17,8 @@ use Filament\Tables\Table;
 
 class FeatureRequestResource extends Resource
 {
+    use RestrictsToAdmins;
+
     protected static ?string $model = FeatureRequest::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRocketLaunch;

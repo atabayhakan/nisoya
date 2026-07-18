@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Currencies;
 
+use App\Filament\Concerns\RestrictsToAdmins;
 use App\Filament\Resources\Currencies\Pages\CreateCurrency;
 use App\Filament\Resources\Currencies\Pages\EditCurrency;
 use App\Filament\Resources\Currencies\Pages\ListCurrencies;
@@ -16,6 +17,8 @@ use Filament\Tables\Table;
 
 class CurrencyResource extends Resource
 {
+    use RestrictsToAdmins;
+
     protected static ?string $model = Currency::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
