@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Http\Controllers\TwoFactorController;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -157,10 +156,10 @@ class TwoFactorTest extends TestCase
             'two_factor_recovery_codes' => json_encode(['AAAA-BBBB', 'CCCC-DDDD']),
         ]);
 
-        $controller = app(TwoFactorController::class);
-
-        // İlk kod doğru
-        $this->assertTrue($controller->useRecoveryCode(request(), $user, 'AAAA-BBBB'));
+        // İlk kod doğru (mantık artık User::consumeRecoveryCode'da — login
+        // challenge akışından kullanılıyor; eski TwoFactorController::useRecoveryCode
+        // ölü kodu kaldırıldı).
+        $this->assertTrue($user->consumeRecoveryCode('AAAA-BBBB'));
 
         $user->refresh();
         $codes = json_decode($user->two_factor_recovery_codes, true);
@@ -169,7 +168,7 @@ class TwoFactorTest extends TestCase
         $this->assertContains('CCCC-DDDD', $codes);
 
         // Aynı kod tekrar kullanılamaz
-        $this->assertFalse($controller->useRecoveryCode(request(), $user, 'AAAA-BBBB'));
+        $this->assertFalse($user->consumeRecoveryCode('AAAA-BBBB'));
     }
 
     public function test_invalid_recovery_code_returns_false(): void
@@ -181,8 +180,7 @@ class TwoFactorTest extends TestCase
             'two_factor_recovery_codes' => json_encode(['VALID-CODE']),
         ]);
 
-        $controller = app(TwoFactorController::class);
-        $this->assertFalse($controller->useRecoveryCode(request(), $user, 'INVALID-CODE'));
+        $this->assertFalse($user->consumeRecoveryCode('INVALID-CODE'));
     }
 
     public function test_profile_edit_page_links_to_2fa(): void

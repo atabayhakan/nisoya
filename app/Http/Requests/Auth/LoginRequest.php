@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -26,12 +27,20 @@ class LoginRequest extends FormRequest
         ];
     }
 
-    /** Kimlik bilgilerini doğrula (rate limit korumalı). */
-    public function authenticate(): void
+    /**
+     * Kimlik bilgilerini doğrula (rate limit korumalı) AMA oturum AÇMA —
+     * doğrulanan kullanıcıyı döndür. Oturum açma kararını controller verir:
+     * 2FA açıksa önce challenge'a yönlendirilir, kapalıysa doğrudan giriş yapılır.
+     * (Eskiden burada Auth::attempt ile doğrudan giriş yapılıyordu; 2FA hiç
+     * devreye girmiyordu.)
+     */
+    public function validateCredentials(): User
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // Auth::validate parolayı doğrular ama OTURUM AÇMAZ; başarılıysa
+        // denenen kullanıcı getLastAttempted() ile alınır.
+        if (! Auth::validate($this->only('email', 'password'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -40,6 +49,11 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+
+        /** @var User $user */
+        $user = Auth::getLastAttempted();
+
+        return $user;
     }
 
     public function ensureIsNotRateLimited(): void

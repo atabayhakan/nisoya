@@ -272,8 +272,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // İki faktörlü kimlik doğrulama (2FA / TOTP)
     Route::get('/panel/profil/iki-faktor', [TwoFactorController::class, 'show'])->name('panel.profile.2fa');
     Route::post('/panel/profil/iki-faktor/kur', [TwoFactorController::class, 'setup'])->name('panel.profile.2fa.setup');
-    Route::post('/panel/profil/iki-faktor/onayla', [TwoFactorController::class, 'confirm'])->name('panel.profile.2fa.confirm');
-    Route::post('/panel/profil/iki-faktor/kapat', [TwoFactorController::class, 'disable'])->name('panel.profile.2fa.disable');
+    // onayla/kapat 6 haneli TOTP kodu doğrular — brute-force'a karşı throttle.
+    Route::post('/panel/profil/iki-faktor/onayla', [TwoFactorController::class, 'confirm'])
+        ->middleware('throttle:6,1')->name('panel.profile.2fa.confirm');
+    Route::post('/panel/profil/iki-faktor/kapat', [TwoFactorController::class, 'disable'])
+        ->middleware('throttle:6,1')->name('panel.profile.2fa.disable');
 
     // Passkey kayıt/yönetim (Faz M2, WebAuthn attestation)
     Route::post('/panel/profil/passkey/secenekler', [WebAuthnRegisterController::class, 'options'])->name('panel.profile.passkey.options');

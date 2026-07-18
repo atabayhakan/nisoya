@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\WebAuthn\WebAuthnLoginController;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,14 @@ Route::middleware('guest')->group(function () {
 
     Route::get('giris', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('giris', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:login');
+
+    // İki adımlı doğrulama challenge'ı (parola doğrulandıktan SONRA, tam giriş
+    // ÖNCESİ). Kullanıcı henüz "guest"tir; bekleyen kimlik session'da tutulur.
+    // POST'a throttle: 6 haneli TOTP/yedek kod brute-force koruması.
+    Route::get('iki-faktor-dogrula', [TwoFactorChallengeController::class, 'create'])->name('two-factor.login');
+    Route::post('iki-faktor-dogrula', [TwoFactorChallengeController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('two-factor.login.store');
 
     // Passkey ile giriş (Faz M2, WebAuthn assertion)
     Route::post('webauthn/giris/secenekler', [WebAuthnLoginController::class, 'options'])

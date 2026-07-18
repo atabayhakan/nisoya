@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -126,26 +125,6 @@ class TwoFactorController extends Controller
 
         return redirect()->route('panel.profile.2fa')
             ->with('status', 'İki faktörlü kimlik doğrulama devre dışı bırakıldı.');
-    }
-
-    /**
-     * POST /panel/profil/iki-faktor/recovery — Yedek kodlardan birini kullan.
-     * (Login akışında kullanılır; bu metot login controller'ından çağrılır)
-     */
-    public function useRecoveryCode(Request $request, User $user, string $code): bool
-    {
-        $recoveryCodes = json_decode($user->two_factor_recovery_codes ?? '[]', true) ?: [];
-        $key = array_search($code, $recoveryCodes, true);
-
-        if ($key === false) {
-            return false;
-        }
-
-        // Kullanılan kodu listeden çıkar
-        unset($recoveryCodes[$key]);
-        $user->update(['two_factor_recovery_codes' => json_encode(array_values($recoveryCodes))]);
-
-        return true;
     }
 
     private function generateRecoveryCodes(): array

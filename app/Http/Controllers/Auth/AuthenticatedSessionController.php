@@ -18,11 +18,23 @@ class AuthenticatedSessionController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        // Parolayı doğrula ama henüz oturum AÇMA (2FA açıksa önce kod istenir).
+        $user = $request->validateCredentials();
+
+        if ($user->hasTwoFactorEnabled()) {
+            // Tam giriş yapmadan bekleyen kullanıcıyı session'a al ve challenge'a
+            // yönlendir. 'remember' tercihi ve intended URL session'da korunur.
+            $request->session()->put('login.2fa.user_id', $user->id);
+            $request->session()->put('login.2fa.remember', $request->boolean('remember'));
+
+            return redirect()->route('two-factor.login');
+        }
+
+        Auth::login($user, $request->boolean('remember'));
 
         $request->session()->regenerate();
 
-        $request->user()->forceFill(['last_seen_at' => now()])->save();
+        $user->forceFill(['last_seen_at' => now()])->save();
 
         return redirect()->intended(route('dashboard'));
     }

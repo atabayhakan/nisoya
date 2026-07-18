@@ -76,6 +76,13 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
             'role' => UserRole::class,
             'status' => UserStatus::class,
             'account_type' => AccountType::class,
+            // 2FA sırları veritabanında şifreli saklanır (DB sızıntısı TOTP
+            // secret'ını/yedek kodları ifşa etmesin). recovery_codes JSON
+            // string olarak yazılıp okunuyor (bkz. TwoFactorController); 'encrypted'
+            // düz string cast'i bu JSON'u olduğu gibi şifreleyip çözer.
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted',
+            'two_factor_confirmed_at' => 'datetime',
             'skills' => 'array',
             'avatar_focal_x' => 'integer',
             'avatar_focal_y' => 'integer',
@@ -166,6 +173,33 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
     public function isModerator(): bool
     {
         return $this->role === UserRole::Moderator;
+    }
+
+    /** 2FA etkin ve onaylı mı? (Giriş akışı buna göre challenge'a yönlendirir.) */
+    public function hasTwoFactorEnabled(): bool
+    {
+        return $this->two_factor_confirmed_at !== null;
+    }
+
+    /**
+     * Tek kullanımlık 2FA yedek kodlarından birini tüket. Kod geçerliyse
+     * listeden çıkarılıp kaydedilir ve true döner; aksi halde false.
+     * (Eski TwoFactorController::useRecoveryCode ölü koduyla aynı mantık —
+     * artık login challenge akışından kullanılıyor.)
+     */
+    public function consumeRecoveryCode(string $code): bool
+    {
+        $codes = json_decode($this->two_factor_recovery_codes ?? '[]', true) ?: [];
+        $index = array_search($code, $codes, true);
+
+        if ($index === false) {
+            return false;
+        }
+
+        unset($codes[$index]);
+        $this->update(['two_factor_recovery_codes' => json_encode(array_values($codes))]);
+
+        return true;
     }
 
     /** Activity log: yalnızca önemli alan değişikliklerini logla. */
