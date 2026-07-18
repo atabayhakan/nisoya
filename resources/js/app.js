@@ -821,5 +821,28 @@ window.addEventListener('appinstalled', () => {
     Alpine.store('pwa').isStandalone = true;
 });
 
+// iOS Safari autofill "geç boyama" hafifletmesi (bkz. app.css onAutoFillStart).
+// WebKit, Face ID ile autofill'lenen kullanıcı adı/parolayı kutucuk odaklanana
+// kadar görsel olarak boyamıyor — değer DOM'da vardır (form doğru gönderilir),
+// yalnızca ekrana çizilmez. Autofill'i CSS animasyonuyla tespit edip alanı
+// güvenle dürterek (DEĞERE dokunmadan) repaint'i tetikliyoruz.
+// document seviyesinde tek dinleyici — sonradan eklenen inputlar için de çalışır.
+document.addEventListener('animationstart', (event) => {
+    if (event.animationName !== 'onAutoFillStart') return;
+
+    const el = event.target;
+    if (!(el instanceof HTMLInputElement)) return;
+
+    requestAnimationFrame(() => {
+        // Kısa süreli bir compositing katmanı + input olayı repaint'i zorlar;
+        // değer değişmez, imleç/seçim bozulmaz.
+        el.style.transform = 'translateZ(0)';
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        requestAnimationFrame(() => {
+            el.style.transform = '';
+        });
+    });
+}, true);
+
 window.Alpine = Alpine;
 Alpine.start();

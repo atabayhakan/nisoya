@@ -187,3 +187,16 @@ header {
         animation: none;
     }
 }
+
+/* iOS Safari autofill "geç boyama" TESPİTİ (bkz. resources/js/app.js).
+   WebKit, Face ID ile autofill'lenen değeri kutucuk odaklanana kadar görsel
+   olarak boyamıyor (değer DOM'da vardır). Aşağıdaki boş animasyon, autofill
+   uygulanınca 'animationstart' olayını tetikler; JS bunu dinleyip alanı
+   dürterek repaint'i zorlar. Görsel bir değişiklik YAPMAZ. */
+input:-webkit-autofill {
+    animation: onAutoFillStart 0.01s;
+}
+@keyframes onAutoFillStart {
+    from {}
+    to {}
+}
