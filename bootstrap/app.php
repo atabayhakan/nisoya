@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HoneypotMiddleware;
 use App\Http\Middleware\PerformanceMetricsMiddleware;
 use App\Http\Middleware\QueryLogMiddleware;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             EnsureUserIsActive::class,
             PerformanceMetricsMiddleware::class,
             QueryLogMiddleware::class,
+            SecurityHeaders::class,
         ]);
 
         $middleware->alias([

@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Widgets\ExifPrivacyWidget;
 use App\Filament\Widgets\StatsOverview;
 use App\Filament\Widgets\SystemHealthWidget;
+use App\Http\Middleware\SecurityHeaders;
 use App\Support\Settings;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
@@ -90,6 +91,10 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                // Muhafazakâr CSP admin panelde de geçerli olsun (Filament kendi
+                // middleware yığınını kullandığı için web grubuna eklenen
+                // SecurityHeaders buraya uğramaz).
+                SecurityHeaders::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
