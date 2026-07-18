@@ -70,4 +70,22 @@ class TranchDPolishTest extends TestCase
         $this->assertContains(ShouldQueue::class, class_implements(SavedSearchAlert::class));
         $this->assertContains(ShouldQueue::class, class_implements(JobSavedSearchAlert::class));
     }
+
+    public function test_all_notifications_are_queued(): void
+    {
+        // Regresyon guard: TÜM bildirimler kuyruğa alınmalı — hepsi mail kanalı
+        // ve çoğu istek yolunda (değerlendirme, ilan durumu vb.) gönderiliyor;
+        // senkron olan bir kullanıcının isteğini SMTP'de bloke eder.
+        foreach (glob(app_path('Notifications').'/*.php') as $file) {
+            $class = 'App\\Notifications\\'.basename($file, '.php');
+            if (! class_exists($class)) {
+                continue;
+            }
+            $this->assertContains(
+                ShouldQueue::class,
+                class_implements($class),
+                "{$class} ShouldQueue implement etmeli (senkron e-posta isteği bloke eder)."
+            );
+        }
+    }
 }

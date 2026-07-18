@@ -2,10 +2,14 @@
 
 namespace App\Notifications;
 
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class NewCompanyReviewNotification extends Notification
+class NewCompanyReviewNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(
         public string $reviewerName,
         public int $rating,

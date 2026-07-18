@@ -2,6 +2,8 @@
 
 namespace App\Notifications;
 
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -9,8 +11,10 @@ use Illuminate\Notifications\Notification;
  * 12 aylık medya saklama politikası uyarısı: etkinlik fotoğraf/videoları
  * silinmeden ~1 ay önce ev sahibine gönderilir (bkz. tasarım belgesi Bölüm 5).
  */
-class EventMediaPurgeWarning extends Notification
+class EventMediaPurgeWarning extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(
         public string $eventTitle,
         public string $purgeDate,   // 'd.m.Y'
