@@ -103,7 +103,7 @@ class HomeHighlightTest extends TestCase
     {
         $member = User::factory()->create(['role' => UserRole::Uye, 'email_verified_at' => now()]);
 
-        $this->actingAs($member)->get('/yonetim/big-highlights')->assertForbidden();
-        $this->actingAs($member)->get('/yonetim/small-highlights')->assertForbidden();
+        $this->actingAs($member)->get('/yonetim/big-highlights')->assertRedirect(route('dashboard'));
+        $this->actingAs($member)->get('/yonetim/small-highlights')->assertRedirect(route('dashboard'));
     }
 }

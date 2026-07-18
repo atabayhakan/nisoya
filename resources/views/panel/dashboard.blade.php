@@ -26,6 +26,13 @@
             </div>
         @endif
 
+        @if (session('status'))
+            {{-- Flash bilgi (ör. yönetim paneline yetkisiz erişim yönlendirmesi). --}}
+            <div class="mb-6 rounded-lg bg-stone-100 px-4 py-3 text-sm text-stone-700 dark:bg-stone-800 dark:text-stone-200">
+                {{ session('status') }}
+            </div>
+        @endif
+
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Merhaba, {{ $user->name }} 👋</h1>

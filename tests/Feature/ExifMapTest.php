@@ -67,9 +67,8 @@ class ExifMapTest extends TestCase
             'role' => UserRole::Uye,
             'email_verified_at' => now(),
         ]);
-        $response = $this->actingAs($user)->get('/yonetim/exif-map-page');
-        // Üye admin panele erişemez (canAccessPanel false) → 403
-        $this->assertContains($response->getStatusCode(), [403, 404]);
+        // Üye admin panele erişemez → çıplak 403 yerine kendi paneline yönlendirilir.
+        $this->actingAs($user)->get('/yonetim/exif-map-page')->assertRedirect(route('dashboard'));
     }
 
     public function test_guest_cannot_access_exif_map_api(): void

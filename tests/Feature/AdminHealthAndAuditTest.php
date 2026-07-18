@@ -128,9 +128,9 @@ class AdminHealthAndAuditTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
-        // Üye kullanıcı admin panele erişemez (canAccessPanel false)
-        $response = $this->actingAs($user)->get('/yonetim/activity-log');
-        $response->assertForbidden();
+        // Üye admin panele erişemez → çıplak 403 yerine kendi paneline yönlendirilir
+        // (health/harita API uçları ise 403 kalır — bkz. bootstrap/app.php).
+        $this->actingAs($user)->get('/yonetim/activity-log')->assertRedirect(route('dashboard'));
     }
 
     public function test_user_status_change_creates_activity_log(): void

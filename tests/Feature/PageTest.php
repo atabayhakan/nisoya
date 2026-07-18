@@ -113,6 +113,6 @@ class PageTest extends TestCase
     {
         $member = User::factory()->create(['role' => UserRole::Uye, 'email_verified_at' => now()]);
 
-        $this->actingAs($member)->get('/yonetim/pages')->assertForbidden();
+        $this->actingAs($member)->get('/yonetim/pages')->assertRedirect(route('dashboard'));
     }
 }

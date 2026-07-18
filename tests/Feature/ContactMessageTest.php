@@ -82,7 +82,7 @@ class ContactMessageTest extends TestCase
     {
         $user = User::factory()->create(['role' => 'uye']);
 
-        $this->actingAs($user, 'web')->get('/yonetim/contact-messages')->assertForbidden();
+        $this->actingAs($user, 'web')->get('/yonetim/contact-messages')->assertRedirect(route('dashboard'));
     }
 
     public function test_admin_can_view_contact_messages(): void

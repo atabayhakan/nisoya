@@ -40,7 +40,7 @@ class YapayZekaAyarlariTest extends TestCase
     {
         $member = User::factory()->create(['role' => UserRole::Uye, 'email_verified_at' => now()]);
 
-        $this->actingAs($member)->get('/yonetim/yapay-zeka-ayarlari')->assertForbidden();
+        $this->actingAs($member)->get('/yonetim/yapay-zeka-ayarlari')->assertRedirect(route('dashboard'));
     }
 
     public function test_admin_can_save_ai_settings(): void

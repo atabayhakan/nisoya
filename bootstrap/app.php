@@ -6,12 +6,14 @@ use App\Http\Middleware\HoneypotMiddleware;
 use App\Http\Middleware\PerformanceMetricsMiddleware;
 use App\Http\Middleware\QueryLogMiddleware;
 use App\Http\Middleware\SecurityHeaders;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -37,6 +39,30 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        // Giriş yapmış AMA yönetim paneline erişemeyen normal üye /yonetim'e
+        // giderse çıplak "403 Forbidden" yerine dostça mesajla kendi paneline
+        // yönlendirilir. ÇIKIŞ yapılmaz (kullanıcı sadece yanlış URL'e gitti;
+        // logout oturumu bozar + kötüye-kullanım vektörü olurdu). Guest'e
+        // dokunulmaz (Filament login'e yönlendirir); yetkili zaten 403 almaz.
+        $exceptions->render(function (Throwable $e, Request $request) {
+            $isForbidden = $e instanceof AuthorizationException
+                || ($e instanceof HttpExceptionInterface && $e->getStatusCode() === 403);
+
+            if ($isForbidden
+                && $request->is('yonetim*')
+                // API uçları (health/exif harita) JSON döndürür — onlar 403
+                // kalsın; yalnızca panel SAYFALARINA giden normal üye yönlendirilir.
+                && ! $request->is('yonetim/health/*', 'yonetim/harita/*')
+                && ! $request->expectsJson()
+                && $request->user()
+                && ! ($request->user()->role?->canAccessAdminPanel() ?? false)) {
+                return redirect()->route('dashboard')
+                    ->with('status', 'Yönetim paneli yalnızca yöneticiler içindir.');
+            }
+
+            return null; // diğer tüm durumlar normal işlensin
+        });
     })
     ->booted(function () {
         // Hassas işlemler için rate limit policy'leri

@@ -83,6 +83,6 @@ class NavigationLinkTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
-        $this->actingAs($member)->get('/yonetim/navigation-links')->assertForbidden();
+        $this->actingAs($member)->get('/yonetim/navigation-links')->assertRedirect(route('dashboard'));
     }
 }

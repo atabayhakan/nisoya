@@ -67,7 +67,7 @@ class SiteContentTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
-        $this->actingAs($member)->get('/yonetim/icerik-ayarlari')->assertForbidden();
+        $this->actingAs($member)->get('/yonetim/icerik-ayarlari')->assertRedirect(route('dashboard'));
     }
 
     public function test_saving_form_persists_settings_with_dotted_keys(): void

@@ -56,7 +56,9 @@ class AdminPanelTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
-        $this->actingAs($member)->get('/yonetim')->assertForbidden();
+        // Yetkisiz üye çıplak 403 yerine kendi paneline yönlendirilir (dostça UX;
+        // çıkış yapılmaz). Bkz. bootstrap/app.php withExceptions.
+        $this->actingAs($member)->get('/yonetim')->assertRedirect(route('dashboard'));
     }
 
     public function test_reference_data_is_seeded(): void

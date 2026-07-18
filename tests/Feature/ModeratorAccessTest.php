@@ -94,4 +94,29 @@ class ModeratorAccessTest extends TestCase
         $this->actingAs($moderator)->get("/yonetim/users/{$admin->id}/edit")->assertForbidden();
         $this->actingAs($moderator)->get('/yonetim/users/create')->assertForbidden();
     }
+
+    public function test_logged_in_normal_user_is_redirected_from_panel_not_403(): void
+    {
+        // Normal üye /yonetim'e giderse çıplak 403 yerine kendi paneline
+        // (dashboard) dostça mesajla yönlendirilir; ÇIKIŞ yapılmaz.
+        $member = User::factory()->create(['role' => UserRole::Uye, 'email_verified_at' => now()]);
+
+        $this->actingAs($member)->get('/yonetim')
+            ->assertRedirect(route('dashboard'))
+            ->assertSessionHas('status');
+
+        // Oturumu korunmalı (logout edilmemeli).
+        $this->assertAuthenticatedAs($member);
+
+        // Yönlendirme takip edilince dostça mesaj dashboard'da görünür.
+        $this->actingAs($member)->followingRedirects()->get('/yonetim')
+            ->assertOk()
+            ->assertSee('Yönetim paneli yalnızca yöneticiler içindir');
+    }
+
+    public function test_admin_and_moderator_still_reach_panel_dashboard(): void
+    {
+        $this->actingAs($this->admin())->get('/yonetim')->assertSuccessful();
+        $this->actingAs($this->moderator())->get('/yonetim')->assertSuccessful();
+    }
 }

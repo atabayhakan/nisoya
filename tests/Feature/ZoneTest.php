@@ -164,6 +164,6 @@ class ZoneTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
-        $this->actingAs($member)->get('/yonetim/zones')->assertForbidden();
+        $this->actingAs($member)->get('/yonetim/zones')->assertRedirect(route('dashboard'));
     }
 }
