@@ -54,10 +54,14 @@ class Conversation extends Model
             })
             ->first();
 
+        // Katılımcı sırasını normalize et (user_one=küçük, user_two=büyük) ki
+        // mevcut unique index (listing_id, user_one_id, user_two_id) iki yönü de
+        // korusun — aksi halde eş zamanlı iki istek (A,B) ve (B,A) olarak iki
+        // ayrı konuşma yaratabilirdi (yarış durumu).
         return $existing ?? static::create([
             'listing_id' => $listingId,
-            'user_one_id' => $userId,
-            'user_two_id' => $otherId,
+            'user_one_id' => min($userId, $otherId),
+            'user_two_id' => max($userId, $otherId),
             'last_message_at' => now(),
         ]);
     }

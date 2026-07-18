@@ -29,27 +29,40 @@ class GeocodingService
         $countryName = $country?->name_tr ?? $countryCode;
         $key = 'geo:'.Str::slug($city).':'.$countryCode;
 
-        return Cache::remember($key, now()->addDays(30), function () use ($city, $countryName, $fallback) {
-            try {
-                $res = Http::withHeaders(['User-Agent' => 'Nisoya/1.0 (+https://nisoya.com)'])
-                    ->timeout(6)
-                    ->get('https://nominatim.openstreetmap.org/search', [
-                        'q' => $city.', '.$countryName,
-                        'format' => 'json',
-                        'limit' => 1,
-                    ]);
+        $cached = Cache::get($key);
+        if ($cached !== null) {
+            return $cached;
+        }
 
-                if ($res->ok() && isset($res->json()[0]['lat'])) {
-                    $hit = $res->json()[0];
+        try {
+            $res = Http::withHeaders(['User-Agent' => 'Nisoya/1.0 (+https://nisoya.com)'])
+                ->timeout(6)
+                ->get('https://nominatim.openstreetmap.org/search', [
+                    'q' => $city.', '.$countryName,
+                    'format' => 'json',
+                    'limit' => 1,
+                ]);
 
-                    return ['latitude' => (float) $hit['lat'], 'longitude' => (float) $hit['lon']];
-                }
-            } catch (\Throwable $e) {
-                // Sessizce ülke merkezine düş.
+            if ($res->ok() && isset($res->json()[0]['lat'])) {
+                $hit = $res->json()[0];
+                $coords = ['latitude' => (float) $hit['lat'], 'longitude' => (float) $hit['lon']];
+                // Başarılı geocode uzun süre (30 gün) cache'lenir.
+                Cache::put($key, $coords, now()->addDays(30));
+
+                return $coords;
             }
+        } catch (\Throwable $e) {
+            // Sessizce ülke merkezine düş.
+        }
 
-            return $fallback;
-        });
+        // Başarısızlık (Nominatim kesintisi / şehir bulunamadı): ülke merkezine
+        // düş ama YALNIZCA kısa süre (1 saat) cache'le. Eskiden fallback de 30 gün
+        // cache'leniyordu → geçici bir kesinti şehri 30 gün yanlış konuma
+        // mühürlüyordu (hata-cache poisoning). Kısa TTL, Nominatim toparlayınca
+        // en geç 1 saat içinde doğru konumu almayı sağlar.
+        Cache::put($key, $fallback, now()->addHour());
+
+        return $fallback;
     }
 
     /** @return array{latitude: float|null, longitude: float|null} */
@@ -84,30 +97,43 @@ class GeocodingService
 
         $key = sprintf('geo:rev:%.4f:%.4f', $latitude, $longitude);
 
-        return Cache::remember($key, now()->addDays(30), function () use ($latitude, $longitude) {
-            try {
-                $res = Http::withHeaders([
-                    'User-Agent' => 'Nisoya/1.0 (+https://nisoya.com)',
-                    'Accept' => 'application/json',
-                ])
-                    ->timeout(6)
-                    ->get('https://nominatim.openstreetmap.org/reverse', [
-                        'lat' => $latitude,
-                        'lon' => $longitude,
-                        'format' => 'json',
-                        'addressdetails' => 1,
-                        'accept-language' => 'tr,en',
-                    ]);
+        $cached = Cache::get($key);
+        if ($cached !== null) {
+            return $cached;
+        }
 
-                if ($res->ok() && isset($res->json()['address'])) {
-                    return $this->parseNominatimResponse($res->json());
-                }
-            } catch (\Throwable $e) {
-                // Sessizce fallback'e düş
+        try {
+            $res = Http::withHeaders([
+                'User-Agent' => 'Nisoya/1.0 (+https://nisoya.com)',
+                'Accept' => 'application/json',
+            ])
+                ->timeout(6)
+                ->get('https://nominatim.openstreetmap.org/reverse', [
+                    'lat' => $latitude,
+                    'lon' => $longitude,
+                    'format' => 'json',
+                    'addressdetails' => 1,
+                    'accept-language' => 'tr,en',
+                ]);
+
+            if ($res->ok() && isset($res->json()['address'])) {
+                $parsed = $this->parseNominatimResponse($res->json());
+                // Başarılı çözüm 30 gün cache'lenir.
+                Cache::put($key, $parsed, now()->addDays(30));
+
+                return $parsed;
             }
+        } catch (\Throwable $e) {
+            // Sessizce fallback'e düş
+        }
 
-            return $this->fallbackReverse($latitude, $longitude);
-        });
+        // Başarısızlık: yaklaşık fallback'i YALNIZCA kısa süre cache'le
+        // (geçici Nominatim kesintisi bu koordinatı 30 gün yanlış adrese
+        // mühürlemesin — bkz. locate() aynı gerekçe).
+        $fallback = $this->fallbackReverse($latitude, $longitude);
+        Cache::put($key, $fallback, now()->addHour());
+
+        return $fallback;
     }
 
     /**
