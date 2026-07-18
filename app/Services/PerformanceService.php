@@ -169,7 +169,12 @@ class PerformanceService
                 }
                 $stats[$key]['count']++;
                 $stats[$key]['total_ms'] += (float) ($data['duration_ms'] ?? 0);
-                $stats[$key]['last_seen'] = $line[0] ?? null;
+                // Log satırı "[YYYY-MM-DD HH:MM:SS] ..." ile başlar; köşeli
+                // parantezdeki zaman damgasını al. (Eskiden $line[0] yazılıyordu
+                // — bu tüm satır yerine yalnızca ilk KARAKTERİ ("[") kaydediyordu.)
+                if (preg_match('/^\[([^\]]+)\]/', $line, $ts)) {
+                    $stats[$key]['last_seen'] = $ts[1];
+                }
             }
         }
 

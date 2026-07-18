@@ -267,7 +267,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // KVKK: Veri silme + veri dışa aktarma
     Route::delete('/panel/profil', [ProfileSettingsController::class, 'destroy'])->name('panel.profile.destroy');
-    Route::get('/panel/profil/verilerim', [ProfileSettingsController::class, 'export'])->name('panel.profile.export');
+    // Export tüm kişisel verinin ağır bir dökümünü üretir — kullanıcı başına
+    // 6/dk ile sınırla (scrape/kötüye kullanım koruması).
+    Route::get('/panel/profil/verilerim', [ProfileSettingsController::class, 'export'])
+        ->middleware('throttle:6,1')->name('panel.profile.export');
 
     // İki faktörlü kimlik doğrulama (2FA / TOTP)
     Route::get('/panel/profil/iki-faktor', [TwoFactorController::class, 'show'])->name('panel.profile.2fa');

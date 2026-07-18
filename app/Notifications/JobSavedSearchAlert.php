@@ -3,12 +3,16 @@
 namespace App\Notifications;
 
 use App\Models\JobSavedSearch;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Collection;
 
-class JobSavedSearchAlert extends Notification
+class JobSavedSearchAlert extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(
         public JobSavedSearch $search,
         public Collection $jobs,

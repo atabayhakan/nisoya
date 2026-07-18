@@ -136,6 +136,19 @@
     @endif
 </head>
 <body class="min-h-screen bg-stone-50 text-stone-800 antialiased flex flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0 dark:bg-stone-950 dark:text-stone-200">
+    {{-- Erişilebilirlik: klavye kullanıcıları menüyü atlayıp doğrudan içeriğe
+         geçebilsin. Ekran okuyucular linki her zaman okur; görsel olarak
+         varsayılanda ekran dışında, odaklanınca görünür. Küçük scoped CSS
+         (Tailwind focus-varyant cascade belirsizliğine bağımlı olmamak için). --}}
+    <style>
+        .nisoya-skip-link { position: fixed; left: 1rem; top: 1rem; z-index: 100;
+            transform: translateY(-150%); background: var(--color-emerald-600, #059669);
+            color: #fff; padding: .5rem 1rem; border-radius: .5rem; font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / .2); transition: transform .15s ease; }
+        .nisoya-skip-link:focus { transform: translateY(0); outline: 2px solid #fff; outline-offset: 2px; }
+    </style>
+    <a href="#main-content" class="nisoya-skip-link">İçeriğe geç</a>
+
     {{-- Üst menü --}}
     {{-- Faz H4: kaydırınca hafifçe küçülür/gölge kazanır, aşağı kaydırırken
          gizlenir, yukarı kaydırınca hemen geri açılır (bkz. resources/js/app.js
@@ -223,7 +236,7 @@
         </div>
     </header>
 
-    <main class="flex-1">
+    <main id="main-content" tabindex="-1" class="flex-1">
         {{ $slot }}
     </main>
 

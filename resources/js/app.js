@@ -721,7 +721,8 @@ function passkeyErrorMessage(error) {
         return 'İşlem tamamlanamadı veya izin verilmedi. ' + inAppHint;
     }
     if (domName === 'SecurityError') {
-        return 'Bu sayfa adresi passkey için güvenli kabul edilmedi. nisoya.com adresinden doğrudan eriştiğinden emin ol.';
+        // Alan adı sabit kodlanmaz; kullanıcının gerçekten üzerinde olduğu host.
+        return 'Bu sayfa adresi passkey için güvenli kabul edilmedi. ' + window.location.hostname + ' adresinden doğrudan eriştiğinden emin ol.';
     }
     if (domName === 'AbortError') {
         return 'İşlem zaman aşımına uğradı veya iptal edildi. Tekrar dene.';

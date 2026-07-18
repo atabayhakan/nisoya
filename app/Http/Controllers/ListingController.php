@@ -17,6 +17,7 @@ use App\Services\ImageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -191,8 +192,14 @@ class ListingController extends Controller
             ), 301);
         }
 
+        // Görüntülenme: aynı ziyaretçi (giriş yapmışsa user, değilse oturum)
+        // kısa pencerede tekrar açarsa sayacı şişirmesin — hem daha doğru metrik
+        // hem her istekte bir UPDATE yerine dedup ile daha az yazma.
         if (! $isOwner) {
-            $listing->increment('views_count');
+            $viewerKey = 'viewed:listing:'.$listing->id.':'.(auth()->id() ?? $request->session()->getId());
+            if (Cache::add($viewerKey, true, now()->addHours(6))) {
+                $listing->increment('views_count');
+            }
         }
 
         $listing->load(['images', 'user.paymentLinks', 'category', 'country']);

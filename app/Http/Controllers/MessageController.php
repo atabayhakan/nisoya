@@ -182,10 +182,21 @@ class MessageController extends Controller
         $me = $request->user()->id;
         $after = (int) $request->query('after', 0);
 
-        $conversation->messages()
+        // Okunmamış mesajları "okundu" işaretle — ama YALNIZCA gerçekten
+        // okunmamış varsa. İstemci ~2 sn'de bir poll'ladığı için koşulsuz UPDATE
+        // her poll'da (okunacak bir şey olmasa bile) bir yazma üretiyordu; önce
+        // hafif bir EXISTS ile gereksiz yazmayı ele.
+        $hasUnread = $conversation->messages()
             ->where('sender_id', '!=', $me)
             ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+            ->exists();
+
+        if ($hasUnread) {
+            $conversation->messages()
+                ->where('sender_id', '!=', $me)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+        }
 
         $messages = $conversation->messages()
             ->where('id', '>', $after)

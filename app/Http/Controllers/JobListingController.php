@@ -11,6 +11,7 @@ use App\Models\JobListing;
 use App\Services\GeocodingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -144,8 +145,13 @@ class JobListingController extends Controller
             ), 301);
         }
 
+        // Görüntülenme dedup (bkz. ListingController::show — aynı desen):
+        // aynı ziyaretçi kısa pencerede tekrar açarsa sayaç şişmesin.
         if (! $isOwner) {
-            $job->increment('views_count');
+            $viewerKey = 'viewed:job:'.$job->id.':'.(auth()->id() ?? $request->session()->getId());
+            if (Cache::add($viewerKey, true, now()->addHours(6))) {
+                $job->increment('views_count');
+            }
         }
 
         $job->load(['company', 'category', 'country']);
