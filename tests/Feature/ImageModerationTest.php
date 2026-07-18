@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Contracts\AiProvider;
 use App\Enums\ListingStatus;
 use App\Models\Category;
 use App\Models\Conversation;
@@ -79,6 +80,51 @@ class ImageModerationTest extends TestCase
         $result = app(ImageModerationService::class)->check(public_path('icons/icon-192.png'));
 
         $this->assertSame(['flagged' => false, 'reason' => null], $result);
+    }
+
+    public function test_check_passes_timeout_through_to_provider(): void
+    {
+        // Sohbet yolu (senkron) kısa timeout geçer; kuyruk yolu (varsayılan) null.
+        $captured = (object) ['timeout' => 'unset'];
+        $fake = new class($captured) implements AiProvider
+        {
+            public function __construct(private object $captured) {}
+
+            public function isConfigured(): bool
+            {
+                return true;
+            }
+
+            public function name(): string
+            {
+                return 'fake';
+            }
+
+            public function lastError(): ?string
+            {
+                return null;
+            }
+
+            public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
+            {
+                $this->captured->timeout = $timeoutSeconds;
+
+                return ['uygunsuz' => false, 'kategori' => null];
+            }
+        };
+        $this->app->instance(AiProvider::class, $fake);
+        config(['ai.features.image_moderation' => true]);
+
+        $service = app(ImageModerationService::class);
+
+        // Sohbet: 10s geçilir.
+        $service->check(public_path('icons/icon-192.png'), ImageModerationService::SYNC_TIMEOUT_SECONDS);
+        $this->assertSame(10, $captured->timeout);
+        $this->assertSame(10, ImageModerationService::SYNC_TIMEOUT_SECONDS);
+
+        // Kuyruk yolu (timeout geçmez): sağlayıcı varsayılanını (30s) kullansın diye null.
+        $service->check(public_path('icons/icon-192.png'));
+        $this->assertNull($captured->timeout);
     }
 
     // --- İlan görseli akışı (ProcessListingImage) ---

@@ -23,6 +23,15 @@ class ImageModerationService
     /** Moderasyon için küçük gönderim yeterli — maliyeti düşürür. */
     private const MAX_WIDTH = 768;
 
+    /**
+     * Senkron (istek içi) çağrılarda AI zaman aşımı. Sohbet fotoğrafı
+     * moderasyonu isteği bloke ettiği için sağlayıcının 30s varsayılanı
+     * yerine kısa tutulur — yavaş AI gününde kullanıcı 30s beklemesin,
+     * hızlıca fail-open'a düşülsün. Kuyruk işleri (ilan görseli) bunu
+     * geçmez, varsayılanı kullanır.
+     */
+    public const SYNC_TIMEOUT_SECONDS = 10;
+
     public function __construct(private readonly AiProvider $ai) {}
 
     public function isEnabled(): bool
@@ -33,9 +42,11 @@ class ImageModerationService
     /**
      * Diskteki bir görseli (gerçek dosya yolu) moderasyondan geçirir.
      *
+     * @param  int|null  $timeoutSeconds  AI çağrısı zaman aşımı; senkron yollar
+     *                                    (sohbet) self::SYNC_TIMEOUT_SECONDS geçmeli.
      * @return array{flagged: bool, reason: ?string}|null AI kapalı/başarısızsa null (fail-open)
      */
-    public function check(string $realPath): ?array
+    public function check(string $realPath, ?int $timeoutSeconds = null): ?array
     {
         if (! $this->isEnabled()) {
             return null;
@@ -49,7 +60,7 @@ class ImageModerationService
             return null;
         }
 
-        $data = $this->ai->analyzeImage($base64, $mediaType, $this->prompt(), $this->schema());
+        $data = $this->ai->analyzeImage($base64, $mediaType, $this->prompt(), $this->schema(), $timeoutSeconds);
 
         if (! is_array($data) || ! array_key_exists('uygunsuz', $data)) {
             return null;

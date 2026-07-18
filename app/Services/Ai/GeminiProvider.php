@@ -32,7 +32,7 @@ class GeminiProvider implements AiProvider
         return 'Google Gemini';
     }
 
-    public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null): ?array
+    public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
     {
         $body = [
             'contents' => [[
@@ -48,7 +48,7 @@ class GeminiProvider implements AiProvider
         $endpoint = self::BASE.'/'.$this->config['model'].':generateContent';
 
         $response = Http::withHeaders(['x-goog-api-key' => $this->config['api_key']])
-            ->timeout(30)
+            ->timeout($timeoutSeconds ?? 30)
             ->post($endpoint, $body);
 
         if (! $response->successful()) {

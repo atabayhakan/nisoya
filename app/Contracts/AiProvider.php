@@ -30,7 +30,11 @@ interface AiProvider
      * @param  string  $base64Image  Base64 kodlanmış görsel verisi (data: öneki YOK)
      * @param  string  $mediaType  ör. "image/jpeg"
      * @param  array<string, mixed>|null  $jsonSchema  JSON Schema (opsiyonel)
+     * @param  int|null  $timeoutSeconds  HTTP çağrısı zaman aşımı (null → sağlayıcı
+     *                                    varsayılanı). Senkron yollar (ör. sohbet
+     *                                    fotoğrafı) 30s kilidi önlemek için kısa
+     *                                    değer geçer; kuyruk işleri varsayılanı kullanır.
      * @return array<string, mixed>|null Çözülmüş JSON; hata/güvenlik reddi durumunda null
      */
-    public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null): ?array;
+    public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array;
 }

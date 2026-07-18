@@ -28,7 +28,7 @@ class OpenAiProvider implements AiProvider
         return 'OpenAI';
     }
 
-    public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null): ?array
+    public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
     {
         $body = [
             'model' => $this->config['model'],
@@ -47,7 +47,7 @@ class OpenAiProvider implements AiProvider
 
         $response = Http::withToken($this->config['api_key'])
             ->withHeaders($this->extraHeaders())
-            ->timeout(30)
+            ->timeout($timeoutSeconds ?? 30)
             ->post($endpoint, $body);
 
         if (! $response->successful()) {

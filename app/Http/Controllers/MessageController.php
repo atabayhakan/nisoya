@@ -89,8 +89,15 @@ class MessageController extends Controller
             );
 
             // AI moderasyonu: uygunsuz bulunursa mesaj hiç oluşturulmaz (fail-open
-            // — AI kapalı/başarısızsa buradan hiç geçmeden devam eder).
-            $moderation = app(ImageModerationService::class)->check(Storage::disk('public')->path($attachmentPath));
+            // — AI kapalı/başarısızsa buradan hiç geçmeden devam eder). SENKRON
+            // (istek içi) olduğu için kısa timeout ile çağrılır: yavaş AI gününde
+            // kullanıcı 30s beklemesin, hızlıca fail-open'a düşülsün. Güvenlik
+            // modeli korunur (uygunsuz foto yine gönderilmeden reddedilir);
+            // yalnızca AI ÇOK yavaşsa moderasyonsuz geçme penceresi kısalır.
+            $moderation = app(ImageModerationService::class)->check(
+                Storage::disk('public')->path($attachmentPath),
+                ImageModerationService::SYNC_TIMEOUT_SECONDS,
+            );
             if ($moderation && $moderation['flagged']) {
                 Storage::disk('public')->delete($attachmentPath);
 

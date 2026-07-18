@@ -32,7 +32,7 @@ class AnthropicProvider implements AiProvider
         return 'Anthropic (Claude)';
     }
 
-    public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null): ?array
+    public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
     {
         $body = [
             'model' => $this->config['model'],
@@ -57,7 +57,7 @@ class AnthropicProvider implements AiProvider
             'x-api-key' => $this->config['api_key'],
             'anthropic-version' => self::API_VERSION,
             'content-type' => 'application/json',
-        ])->timeout(30)->post(self::ENDPOINT, $body);
+        ])->timeout($timeoutSeconds ?? 30)->post(self::ENDPOINT, $body);
 
         if (! $response->successful()) {
             $detail = $response->json('error.message') ?? mb_substr($response->body(), 0, 200);

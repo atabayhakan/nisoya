@@ -196,7 +196,7 @@ class FakeAiProvider implements AiProvider
         return null;
     }
 
-    public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null): ?array
+    public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
     {
         return ['fake' => true];
     }
