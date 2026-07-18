@@ -238,6 +238,11 @@ redis-cli Info stats
 - [ ] MySQL yalnızca 127.0.0.1
 - [ ] Düzenli yedek doğrulandı
 - [ ] HTTPS (Let's Encrypt) aktif
-- [ ] HSTS header aktif
+- [x] HSTS header aktif (2026-07-18; max-age=15768000, preload YOK — geri dönülebilir)
 - [ ] Fail2ban çalışıyor
+
+> Güvenlik başlıkları notu: aktif nginx config `sites-enabled/nisoya` (symlink
+> DEĞİL, ayrı kopya — `sites-available` ile senkron değil). Başlık değişiklikleri
+> AKTİF dosyada yapılmalı. Yedeği include edilen dizin İÇİNE koyma (`*` glob'una
+> takılıp "duplicate listen" hatası verir) — `/root/` altına al.
 - [ ] .env dosyası .gitignore'da ve yedeklenmiyor
