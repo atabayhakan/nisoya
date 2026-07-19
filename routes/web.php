@@ -201,6 +201,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/ilan/{listing}/sikayet', [ReportController::class, 'store'])
         ->middleware(['honeypot', 'throttle:report-store'])
         ->name('reports.store');
+    Route::post('/uye/{user:username}/dolandiricilik-bildir', [ReportController::class, 'reportFraud'])
+        ->middleware(['honeypot', 'throttle:report-store'])
+        ->name('users.report-fraud');
 
     // Profil ayarları
     Route::get('/panel/profil', [ProfileSettingsController::class, 'edit'])->name('panel.profile.edit');

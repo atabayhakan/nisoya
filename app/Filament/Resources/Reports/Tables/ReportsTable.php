@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Reports\Tables;
 
+use App\Enums\ReportCategory;
 use App\Enums\ReportStatus;
 use App\Models\Listing;
 use App\Models\Review;
@@ -62,6 +63,10 @@ class ReportsTable
                             }
                         });
                     }),
+                TextColumn::make('category')
+                    ->label('Kategori')
+                    ->badge()
+                    ->placeholder('—'),
                 TextColumn::make('reason')
                     ->label('Sebep')
                     ->searchable(),
@@ -85,6 +90,9 @@ class ReportsTable
                 SelectFilter::make('status')
                     ->label('Durum')
                     ->options(ReportStatus::class),
+                SelectFilter::make('category')
+                    ->label('Kategori')
+                    ->options(ReportCategory::class),
             ])
             ->defaultSort('created_at', 'desc')
             ->recordActions([

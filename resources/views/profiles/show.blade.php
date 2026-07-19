@@ -28,8 +28,9 @@
             <div class="flex flex-wrap items-center gap-4">
                 <x-avatar :user="$user" size="h-20 w-20" text="text-3xl" />
                 <div class="min-w-0 flex-1">
-                    <h1 class="flex items-center gap-2 text-2xl font-bold text-stone-900 dark:text-stone-50">
+                    <h1 class="flex flex-wrap items-center gap-2 text-2xl font-bold text-stone-900 dark:text-stone-50">
                         {{ $user->name }}
+                        <x-trust-badge :user="$user" />
                         @if ($user->is_verified)
                             <span class="inline-flex items-center gap-1 text-base text-emerald-600 dark:text-emerald-400">
                                 <x-verified-badge size="base" /> Doğrulanmış
@@ -80,9 +81,34 @@
                 </div>
             </div>
 
+            @if ($user->paymentLinks->isNotEmpty())
+                @include('partials.payment-safety-card', ['seller' => $user])
+            @endif
+
             <div class="mt-4 border-t border-stone-100 pt-3 dark:border-stone-800">
                 @include('partials.share-buttons', ['shareUrl' => route('profiles.show', $user->username), 'shareText' => $user->name.' — Nisoya'])
             </div>
+
+            @auth
+                @if (auth()->id() !== $user->id)
+                    <details class="mt-3 border-t border-stone-100 pt-3 dark:border-stone-800" @if ($errors->has('note')) open @endif>
+                        <summary class="cursor-pointer list-none text-xs text-stone-400 hover:text-red-600 dark:text-stone-500 dark:hover:text-red-400">
+                            🚩 Bu kullanıcıyı dolandırıcılık için bildir
+                        </summary>
+                        <form method="POST" action="{{ route('users.report-fraud', $user->username) }}" class="mt-2 max-w-md">
+                            @csrf
+                            @include('partials.honeypot')
+                            <label for="fraud-note" class="sr-only">Açıklama</label>
+                            <textarea id="fraud-note" name="note" rows="3" required minlength="10" maxlength="1000"
+                                placeholder="Ne oldu? Ödeme detayı, mesaj, tarih... (en az 10 karakter)"
+                                class="w-full rounded-lg border-stone-300 text-sm shadow-sm focus:border-red-500 focus:ring-red-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">{{ old('note') }}</textarea>
+                            @error('note')<p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>@enderror
+                            <p class="mt-1 text-xs text-stone-400 dark:text-stone-500">Bildirimin gizli tutulur; ekibimiz inceler. Asılsız ihbar kötüye kullanımdır.</p>
+                            <button type="submit" class="mt-2 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700">Bildir</button>
+                        </form>
+                    </details>
+                @endif
+            @endauth
         </div>
 
         {{-- Portfolyo --}}

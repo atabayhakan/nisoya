@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Users\Tables;
 
 use App\Enums\UserStatus;
 use App\Filament\Actions\BulkToggleUserStatusAction;
+use App\Filament\Actions\FreezeFraudsterAction;
 use App\Filament\Actions\ToggleUserStatusAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -77,6 +78,7 @@ class UsersTable
             ])
             ->recordActions([
                 ToggleUserStatusAction::make(),
+                FreezeFraudsterAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

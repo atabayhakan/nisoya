@@ -389,8 +389,9 @@
                         <div class="flex items-center gap-3">
                             <x-avatar :user="$listing->user" size="h-12 w-12" text="text-lg" />
                             <div class="min-w-0">
-                                <div class="flex items-center gap-1 font-semibold text-stone-800 dark:text-stone-100">
+                                <div class="flex flex-wrap items-center gap-1.5 font-semibold text-stone-800 dark:text-stone-100">
                                     {{ $listing->user->name }}
+                                    <x-trust-badge :user="$listing->user" />
                                     @if ($listing->user->is_verified)<x-verified-badge />@endif
                                 </div>
                                 <div class="text-xs text-stone-500 dark:text-stone-400">Üyelik: {{ $listing->user->created_at->translatedFormat('F Y') }}</div>
@@ -419,9 +420,7 @@
                             </div>
                         @endif
                         <a href="{{ route('profiles.show', $listing->user->username) }}" class="mt-3 block text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">Profili ve değerlendirmeleri gör →</a>
-                        <p class="mt-3 text-xs text-stone-400 dark:text-stone-500">
-                            Nisoya bir ilan ve iletişim platformudur; ödeme ve anlaşma taraflar arasındadır.
-                        </p>
+                        @include('partials.payment-safety-card', ['seller' => $listing->user])
                     </div>
 
                     {{-- Alan: sidebar alt (reklam/duyuru) --}}

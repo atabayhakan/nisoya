@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Models\Currency;
 use App\Models\User;
+use App\Services\FraudBlocklist;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
@@ -51,6 +53,14 @@ class RegisteredUserController extends Controller
             'preferred_currency' => 'para birimi',
             'terms' => 'kullanım koşulları',
         ]);
+
+        // Dolandırıcılık nedeniyle dondurulmuş bir hesabın e-postasıyla yeniden
+        // kayıt engellenir (K-D). Nötr mesaj — kara listede olduğunu ele vermez.
+        if (app(FraudBlocklist::class)->isBlocked(FraudBlocklist::TYPE_EMAIL, $validated['email'])) {
+            throw ValidationException::withMessages([
+                'email' => 'Bu e-posta ile kayıt tamamlanamadı. Yardım için bizimle iletişime geçebilirsin.',
+            ]);
+        }
 
         $user = User::create([
             'name' => $validated['name'],

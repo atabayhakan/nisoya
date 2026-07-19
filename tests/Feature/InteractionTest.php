@@ -334,7 +334,7 @@ class InteractionTest extends TestCase
 
         $this->assertDatabaseHas('reports', [
             'reporter_id' => $user->id,
-            'reportable_type' => 'listing',
+            'reportable_type' => Listing::class,
             'reportable_id' => $listing->id,
             'reason' => 'Yanıltıcı / sahte ilan',
         ]);

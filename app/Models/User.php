@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\AccountType;
+use App\Enums\ReviewStatus;
+use App\Enums\TrustTier;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
@@ -200,6 +202,62 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
         $this->update(['two_factor_recovery_codes' => json_encode(array_values($codes))]);
 
         return true;
+    }
+
+    /** İstek başına bir kez hesaplanan güven profili önbelleği (bkz. trustProfile). */
+    protected ?array $trustProfileCache = null;
+
+    /**
+     * Satıcının HESAPLANMIŞ güven profili — tamamen objektif, taklit edilemez
+     * sinyallerden türetilir (admin'in keyfî `is_verified` boolean'ından farklı,
+     * bkz. TrustTier). Tek bir toplu sorguyla değerlendirme sayısı/ortalamasını
+     * çeker ve istek başına önbelleğe alır (profil/ilan detay tek-kayıt
+     * sayfalarında kullanılır, kart listelerinde değil → N+1 riski yok).
+     *
+     * @return array{tier: TrustTier, review_count: int, avg: float, age_days: int, email_verified: bool, profile_complete: bool}
+     */
+    public function trustProfile(): array
+    {
+        if ($this->trustProfileCache !== null) {
+            return $this->trustProfileCache;
+        }
+
+        $reviewCount = $this->reviewsReceived()
+            ->where('status', ReviewStatus::Yayinda->value)
+            ->count();
+        $avg = $reviewCount > 0
+            ? round((float) $this->reviewsReceived()->where('status', ReviewStatus::Yayinda->value)->avg('rating'), 1)
+            : 0.0;
+        $ageDays = (int) abs($this->created_at?->diffInDays(now()) ?? 0);
+        $emailVerified = $this->email_verified_at !== null;
+        $profileComplete = filled($this->avatar_path) && filled($this->bio) && filled($this->country_code);
+
+        $tier = match (true) {
+            $reviewCount >= 5 && $avg >= 4.0 && $ageDays >= 60 => TrustTier::Guvenilir,
+            $emailVerified && $profileComplete && ($reviewCount >= 1 || $ageDays >= 30) => TrustTier::Uye,
+            default => TrustTier::Yeni,
+        };
+
+        return $this->trustProfileCache = [
+            'tier' => $tier,
+            'review_count' => $reviewCount,
+            'avg' => $avg,
+            'age_days' => $ageDays,
+            'email_verified' => $emailVerified,
+            'profile_complete' => $profileComplete,
+        ];
+    }
+
+    /** Satıcının hesaplanmış güven kademesi. */
+    public function trustTier(): TrustTier
+    {
+        return $this->trustProfile()['tier'];
+    }
+
+    /** Satıcı "yeni/değerlendirilmemiş" mi? (Ödeme uyarısı buna göre sertleşir.) */
+    public function isNewSeller(): bool
+    {
+        return $this->trustTier()->isNew();
     }
 
     /** Activity log: yalnızca önemli alan değişikliklerini logla. */

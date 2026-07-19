@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\PaymentMethod;
 use App\Models\PaymentLink;
+use App\Services\FraudBlocklist;
 use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,20 @@ class PaymentLinkController extends Controller
         ], messages: [
             'method.unique' => 'Bu ödeme yöntemini zaten eklemişsin.',
         ]);
+
+        // Dolandırıcılık nedeniyle kara listeye alınmış bir IBAN/ödeme handle'ı
+        // yeni bir hesapta tekrar kullanılamaz (K-D — dolandırıcının en kıt
+        // kaynağı: gerçek para kanalı).
+        if (filled($data['detail'] ?? null)) {
+            $blocklist = app(FraudBlocklist::class);
+            $type = $data['method'] === PaymentMethod::SepaIban->value
+                ? FraudBlocklist::TYPE_IBAN
+                : FraudBlocklist::TYPE_HANDLE;
+
+            if ($blocklist->isBlocked($type, $data['detail'])) {
+                return back()->withErrors(['detail' => 'Bu ödeme bilgisi kullanılamıyor. Yardım için bizimle iletişime geç.']);
+            }
+        }
 
         if ($request->hasFile('qr')) {
             $imageService = app(ImageService::class);

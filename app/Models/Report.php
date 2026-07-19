@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ReportCategory;
 use App\Enums\ReportStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,7 @@ class Report extends Model
         'reportable_type',
         'reportable_id',
         'reason',
+        'category',
         'note',
         'status',
     ];
@@ -22,6 +24,7 @@ class Report extends Model
     {
         return [
             'status' => ReportStatus::class,
+            'category' => ReportCategory::class,
         ];
     }
 
