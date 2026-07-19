@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\ListingType;
 use App\Enums\PriceUnit;
 use App\Models\Conversation;
+use App\Models\Currency;
 use App\Models\Listing;
 use App\Models\Message;
 use App\Notifications\NewMessageNotification;
@@ -51,6 +52,8 @@ class MessageController extends Controller
         return view('panel.messages.show', [
             'conversation' => $conversation,
             'other' => $conversation->other($request->user()),
+            'deal' => $conversation->latestDeal(),
+            'currencies' => Currency::query()->where('is_active', true)->orderBy('sort_order')->get(),
         ]);
     }
 

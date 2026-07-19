@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\DealStatus;
 use App\Models\Conversation;
+use App\Models\Deal;
 use App\Models\Review;
 use App\Models\User;
 use App\Notifications\NewReviewNotification;
@@ -32,9 +34,21 @@ class ReviewController extends Controller
             'comment' => ['nullable', 'string', 'max:1000'],
         ], attributes: ['rating' => 'puan', 'comment' => 'yorum']);
 
+        // Taraflar arasında TAMAMLANMIŞ bir anlaşma varsa değerlendirmeye bağla
+        // → "Doğrulanmış işlem" rozeti kazanır (K-C). Yoksa deal_id null kalır
+        // (konuşma-bağlı değerlendirme; hâlâ geçerli, sadece rozetsiz).
+        $completedDealId = Deal::query()
+            ->where('status', DealStatus::Tamamlandi->value)
+            ->where(function ($q) use ($reviewer, $user) {
+                $q->where(['seller_id' => $reviewer->id, 'buyer_id' => $user->id])
+                    ->orWhere(['seller_id' => $user->id, 'buyer_id' => $reviewer->id]);
+            })
+            ->latest('completed_at')
+            ->value('id');
+
         $review = Review::updateOrCreate(
             ['reviewee_id' => $user->id, 'reviewer_id' => $reviewer->id, 'listing_id' => null],
-            ['rating' => $data['rating'], 'comment' => $data['comment'] ?? null, 'status' => 'yayinda'],
+            ['rating' => $data['rating'], 'comment' => $data['comment'] ?? null, 'status' => 'yayinda', 'deal_id' => $completedDealId],
         );
 
         if ($review->wasRecentlyCreated) {

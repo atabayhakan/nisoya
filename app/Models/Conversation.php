@@ -43,6 +43,18 @@ class Conversation extends Model
         return $this->hasMany(Message::class);
     }
 
+    /** @return HasMany<Deal, $this> */
+    public function deals(): HasMany
+    {
+        return $this->hasMany(Deal::class);
+    }
+
+    /** Bu konuşmadaki en güncel anlaşma (durumu ne olursa olsun). */
+    public function latestDeal(): ?Deal
+    {
+        return $this->deals()->latest('id')->first();
+    }
+
     /** İki kullanıcı (+ilan) arasındaki konuşmayı bul veya oluştur. */
     public static function findOrCreateBetween(int $userId, int $otherId, ?int $listingId): self
     {

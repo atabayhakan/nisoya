@@ -107,6 +107,10 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('event-create', fn (Request $request) => Limit::perMinute(6)->by($request->user()?->id ?: $request->ip())
         );
 
+        // Anlaşma aksiyonları (teklif/kabul/tamamla/iptal/sorun) — kullanıcı başına 20/dk.
+        RateLimiter::for('deal-action', fn (Request $request) => Limit::perMinute(20)->by($request->user()?->id ?: $request->ip())
+        );
+
         // LCV hesapsız verildiği için IP bazlı (aynı ağdan birden çok misafir olabilir — cömert ama sınırlı)
         RateLimiter::for('rsvp', fn (Request $request) => Limit::perMinute(15)->by($request->ip())
         );

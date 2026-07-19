@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AccountType;
+use App\Enums\DealStatus;
 use App\Enums\ReviewStatus;
 use App\Enums\TrustTier;
 use App\Enums\UserRole;
@@ -232,9 +233,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
         $emailVerified = $this->email_verified_at !== null;
         $profileComplete = filled($this->avatar_path) && filled($this->bio) && filled($this->country_code);
 
+        // Tamamlanmış anlaşma sayısı (K-C) — gerçek işlem sinyali, kademeleri
+        // güçlendirir. Alıcı ya da satıcı olarak fark etmez.
+        $completedDeals = Deal::query()
+            ->where('status', DealStatus::Tamamlandi->value)
+            ->where(fn ($q) => $q->where('seller_id', $this->id)->orWhere('buyer_id', $this->id))
+            ->count();
+
         $tier = match (true) {
-            $reviewCount >= 5 && $avg >= 4.0 && $ageDays >= 60 => TrustTier::Guvenilir,
-            $emailVerified && $profileComplete && ($reviewCount >= 1 || $ageDays >= 30) => TrustTier::Uye,
+            $ageDays >= 60 && $avg >= 4.0 && ($reviewCount >= 5 || $completedDeals >= 5) => TrustTier::Guvenilir,
+            $emailVerified && $profileComplete && ($reviewCount >= 1 || $completedDeals >= 1 || $ageDays >= 30) => TrustTier::Uye,
             default => TrustTier::Yeni,
         };
 
@@ -245,6 +253,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
             'age_days' => $ageDays,
             'email_verified' => $emailVerified,
             'profile_complete' => $profileComplete,
+            'completed_deals' => $completedDeals,
         ];
     }
 

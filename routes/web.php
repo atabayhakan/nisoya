@@ -6,6 +6,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyGalleryController;
 use App\Http\Controllers\CompanyReviewController;
 use App\Http\Controllers\ContactMessageController;
+use App\Http\Controllers\DealController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventInvitationController;
 use App\Http\Controllers\EventMediaController;
@@ -190,6 +191,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('panel.messages.store');
     Route::delete('/panel/mesajlar/{conversation}/mesaj/{message}', [MessageController::class, 'recall'])
         ->name('panel.messages.recall');
+
+    // Anlaşmalar (sohbet içinden — Nisoya para akışını görmez, sadece niyet defteri)
+    Route::post('/panel/mesajlar/{conversation}/anlasma', [DealController::class, 'propose'])
+        ->middleware('throttle:deal-action')->name('panel.deals.propose');
+    Route::post('/panel/anlasma/{deal}/kabul', [DealController::class, 'accept'])
+        ->middleware('throttle:deal-action')->name('panel.deals.accept');
+    Route::post('/panel/anlasma/{deal}/tamamla', [DealController::class, 'complete'])
+        ->middleware('throttle:deal-action')->name('panel.deals.complete');
+    Route::post('/panel/anlasma/{deal}/iptal', [DealController::class, 'cancel'])
+        ->middleware('throttle:deal-action')->name('panel.deals.cancel');
+    Route::post('/panel/anlasma/{deal}/sorun', [DealController::class, 'dispute'])
+        ->middleware('throttle:deal-action')->name('panel.deals.dispute');
+
     Route::post('/ilan/{listing}/mesaj', [MessageController::class, 'start'])
         ->middleware(['honeypot', 'throttle:message-start'])
         ->name('messages.start');

@@ -10,12 +10,19 @@ class Review extends Model
 {
     protected $fillable = [
         'listing_id',
+        'deal_id',
         'reviewee_id',
         'reviewer_id',
         'rating',
         'comment',
         'status',
     ];
+
+    /** Tamamlanmış anlaşmaya dayanıyorsa "Doğrulanmış işlem" (K-C). */
+    public function isVerifiedTransaction(): bool
+    {
+        return $this->deal_id !== null;
+    }
 
     protected function casts(): array
     {

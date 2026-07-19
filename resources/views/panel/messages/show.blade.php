@@ -24,6 +24,14 @@
             <span class="flex shrink-0 items-center gap-1 text-xs text-stone-400 dark:text-stone-500"><span class="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span> canlı</span>
         </div>
 
+        {{-- Durum mesajı (anlaşma aksiyonları buraya döner) --}}
+        @if (session('status'))
+            <div class="mt-3 rounded-xl bg-emerald-50 px-4 py-2.5 text-sm text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">{{ session('status') }}</div>
+        @endif
+
+        {{-- Anlaşma paneli (K-C) --}}
+        @include('panel.messages.partials.deal-panel')
+
         {{-- Mesajlar: SABİT yükseklikli, KENDİ İÇİNDE kaydırılan kutu. --}}
         <div id="thread"
              class="mt-4 h-[58vh] min-h-[280px] space-y-3 overflow-y-auto rounded-2xl border border-stone-200 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-950/40"

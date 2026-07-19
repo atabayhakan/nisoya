@@ -143,7 +143,7 @@
         @endif
 
         {{-- Değerlendirmeler --}}
-        <div class="mt-12">
+        <div class="mt-12 scroll-mt-20" id="degerlendir">
             <h2 class="text-lg font-bold text-stone-900 dark:text-stone-50">
                 Değerlendirmeler
                 @if ($rating['count'] > 0)<span class="text-amber-500 dark:text-amber-400">★ {{ $rating['avg'] }}</span> <span class="text-sm font-normal text-stone-400 dark:text-stone-500">({{ $rating['count'] }})</span>@endif
@@ -186,9 +186,14 @@
             <div class="mt-4 space-y-3">
                 @forelse ($reviews as $review)
                     <div class="rounded-2xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-                        <div class="flex items-center justify-between">
-                            <span class="font-medium text-stone-800 dark:text-stone-100">{{ $review->reviewer->name }}</span>
-                            <span class="text-amber-500 dark:text-amber-400">{{ str_repeat('★', $review->rating) }}<span class="text-stone-300 dark:text-stone-600">{{ str_repeat('★', 5 - $review->rating) }}</span></span>
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="flex flex-wrap items-center gap-1.5 font-medium text-stone-800 dark:text-stone-100">
+                                {{ $review->reviewer->name }}
+                                @if ($review->deal_id)
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-900/40 dark:text-emerald-300" title="Bu değerlendirme, tamamlanmış bir anlaşmaya dayanıyor.">✓ Doğrulanmış işlem</span>
+                                @endif
+                            </span>
+                            <span class="shrink-0 text-amber-500 dark:text-amber-400">{{ str_repeat('★', $review->rating) }}<span class="text-stone-300 dark:text-stone-600">{{ str_repeat('★', 5 - $review->rating) }}</span></span>
                         </div>
                         @if ($review->comment)<p class="mt-1 text-sm text-stone-600 dark:text-stone-300">{{ $review->comment }}</p>@endif
                         <p class="mt-1 text-xs text-stone-400 dark:text-stone-500">{{ $review->created_at->translatedFormat('j F Y') }}</p>
