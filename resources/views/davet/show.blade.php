@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ $locale }}" class="scroll-smooth">
+<html lang="{{ $locale }}" class="scroll-smooth{{ ($theme['dark'] ?? false) ? ' dark' : '' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,10 +12,9 @@
     <meta property="og:type" content="website">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%23059669'/><path d='M7 17V7L17 17V7' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
 
-    @unless ($theme['dark_only'] ?? false)
-        <x-theme-init />
-    @endunless
-
+    {{-- Davetiye tasarlanmış bir üründür: her misafirde AYNI görünür. Cihazın
+         OS temasını takip etmez (tema paleti config/event_themes.php'de sabittir;
+         koyu temalar <html>'e statik `dark` sınıfı ekler). --}}
     @vite(['resources/css/app.css'])
 </head>
 <body class="min-h-screen antialiased {{ $theme['page'] }}">
@@ -36,20 +35,25 @@
                 <div class="mt-3 text-sm font-medium uppercase tracking-[0.25em] {{ $theme['accent'] }}">
                     {{ $event->type->emoji() }} {{ $event->type->getLabel() }}
                 </div>
-                <h1 class="mt-4 text-3xl font-bold leading-tight sm:text-4xl">{{ $event->title }}</h1>
+                <h1 class="mt-4 text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">{{ $event->title }}</h1>
+                <div class="mx-auto mt-6 flex items-center justify-center gap-3" aria-hidden="true">
+                    <span class="h-px w-10 bg-current opacity-25"></span>
+                    <span class="text-sm {{ $theme['accent'] }}">{{ $theme['ornament'] }}</span>
+                    <span class="h-px w-10 bg-current opacity-25"></span>
+                </div>
             </div>
 
             {{-- Tarih & mekan --}}
             <div class="mt-8 space-y-3 text-center text-sm">
                 <div>
-                    <div class="text-xs uppercase tracking-wider opacity-60">{{ __('davet.tarih') }}</div>
+                    <div class="text-xs uppercase tracking-[0.2em] {{ $theme['muted'] }}">{{ __('davet.tarih') }}</div>
                     <div class="mt-0.5 text-lg font-semibold {{ $theme['accent'] }}">{{ $event->starts_at->translatedFormat('j F Y l') }}</div>
                     <div class="font-medium opacity-80">{{ __('davet.saat') }} {{ $event->starts_at->format('H:i') }}</div>
                     <a href="{{ route('davet.ics', $event->token) }}" class="mt-1 inline-block text-xs underline-offset-2 opacity-70 hover:underline">{{ __('davet.takvime_ekle') }}</a>
                 </div>
                 @if ($event->venue_name || $event->venue_address)
                     <div class="pt-2">
-                        <div class="text-xs uppercase tracking-wider opacity-60">{{ __('davet.mekan') }}</div>
+                        <div class="text-xs uppercase tracking-[0.2em] {{ $theme['muted'] }}">{{ __('davet.mekan') }}</div>
                         @if ($event->venue_name)<div class="mt-0.5 font-semibold">{{ $event->venue_name }}</div>@endif
                         @if ($event->venue_address)
                             <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($event->venue_address) }}" target="_blank" rel="noopener"
@@ -64,7 +68,7 @@
             @endif
 
             {{-- LCV --}}
-            <div class="mt-8 border-t pt-6 {{ ($theme['dark_only'] ?? false) ? 'border-stone-700' : 'border-stone-200 dark:border-stone-700' }}">
+            <div class="mt-8 border-t pt-6 {{ ($theme['dark'] ?? false) ? 'border-white/10' : 'border-stone-200' }}">
                 @if (session('rsvp_status'))
                     <div class="mb-4 rounded-xl bg-emerald-100 px-4 py-3 text-center text-sm font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">
                         {{ session('rsvp_status') }}
