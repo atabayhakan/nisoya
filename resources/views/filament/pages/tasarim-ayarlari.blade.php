@@ -1,99 +1,345 @@
 <x-filament-panels::page>
-    <p class="text-sm text-gray-500 dark:text-gray-400">
-        Nisoya'nın genel görünümünü tek tıkla değiştir. Seçim anında kaydedilir ve canlı sitede
-        hemen görünür — ayrı bir yayınlama adımı yok, istersen aynı kolaylıkla geri alabilirsin.
-    </p>
+    {{-- Üst Bilgi Şeridi --}}
+    <x-filament::section class="bg-gradient-to-r from-emerald-900 to-stone-900 text-white dark:from-emerald-950 dark:to-stone-950">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <div class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 backdrop-blur">
+                    ✨ 2027 UI/UX Vizyonu · Ultra Komuta Merkezi
+                </div>
+                <h2 class="mt-2 text-xl font-bold text-white">Nisoya Marka & Tasarım Mimarisi</h2>
+                <p class="text-xs text-stone-300">
+                    Sitenin tüm renk, tipografi, köşe yumuşatma ve cam efektlerini canlı olarak simüle edin ve tek tıkla yayınlayın.
+                </p>
+            </div>
+            <div class="flex items-center gap-2">
+                <x-filament::button color="gray" icon="heroicon-o-arrow-path" wire:click="sifirla">
+                    Varsayılana Sıfırla
+                </x-filament::button>
+                <x-filament::button color="success" icon="heroicon-o-check" wire:click="kaydetCustom">
+                    Değişiklikleri Kaydet
+                </x-filament::button>
+            </div>
+        </div>
+    </x-filament::section>
 
-    <div class="mt-6 grid gap-6 lg:grid-cols-2">
-        {{-- 1. Tasarım — Eski --}}
-        <x-filament::section
-            :icon="$aktifMod === 'eski' ? 'heroicon-o-check-circle' : 'heroicon-o-swatch'"
-            :icon-color="$aktifMod === 'eski' ? 'success' : 'gray'"
-            heading="1. Tasarım"
-            description="Mevcut, bilinen tasarım."
-            @class([
-                'ring-2 ring-primary-600 ring-offset-2 dark:ring-offset-gray-900' => $aktifMod === 'eski',
-            ])
-        >
-            <x-slot name="afterHeader">
+    {{-- 🎨 4 İmza Tema Preset'i --}}
+    <div class="mt-6">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white">İmza Tema Preset'leri</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400">2027 trendlerine uygun hazırlanmış hazıl tasarım stilleri</p>
+
+        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {{-- 1. Zümrüt Klasik --}}
+            <div
+                @class([
+                    'relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-5 transition shadow-sm dark:bg-gray-800',
+                    'border-emerald-500 ring-2 ring-emerald-500/30' => $aktifMod === 'eski',
+                    'border-gray-200 hover:border-gray-300 dark:border-gray-700' => $aktifMod !== 'eski',
+                ])
+            >
                 @if ($aktifMod === 'eski')
-                    <x-filament::badge color="success" icon="heroicon-o-check">Şu an aktif</x-filament::badge>
+                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                        ✓ Aktif
+                    </span>
                 @endif
-            </x-slot>
-
-            <div class="space-y-4">
-                <p class="text-sm text-gray-600 dark:text-gray-300">
-                    Zümrüt yeşili marka rengi, taş grisi zemin, Instrument Sans başlıklar — Nisoya'nın
-                    açılıştan beri kullandığı, kullanıcıların alışık olduğu görünüm.
-                </p>
-
-                <div class="flex items-center gap-4 rounded-lg bg-gray-50 p-4 dark:bg-white/5">
-                    <div class="flex gap-2">
-                        <span class="block h-9 w-9 rounded-full ring-2 ring-white dark:ring-gray-900" style="background:#059669" title="Marka rengi"></span>
-                        <span class="block h-9 w-9 rounded-full ring-2 ring-white dark:ring-gray-900" style="background:#fafaf9" title="Zemin rengi"></span>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="h-4 w-4 rounded-full bg-emerald-600"></span>
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white">1. Zümrüt Klasik</h4>
                     </div>
-                    <div class="h-8 w-px bg-gray-200 dark:bg-gray-700"></div>
-                    <p class="font-sans text-base font-bold text-gray-700 dark:text-gray-200">Ne İş Olursa Yaparım</p>
+                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        Zümrüt yeşili marka rengi, taş grisi zemin, Instrument Sans başlıklar — Orijinal klasik görünüm.
+                    </p>
+
+                    <div class="mt-4 rounded-xl bg-stone-50 p-3 dark:bg-stone-900/50">
+                        <span class="font-sans text-sm font-bold text-gray-800 dark:text-gray-200">Ne İş Olursa Yaparım</span>
+                    </div>
                 </div>
 
                 <x-filament::button
+                    size="sm"
                     color="gray"
-                    icon="heroicon-o-arrow-uturn-left"
+                    class="mt-4 w-full"
                     :disabled="$aktifMod === 'eski'"
-                    wire:click="secModu('eski')"
-                    class="w-full justify-center"
+                    wire:click="secPreset('eski')"
                 >
-                    1. Tasarımı Etkinleştir
+                    Etkinleştir
                 </x-filament::button>
             </div>
-        </x-filament::section>
 
-        {{-- 2. Tasarım — Yeni (2027 vizyon pilotu) --}}
-        <x-filament::section
-            :icon="$aktifMod === 'yeni' ? 'heroicon-o-check-circle' : 'heroicon-o-sparkles'"
-            :icon-color="$aktifMod === 'yeni' ? 'success' : 'gray'"
-            heading="2. Tasarım"
-            description="2027 vizyon pilotu."
-            @class([
-                'ring-2 ring-primary-600 ring-offset-2 dark:ring-offset-gray-900' => $aktifMod === 'yeni',
-            ])
-        >
-            <x-slot name="afterHeader">
+            {{-- 2. 2027 Vitrin & Neo-Craft --}}
+            <div
+                @class([
+                    'relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-5 transition shadow-sm dark:bg-gray-800',
+                    'border-emerald-500 ring-2 ring-emerald-500/30' => $aktifMod === 'yeni',
+                    'border-gray-200 hover:border-gray-300 dark:border-gray-700' => $aktifMod !== 'yeni',
+                ])
+            >
                 @if ($aktifMod === 'yeni')
-                    <x-filament::badge color="success" icon="heroicon-o-check">Şu an aktif</x-filament::badge>
+                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                        ✓ Aktif
+                    </span>
                 @endif
-            </x-slot>
-
-            <div class="space-y-4">
-                <p class="text-sm text-gray-600 dark:text-gray-300">
-                    "Vitrin Yeşili" marka rengi, sıcak "Tezgah Kremi" zemin ve anasayfa başlığında
-                    Instrument Serif italik — esnaf/vitrin ruhunu modern bir dille taşıyan yeni yön.
-                </p>
-
-                <div class="flex items-center gap-4 rounded-lg bg-gray-50 p-4 dark:bg-white/5">
-                    <div class="flex gap-2">
-                        <span class="block h-9 w-9 rounded-full ring-2 ring-white dark:ring-gray-900" style="background:#0f5c42" title="Marka rengi"></span>
-                        <span class="block h-9 w-9 rounded-full ring-2 ring-white dark:ring-gray-900" style="background:#f3eee4" title="Zemin rengi"></span>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="h-4 w-4 rounded-full" style="background:#0f5c42"></span>
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white">2. 2027 Neo-Craft</h4>
                     </div>
-                    <div class="h-8 w-px bg-gray-200 dark:bg-gray-700"></div>
-                    <p class="font-serif text-lg italic text-gray-700 dark:text-gray-200">Ne İş Olursa Yaparım</p>
+                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        Vitrin Yeşili, sıcak Tezgah Kremi zemin ve Instrument Serif italik — Esnaf/vitrin ruhlu yeni stil.
+                    </p>
+
+                    <div class="mt-4 rounded-xl p-3" style="background:#f3eee4">
+                        <span class="font-serif text-sm italic text-gray-900">Ne İş Olursa Yaparım</span>
+                    </div>
                 </div>
 
                 <x-filament::button
-                    icon="heroicon-o-sparkles"
+                    size="sm"
+                    color="success"
+                    class="mt-4 w-full"
                     :disabled="$aktifMod === 'yeni'"
-                    wire:click="secModu('yeni')"
-                    class="w-full justify-center"
+                    wire:click="secPreset('yeni')"
                 >
-                    2. Tasarımı Etkinleştir
+                    Etkinleştir
                 </x-filament::button>
             </div>
-        </x-filament::section>
+
+            {{-- 3. Midnight Obsidian --}}
+            <div
+                @class([
+                    'relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-5 transition shadow-sm dark:bg-gray-800',
+                    'border-emerald-500 ring-2 ring-emerald-500/30' => $aktifMod === 'obsidian',
+                    'border-gray-200 hover:border-gray-300 dark:border-gray-700' => $aktifMod !== 'obsidian',
+                ])
+            >
+                @if ($aktifMod === 'obsidian')
+                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                        ✓ Aktif
+                    </span>
+                @endif
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="h-4 w-4 rounded-full bg-emerald-400"></span>
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white">3. Midnight Obsidian</h4>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        Mat gece siyahı zemin, neon zümrüt ışımaları ve cam efektli ultra lüks lüks tema.
+                    </p>
+
+                    <div class="mt-4 rounded-xl bg-slate-950 p-3">
+                        <span class="font-mono text-sm font-bold text-emerald-400">Ne İş Olursa Yaparım</span>
+                    </div>
+                </div>
+
+                <x-filament::button
+                    size="sm"
+                    color="gray"
+                    class="mt-4 w-full"
+                    :disabled="$aktifMod === 'obsidian'"
+                    wire:click="secPreset('obsidian')"
+                >
+                    Etkinleştir
+                </x-filament::button>
+            </div>
+
+            {{-- 4. Nordik Minimal --}}
+            <div
+                @class([
+                    'relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-5 transition shadow-sm dark:bg-gray-800',
+                    'border-emerald-500 ring-2 ring-emerald-500/30' => $aktifMod === 'nordic',
+                    'border-gray-200 hover:border-gray-300 dark:border-gray-700' => $aktifMod !== 'nordic',
+                ])
+            >
+                @if ($aktifMod === 'nordic')
+                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                        ✓ Aktif
+                    </span>
+                @endif
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="h-4 w-4 rounded-full bg-slate-900 dark:bg-slate-100"></span>
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white">4. Nordik Minimal</h4>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        Yüksek beyaz alanlar, 0.5px zarif hatlar ve İskandinav sadeliğinde tipografi.
+                    </p>
+
+                    <div class="mt-4 rounded-xl bg-slate-100 p-3 dark:bg-slate-800">
+                        <span class="font-sans text-sm font-medium tracking-wide text-slate-800 dark:text-slate-200">Ne İş Olursa Yaparım</span>
+                    </div>
+                </div>
+
+                <x-filament::button
+                    size="sm"
+                    color="gray"
+                    class="mt-4 w-full"
+                    :disabled="$aktifMod === 'nordic'"
+                    wire:click="secPreset('nordic')"
+                >
+                    Etkinleştir
+                </x-filament::button>
+            </div>
+        </div>
     </div>
 
-    <p class="mt-6 flex items-start gap-2 text-xs text-gray-400 dark:text-gray-500">
-        <x-heroicon-o-information-circle class="mt-0.5 h-4 w-4 shrink-0" />
-        Bu ilk pilot yalnızca marka rengini, sayfa zeminini ve anasayfa başlık yazı tipini kapsar —
-        tam vizyon (Nabız Haritası, Mühür rozeti) sonraki fazlarda gelecek.
-    </p>
+    {{-- 🎛️ İnce Ayar Kontrol Paneli & Canlı Simülatör --}}
+    <div class="mt-8 grid gap-8 lg:grid-cols-3">
+        {{-- İnce Ayar Kontrolleri --}}
+        <div class="space-y-6 lg:col-span-2">
+            <x-filament::section>
+                <x-slot name="heading">Marka Rengi Paleti (Primary Accent)</x-slot>
+                <x-slot name="description">Ana butonlar, vurgular ve rozetlerde kullanılacak ana marka rengi</x-slot>
+
+                <div class="flex flex-wrap items-center gap-3">
+                    <input
+                        type="color"
+                        wire:model.live="primaryColor"
+                        class="h-10 w-16 cursor-pointer rounded-lg border-0 bg-transparent p-0 shadow"
+                    />
+                    <input
+                        type="text"
+                        wire:model.live="primaryColor"
+                        class="w-32 rounded-lg border-gray-300 text-sm focus:border-primary-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                    />
+
+                    {{-- Hazır Palet Butonları --}}
+                    <div class="flex items-center gap-1.5 border-l border-gray-200 pl-3 dark:border-gray-700">
+                        @foreach (['#059669', '#0f5c42', '#10b981', '#0f172a', '#2563eb', '#7c3aed', '#c1440e'] as $hex)
+                            <button
+                                type="button"
+                                wire:click="$set('primaryColor', '{{ $hex }}')"
+                                style="background: {{ $hex }}"
+                                @class([
+                                    'h-7 w-7 rounded-full transition transform hover:scale-110 shadow-sm',
+                                    'ring-2 ring-offset-2 ring-primary-500 dark:ring-offset-gray-900' => $primaryColor === $hex,
+                                ])
+                            ></button>
+                        @endforeach
+                    </div>
+                </div>
+            </x-filament::section>
+
+            <x-filament::section>
+                <x-slot name="heading">Tipografi ve Şekil Mimarisi</x-slot>
+                <x-slot name="description">Yazı tipleri, köşe yuvarlatma ve cam efektlerini kişiselleştirin</x-slot>
+
+                <div class="grid gap-6 sm:grid-cols-2">
+                    {{-- Tipografi --}}
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300">Başlık Yazı Tipi</label>
+                        <select
+                            wire:model.live="fontFamily"
+                            class="mt-1.5 w-full rounded-xl border-gray-300 text-xs focus:border-primary-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                        >
+                            <option value="sans">Instrument Sans (Modern Minimal)</option>
+                            <option value="serif">Instrument Serif (İtalik Prestij)</option>
+                            <option value="inter">Inter Display (SaaS Bold)</option>
+                            <option value="outfit">Outfit (Futuristik Modern)</option>
+                        </select>
+                    </div>
+
+                    {{-- Köşe Yuvarlatma --}}
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300">Köşe Yuvarlatma (Border Radius)</label>
+                        <select
+                            wire:model.live="borderRadius"
+                            class="mt-1.5 w-full rounded-xl border-gray-300 text-xs focus:border-primary-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                        >
+                            <option value="sharp">Keskin (2px)</option>
+                            <option value="soft">Yumuşak (8px)</option>
+                            <option value="modern">Modern (14px)</option>
+                            <option value="pill">Pill / Kapsül (24px)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-gray-100 pt-4 dark:border-gray-700/50">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" wire:model.live="glassmorphism" class="rounded text-primary-600 focus:ring-primary-500" />
+                        <div>
+                            <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">Glassmorphism (Cam Efekti & Blur)</span>
+                            <span class="block text-[11px] text-gray-400">Kartlar ve menülerde şeffaf cam efekti uygular</span>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" wire:model.live="smoothAnimations" class="rounded text-primary-600 focus:ring-primary-500" />
+                        <div>
+                            <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">Akıcı Geçiş Animasyonları</span>
+                            <span class="block text-[11px] text-gray-400">Hover ve tıklamalarda yumuşak yay efekti</span>
+                        </div>
+                    </label>
+                </div>
+            </x-filament::section>
+        </div>
+
+        {{-- 👁️ CANLI SİMÜLATÖR (Real-time Live Simulator) --}}
+        <div class="space-y-4">
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <span>👁️ Canlı Simülatör</span>
+                <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">Anlık Önizleme</span>
+            </h3>
+
+            @php
+                $simRadius = match($borderRadius) {
+                    'sharp' => '2px',
+                    'soft' => '8px',
+                    'pill' => '24px',
+                    default => '14px',
+                };
+                $simFont = match($fontFamily) {
+                    'serif' => 'Instrument Serif, Georgia, serif',
+                    'inter' => 'Inter, system-ui, sans-serif',
+                    'outfit' => 'Outfit, system-ui, sans-serif',
+                    default => 'Instrument Sans, system-ui, sans-serif',
+                };
+            @endphp
+
+            <div
+                style="border-radius: {{ $simRadius }};"
+                class="overflow-hidden border border-gray-200 bg-stone-50 p-5 shadow-lg transition-all duration-300 dark:border-gray-700 dark:bg-stone-900"
+            >
+                {{-- Simülatör Rozeti --}}
+                <span
+                    style="background: {{ $primaryColor }}20; color: {{ $primaryColor }}; border-radius: {{ $simRadius }};"
+                    class="inline-block px-2.5 py-1 text-[11px] font-bold"
+                >
+                    ✨ 2027 Gurbetçi Vitrini
+                </span>
+
+                {{-- Simülatör Başlığı --}}
+                <h4
+                    style="font-family: {{ $simFont }};"
+                    class="mt-3 text-2xl font-bold text-gray-900 dark:text-white"
+                >
+                    Ne İş Olursa Yaparım
+                </h4>
+
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Yurtdışındaki Türklerin yetenek ve hizmet pazaryeri.
+                </p>
+
+                {{-- Simülatör Butonu --}}
+                <button
+                    type="button"
+                    style="background: {{ $primaryColor }}; border-radius: {{ $simRadius }};"
+                    class="mt-4 w-full py-2.5 text-xs font-bold text-white shadow-md transition hover:opacity-90"
+                >
+                    İlan Ver veya Keşfet →
+                </button>
+
+                {{-- Simülatör Kart Örneği --}}
+                <div
+                    style="border-radius: {{ $simRadius }};"
+                    class="mt-4 border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-800 dark:bg-gray-800"
+                >
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold text-gray-800 dark:text-gray-200">Berlin İçi Nakliye</span>
+                        <span style="color: {{ $primaryColor }};" class="font-bold">75 EUR</span>
+                    </div>
+                    <p class="mt-1 text-[11px] text-gray-400">Almanya · Hizmet İlanı</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </x-filament-panels::page>
