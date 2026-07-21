@@ -40,4 +40,17 @@ class ProfanityFilterTest extends TestCase
         $this->assertStringContainsString('***', $censored);
         $this->assertStringNotContainsString('siktir', $censored);
     }
+
+    public function test_does_not_flag_legitimate_words(): void
+    {
+        // 'kalpak' (kürk şapka) meşru bir üründür; substring eşleşmesiyle
+        // yanlışlıkla bloklanıyordu (denetim #9).
+        $this->assertFalse($this->filter->containsProfanity('Satılık kalpak, geleneksel kürk şapka.'));
+
+        // Bilinçli karar: 'ı' harfi 'i'ye KATLANMAZ — aksi hâlde "sıkı",
+        // "sıkışık", "sıkıntı" gibi çok yaygın meşru kelimeler vulgar
+        // 'siki'/'sikis' ile karışırdı. Nadir "sıkeyim" atlatmasından çok daha
+        // fazla yanlış-pozitif üretirdi.
+        $this->assertFalse($this->filter->containsProfanity('Sıkı bir dostluk ve sıkışık trafik.'));
+    }
 }
