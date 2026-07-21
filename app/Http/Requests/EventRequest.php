@@ -46,4 +46,18 @@ class EventRequest extends FormRequest
             'theme' => 'tema',
         ];
     }
+
+    public function withValidator($validator): void
+    {
+        // Etkinlik başlığı/metni de küfür filtresinden geçmeli (denetim #8).
+        $validator->after(function ($validator): void {
+            $filter = app(\App\Services\ProfanityFilterService::class);
+
+            foreach (['title', 'description', 'venue_name'] as $field) {
+                if ($error = $filter->validateText($this->input($field))) {
+                    $validator->errors()->add($field, $error);
+                }
+            }
+        });
+    }
 }

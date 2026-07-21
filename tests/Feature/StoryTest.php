@@ -45,6 +45,18 @@ class StoryTest extends TestCase
         $this->post('/nabiz/hikaye', ['body' => str_repeat('a', 30)])->assertRedirect('/giris');
     }
 
+    public function test_story_with_profanity_is_rejected(): void
+    {
+        // Denetim #8: hikaye metni de küfür filtresinden geçmeli.
+        $user = User::factory()->create(['email_verified_at' => now()]);
+
+        $this->actingAs($user)->post('/nabiz/hikaye', [
+            'body' => 'Bu platform tam bir siktir, hiç beğenmedim gerçekten yani.',
+        ])->assertSessionHasErrors('body');
+
+        $this->assertDatabaseMissing('stories', ['user_id' => $user->id]);
+    }
+
     public function test_story_body_has_minimum_length(): void
     {
         $user = User::factory()->create();

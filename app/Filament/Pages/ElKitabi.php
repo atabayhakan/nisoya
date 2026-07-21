@@ -24,11 +24,11 @@ class ElKitabi extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Sistem';
+    protected static string|UnitEnum|null $navigationGroup = 'Sistem & Araçlar';
 
     protected static ?string $navigationLabel = 'El Kitabı';
 
-    protected static ?int $navigationSort = 0; // Sistem grubunun en üstünde
+    protected static ?int $navigationSort = 0; // "Sistem & Araçlar" grubunun en üstünde
 
     protected string $view = 'filament.pages.el-kitabi';
 

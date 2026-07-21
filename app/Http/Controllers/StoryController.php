@@ -32,6 +32,12 @@ class StoryController extends Controller
             'body' => ['required', 'string', 'min:20', 'max:600'],
         ], attributes: ['body' => 'hikaye']);
 
+        // Hikaye metni de küfür filtresinden geçmeli (denetim #8).
+        $profanityError = app(\App\Services\ProfanityFilterService::class)->validateText($data['body']);
+        if ($profanityError) {
+            return back()->withErrors(['body' => $profanityError])->withInput();
+        }
+
         $user->stories()->create([
             'body' => $data['body'],
             'status' => StoryStatus::Beklemede,

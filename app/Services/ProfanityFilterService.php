@@ -27,7 +27,7 @@ class ProfanityFilterService
         'ibne', 'ipne', 'top',
         'kopek', 'it', 'kahpe', 'puşt', 'pust',
         'yavsak', 'yavşak', 'döl', 'dol',
-        'fahişe', 'fahise', 'kaltak', 'kalpak',
+        'fahişe', 'fahise', 'kaltak',
         'gavat', 'kavat', 'piç',
     ];
 
