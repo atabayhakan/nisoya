@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\SavedSearch;
+use App\Support\MailTemplates;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -26,10 +27,18 @@ class SavedSearchAlert extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
+        // Statik metinler panelden düzenlenebilir (Site Yönetimi → E-posta Metinleri).
+        // İlan listesi dinamik olduğu için kodda kalır.
+        $t = [
+            '{ad}' => $notifiable->name,
+            '{arama}' => $this->search->label,
+            '{sayi}' => (string) $this->listings->count(),
+        ];
+
         $mail = (new MailMessage)
-            ->subject('Nisoya: Aramana uygun yeni ilanlar var')
-            ->greeting('Merhaba '.$notifiable->name.',')
-            ->line('"'.$this->search->label.'" aramana uygun '.$this->listings->count().' yeni ilan:');
+            ->subject(MailTemplates::part('kayitli_arama', 'subject', $t))
+            ->greeting(MailTemplates::part('kayitli_arama', 'greeting', $t))
+            ->line(MailTemplates::part('kayitli_arama', 'intro', $t));
 
         foreach ($this->listings as $listing) {
             $price = $listing->price !== null
@@ -39,7 +48,7 @@ class SavedSearchAlert extends Notification implements ShouldQueue
         }
 
         return $mail
-            ->action('İlanları gör', route('listings.index', $this->search->toQueryParams()))
-            ->line('Bu uyarıyı panelindeki "Aramalarım" bölümünden kapatabilirsin.');
+            ->action(MailTemplates::part('kayitli_arama', 'action', $t), route('listings.index', $this->search->toQueryParams()))
+            ->line(MailTemplates::part('kayitli_arama', 'outro', $t));
     }
 }
