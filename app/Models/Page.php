@@ -5,9 +5,13 @@ namespace App\Models;
 use App\Enums\PageStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * @property Carbon|null $publish_at datetime cast (bkz. casts())
+ */
 class Page extends Model
 {
     public const NAV_CACHE_KEY = 'nav_pages';
@@ -25,6 +29,7 @@ class Page extends Model
         'slug',
         'blocks',
         'status',
+        'publish_at',
         'meta_description',
         'show_in_footer',
         'sort_order',
@@ -35,6 +40,7 @@ class Page extends Model
         return [
             'blocks' => 'array',
             'status' => PageStatus::class,
+            'publish_at' => 'datetime',
             'show_in_footer' => 'boolean',
         ];
     }
@@ -46,10 +52,39 @@ class Page extends Model
         static::deleted(fn () => Cache::forget(self::NAV_CACHE_KEY));
     }
 
-    /** @param  Builder<Page>  $query */
+    /**
+     * Ziyaretçilere görünen sayfalar: durumu "Yayında" VE (ileri tarih yoksa
+     * veya zamanı gelmişse). Böylece zamanlanmış sayfalar publish_at gelene
+     * kadar gizli kalır (Faz 4 · zamanlanmış yayın).
+     *
+     * @param  Builder<Page>  $query
+     */
     public function scopePublished(Builder $query): void
     {
-        $query->where('status', PageStatus::Yayin->value);
+        $query->where('status', PageStatus::Yayin->value)
+            ->where(function (Builder $q) {
+                $q->whereNull('publish_at')->orWhere('publish_at', '<=', now());
+            });
+    }
+
+    /**
+     * Yayına alınmış ama zamanı henüz gelmemiş (ileri tarihli) sayfalar.
+     *
+     * @param  Builder<Page>  $query
+     */
+    public function scopeScheduled(Builder $query): void
+    {
+        $query->where('status', PageStatus::Yayin->value)
+            ->whereNotNull('publish_at')
+            ->where('publish_at', '>', now());
+    }
+
+    /** Bu sayfa ileri tarihli yayına mı ayarlı (henüz görünmüyor)? */
+    public function isScheduled(): bool
+    {
+        return $this->status === PageStatus::Yayin
+            && $this->publish_at !== null
+            && $this->publish_at->isFuture();
     }
 
     /**
