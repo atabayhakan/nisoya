@@ -26,8 +26,12 @@ class HighlightMediaBlocks
                 ->label('Resim')
                 ->icon('heroicon-o-photo')
                 ->schema([
+                    TextInput::make('url')
+                        ->label('Resim adresi / URL (ör. https://... veya /storage/...)')
+                        ->nullable()
+                        ->helperText('Medya kütüphanesinden veya sunucudan aldığınız resim linkini buraya yapıştırabilirsiniz.'),
                     FileUpload::make('path')
-                        ->label('Resim')
+                        ->label('veya Bilgisayardan Resim Yükle')
                         ->image()
                         ->disk('public')
                         ->directory('highlights')

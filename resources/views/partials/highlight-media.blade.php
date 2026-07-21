@@ -6,9 +6,20 @@
 
 @switch($item['type'] ?? '')
     @case('resim')
-        @if (! empty($data['path']))
+        @php
+            $rawPath = trim($data['url'] ?? $data['path'] ?? '');
+            $imageUrl = null;
+            if ($rawPath !== '') {
+                if (\Illuminate\Support\Str::startsWith($rawPath, ['http://', 'https://', '/'])) {
+                    $imageUrl = $rawPath;
+                } else {
+                    $imageUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($rawPath);
+                }
+            }
+        @endphp
+        @if ($imageUrl)
             <img
-                src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($data['path']) }}"
+                src="{{ $imageUrl }}"
                 alt=""
                 class="h-full w-full object-cover"
                 loading="lazy"
