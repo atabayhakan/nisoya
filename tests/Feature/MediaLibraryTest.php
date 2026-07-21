@@ -132,4 +132,36 @@ class MediaLibraryTest extends TestCase
 
         $this->assertFileDoesNotExist($this->testDir.'/livewire-del.jpg');
     }
+
+    public function test_type_breakdown_calculates_sizes_and_percentages(): void
+    {
+        $this->makeFile('photo.jpg', str_repeat('a', 100));
+        $this->makeFile('clip.mp4', str_repeat('b', 200));
+
+        $breakdown = MediaLibrary::typeBreakdown();
+
+        $this->assertGreaterThanOrEqual(100, $breakdown['images']['size']);
+        $this->assertGreaterThanOrEqual(200, $breakdown['videos']['size']);
+        $this->assertGreaterThanOrEqual(300, $breakdown['total_size']);
+    }
+
+    public function test_create_directory_creates_safe_folder(): void
+    {
+        $this->assertTrue(MediaLibrary::createDirectory('tanitim-videolari'));
+        $this->assertDirectoryExists(storage_path('app/public/tanitim-videolari'));
+
+        File::deleteDirectory(storage_path('app/public/tanitim-videolari'));
+    }
+
+    public function test_create_folder_action_via_livewire(): void
+    {
+        Livewire::actingAs($this->admin())
+            ->test(MedyaKutuphanesi::class)
+            ->set('newFolderName', 'yeni-klasor')
+            ->call('createFolder');
+
+        $this->assertDirectoryExists(storage_path('app/public/yeni-klasor'));
+
+        File::deleteDirectory(storage_path('app/public/yeni-klasor'));
+    }
 }

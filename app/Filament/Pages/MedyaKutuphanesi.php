@@ -8,17 +8,17 @@ use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Livewire\WithFileUploads;
 use UnitEnum;
 
 /**
- * Medya Kütüphanesi (Faz 3 · G9) — yüklenen dosyalara bakış: dizin başına disk
- * kullanımı, dosya ızgarası ve güvenli silme. Sahibin disk alanını görüp artık
- * kullanılmayan dosyaları temizleyebilmesi (bkz. App\Support\MediaLibrary).
- * Yalnızca Admin (silme tüm siteyi etkileyebilir).
+ * Medya Kütüphanesi (Faz 3 · G9 & İleri Düzey Yönetim) — iOS tarzı canlı depolama
+ * grafiği, dinamik klasör oluşturma, dosya yükleme, arama ve filtreleme.
  */
 class MedyaKutuphanesi extends Page
 {
     use RestrictsToAdmins;
+    use WithFileUploads;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;
 
@@ -34,16 +34,35 @@ class MedyaKutuphanesi extends Page
 
     public int $page = 1;
 
+    public string $filterType = 'all'; // all, image, video, document
+
+    public string $search = '';
+
+    public string $newFolderName = '';
+
+    /** @var array<int, mixed> */
+    public $newFiles = [];
+
     public function mount(): void
     {
-        // Varsayılan: en çok yer kaplayan dizini aç.
         $dirs = array_keys(MediaLibrary::usage()['dirs']);
-        $this->dir = $dirs[0] ?? '';
+        $this->dir = $dirs[0] ?? 'highlights';
     }
 
     public function selectDir(string $dir): void
     {
         $this->dir = $dir;
+        $this->page = 1;
+    }
+
+    public function setFilterType(string $type): void
+    {
+        $this->filterType = $type;
+        $this->page = 1;
+    }
+
+    public function updatedSearch(): void
+    {
         $this->page = 1;
     }
 
@@ -57,6 +76,49 @@ class MedyaKutuphanesi extends Page
         $this->page = max(1, $this->page - 1);
     }
 
+    public function createFolder(): void
+    {
+        $name = trim($this->newFolderName);
+
+        if ($name === '') {
+            Notification::make()->title('Klasör adı boş olamaz')->warning()->send();
+
+            return;
+        }
+
+        if (MediaLibrary::createDirectory($name)) {
+            $cleanDir = \Illuminate\Support\Str::slug($name);
+            $this->dir = $cleanDir;
+            $this->newFolderName = '';
+            Notification::make()->title("{$name} klasörü oluşturuldu")->success()->send();
+        } else {
+            Notification::make()->title('Klasör oluşturulamadı')->danger()->send();
+        }
+    }
+
+    public function uploadFiles(): void
+    {
+        if (empty($this->newFiles)) {
+            return;
+        }
+
+        if ($this->dir === '') {
+            $this->dir = 'uploads';
+            MediaLibrary::createDirectory('uploads');
+        }
+
+        $count = 0;
+        foreach ($this->newFiles as $file) {
+            $filename = $file->getClientOriginalName();
+            $file->storeAs($this->dir, $filename, 'public');
+            $count++;
+        }
+
+        $this->newFiles = [];
+        $this->page = 1;
+        Notification::make()->title("{$count} dosya yüklendi")->success()->send();
+    }
+
     public function deleteFile(string $path): void
     {
         if (MediaLibrary::delete($path)) {
@@ -68,23 +130,31 @@ class MedyaKutuphanesi extends Page
         Notification::make()->title('Dosya silinemedi')->danger()->send();
     }
 
-    /** @return array{dirs:array<string,array{count:int,size:int}>,total:array{count:int,size:int}} */
+    public function getTypeBreakdown(): array
+    {
+        return MediaLibrary::typeBreakdown();
+    }
+
     public function getUsage(): array
     {
         return MediaLibrary::usage();
     }
 
-    /** @return array{items:array<int,array<string,mixed>>,total:int,pages:int,page:int} */
     public function getFiles(): array
     {
-        $files = MediaLibrary::files($this->dir, $this->page);
-        // files() sayfa numarasını sınırlar; state'i onunla eşitle.
+        $files = MediaLibrary::files(
+            $this->dir,
+            $this->page,
+            24,
+            $this->filterType === 'all' ? null : $this->filterType,
+            $this->search !== '' ? $this->search : null
+        );
+
         $this->page = $files['page'];
 
         return $files;
     }
 
-    /** Sunucudaki boş disk alanı (bayt). */
     public function freeSpace(): float
     {
         return (float) (@disk_free_space(MediaLibrary::root()) ?: 0);

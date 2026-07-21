@@ -3,18 +3,17 @@
 namespace App\Support;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
 /**
- * Medya kütüphanesi (Faz 3 · G9) — yüklenen dosyalara (storage/app/public)
- * bakış: dizin başına disk kullanımı, dosya listeleme ve güvenli silme.
- *
- * Sahibin disk alanını görüp artık kullanılmayan dosyaları temizleyebilmesi.
- * DİKKAT: bir dosya bir ilana/sayfaya ait olabilir; silmek o yerde görseli
- * kırar (arayüzde uyarılır). Silme yol-gezinti saldırılarına kapalıdır.
+ * Medya kütüphanesi (Faz 3 · G9 & İleri Düzey Yönetim) — yüklenen tüm dosyalara
+ * (storage/app/public) bakış: iOS tarzı depolama dağılım grafiği, dinamik klasör
+ * oluşturma, arama, filtreleme ve güvenli silme.
  */
 class MediaLibrary
 {
@@ -25,9 +24,101 @@ class MediaLibrary
     }
 
     /**
-     * Üst-seviye dizin başına kullanım + toplam.
+     * Güvenli yeni klasör oluşturur.
+     */
+    public static function createDirectory(string $name): bool
+    {
+        $clean = Str::slug($name);
+
+        if ($clean === '' || str_contains($clean, '.') || str_contains($clean, '/')) {
+            return false;
+        }
+
+        $path = self::root() . DIRECTORY_SEPARATOR . $clean;
+
+        if (is_dir($path)) {
+            return true;
+        }
+
+        return @mkdir($path, 0755, true);
+    }
+
+    /**
+     * iOS Depolama Alanı tarzı tür dağılımı (Görsel, Video, Doküman, Diğer).
      *
-     * @return array{dirs:array<string,array{count:int,size:int}>,total:array{count:int,size:int}}
+     * @return array{
+     *   images: array{size: int, count: int, percent: float},
+     *   videos: array{size: int, count: int, percent: float},
+     *   documents: array{size: int, count: int, percent: float},
+     *   others: array{size: int, count: int, percent: float},
+     *   total_size: int,
+     *   total_count: int,
+     *   free_space: float
+     * }
+     */
+    public static function typeBreakdown(): array
+    {
+        $root = self::root();
+        $images = ['size' => 0, 'count' => 0];
+        $videos = ['size' => 0, 'count' => 0];
+        $documents = ['size' => 0, 'count' => 0];
+        $others = ['size' => 0, 'count' => 0];
+
+        if (is_dir($root)) {
+            foreach (self::iterate($root) as $file) {
+                $size = (int) ($file->getSize() ?: 0);
+                $ext = strtolower($file->getExtension());
+
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'avif'], true)) {
+                    $images['size'] += $size;
+                    $images['count']++;
+                } elseif (in_array($ext, ['mp4', 'mov', 'webm', 'm4v', 'ogg', 'avi', 'mkv'], true)) {
+                    $videos['size'] += $size;
+                    $videos['count']++;
+                } elseif (in_array($ext, ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'zip', 'rar'], true)) {
+                    $documents['size'] += $size;
+                    $documents['count']++;
+                } else {
+                    $others['size'] += $size;
+                    $others['count']++;
+                }
+            }
+        }
+
+        $totalSize = $images['size'] + $videos['size'] + $documents['size'] + $others['size'];
+        $totalCount = $images['count'] + $videos['count'] + $documents['count'] + $others['count'];
+
+        $calcPercent = fn (int $size): float => $totalSize > 0 ? round(($size / $totalSize) * 100, 1) : 0.0;
+
+        return [
+            'images' => [
+                'size' => $images['size'],
+                'count' => $images['count'],
+                'percent' => $calcPercent($images['size']),
+            ],
+            'videos' => [
+                'size' => $videos['size'],
+                'count' => $videos['count'],
+                'percent' => $calcPercent($videos['size']),
+            ],
+            'documents' => [
+                'size' => $documents['size'],
+                'count' => $documents['count'],
+                'percent' => $calcPercent($documents['size']),
+            ],
+            'others' => [
+                'size' => $others['size'],
+                'count' => $others['count'],
+                'percent' => $calcPercent($others['size']),
+            ],
+            'total_size' => $totalSize,
+            'total_count' => $totalCount,
+            'free_space' => (float) (@disk_free_space($root) ?: 0),
+        ];
+    }
+
+    /**
+     * Üst-seviye dizin başına kullanım + toplam.
      */
     public static function usage(): array
     {
@@ -39,27 +130,22 @@ class MediaLibrary
             return ['dirs' => $dirs, 'total' => $total];
         }
 
-        foreach (glob($root.'/*', GLOB_ONLYDIR) ?: [] as $dirPath) {
+        foreach (glob($root . '/*', GLOB_ONLYDIR) ?: [] as $dirPath) {
             $stat = self::measure($dirPath);
-            if ($stat['count'] > 0) {
-                $dirs[basename($dirPath)] = $stat;
-                $total['count'] += $stat['count'];
-                $total['size'] += $stat['size'];
-            }
+            $dirs[basename($dirPath)] = $stat;
+            $total['count'] += $stat['count'];
+            $total['size'] += $stat['size'];
         }
 
-        // En büyükten küçüğe sırala (disk-yiyenler üstte).
         uasort($dirs, fn (array $a, array $b): int => $b['size'] <=> $a['size']);
 
         return ['dirs' => $dirs, 'total' => $total];
     }
 
     /**
-     * Bir üst-seviye dizindeki dosyaları (özyinelemeli, en yeni önce) sayfalar.
-     *
-     * @return array{items:array<int,array{path:string,size:int,mtime:Carbon,is_image:bool}>,total:int,pages:int,page:int}
+     * Bir dizindeki dosyaları tür ve arama filtresiyle sayfalar.
      */
-    public static function files(string $topDir, int $page = 1, int $perPage = 24): array
+    public static function files(string $topDir, int $page = 1, int $perPage = 24, ?string $type = null, ?string $search = null): array
     {
         $base = self::safeTopDir($topDir);
         $empty = ['items' => [], 'total' => 0, 'pages' => 0, 'page' => 1];
@@ -70,15 +156,33 @@ class MediaLibrary
 
         $rootLen = strlen(self::root()) + 1;
         $all = [];
+        $search = $search ? mb_strtolower(trim($search)) : null;
 
         foreach (self::iterate($base) as $file) {
             $absolute = $file->getPathname();
             $relative = str_replace('\\', '/', substr($absolute, $rootLen));
+            $filename = mb_strtolower(basename($relative));
+
+            if ($search !== null && $search !== '' && ! str_contains($filename, $search) && ! str_contains(mb_strtolower($relative), $search)) {
+                continue;
+            }
+
+            $isImg = self::isImage($relative);
+            $isVid = self::isVideo($relative);
+            $isDoc = self::isDocument($relative);
+
+            if ($type === 'image' && ! $isImg) continue;
+            if ($type === 'video' && ! $isVid) continue;
+            if ($type === 'document' && ! $isDoc) continue;
+
             $all[] = [
                 'path' => $relative,
                 'size' => (int) ($file->getSize() ?: 0),
                 'mtime' => Carbon::createFromTimestamp($file->getMTime() ?: time()),
-                'is_image' => self::isImage($relative),
+                'is_image' => $isImg,
+                'is_video' => $isVid,
+                'is_document' => $isDoc,
+                'url' => self::url($relative),
             ];
         }
 
@@ -92,7 +196,7 @@ class MediaLibrary
         return ['items' => $items, 'total' => $total, 'pages' => $pages, 'page' => $page];
     }
 
-    /** Bir dosyayı güvenle siler (kök dışına çıkamaz). */
+    /** Bir dosyayı güvenle siler. */
     public static function delete(string $relative): bool
     {
         $path = self::resolveFile($relative);
@@ -106,7 +210,6 @@ class MediaLibrary
         return Storage::disk('public')->url($relative);
     }
 
-    /** Uzantıya göre görsel mi? */
     public static function isImage(string $path): bool
     {
         return in_array(
@@ -116,7 +219,24 @@ class MediaLibrary
         );
     }
 
-    /** Bir dizinin özyinelemeli dosya sayısı + toplam boyutu. */
+    public static function isVideo(string $path): bool
+    {
+        return in_array(
+            strtolower(pathinfo($path, PATHINFO_EXTENSION)),
+            ['mp4', 'mov', 'webm', 'm4v', 'ogg', 'avi', 'mkv'],
+            true
+        );
+    }
+
+    public static function isDocument(string $path): bool
+    {
+        return in_array(
+            strtolower(pathinfo($path, PATHINFO_EXTENSION)),
+            ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'zip', 'rar'],
+            true
+        );
+    }
+
     private static function measure(string $path): array
     {
         $count = 0;
@@ -130,7 +250,6 @@ class MediaLibrary
         return ['count' => $count, 'size' => $size];
     }
 
-    /** @return iterable<SplFileInfo> */
     private static function iterate(string $path): iterable
     {
         if (! is_dir($path)) {
@@ -150,22 +269,19 @@ class MediaLibrary
         }
     }
 
-    /** Güvenli üst-seviye dizin yolu (kök altında, tek segment). */
     private static function safeTopDir(string $topDir): ?string
     {
         $topDir = trim(str_replace('\\', '/', $topDir), '/');
 
-        // Tek segment olmalı (alt yol / gezinti yok).
         if ($topDir === '' || str_contains($topDir, '/') || str_contains($topDir, '..')) {
             return null;
         }
 
-        $path = self::root().DIRECTORY_SEPARATOR.$topDir;
+        $path = self::root() . DIRECTORY_SEPARATOR . $topDir;
 
         return is_dir($path) ? $path : null;
     }
 
-    /** Kök altında güvenli bir dosya yolu çözer (traversal'a kapalı). */
     private static function resolveFile(string $relative): ?string
     {
         $relative = ltrim(str_replace('\\', '/', $relative), '/');
@@ -175,14 +291,13 @@ class MediaLibrary
         }
 
         $root = realpath(self::root());
-        $real = realpath(self::root().DIRECTORY_SEPARATOR.$relative);
+        $real = realpath(self::root() . DIRECTORY_SEPARATOR . $relative);
 
         if ($root === false || $real === false) {
             return null;
         }
 
-        // Çözülen yol kökün İÇİNDE olmalı.
-        if (! str_starts_with($real, $root.DIRECTORY_SEPARATOR)) {
+        if (! str_starts_with($real, $root . DIRECTORY_SEPARATOR)) {
             return null;
         }
 
