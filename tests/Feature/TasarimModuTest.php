@@ -50,7 +50,7 @@ class TasarimModuTest extends TestCase
     {
         Livewire::actingAs($this->admin())
             ->test(TasarimAyarlari::class)
-            ->call('secModu', 'yeni')
+            ->call('secPreset', 'yeni')
             ->assertSet('aktifMod', 'yeni');
 
         $this->assertSame('yeni', setting('gorunum.tasarim_modu'));
@@ -63,17 +63,17 @@ class TasarimModuTest extends TestCase
 
         Livewire::actingAs($this->admin())
             ->test(TasarimAyarlari::class)
-            ->call('secModu', 'eski')
+            ->call('secPreset', 'eski')
             ->assertSet('aktifMod', 'eski');
 
         $this->assertSame('eski', setting('gorunum.tasarim_modu'));
     }
 
-    public function test_secmodu_ignores_invalid_value(): void
+    public function test_secpreset_ignores_invalid_value(): void
     {
         Livewire::actingAs($this->admin())
             ->test(TasarimAyarlari::class)
-            ->call('secModu', 'gecersiz')
+            ->call('secPreset', 'gecersiz')
             ->assertSet('aktifMod', 'eski');
 
         $this->assertSame('eski', setting('gorunum.tasarim_modu', 'eski'));

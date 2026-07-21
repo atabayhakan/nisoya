@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ReviewStatus;
 use App\Models\Company;
 use App\Models\CompanyReview;
 use App\Models\JobApplication;
@@ -36,6 +37,19 @@ class CompanyReviewController extends Controller
             if ($profanityError) {
                 return back()->withErrors(['comment' => $profanityError])->withInput();
             }
+        }
+
+        $existing = CompanyReview::query()
+            ->where('company_id', $company->id)
+            ->where('reviewer_id', $reviewer->id)
+            ->first();
+
+        // Moderatör tarafından gizlenmiş bir değerlendirme yeniden gönderilerek
+        // otomatik yayına alınamaz — moderasyon kararı kalıcıdır.
+        if ($existing && $existing->status === ReviewStatus::Gizli) {
+            return back()
+                ->withErrors(['comment' => 'Bu değerlendirmen moderasyon ekibi tarafından gizlendi ve yeniden yayınlanamaz. İtirazın için bizimle iletişime geçebilirsin.'])
+                ->withInput();
         }
 
         $review = CompanyReview::updateOrCreate(

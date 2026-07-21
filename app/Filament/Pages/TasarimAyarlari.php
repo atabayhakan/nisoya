@@ -47,12 +47,18 @@ class TasarimAyarlari extends Page
 
     public function mount(): void
     {
+        $this->hydrateFromSettings();
+    }
+
+    /** Bileşen durumunu kalıcı ayarlardan (tek doğruluk kaynağı) yükler. */
+    private function hydrateFromSettings(): void
+    {
         $this->aktifMod = Settings::get('gorunum.tasarim_modu', 'eski');
         $this->primaryColor = Settings::get('gorunum.primary_color', '#059669');
         $this->fontFamily = Settings::get('gorunum.font_family', 'sans');
         $this->borderRadius = Settings::get('gorunum.border_radius', 'modern');
-        $this->glassmorphism = (Settings::get('gorunum.glassmorphism', '1')) === '1';
-        $this->smoothAnimations = (Settings::get('gorunum.smooth_animations', '1')) === '1';
+        $this->glassmorphism = Settings::get('gorunum.glassmorphism', '1') === '1';
+        $this->smoothAnimations = Settings::get('gorunum.smooth_animations', '1') === '1';
     }
 
     public function secPreset(string $preset): void
@@ -98,12 +104,7 @@ class TasarimAyarlari extends Page
 
         Settings::setMany($presets[$preset]);
 
-        $this->aktifMod = $preset;
-        $this->primaryColor = $presets[$preset]['gorunum.primary_color'];
-        $this->fontFamily = $presets[$preset]['gorunum.font_family'];
-        $this->borderRadius = $presets[$preset]['gorunum.border_radius'];
-        $this->glassmorphism = $presets[$preset]['gorunum.glassmorphism'] === '1';
-        $this->smoothAnimations = $presets[$preset]['gorunum.smooth_animations'] === '1';
+        $this->hydrateFromSettings();
 
         $names = [
             'eski' => '1. Zümrüt Klasik',
