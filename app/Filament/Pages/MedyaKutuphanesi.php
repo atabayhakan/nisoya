@@ -30,6 +30,18 @@ class MedyaKutuphanesi extends Page
 
     protected string $view = 'filament.pages.medya-kutuphanesi';
 
+    /**
+     * Yüklemeye izin verilen uzantılar (görsel + video + doküman). Sunucu
+     * tarafı beyaz liste: yürütülebilir dosyalar (.php, .phtml, .sh, .htaccess…)
+     * public diske ASLA yazılmaz — aksi hâlde public/storage sembolik bağı
+     * üzerinden çağrılıp RCE'ye yol açabilir.
+     */
+    private const ALLOWED_UPLOAD_EXTENSIONS = [
+        'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'avif',
+        'mp4', 'mov', 'webm', 'm4v', 'ogg', 'avi', 'mkv',
+        'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'zip', 'rar',
+    ];
+
     public string $dir = '';
 
     public int $page = 1;
@@ -102,21 +114,58 @@ class MedyaKutuphanesi extends Page
             return;
         }
 
+        $this->validate([
+            'newFiles.*' => ['file', 'max:12288'],
+        ]);
+
         if ($this->dir === '') {
             $this->dir = 'uploads';
             MediaLibrary::createDirectory('uploads');
         }
 
         $count = 0;
+        $rejected = 0;
         foreach ($this->newFiles as $file) {
-            $filename = $file->getClientOriginalName();
+            $ext = strtolower($file->getClientOriginalExtension());
+
+            if (! in_array($ext, self::ALLOWED_UPLOAD_EXTENSIONS, true)) {
+                $rejected++;
+
+                continue;
+            }
+
+            $filename = self::sanitizeFilename($file->getClientOriginalName(), $ext);
             $file->storeAs($this->dir, $filename, 'public');
             $count++;
         }
 
         $this->newFiles = [];
         $this->page = 1;
-        Notification::make()->title("{$count} dosya yüklendi")->success()->send();
+
+        if ($rejected > 0) {
+            Notification::make()
+                ->title("{$rejected} dosya güvenlik nedeniyle reddedildi")
+                ->body('Yalnızca görsel, video ve doküman dosyaları yüklenebilir.')
+                ->warning()
+                ->send();
+        }
+
+        if ($count > 0) {
+            Notification::make()->title("{$count} dosya yüklendi")->success()->send();
+        }
+    }
+
+    /**
+     * Dosya adını güvenli hâle getirir: dizin bileşenlerini atar, tabanı
+     * slug'lar (boşluk/Türkçe karakter → URL-güvenli) ve doğrulanmış uzantıyı
+     * ekler. Böylece hem yol kaçışı hem de kodlanmamış URL sorunu önlenir.
+     */
+    private static function sanitizeFilename(string $original, string $ext): string
+    {
+        $name = basename(str_replace('\\', '/', $original));
+        $base = \Illuminate\Support\Str::slug(pathinfo($name, PATHINFO_FILENAME)) ?: 'dosya';
+
+        return "{$base}.{$ext}";
     }
 
     public function deleteFile(string $path): void

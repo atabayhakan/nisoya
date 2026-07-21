@@ -50,7 +50,7 @@ class TasarimModuTest extends TestCase
     {
         Livewire::actingAs($this->admin())
             ->test(TasarimAyarlari::class)
-            ->call('secModu', 'yeni')
+            ->call('secPreset', 'yeni')
             ->assertSet('aktifMod', 'yeni');
 
         $this->assertSame('yeni', setting('gorunum.tasarim_modu'));
@@ -63,17 +63,17 @@ class TasarimModuTest extends TestCase
 
         Livewire::actingAs($this->admin())
             ->test(TasarimAyarlari::class)
-            ->call('secModu', 'eski')
+            ->call('secPreset', 'eski')
             ->assertSet('aktifMod', 'eski');
 
         $this->assertSame('eski', setting('gorunum.tasarim_modu'));
     }
 
-    public function test_secmodu_ignores_invalid_value(): void
+    public function test_secpreset_ignores_invalid_value(): void
     {
         Livewire::actingAs($this->admin())
             ->test(TasarimAyarlari::class)
-            ->call('secModu', 'gecersiz')
+            ->call('secPreset', 'gecersiz')
             ->assertSet('aktifMod', 'eski');
 
         $this->assertSame('eski', setting('gorunum.tasarim_modu', 'eski'));
@@ -81,7 +81,13 @@ class TasarimModuTest extends TestCase
 
     public function test_homepage_applies_yeni_tasarim_overrides(): void
     {
-        Settings::setMany(['gorunum.tasarim_modu' => 'yeni']);
+        // "yeni" preset'i (secPreset) tüm anahtarları yazar; renk artık moddan
+        // değil primary_color'dan türetilir, o yüzden preset'i eksiksiz kur.
+        Settings::setMany([
+            'gorunum.tasarim_modu' => 'yeni',
+            'gorunum.primary_color' => '#0f5c42',
+            'gorunum.font_family' => 'serif',
+        ]);
 
         $this->get('/')
             ->assertOk()
@@ -106,5 +112,63 @@ class TasarimModuTest extends TestCase
         Settings::setMany(['gorunum.tasarim_modu' => 'yeni']);
 
         $this->get('/')->assertOk()->assertSee("Nisoya'nın Nabzı", false);
+    }
+
+    public function test_custom_primary_color_drives_full_emerald_ramp(): void
+    {
+        Settings::setMany(['gorunum.primary_color' => '#7c3aed']);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // emerald-600 birincil renge, ara tonlar color-mix ile türetilmeli
+        $this->assertStringContainsString('--color-emerald-600: #7c3aed', $html);
+        $this->assertStringContainsString('color-mix(in srgb, #7c3aed 85%, white)', $html);
+        $this->assertStringContainsString('color-mix(in srgb, #7c3aed 80%, black)', $html);
+    }
+
+    public function test_default_primary_color_leaves_tailwind_emerald_untouched(): void
+    {
+        // Varsayılan (#059669) → Tailwind'in kendi OKLCH tonları korunmalı,
+        // özel rampa YAZILMAMALI (dokunulmamış siteler için no-op).
+        $this->get('/')->assertOk()->assertDontSee('--color-emerald-600: #', false);
+    }
+
+    public function test_serif_font_overrides_font_sans_token(): void
+    {
+        Settings::setMany(['gorunum.font_family' => 'serif']);
+
+        $this->get('/')->assertOk()->assertSee("--font-sans: 'Instrument Serif'", false);
+    }
+
+    public function test_pill_radius_overrides_radius_scale(): void
+    {
+        Settings::setMany(['gorunum.border_radius' => 'pill']);
+
+        $this->get('/')->assertOk()->assertSee('--radius-xl: 18px', false);
+    }
+
+    public function test_glassmorphism_off_disables_backdrop_blur(): void
+    {
+        Settings::setMany(['gorunum.glassmorphism' => '0']);
+
+        $this->get('/')->assertOk()->assertSee('backdrop-filter: none', false);
+    }
+
+    public function test_obsidian_no_longer_hijacks_stone_50(): void
+    {
+        // Denetim #4: obsidian artık stone-50'yi near-black yapmamalı.
+        Settings::setMany(['gorunum.tasarim_modu' => 'obsidian']);
+
+        $this->get('/')->assertOk()->assertDontSee('#090d16', false);
+    }
+
+    public function test_invalid_primary_color_is_not_emitted(): void
+    {
+        // Denetim #10: geçersiz/zararlı hex değeri <style>'a sızmamalı.
+        Settings::setMany(['gorunum.primary_color' => 'red;}body{display:none}']);
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringNotContainsString('display:none}', $html);
+        $this->assertStringNotContainsString('red;}', $html);
     }
 }
