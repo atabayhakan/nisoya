@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\AccountRecoveryController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
@@ -45,6 +46,13 @@ Route::middleware('guest')->group(function () {
     Route::post('sifre-sifirla', [NewPasswordController::class, 'store'])
         ->middleware('throttle:6,1')
         ->name('password.store');
+
+    // Hesap kurtarma — e-posta (SMTP) erişilemezken tek-kullanımlık kurtarma
+    // koduyla parola sıfırlama. Kodlar Kurtarma Kiti sayfasından üretilir (G2).
+    Route::get('hesap-kurtar', [AccountRecoveryController::class, 'create'])->name('account-recovery.request');
+    Route::post('hesap-kurtar', [AccountRecoveryController::class, 'store'])
+        ->middleware(['honeypot', 'throttle:6,1'])
+        ->name('account-recovery.store');
 });
 
 Route::middleware('auth')->group(function () {
