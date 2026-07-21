@@ -52,6 +52,7 @@ class YapayZekaAyarlari extends Page
     public function mount(): void
     {
         $this->form->fill([
+            'yapay_zeka_aktif' => (Settings::get('ai.aktif') ?? '1') === '1',
             'saglayici' => Settings::get('ai.saglayici') ?: config('ai.default', 'openrouter'),
             'api_anahtari' => Settings::get('ai.api_anahtari') ?: '',
             'model' => Settings::get('ai.model') ?: '',
@@ -64,6 +65,14 @@ class YapayZekaAyarlari extends Page
     {
         return $schema
             ->components([
+                Section::make('Ana anahtar')
+                    ->description('Yapay zekayı tamamen kapatmak için tek düğme. Kapatırsan — sağlayıcı/anahtar girili ve aşağıdaki özellikler açık olsa bile — hem fotoğrafla hızlı ilan hem görsel moderasyonu devre dışı kalır. Sağlayıcı çökerse veya maliyeti durdurmak istersen bunu kullan.')
+                    ->schema([
+                        Toggle::make('yapay_zeka_aktif')
+                            ->label('Yapay zeka açık')
+                            ->helperText('Kapalıyken site tamamen çalışır; yalnızca AI destekli özellikler gizlenir (ilanlar elle doldurulur, moderasyon insana kalır).'),
+                    ]),
+
                 Section::make('Sağlayıcı ve Anahtar')
                     ->description('Fotoğrafla hızlı ilan özelliği için kullanılacak yapay zeka. Anahtarı girdiğinde özellik anında aktifleşir — sunucuya erişmene gerek yok.')
                     ->columns(2)
@@ -112,6 +121,7 @@ class YapayZekaAyarlari extends Page
         $state = $this->form->getState();
 
         Settings::setMany([
+            'ai.aktif' => ! empty($state['yapay_zeka_aktif']) ? '1' : '0',
             'ai.saglayici' => $state['saglayici'] ?? '',
             'ai.api_anahtari' => $state['api_anahtari'] ?? '',
             'ai.model' => $state['model'] ?? '',

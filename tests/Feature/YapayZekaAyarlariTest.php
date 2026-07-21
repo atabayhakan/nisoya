@@ -150,4 +150,39 @@ class YapayZekaAyarlariTest extends TestCase
         $this->assertSame('anthropic', config('ai.default'));
         $this->assertSame('env-key', config('ai.providers.anthropic.api_key'));
     }
+
+    /** Ana anahtar '0' ise bireysel özellikler açık olsa bile TÜM AI kapanmalı. */
+    public function test_master_switch_off_disables_all_ai_features(): void
+    {
+        Settings::setMany([
+            'ai.hizli_ilan_aktif' => '1',
+            'ai.moderasyon_aktif' => '1',
+            'ai.aktif' => '0',
+        ]);
+
+        $provider = new AppServiceProvider($this->app);
+        $method = new \ReflectionMethod($provider, 'mergeAiConfig');
+        $method->setAccessible(true);
+        $method->invoke($provider);
+
+        $this->assertFalse(config('ai.features.quick_listing'));
+        $this->assertFalse(config('ai.features.image_moderation'));
+    }
+
+    public function test_admin_can_turn_off_master_switch(): void
+    {
+        Livewire::actingAs($this->admin())
+            ->test(YapayZekaAyarlari::class)
+            ->fillForm([
+                'yapay_zeka_aktif' => false,
+                'saglayici' => 'openrouter',
+                'api_anahtari' => 'sk-or-test',
+                'model' => '',
+                'hizli_ilan_aktif' => true,
+                'moderasyon_aktif' => true,
+            ])
+            ->call('save');
+
+        $this->assertDatabaseHas('site_settings', ['key' => 'ai.aktif', 'value' => '0']);
+    }
 }

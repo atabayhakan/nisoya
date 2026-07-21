@@ -4,18 +4,29 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Nisoya — Ne İş Olursa Yaparım' }}</title>
-    <meta name="description" content="{{ $description ?? 'Yurt dışındaki Türklerin yetenek, hizmet ve ev ürünleri pazaryeri. Kendi insanından güvenle hizmet al, yeteneğini paraya dönüştür.' }}">
+    {{-- SEO varsayılanları panelden yönetilir (Site Yönetimi → SEO). Sayfa
+         kendi $title/$description/$ogImage'ini verirse o önceliklidir. --}}
+    @php
+        $seoTitle = $title ?? setting('seo.default_title');
+        $seoDescription = $description ?? setting('seo.default_description');
+        $seoOgPath = setting('seo.og_image');
+        $seoOgImage = $ogImage ?? ($seoOgPath ? Storage::disk('public')->url($seoOgPath) : asset('og.png'));
+    @endphp
+    @if (setting('seo.robots_index', '1') === '0')
+        <meta name="robots" content="noindex,nofollow">
+    @endif
+    <title>{{ $seoTitle }}</title>
+    <meta name="description" content="{{ $seoDescription }}">
     <link rel="canonical" href="{{ url()->current() }}">
     <meta property="og:site_name" content="Nisoya">
-    <meta property="og:title" content="{{ $title ?? 'Nisoya — Ne İş Olursa Yaparım' }}">
-    <meta property="og:description" content="{{ $description ?? 'Yurt dışındaki Türklerin yetenek ve hizmet pazaryeri.' }}">
+    <meta property="og:title" content="{{ $seoTitle }}">
+    <meta property="og:description" content="{{ $seoDescription }}">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="tr_TR">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:image" content="{{ $ogImage ?? asset('og.png') }}">
+    <meta property="og:image" content="{{ $seoOgImage }}">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="{{ $ogImage ?? asset('og.png') }}">
+    <meta name="twitter:image" content="{{ $seoOgImage }}">
     @php
         $faviconPath = setting('gorunum.favicon_path');
         $faviconHref = $faviconPath
@@ -149,6 +160,9 @@
     </style>
     <a href="#main-content" class="nisoya-skip-link">İçeriğe geç</a>
 
+    {{-- Site üstü duyuru bandı (panelden: Site Yönetimi → Duyuru Bandı) --}}
+    <x-announcement-bar />
+
     {{-- Üst menü --}}
     {{-- Faz H4: kaydırınca hafifçe küçülür/gölge kazanır, aşağı kaydırırken
          gizlenir, yukarı kaydırınca hemen geri açılır (bkz. resources/js/app.js
@@ -278,8 +292,10 @@
                 <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">Keşfet</h3>
                 <ul class="mt-3 space-y-2 text-sm text-stone-500 dark:text-stone-400">
                     <li><a href="{{ url('/ilanlar') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Tüm İlanlar</a></li>
-                    <li><a href="{{ route('jobs.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İş İlanları</a></li>
-                    <li><a href="{{ route('candidates.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Yetenek Havuzu</a></li>
+                    @if (\App\Support\Modules::enabled('is_ilanlari'))
+                        <li><a href="{{ route('jobs.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İş İlanları</a></li>
+                        <li><a href="{{ route('candidates.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Yetenek Havuzu</a></li>
+                    @endif
                     <li><a href="{{ url('/nasil-calisir') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a></li>
                     <li><a href="{{ route('nabiz') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nisoya Nabzı</a></li>
                 </ul>

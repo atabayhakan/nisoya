@@ -27,4 +27,9 @@
     <p class="mt-6 text-center text-sm text-stone-500">
         <a href="{{ route('login') }}" class="font-medium text-emerald-700 hover:underline">← Girişe dön</a>
     </p>
+
+    <p class="mt-2 text-center text-xs text-stone-400">
+        E-postana erişemiyor musun?
+        <a href="{{ route('account-recovery.request') }}" class="font-medium text-emerald-700 hover:underline">Kurtarma koduyla gir</a>
+    </p>
 </x-layouts.guest>

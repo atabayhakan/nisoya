@@ -116,6 +116,9 @@ return [
         // Varsayılanlar boş: DB boşsa Settings::get boş döner → mergeRuntimeConfig
         // env/config varsayılanına düşer (DB > env > kod). API anahtarı hassas
         // olduğundan varsayılanı boş.
+        // Ana anahtar: '0' ise sağlayıcı/anahtar girili ve alt özellikler açık
+        // olsa bile TÜM AI kapanır (bkz. mergeAiConfig — sağlayıcı çökerse tek düğme).
+        'ai.aktif' => ['group' => 'yapay_zeka', 'label' => 'Yapay zeka açık', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
         'ai.saglayici' => ['group' => 'yapay_zeka', 'label' => 'Sağlayıcı', 'type' => 'select', 'options' => [
             'openrouter' => 'OpenRouter',
             'openai' => 'OpenAI',
@@ -126,6 +129,41 @@ return [
         'ai.model' => ['group' => 'yapay_zeka', 'label' => 'Model', 'type' => 'text', 'default' => ''],
         'ai.hizli_ilan_aktif' => ['group' => 'yapay_zeka', 'label' => 'Fotoğrafla hızlı ilan', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
         'ai.moderasyon_aktif' => ['group' => 'yapay_zeka', 'label' => 'Görsel moderasyonu (uygunsuz içerik ön-elemesi)', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
+
+        // --- E-posta (SMTP) ---
+        // NOT: 'yapay_zeka' gibi bu grup da bilinçli olarak 'groups' listesine
+        // EKLENMEDİ — genel İçerik formunda render edilmez; kendi sayfası var
+        // (MailAyarlari). Parola hassastır. Varsayılanlar boş: DB boşsa
+        // AppServiceProvider::mergeMailConfig() env/config'e düşer (DB > env > kod).
+        'mail.host' => ['group' => 'mail', 'label' => 'SMTP sunucusu', 'type' => 'text', 'default' => ''],
+        'mail.port' => ['group' => 'mail', 'label' => 'Port', 'type' => 'text', 'default' => ''],
+        'mail.username' => ['group' => 'mail', 'label' => 'Kullanıcı adı', 'type' => 'text', 'default' => ''],
+        'mail.password' => ['group' => 'mail', 'label' => 'Parola', 'type' => 'password', 'default' => ''],
+        'mail.encryption' => ['group' => 'mail', 'label' => 'Şifreleme', 'type' => 'select', 'options' => ['ssl' => 'SSL (port 465)', 'tls' => 'TLS/STARTTLS (port 587)'], 'default' => ''],
+        'mail.from_address' => ['group' => 'mail', 'label' => 'Gönderen e-posta', 'type' => 'text', 'default' => ''],
+        'mail.from_name' => ['group' => 'mail', 'label' => 'Gönderen adı', 'type' => 'text', 'default' => ''],
+
+        // --- Dikey modüller (aç/kapa) — kendi sayfası var (Moduller); groups'a
+        // eklenmedi. Kapalıysa public rota 404, yeni içerik yok (bkz. App\Support\Modules).
+        'modul.emlak' => ['group' => 'modul', 'label' => 'Emlak', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
+        'modul.vasita' => ['group' => 'modul', 'label' => 'Vasıta', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
+        'modul.davetiye' => ['group' => 'modul', 'label' => 'Davetiye', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
+        'modul.is_ilanlari' => ['group' => 'modul', 'label' => 'İş İlanları', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
+
+        // --- Duyuru bandı (site üstü tek satır şerit) — kendi sayfası var
+        // (DuyuruBandi); groups'a eklenmedi. Kapalı/boşsa hiç render edilmez.
+        'duyuru.aktif' => ['group' => 'duyuru', 'label' => 'Duyuru bandı', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '0'],
+        'duyuru.metin' => ['group' => 'duyuru', 'label' => 'Duyuru metni', 'type' => 'textarea', 'default' => ''],
+        'duyuru.link' => ['group' => 'duyuru', 'label' => 'Bağlantı (opsiyonel)', 'type' => 'text', 'default' => ''],
+        'duyuru.link_metni' => ['group' => 'duyuru', 'label' => 'Bağlantı metni (opsiyonel)', 'type' => 'text', 'default' => ''],
+        'duyuru.renk' => ['group' => 'duyuru', 'label' => 'Renk', 'type' => 'select', 'options' => ['marka' => 'Marka (yeşil)', 'uyari' => 'Uyarı (amber)', 'onemli' => 'Önemli (kırmızı)'], 'default' => 'marka'],
+        'duyuru.kapatilabilir' => ['group' => 'duyuru', 'label' => 'Ziyaretçi kapatabilsin', 'type' => 'select', 'options' => ['1' => 'Evet', '0' => 'Hayır'], 'default' => '1'],
+
+        // --- SEO (arama motoru + paylaşım) — kendi sayfası var (SeoAyarlari).
+        'seo.default_title' => ['group' => 'seo', 'label' => 'Varsayılan başlık', 'type' => 'text', 'default' => 'Nisoya — Ne İş Olursa Yaparım'],
+        'seo.default_description' => ['group' => 'seo', 'label' => 'Varsayılan açıklama', 'type' => 'textarea', 'default' => 'Yurt dışındaki Türklerin yetenek, hizmet ve ev ürünleri pazaryeri. Kendi insanından güvenle hizmet al, yeteneğini paraya dönüştür.'],
+        'seo.og_image' => ['group' => 'seo', 'label' => 'Paylaşım görseli (OG — 1200×630 önerilir)', 'type' => 'image', 'default' => ''],
+        'seo.robots_index' => ['group' => 'seo', 'label' => 'Arama motorlarında görünür', 'type' => 'select', 'options' => ['1' => 'Görünür', '0' => 'Gizli (noindex)'], 'default' => '1'],
 
         // --- Nisoya Nabzı: topluluk hedefi + şehir elçileri ---
         'nabiz.hedef_sayi' => ['group' => 'nabiz', 'label' => 'Hedef sayı (0 = özelliği tamamen gizle)', 'type' => 'text', 'default' => '0'],

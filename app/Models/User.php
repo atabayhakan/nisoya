@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laragear\WebAuthn\Contracts\WebAuthnAuthenticatable;
 use Laragear\WebAuthn\WebAuthnAuthentication;
@@ -61,6 +62,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
         'two_factor_secret',
         'two_factor_confirmed_at',
         'two_factor_recovery_codes',
+        'account_recovery_codes',
     ];
 
     protected $hidden = [
@@ -85,6 +87,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
             // düz string cast'i bu JSON'u olduğu gibi şifreleyip çözer.
             'two_factor_secret' => 'encrypted',
             'two_factor_recovery_codes' => 'encrypted',
+            // Hesap kurtarma kodları: bcrypt hash dizisi, dinlenirken şifreli.
+            'account_recovery_codes' => 'encrypted:array',
             'two_factor_confirmed_at' => 'datetime',
             'skills' => 'array',
             'avatar_focal_x' => 'integer',
@@ -203,6 +207,58 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
         $this->update(['two_factor_recovery_codes' => json_encode(array_values($codes))]);
 
         return true;
+    }
+
+    /**
+     * Hesap kurtarma kodları üretir (eskiler geçersiz olur) ve DÜZ-METİN kodları
+     * döndürür — bunlar yalnızca bir kez gösterilir. Saklananlar bcrypt hash'idir;
+     * kolon ayrıca şifrelidir (bkz. $casts). Parola + e-posta birlikte
+     * kaybedildiğinde e-postaya ihtiyaç duymadan parola sıfırlamayı sağlar
+     * (bkz. AccountRecoveryController, Kurtarma Kiti sayfası).
+     *
+     * @return array<int,string> düz-metin kodlar (bir daha erişilemez)
+     */
+    public function generateAccountRecoveryCodes(int $count = 8): array
+    {
+        $plain = [];
+        $hashed = [];
+
+        for ($i = 0; $i < $count; $i++) {
+            $code = Str::upper(Str::random(5)).'-'.Str::upper(Str::random(5));
+            $plain[] = $code;
+            $hashed[] = Hash::make($code);
+        }
+
+        $this->forceFill(['account_recovery_codes' => $hashed])->save();
+
+        return $plain;
+    }
+
+    /**
+     * Tek kullanımlık hesap kurtarma kodunu tüketir. Eşleşirse listeden çıkarılıp
+     * kaydedilir ve true döner; aksi halde false. Girdi büyük harfe normalize edilir.
+     */
+    public function consumeAccountRecoveryCode(string $code): bool
+    {
+        $code = Str::upper(trim($code));
+        $hashes = $this->account_recovery_codes ?? [];
+
+        foreach ($hashes as $index => $hash) {
+            if (Hash::check($code, $hash)) {
+                unset($hashes[$index]);
+                $this->forceFill(['account_recovery_codes' => array_values($hashes)])->save();
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Kalan (kullanılmamış) hesap kurtarma kodu sayısı. */
+    public function accountRecoveryCodesRemaining(): int
+    {
+        return count($this->account_recovery_codes ?? []);
     }
 
     /** İstek başına bir kez hesaplanan güven profili önbelleği (bkz. trustProfile). */

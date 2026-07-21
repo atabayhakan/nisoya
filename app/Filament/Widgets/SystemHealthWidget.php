@@ -2,6 +2,8 @@
 
 namespace App\Filament\Widgets;
 
+use App\Services\BackupService;
+use App\Support\Settings;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Cache;
@@ -27,6 +29,11 @@ class SystemHealthWidget extends BaseWidget
         $storageStatus = $this->checkStorage();
         $queueSize = $this->getQueueSize();
 
+        // Sahibin "kendi kendine yeten site" sağlığı (Faz 1 · G10)
+        $backup = $this->backupStat();
+        $disk = $this->diskStat();
+        $mail = $this->mailStat();
+
         return [
             Stat::make('Veritabanı', $dbLatency.'ms')
                 ->description('Son DB sorgusu gecikmesi')
@@ -47,6 +54,77 @@ class SystemHealthWidget extends BaseWidget
                 ->description('Driver: '.config('queue.default'))
                 ->descriptionIcon($queueSize > 1000 ? 'heroicon-m-exclamation-triangle' : 'heroicon-m-queue-list')
                 ->color($queueSize > 1000 ? 'warning' : 'success'),
+
+            Stat::make('Son Yedek', $backup['label'])
+                ->description($backup['desc'])
+                ->descriptionIcon($backup['icon'])
+                ->color($backup['color']),
+
+            Stat::make('Boş Disk', $disk['label'])
+                ->description('Sunucu disk alanı')
+                ->descriptionIcon($disk['icon'])
+                ->color($disk['color']),
+
+            Stat::make('E-posta', $mail['label'])
+                ->description($mail['desc'])
+                ->descriptionIcon($mail['icon'])
+                ->color($mail['color']),
+        ];
+    }
+
+    /** Son yedek yaşı/sağlığı (bkz. Yedekleme sayfası). */
+    private function backupStat(): array
+    {
+        $stats = app(BackupService::class)->stats();
+        $latest = $stats['latest'];
+
+        if ($latest === null) {
+            return [
+                'label' => 'Yok',
+                'desc' => 'Henüz hiç yedek alınmadı',
+                'icon' => 'heroicon-m-exclamation-triangle',
+                'color' => 'danger',
+            ];
+        }
+
+        $fresh = $latest->greaterThan(now()->subDays(7));
+
+        return [
+            'label' => $latest->diffForHumans(),
+            'desc' => $stats['count'].' yedek · '.BackupService::humanSize($stats['total_size']),
+            'icon' => $fresh ? 'heroicon-m-check-circle' : 'heroicon-m-clock',
+            'color' => $fresh ? 'success' : 'warning',
+        ];
+    }
+
+    /** Sunucudaki boş disk alanı. */
+    private function diskStat(): array
+    {
+        $free = (float) (@disk_free_space(base_path()) ?: 0);
+        $gb = $free / (1024 ** 3);
+
+        return [
+            'label' => BackupService::humanSize($free),
+            'icon' => $gb < 2 ? 'heroicon-m-exclamation-triangle' : 'heroicon-m-circle-stack',
+            'color' => $gb < 0.5 ? 'danger' : ($gb < 2 ? 'warning' : 'success'),
+        ];
+    }
+
+    /** Gerçek e-posta gönderimi yapılandırılmış mı? (bkz. Mail Ayarları) */
+    private function mailStat(): array
+    {
+        $default = config('mail.default');
+        $host = Settings::get('mail.host') ?: config('mail.mailers.smtp.host');
+
+        $configured = ! in_array($default, ['log', 'array'], true)
+            && ! empty($host)
+            && $host !== '127.0.0.1';
+
+        return [
+            'label' => $configured ? 'Yapılandırıldı' : 'Varsayılan',
+            'desc' => $configured ? ('Sürücü: '.$default) : 'Gerçek gönderim kapalı olabilir',
+            'icon' => $configured ? 'heroicon-m-check-circle' : 'heroicon-m-exclamation-triangle',
+            'color' => $configured ? 'success' : 'warning',
         ];
     }
 

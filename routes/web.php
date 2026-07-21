@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BackupDownloadController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\CompanyController;
@@ -53,8 +54,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Keşif (herkese açık)
 Route::get('/ilanlar', [BrowseController::class, 'index'])->name('listings.index');
-Route::get('/emlak', [PropertyBrowseController::class, 'index'])->name('properties.index');
-Route::get('/vasita', [VehicleBrowseController::class, 'index'])->name('vehicles.index');
+Route::get('/emlak', [PropertyBrowseController::class, 'index'])->middleware('module:emlak')->name('properties.index');
+Route::get('/vasita', [VehicleBrowseController::class, 'index'])->middleware('module:vasita')->name('vehicles.index');
 Route::get('/harita', [MapController::class, 'index'])->name('listings.map');
 Route::get('/ilanlar/kategori/{category:slug}', [BrowseController::class, 'category'])->name('listings.category');
 Route::get('/uye/{user:username}', [ProfileController::class, 'show'])->name('profiles.show');
@@ -64,24 +65,30 @@ Route::get('/mutlu-anlar', [HappyMomentsController::class, 'index'])->name('happ
 // Herkese açık ilan detayı
 Route::get('/ilan/{listing}/{slug?}', [ListingController::class, 'show'])->name('listings.show');
 
-// Davetiye (herkese açık — misafirler hesap açmadan LCV verir)
-Route::get('/davet/{token}', [EventInvitationController::class, 'show'])->name('davet.show');
-Route::get('/davet/{token}/takvim.ics', [EventInvitationController::class, 'ics'])->name('davet.ics');
-Route::post('/davet/{token}/lcv', [EventInvitationController::class, 'rsvp'])
-    ->middleware(['honeypot', 'throttle:rsvp'])
-    ->name('davet.rsvp');
-Route::post('/davet/{token}/medya', [EventMediaController::class, 'store'])
-    ->middleware(['honeypot', 'throttle:event-upload'])
-    ->name('davet.media.store');
-Route::delete('/davet/{token}/medya/{media}', [EventMediaController::class, 'destroy'])
-    ->middleware('throttle:event-upload')
-    ->name('davet.media.destroy');
+// Davetiye (herkese açık — misafirler hesap açmadan LCV verir).
+// Modül kapalıysa tüm davetiye yüzeyi 404 (bkz. App\Support\Modules · G4).
+Route::middleware('module:davetiye')->group(function () {
+    Route::get('/davet/{token}', [EventInvitationController::class, 'show'])->name('davet.show');
+    Route::get('/davet/{token}/takvim.ics', [EventInvitationController::class, 'ics'])->name('davet.ics');
+    Route::post('/davet/{token}/lcv', [EventInvitationController::class, 'rsvp'])
+        ->middleware(['honeypot', 'throttle:rsvp'])
+        ->name('davet.rsvp');
+    Route::post('/davet/{token}/medya', [EventMediaController::class, 'store'])
+        ->middleware(['honeypot', 'throttle:event-upload'])
+        ->name('davet.media.store');
+    Route::delete('/davet/{token}/medya/{media}', [EventMediaController::class, 'destroy'])
+        ->middleware('throttle:event-upload')
+        ->name('davet.media.destroy');
+});
 
-// İş ilanları (herkese açık keşif + detay + şirket sayfası)
-Route::get('/isler', [JobBrowseController::class, 'index'])->name('jobs.index');
-Route::get('/is/{job}/{slug?}', [JobListingController::class, 'show'])->name('jobs.show');
-Route::get('/sirket/{company}', [CompanyController::class, 'show'])->name('companies.show');
-Route::get('/adaylar', [CandidateController::class, 'index'])->name('candidates.index');
+// İş ilanları (herkese açık keşif + detay + şirket sayfası + adaylar).
+// Modül kapalıysa tüm iş ilanları yüzeyi 404.
+Route::middleware('module:is_ilanlari')->group(function () {
+    Route::get('/isler', [JobBrowseController::class, 'index'])->name('jobs.index');
+    Route::get('/is/{job}/{slug?}', [JobListingController::class, 'show'])->name('jobs.show');
+    Route::get('/sirket/{company}', [CompanyController::class, 'show'])->name('companies.show');
+    Route::get('/adaylar', [CandidateController::class, 'index'])->name('candidates.index');
+});
 
 // Hızlı arama (header komut paleti / Cmd+K, Faz H2) — herkese açık, salt-okunur JSON
 Route::get('/arama/hizli', [QuickSearchController::class, 'index'])
@@ -115,6 +122,11 @@ Route::middleware(['auth', 'active.user', 'admin.role'])->prefix('yonetim')->gro
         Route::get('/cluster', [ExifMapController::class, 'clusters'])->name('clusters');
         Route::get('/istatistik', [ExifMapController::class, 'stats'])->name('stats');
     });
+
+    // Yedek indirme (dosyalar web'e kapalı storage/app/backups altında)
+    Route::get('/yedek/{name}/indir', BackupDownloadController::class)
+        ->where('name', '[A-Za-z0-9._-]+')
+        ->name('admin.backup.download');
 });
 
 // PWA offline yedek sayfası
@@ -156,9 +168,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Davetiyeler (etkinlik + LCV yönetimi)
     Route::get('/panel/etkinlikler', [EventController::class, 'index'])->name('panel.events.index');
-    Route::get('/panel/etkinlik/yeni', [EventController::class, 'create'])->name('panel.events.create');
+    Route::get('/panel/etkinlik/yeni', [EventController::class, 'create'])
+        ->middleware('module:davetiye')
+        ->name('panel.events.create');
     Route::post('/panel/etkinlik', [EventController::class, 'store'])
-        ->middleware(['honeypot', 'throttle:event-create'])
+        ->middleware(['honeypot', 'throttle:event-create', 'module:davetiye'])
         ->name('panel.events.store');
     Route::get('/panel/etkinlik/{event}', [EventController::class, 'show'])->name('panel.events.show');
     Route::get('/panel/etkinlik/{event}/duzenle', [EventController::class, 'edit'])->name('panel.events.edit');
@@ -247,9 +261,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // İşverenin iş ilanları
     Route::get('/panel/is-ilanlarim', [JobListingController::class, 'index'])->name('panel.jobs.index');
-    Route::get('/panel/is-ilani/yeni', [JobListingController::class, 'create'])->name('panel.jobs.create');
+    Route::get('/panel/is-ilani/yeni', [JobListingController::class, 'create'])
+        ->middleware('module:is_ilanlari')
+        ->name('panel.jobs.create');
     Route::post('/panel/is-ilani', [JobListingController::class, 'store'])
-        ->middleware(['honeypot', 'throttle:job-create'])
+        ->middleware(['honeypot', 'throttle:job-create', 'module:is_ilanlari'])
         ->name('panel.jobs.store');
     Route::get('/panel/is-ilani/{job}/duzenle', [JobListingController::class, 'edit'])->name('panel.jobs.edit');
     Route::match(['put', 'patch'], '/panel/is-ilani/{job}', [JobListingController::class, 'update'])->name('panel.jobs.update');

@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Support\MailTemplates;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -58,12 +59,15 @@ class NewMessageNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
+        // Metinler panelden düzenlenebilir (Site Yönetimi → E-posta Metinleri).
+        $t = ['{ad}' => $notifiable->name, '{gonderen}' => $this->senderName];
+
         return (new MailMessage)
-            ->subject('Nisoya: '.$this->senderName.' sana mesaj gönderdi')
-            ->greeting('Merhaba '.$notifiable->name.',')
-            ->line($this->senderName.' sana yeni bir mesaj gönderdi:')
+            ->subject(MailTemplates::part('yeni_mesaj', 'subject', $t))
+            ->greeting(MailTemplates::part('yeni_mesaj', 'greeting', $t))
+            ->line(MailTemplates::part('yeni_mesaj', 'intro', $t))
             ->line('"'.Str::limit($this->body, 140).'"')
-            ->action('Mesajı görüntüle', route('panel.messages.show', $this->conversationId))
-            ->line('Nisoya — Ne İş Olursa Yaparım');
+            ->action(MailTemplates::part('yeni_mesaj', 'action', $t), route('panel.messages.show', $this->conversationId))
+            ->line(MailTemplates::part('yeni_mesaj', 'outro', $t));
     }
 }

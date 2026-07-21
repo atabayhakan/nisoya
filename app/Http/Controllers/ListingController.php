@@ -14,6 +14,7 @@ use App\Models\Listing;
 use App\Models\ListingImage;
 use App\Services\GeocodingService;
 use App\Services\ImageService;
+use App\Support\Modules;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,10 +37,22 @@ class ListingController extends Controller
         return view('panel.listings.index', compact('listings'));
     }
 
+    /**
+     * Emlak/vasıta dikey modülü kapalıysa o türde ilan oluşturmayı 404 yapar
+     * (public rota gate'iyle tutarlı — bkz. App\Support\Modules · G4).
+     */
+    private function assertTypeEnabled(string $type): void
+    {
+        if (in_array($type, Modules::KEYS, true)) {
+            abort_unless(Modules::enabled($type), 404);
+        }
+    }
+
     public function create(Request $request): View
     {
         $tip = $request->query('tip');
         $type = in_array($tip, ['urun', 'emlak', 'vasita'], true) ? $tip : 'hizmet';
+        $this->assertTypeEnabled($type);
 
         return view('panel.listings.create', $this->formData($type));
     }
@@ -48,6 +61,7 @@ class ListingController extends Controller
     {
         $data = $request->validated();
         $type = $data['type'] ?? 'hizmet';
+        $this->assertTypeEnabled($type);
         $coords = app(GeocodingService::class)->locate($data['city'] ?? null, $data['country_code']);
 
         $listing = $request->user()->listings()->create([
