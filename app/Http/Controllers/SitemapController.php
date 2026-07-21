@@ -8,6 +8,7 @@ use App\Models\JobListing;
 use App\Models\Listing;
 use App\Models\Page;
 use App\Models\User;
+use App\Support\Modules;
 use Illuminate\Http\Response;
 
 class SitemapController extends Controller
@@ -17,16 +18,24 @@ class SitemapController extends Controller
         $urls = [
             ['loc' => url('/'), 'priority' => '1.0'],
             ['loc' => route('listings.index'), 'priority' => '0.9'],
-            ['loc' => route('properties.index'), 'priority' => '0.9'],
-            ['loc' => route('vehicles.index'), 'priority' => '0.9'],
-            ['loc' => route('jobs.index'), 'priority' => '0.9'],
-            ['loc' => route('candidates.index'), 'priority' => '0.6'],
             ['loc' => route('happy-moments'), 'priority' => '0.5'],
             ['loc' => route('pages.how'), 'priority' => '0.4'],
             ['loc' => route('pages.contact'), 'priority' => '0.3'],
             // '/gizlilik' artık CMS'teki bir Page kaydı — aşağıdaki döngüden gelir, burada tekrar eklenmez.
             ['loc' => url('/cerez-tercihleri'), 'priority' => '0.2'],
         ];
+
+        // Dikey modüller — yalnızca açıksa sitemap'e ekle (kapalı modül 404 verir).
+        if (Modules::enabled('emlak')) {
+            $urls[] = ['loc' => route('properties.index'), 'priority' => '0.9'];
+        }
+        if (Modules::enabled('vasita')) {
+            $urls[] = ['loc' => route('vehicles.index'), 'priority' => '0.9'];
+        }
+        if (Modules::enabled('is_ilanlari')) {
+            $urls[] = ['loc' => route('jobs.index'), 'priority' => '0.9'];
+            $urls[] = ['loc' => route('candidates.index'), 'priority' => '0.6'];
+        }
 
         foreach (Page::query()->published()->get() as $page) {
             $urls[] = [
@@ -48,16 +57,18 @@ class SitemapController extends Controller
             ];
         }
 
-        foreach (JobListing::query()->active()->latest()->limit(1000)->get() as $job) {
-            $urls[] = [
-                'loc' => route('jobs.show', [$job, $job->slug]),
-                'lastmod' => $job->updated_at?->toAtomString(),
-                'priority' => '0.7',
-            ];
-        }
+        if (Modules::enabled('is_ilanlari')) {
+            foreach (JobListing::query()->active()->latest()->limit(1000)->get() as $job) {
+                $urls[] = [
+                    'loc' => route('jobs.show', [$job, $job->slug]),
+                    'lastmod' => $job->updated_at?->toAtomString(),
+                    'priority' => '0.7',
+                ];
+            }
 
-        foreach (Company::query()->get() as $company) {
-            $urls[] = ['loc' => route('companies.show', $company), 'priority' => '0.5'];
+            foreach (Company::query()->get() as $company) {
+                $urls[] = ['loc' => route('companies.show', $company), 'priority' => '0.5'];
+            }
         }
 
         // Aktif ilanı olan ya da Yetenek Havuzu'nda görünür olan üyeler (bkz. Nisoya Jobzilla Esinlenme Planı).

@@ -143,6 +143,13 @@ return [
         'mail.from_address' => ['group' => 'mail', 'label' => 'Gönderen e-posta', 'type' => 'text', 'default' => ''],
         'mail.from_name' => ['group' => 'mail', 'label' => 'Gönderen adı', 'type' => 'text', 'default' => ''],
 
+        // --- Dikey modüller (aç/kapa) — kendi sayfası var (Moduller); groups'a
+        // eklenmedi. Kapalıysa public rota 404, yeni içerik yok (bkz. App\Support\Modules).
+        'modul.emlak' => ['group' => 'modul', 'label' => 'Emlak', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
+        'modul.vasita' => ['group' => 'modul', 'label' => 'Vasıta', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
+        'modul.davetiye' => ['group' => 'modul', 'label' => 'Davetiye', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
+        'modul.is_ilanlari' => ['group' => 'modul', 'label' => 'İş İlanları', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
+
         // --- Nisoya Nabzı: topluluk hedefi + şehir elçileri ---
         'nabiz.hedef_sayi' => ['group' => 'nabiz', 'label' => 'Hedef sayı (0 = özelliği tamamen gizle)', 'type' => 'text', 'default' => '0'],
         'nabiz.hedef_metrik' => ['group' => 'nabiz', 'label' => 'Hedef neyi sayar?', 'type' => 'select', 'options' => ['yeni_uye' => 'Bu ay yeni üye', 'yeni_ilan' => 'Bu ay yeni ilan'], 'default' => 'yeni_uye'],

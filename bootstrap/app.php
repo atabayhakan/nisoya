@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsureUserCanAccessAdminPanel;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HoneypotMiddleware;
@@ -33,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'active.user' => EnsureUserIsActive::class,
             'honeypot' => HoneypotMiddleware::class,
             'admin.role' => EnsureUserCanAccessAdminPanel::class,
+            'module' => EnsureModuleEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
