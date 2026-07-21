@@ -28,7 +28,7 @@ class DuyuruBandi extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMegaphone;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Site Yönetimi';
+    protected static string|UnitEnum|null $navigationGroup = 'İçerik & Tasarım (CMS)';
 
     protected static ?string $navigationLabel = 'Duyuru Bandı';
 

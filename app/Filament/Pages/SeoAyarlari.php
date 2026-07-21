@@ -28,7 +28,7 @@ class SeoAyarlari extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMagnifyingGlass;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Site Yönetimi';
+    protected static string|UnitEnum|null $navigationGroup = 'Sistem & Araçlar';
 
     protected static ?string $navigationLabel = 'SEO';
 

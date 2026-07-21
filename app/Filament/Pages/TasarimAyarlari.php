@@ -23,7 +23,7 @@ class TasarimAyarlari extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSwatch;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Tasarım';
+    protected static string|UnitEnum|null $navigationGroup = 'İçerik & Tasarım (CMS)';
 
     protected static ?string $navigationLabel = 'Tasarım Modu';
 

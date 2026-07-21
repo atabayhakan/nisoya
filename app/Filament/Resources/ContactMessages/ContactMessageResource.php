@@ -23,7 +23,7 @@ class ContactMessageResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'İletişim';
+        return 'Topluluk & Etkinlikler';
     }
 
     public static function getNavigationLabel(): string

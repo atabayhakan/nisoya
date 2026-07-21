@@ -30,7 +30,7 @@ class JobCategoryResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'İş İlanları';
+        return 'İş & Kariyer Portalı';
     }
 
     public static function getNavigationLabel(): string

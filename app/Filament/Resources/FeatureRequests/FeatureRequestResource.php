@@ -27,7 +27,7 @@ class FeatureRequestResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Pazaryeri';
+        return 'Pazaryeri & Ticaret';
     }
 
     public static function getNavigationLabel(): string

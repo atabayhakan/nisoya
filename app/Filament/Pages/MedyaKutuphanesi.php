@@ -22,7 +22,7 @@ class MedyaKutuphanesi extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Sistem';
+    protected static string|UnitEnum|null $navigationGroup = 'Sistem & Araçlar';
 
     protected static ?string $navigationLabel = 'Medya Kütüphanesi';
 

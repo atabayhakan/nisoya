@@ -16,7 +16,7 @@ class BigHighlightResource extends HomeHighlightResourceBase
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Site Yönetimi';
+    protected static string|UnitEnum|null $navigationGroup = 'İçerik & Tasarım (CMS)';
 
     protected static ?string $navigationLabel = 'Ana Sayfa — Büyük Kart';
 

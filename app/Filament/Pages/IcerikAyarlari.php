@@ -19,7 +19,7 @@ class IcerikAyarlari extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Site Yönetimi';
+    protected static string|UnitEnum|null $navigationGroup = 'Sistem & Araçlar';
 
     protected static ?string $navigationLabel = 'İçerik (Metinler)';
 

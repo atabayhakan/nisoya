@@ -25,6 +25,11 @@ class DealResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHandRaised;
 
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Pazaryeri & Ticaret';
+    }
+
     protected static ?string $navigationLabel = 'Anlaşmalar';
 
     protected static ?string $modelLabel = 'anlaşma';

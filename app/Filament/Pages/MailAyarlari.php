@@ -27,7 +27,7 @@ class MailAyarlari extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelope;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Site Yönetimi';
+    protected static string|UnitEnum|null $navigationGroup = 'Sistem & Araçlar';
 
     protected static ?string $navigationLabel = 'E-posta (SMTP)';
 

@@ -27,7 +27,7 @@ class AnasayfaBolumleri extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWindow;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Site Yönetimi';
+    protected static string|UnitEnum|null $navigationGroup = 'İçerik & Tasarım (CMS)';
 
     protected static ?string $navigationLabel = 'Anasayfa Bölümleri';
 

@@ -27,7 +27,7 @@ class JobFeatureRequestResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRocketLaunch;
 
-    protected static string|UnitEnum|null $navigationGroup = 'İş İlanları';
+    protected static string|UnitEnum|null $navigationGroup = 'İş & Kariyer Portalı';
 
     protected static ?int $navigationSort = 5;
 

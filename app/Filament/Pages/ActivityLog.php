@@ -32,7 +32,7 @@ class ActivityLog extends Page implements HasForms, HasTable
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Sistem';
+    protected static string|UnitEnum|null $navigationGroup = 'Kullanıcılar & Güvenlik';
 
     protected static ?string $navigationLabel = 'İşlem Geçmişi';
 

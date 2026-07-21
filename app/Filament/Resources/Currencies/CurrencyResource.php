@@ -27,7 +27,7 @@ class CurrencyResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Ayarlar';
+        return 'Sistem & Araçlar';
     }
 
     public static function getNavigationLabel(): string
