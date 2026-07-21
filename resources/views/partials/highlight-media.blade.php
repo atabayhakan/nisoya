@@ -6,12 +6,14 @@
 
 @switch($item['type'] ?? '')
     @case('resim')
-        <img
-            src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($data['path'] ?? '') }}"
-            alt=""
-            class="h-full w-full object-cover"
-            loading="lazy"
-        >
+        @if (! empty($data['path']))
+            <img
+                src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($data['path']) }}"
+                alt=""
+                class="h-full w-full object-cover"
+                loading="lazy"
+            >
+        @endif
         @break
 
     @case('youtube')
@@ -34,20 +36,23 @@
 
     @case('video')
         @php
+            $path = $data['path'] ?? null;
             $autoplay = $data['autoplay'] ?? true;
             $muted = $data['muted'] ?? true;
             $loop = $data['loop'] ?? true;
         @endphp
-        <video
-            class="h-full w-full object-cover"
-            controls
-            preload="metadata"
-            @if ($autoplay) autoplay @endif
-            @if ($muted) muted @endif
-            @if ($loop) loop @endif
-            playsinline
-        >
-            <source src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($data['path'] ?? '') }}" type="video/mp4">
-        </video>
+        @if ($path)
+            <video
+                class="h-full w-full object-cover"
+                controls
+                preload="metadata"
+                @if ($autoplay) autoplay @endif
+                @if ($muted) muted @endif
+                @if ($loop) loop @endif
+                playsinline
+            >
+                <source src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($path) }}" type="video/mp4">
+            </video>
+        @endif
         @break
 @endswitch

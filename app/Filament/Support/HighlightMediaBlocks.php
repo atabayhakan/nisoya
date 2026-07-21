@@ -31,8 +31,7 @@ class HighlightMediaBlocks
                         ->image()
                         ->disk('public')
                         ->directory('highlights')
-                        ->maxSize(4096)
-                        ->required(),
+                        ->maxSize(10240),
                 ]),
 
             Builder\Block::make('youtube')
@@ -42,10 +41,10 @@ class HighlightMediaBlocks
                     TextInput::make('url')
                         ->label('YouTube linki')
                         ->url()
-                        ->required()
+                        ->nullable()
                         ->rules([
                             fn (): Closure => function (string $attribute, $value, Closure $fail) {
-                                if (! HighlightMedia::youtubeId($value)) {
+                                if ($value && ! HighlightMedia::youtubeId($value)) {
                                     $fail('Geçerli bir YouTube linki girin.');
                                 }
                             },
@@ -69,7 +68,7 @@ class HighlightMediaBlocks
                         ->directory('highlights')
                         ->acceptedFileTypes(['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v', 'video/ogg'])
                         ->maxSize(51200)
-                        ->required(),
+                        ->helperText('Yükleme tamamen bittikten sonra "Değişiklikleri kaydet" butonuna basın.'),
                     Toggle::make('autoplay')
                         ->label('Otomatik başlasın')
                         ->default(true),
