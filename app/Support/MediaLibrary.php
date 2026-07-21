@@ -4,6 +4,7 @@ namespace App\Support;
 
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RecursiveDirectoryIterator;
@@ -130,11 +131,27 @@ class MediaLibrary
             return ['dirs' => $dirs, 'total' => $total];
         }
 
-        foreach (glob($root . '/*', GLOB_ONLYDIR) ?: [] as $dirPath) {
-            $stat = self::measure($dirPath);
-            $dirs[basename($dirPath)] = $stat;
-            $total['count'] += $stat['count'];
-            $total['size'] += $stat['size'];
+        // Standart sistem klasörleri (ör. listings, avatars, highlights...)
+        $standardDirs = ['listings', 'avatars', 'event-media', 'portfolio', 'highlights', 'pages', 'uploads'];
+        foreach ($standardDirs as $std) {
+            $path = $root . DIRECTORY_SEPARATOR . $std;
+            if (is_dir($path)) {
+                $stat = self::measure($path);
+                $dirs[$std] = $stat;
+                $total['count'] += $stat['count'];
+                $total['size'] += $stat['size'];
+            }
+        }
+
+        // Tüm diğer özel oluşturulan klasörleri tara
+        foreach (File::directories($root) as $dirPath) {
+            $name = basename($dirPath);
+            if (! isset($dirs[$name])) {
+                $stat = self::measure($dirPath);
+                $dirs[$name] = $stat;
+                $total['count'] += $stat['count'];
+                $total['size'] += $stat['size'];
+            }
         }
 
         uasort($dirs, fn (array $a, array $b): int => $b['size'] <=> $a['size']);
