@@ -89,7 +89,7 @@ class VehicleBrowseController extends Controller
             );
         }
 
-        $query->orderByDesc('is_featured');
+        $query->orderByFeatured();
 
         match ($request->string('sirala')->toString()) {
             'fiyat_artan' => $query->orderBy('price'),

@@ -32,7 +32,7 @@ class QuickSearchController extends Controller
         $listings = Listing::query()->active()
             ->where(fn ($sub) => $sub->where('title', 'like', "%{$q}%")
                 ->orWhere('description', 'like', "%{$q}%"))
-            ->orderByDesc('is_featured')->latest()
+            ->orderByFeatured()->latest()
             ->limit(5)->get()
             ->map(fn (Listing $listing) => [
                 'category' => $listing->type instanceof ListingType ? $listing->type->getLabel() : (string) $listing->type,

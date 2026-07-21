@@ -63,7 +63,9 @@ class Company extends Model
 
     public function averageRating(): float
     {
-        return round((float) $this->reviews()->avg('rating') ?: 0.0, 1);
+        // Yalnızca yayında olan yorumlar — moderatörün gizlediği (gizli)
+        // yorumlar ortalamayı kirletmemeli (herkese açık sayfayla tutarlı).
+        return round((float) $this->reviews()->where('status', 'yayinda')->avg('rating') ?: 0.0, 1);
     }
 
     /** @return HasMany<CompanyReview, $this> */
