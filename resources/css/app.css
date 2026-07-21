@@ -57,6 +57,26 @@ input[type='week'] {
     color-scheme: dark;
 }
 
+/* Metin/arkaplan sınıfı verilmemiş form girdileri, Tailwind preflight'ın
+   color:inherit'i yüzünden koyu modda sayfanın AÇIK metin rengini miras alıp
+   BEYAZ kartlarda görünmez oluyordu ("yazı beyaz kalıyor" — 2026-07-21 iletişim
+   formu raporu). Bare girdilere tema-bağımsız, kendi içinde tutarlı stil ver:
+   açık zemin + koyu metin → hangi kartta olursa olsun okunur.
+   :where() özgüllüğü 0 olduğundan Tailwind bg-*/text-* sınıfları (ör. dark-mode
+   farkında bilinçli stillenmiş formlar) bu kuralı EZER; yalnızca stillenmemiş
+   girdileri etkiler. Filament admin ayrı tema kullandığından etkilenmez. */
+input:where(:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color'])),
+textarea,
+select {
+    background-color: #fff;
+    color: var(--color-stone-900);
+}
+
+input:where(:not([type='checkbox']):not([type='radio']))::placeholder,
+textarea::placeholder {
+    color: var(--color-stone-400);
+}
+
 /* Sürükleyerek hizalama (focalDrag / avatarAlignModal, bkz. app.js +
    panel/profile/edit.blade.php + panel/listings/edit.blade.php): gerçek
    parmak/fare girdisiyle tarayıcının kendi resim sürükleme mekanizması
