@@ -61,6 +61,11 @@ class Company extends Model
         return $this->hasMany(JobListing::class);
     }
 
+    public function averageRating(): float
+    {
+        return round((float) $this->reviews()->avg('rating') ?: 0.0, 1);
+    }
+
     /** @return HasMany<CompanyReview, $this> */
     public function reviews(): HasMany
     {
