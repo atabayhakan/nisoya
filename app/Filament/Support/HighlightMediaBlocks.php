@@ -61,18 +61,13 @@ class HighlightMediaBlocks
                 ]),
 
             Builder\Block::make('video')
-                ->label('Video dosyası')
+                ->label('Video dosyası / linki')
                 ->icon('heroicon-o-film')
                 ->schema([
-                    FileUpload::make('path')
-                        ->label('Video dosyası')
-                        ->disk('public')
-                        ->directory('highlights')
-                        ->acceptedFileTypes(['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v', 'video/ogg'])
-                        ->maxSize(51200)
-                        ->fetchFileInformation(false)
+                    TextInput::make('url')
+                        ->label('Video adresi / URL (ör. https://... veya /storage/highlights/video.mp4)')
                         ->nullable()
-                        ->helperText('Yükleme tamamen bittikten sonra "Değişiklikleri kaydet" butonuna basın.'),
+                        ->helperText('Medya kütüphanesinden veya sunucudan aldığınız doğrudan video linkini yapıştırın.'),
                     Toggle::make('autoplay')
                         ->label('Otomatik başlasın')
                         ->default(true),

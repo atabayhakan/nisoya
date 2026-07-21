@@ -153,4 +153,29 @@ class HomeHighlightTest extends TestCase
         $response->assertSee('autoplay');
         $response->assertSee('playsinline');
     }
+
+    public function test_homepage_renders_video_with_direct_url_input(): void
+    {
+        HomeHighlight::create([
+            'slot' => HomeHighlight::SLOT_BIG,
+            'title' => 'Video Vurgu',
+            'text' => 'Video Açıklama',
+            'icon' => 'sparkles',
+            'media' => [
+                [
+                    'type' => 'video',
+                    'data' => [
+                        'url' => 'https://example.com/demo.mp4',
+                        'autoplay' => true,
+                        'muted' => true,
+                        'loop' => true,
+                    ],
+                ],
+            ],
+        ]);
+
+        $response = $this->get('/');
+        $response->assertOk();
+        $response->assertSee('https://example.com/demo.mp4');
+    }
 }

@@ -36,12 +36,21 @@
 
     @case('video')
         @php
-            $path = $data['path'] ?? null;
+            $rawUrl = trim($data['url'] ?? $data['path'] ?? '');
             $autoplay = $data['autoplay'] ?? true;
             $muted = $data['muted'] ?? true;
             $loop = $data['loop'] ?? true;
+
+            $videoUrl = null;
+            if ($rawUrl !== '') {
+                if (\Illuminate\Support\Str::startsWith($rawUrl, ['http://', 'https://', '/'])) {
+                    $videoUrl = $rawUrl;
+                } else {
+                    $videoUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($rawUrl);
+                }
+            }
         @endphp
-        @if ($path)
+        @if ($videoUrl)
             <video
                 class="h-full w-full object-cover"
                 controls
@@ -51,7 +60,7 @@
                 @if ($loop) loop @endif
                 playsinline
             >
-                <source src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($path) }}" type="video/mp4">
+                <source src="{{ $videoUrl }}" type="video/mp4">
             </video>
         @endif
         @break
