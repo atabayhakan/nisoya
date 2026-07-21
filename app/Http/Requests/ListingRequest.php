@@ -104,4 +104,21 @@ class ListingRequest extends FormRequest
             'km_limit_per_day' => 'günlük km sınırı',
         ];
     }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $profanityFilter = app(\App\Services\ProfanityFilterService::class);
+
+            $titleError = $profanityFilter->validateText($this->input('title'));
+            if ($titleError) {
+                $validator->errors()->add('title', $titleError);
+            }
+
+            $descError = $profanityFilter->validateText($this->input('description'));
+            if ($descError) {
+                $validator->errors()->add('description', $descError);
+            }
+        });
+    }
 }

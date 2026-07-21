@@ -31,6 +31,13 @@ class CompanyReviewController extends Controller
             'comment' => ['nullable', 'string', 'max:1000'],
         ], attributes: ['rating' => 'puan', 'comment' => 'yorum']);
 
+        if (! empty($data['comment'])) {
+            $profanityError = app(\App\Services\ProfanityFilterService::class)->validateText($data['comment']);
+            if ($profanityError) {
+                return back()->withErrors(['comment' => $profanityError])->withInput();
+            }
+        }
+
         $review = CompanyReview::updateOrCreate(
             ['company_id' => $company->id, 'reviewer_id' => $reviewer->id],
             ['rating' => $data['rating'], 'comment' => $data['comment'] ?? null, 'status' => 'yayinda'],

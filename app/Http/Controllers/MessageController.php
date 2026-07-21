@@ -83,6 +83,15 @@ class MessageController extends Controller
         $body = trim((string) ($data['body'] ?? ''));
         $attachmentPath = null;
 
+        if ($body !== '') {
+            $profanityError = app(\App\Services\ProfanityFilterService::class)->validateText($body);
+            if ($profanityError) {
+                return $request->wantsJson()
+                    ? response()->json(['message' => $profanityError], 422)
+                    : back()->withErrors(['body' => $profanityError])->withInput();
+            }
+        }
+
         if ($request->hasFile('photo')) {
             // Sohbet fotoğrafı: EXIF/GPS strip edilir (konum sızmasın).
             $type = Message::TYPE_IMAGE;
@@ -248,6 +257,11 @@ class MessageController extends Controller
             'cikis' => ['nullable', 'date', 'after:giris'],
             'kisi' => ['nullable', 'integer', 'min:1', 'max:50'],
         ]);
+
+        $profanityError = app(\App\Services\ProfanityFilterService::class)->validateText($data['body']);
+        if ($profanityError) {
+            return back()->withErrors(['body' => $profanityError])->withInput();
+        }
 
         $body = $this->prependAvailabilityRequest($listing, $data);
 
