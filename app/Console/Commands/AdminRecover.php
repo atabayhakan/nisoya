@@ -69,7 +69,7 @@ class AdminRecover extends Command
         $admins = User::query()
             ->where('role', UserRole::Admin)
             ->orderBy('email')
-            ->get(['email', 'status']);
+            ->get();
 
         if ($admins->isEmpty()) {
             $this->warn('Hiç yönetici yok!');
@@ -77,9 +77,11 @@ class AdminRecover extends Command
             return;
         }
 
-        $this->table(
-            ['E-posta', 'Durum'],
-            $admins->map(fn (User $u): array => [$u->email, $u->status->value])->all()
-        );
+        $rows = [];
+        foreach ($admins as $admin) {
+            $rows[] = [$admin->email, $admin->status->value];
+        }
+
+        $this->table(['E-posta', 'Durum'], $rows);
     }
 }

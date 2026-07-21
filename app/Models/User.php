@@ -27,6 +27,10 @@ use NotificationChannels\WebPush\HasPushSubscriptions;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * @property UserStatus $status UserStatus::class cast (bkz. casts())
+ * @property array<int, string>|null $account_recovery_codes encrypted:array cast (bkz. casts())
+ */
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail, WebAuthnAuthenticatable
 {
     /** @use HasFactory<UserFactory> */
