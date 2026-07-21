@@ -150,6 +150,15 @@ return [
         'modul.davetiye' => ['group' => 'modul', 'label' => 'Davetiye', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
         'modul.is_ilanlari' => ['group' => 'modul', 'label' => 'İş İlanları', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
 
+        // --- Duyuru bandı (site üstü tek satır şerit) — kendi sayfası var
+        // (DuyuruBandi); groups'a eklenmedi. Kapalı/boşsa hiç render edilmez.
+        'duyuru.aktif' => ['group' => 'duyuru', 'label' => 'Duyuru bandı', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '0'],
+        'duyuru.metin' => ['group' => 'duyuru', 'label' => 'Duyuru metni', 'type' => 'textarea', 'default' => ''],
+        'duyuru.link' => ['group' => 'duyuru', 'label' => 'Bağlantı (opsiyonel)', 'type' => 'text', 'default' => ''],
+        'duyuru.link_metni' => ['group' => 'duyuru', 'label' => 'Bağlantı metni (opsiyonel)', 'type' => 'text', 'default' => ''],
+        'duyuru.renk' => ['group' => 'duyuru', 'label' => 'Renk', 'type' => 'select', 'options' => ['marka' => 'Marka (yeşil)', 'uyari' => 'Uyarı (amber)', 'onemli' => 'Önemli (kırmızı)'], 'default' => 'marka'],
+        'duyuru.kapatilabilir' => ['group' => 'duyuru', 'label' => 'Ziyaretçi kapatabilsin', 'type' => 'select', 'options' => ['1' => 'Evet', '0' => 'Hayır'], 'default' => '1'],
+
         // --- Nisoya Nabzı: topluluk hedefi + şehir elçileri ---
         'nabiz.hedef_sayi' => ['group' => 'nabiz', 'label' => 'Hedef sayı (0 = özelliği tamamen gizle)', 'type' => 'text', 'default' => '0'],
         'nabiz.hedef_metrik' => ['group' => 'nabiz', 'label' => 'Hedef neyi sayar?', 'type' => 'select', 'options' => ['yeni_uye' => 'Bu ay yeni üye', 'yeni_ilan' => 'Bu ay yeni ilan'], 'default' => 'yeni_uye'],

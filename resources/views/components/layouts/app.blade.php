@@ -149,6 +149,9 @@
     </style>
     <a href="#main-content" class="nisoya-skip-link">İçeriğe geç</a>
 
+    {{-- Site üstü duyuru bandı (panelden: Site Yönetimi → Duyuru Bandı) --}}
+    <x-announcement-bar />
+
     {{-- Üst menü --}}
     {{-- Faz H4: kaydırınca hafifçe küçülür/gölge kazanır, aşağı kaydırırken
          gizlenir, yukarı kaydırınca hemen geri açılır (bkz. resources/js/app.js
