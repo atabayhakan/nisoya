@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\ContactCategory;
 use App\Models\ContactMessage;
 use App\Notifications\NewContactMessageNotification;
+use App\Services\ProfanityFilterService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -26,7 +27,7 @@ class ContactMessageController extends Controller
         ]);
 
         // İletişim mesajı da küfür filtresinden geçmeli (denetim #8).
-        $profanityError = app(\App\Services\ProfanityFilterService::class)->validateText($data['message']);
+        $profanityError = app(ProfanityFilterService::class)->validateText($data['message']);
         if ($profanityError) {
             return back()->withErrors(['message' => $profanityError])->withInput();
         }

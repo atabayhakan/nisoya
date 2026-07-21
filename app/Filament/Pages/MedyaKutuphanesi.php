@@ -8,6 +8,7 @@ use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Str;
 use Livewire\WithFileUploads;
 use UnitEnum;
 
@@ -99,7 +100,7 @@ class MedyaKutuphanesi extends Page
         }
 
         if (MediaLibrary::createDirectory($name)) {
-            $cleanDir = \Illuminate\Support\Str::slug($name);
+            $cleanDir = Str::slug($name);
             $this->dir = $cleanDir;
             $this->newFolderName = '';
             Notification::make()->title("{$name} klasörü oluşturuldu")->success()->send();
@@ -163,7 +164,7 @@ class MedyaKutuphanesi extends Page
     private static function sanitizeFilename(string $original, string $ext): string
     {
         $name = basename(str_replace('\\', '/', $original));
-        $base = \Illuminate\Support\Str::slug(pathinfo($name, PATHINFO_FILENAME)) ?: 'dosya';
+        $base = Str::slug(pathinfo($name, PATHINFO_FILENAME)) ?: 'dosya';
 
         return "{$base}.{$ext}";
     }

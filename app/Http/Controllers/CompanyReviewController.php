@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\CompanyReview;
 use App\Models\JobApplication;
 use App\Notifications\NewCompanyReviewNotification;
+use App\Services\ProfanityFilterService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -33,7 +34,7 @@ class CompanyReviewController extends Controller
         ], attributes: ['rating' => 'puan', 'comment' => 'yorum']);
 
         if (! empty($data['comment'])) {
-            $profanityError = app(\App\Services\ProfanityFilterService::class)->validateText($data['comment']);
+            $profanityError = app(ProfanityFilterService::class)->validateText($data['comment']);
             if ($profanityError) {
                 return back()->withErrors(['comment' => $profanityError])->withInput();
             }

@@ -12,7 +12,7 @@ class ProfanityFilterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->filter = new ProfanityFilterService();
+        $this->filter = new ProfanityFilterService;
     }
 
     public function test_detects_clean_text(): void

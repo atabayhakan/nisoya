@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\EmploymentType;
 use App\Enums\ExperienceLevel;
 use App\Enums\SalaryPeriod;
+use App\Services\ProfanityFilterService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
@@ -60,7 +61,7 @@ class JobListingRequest extends FormRequest
         // İş ilanı başlığı/açıklaması da pazaryeri ilanları gibi küfür
         // filtresinden geçmeli (denetim #8 — kapsam boşluğu).
         $validator->after(function ($validator): void {
-            $filter = app(\App\Services\ProfanityFilterService::class);
+            $filter = app(ProfanityFilterService::class);
 
             foreach (['title', 'description'] as $field) {
                 if ($error = $filter->validateText($this->input($field))) {
