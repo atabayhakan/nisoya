@@ -24,7 +24,7 @@ class ReviewResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Topluluk';
+        return 'Topluluk & Etkinlikler';
     }
 
     public static function getNavigationLabel(): string

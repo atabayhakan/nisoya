@@ -70,4 +70,38 @@ class AdminPanelTest extends TestCase
         $this->assertDatabaseHas('countries', ['code' => 'DE', 'name_tr' => 'Almanya']);
         $this->assertDatabaseHas('categories', ['slug' => 'egitim-ders', 'parent_id' => null]);
     }
+
+    /**
+     * Denetim #7: her Resource/Page yalnızca 6 kanonik SaaS grubundan birini
+     * kullanmalı; eski/yazım-hatalı grup adları sidebar'da yinelenen kopuk
+     * gruplar yaratır ve panel provider'ın sabitlediği sırayı bozar.
+     */
+    public function test_every_admin_navigation_group_is_canonical(): void
+    {
+        $canonical = [
+            'Pazaryeri & Ticaret',
+            'İş & Kariyer Portalı',
+            'Topluluk & Etkinlikler',
+            'Kullanıcılar & Güvenlik',
+            'İçerik & Tasarım (CMS)',
+            'Sistem & Araçlar',
+        ];
+
+        $panel = \Filament\Facades\Filament::getPanel('admin');
+        $offenders = [];
+
+        foreach ([...$panel->getResources(), ...$panel->getPages()] as $class) {
+            $group = $class::getNavigationGroup();
+
+            if ($group !== null && ! in_array((string) $group, $canonical, true)) {
+                $offenders[$class] = (string) $group;
+            }
+        }
+
+        $this->assertSame(
+            [],
+            $offenders,
+            'Kanonik olmayan navigation grupları: '.json_encode($offenders, JSON_UNESCAPED_UNICODE)
+        );
+    }
 }

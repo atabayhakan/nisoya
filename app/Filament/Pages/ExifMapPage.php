@@ -20,7 +20,7 @@ class ExifMapPage extends Page
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Pazaryeri';
+    protected static string|\UnitEnum|null $navigationGroup = 'Pazaryeri & Ticaret';
 
     protected static ?string $navigationLabel = 'EXIF Haritası';
 
