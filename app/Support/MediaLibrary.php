@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -35,7 +34,7 @@ class MediaLibrary
             return false;
         }
 
-        $path = self::root() . DIRECTORY_SEPARATOR . $clean;
+        $path = self::root().DIRECTORY_SEPARATOR.$clean;
 
         if (is_dir($path)) {
             return true;
@@ -134,7 +133,7 @@ class MediaLibrary
         // Standart sistem klasörleri (ör. listings, avatars, highlights...)
         $standardDirs = ['listings', 'avatars', 'event-media', 'portfolio', 'highlights', 'pages', 'uploads'];
         foreach ($standardDirs as $std) {
-            $path = $root . DIRECTORY_SEPARATOR . $std;
+            $path = $root.DIRECTORY_SEPARATOR.$std;
             if (is_dir($path)) {
                 $stat = self::measure($path);
                 $dirs[$std] = $stat;
@@ -188,9 +187,15 @@ class MediaLibrary
             $isVid = self::isVideo($relative);
             $isDoc = self::isDocument($relative);
 
-            if ($type === 'image' && ! $isImg) continue;
-            if ($type === 'video' && ! $isVid) continue;
-            if ($type === 'document' && ! $isDoc) continue;
+            if ($type === 'image' && ! $isImg) {
+                continue;
+            }
+            if ($type === 'video' && ! $isVid) {
+                continue;
+            }
+            if ($type === 'document' && ! $isDoc) {
+                continue;
+            }
 
             $all[] = [
                 'path' => $relative,
@@ -294,7 +299,7 @@ class MediaLibrary
             return null;
         }
 
-        $path = self::root() . DIRECTORY_SEPARATOR . $topDir;
+        $path = self::root().DIRECTORY_SEPARATOR.$topDir;
 
         return is_dir($path) ? $path : null;
     }
@@ -308,13 +313,13 @@ class MediaLibrary
         }
 
         $root = realpath(self::root());
-        $real = realpath(self::root() . DIRECTORY_SEPARATOR . $relative);
+        $real = realpath(self::root().DIRECTORY_SEPARATOR.$relative);
 
         if ($root === false || $real === false) {
             return null;
         }
 
-        if (! str_starts_with($real, $root . DIRECTORY_SEPARATOR)) {
+        if (! str_starts_with($real, $root.DIRECTORY_SEPARATOR)) {
             return null;
         }
 

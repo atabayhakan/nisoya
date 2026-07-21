@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\StoryStatus;
 use App\Services\NabizService;
+use App\Services\ProfanityFilterService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -33,7 +34,7 @@ class StoryController extends Controller
         ], attributes: ['body' => 'hikaye']);
 
         // Hikaye metni de küfür filtresinden geçmeli (denetim #8).
-        $profanityError = app(\App\Services\ProfanityFilterService::class)->validateText($data['body']);
+        $profanityError = app(ProfanityFilterService::class)->validateText($data['body']);
         if ($profanityError) {
             return back()->withErrors(['body' => $profanityError])->withInput();
         }

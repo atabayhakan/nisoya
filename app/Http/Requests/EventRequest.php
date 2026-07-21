@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\EventType;
+use App\Services\ProfanityFilterService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -51,7 +52,7 @@ class EventRequest extends FormRequest
     {
         // Etkinlik başlığı/metni de küfür filtresinden geçmeli (denetim #8).
         $validator->after(function ($validator): void {
-            $filter = app(\App\Services\ProfanityFilterService::class);
+            $filter = app(ProfanityFilterService::class);
 
             foreach (['title', 'description', 'venue_name'] as $field) {
                 if ($error = $filter->validateText($this->input($field))) {

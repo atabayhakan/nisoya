@@ -11,6 +11,7 @@ use App\Models\Message;
 use App\Notifications\NewMessageNotification;
 use App\Services\ImageModerationService;
 use App\Services\ImageService;
+use App\Services\ProfanityFilterService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -84,7 +85,7 @@ class MessageController extends Controller
         $attachmentPath = null;
 
         if ($body !== '') {
-            $profanityError = app(\App\Services\ProfanityFilterService::class)->validateText($body);
+            $profanityError = app(ProfanityFilterService::class)->validateText($body);
             if ($profanityError) {
                 return $request->wantsJson()
                     ? response()->json(['message' => $profanityError], 422)
@@ -258,7 +259,7 @@ class MessageController extends Controller
             'kisi' => ['nullable', 'integer', 'min:1', 'max:50'],
         ]);
 
-        $profanityError = app(\App\Services\ProfanityFilterService::class)->validateText($data['body']);
+        $profanityError = app(ProfanityFilterService::class)->validateText($data['body']);
         if ($profanityError) {
             return back()->withErrors(['body' => $profanityError])->withInput();
         }

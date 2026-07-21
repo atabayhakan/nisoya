@@ -6,6 +6,7 @@ use App\Enums\ListingType;
 use App\Enums\PriceUnit;
 use App\Models\ListingPropertyDetail;
 use App\Models\ListingVehicleDetail;
+use App\Services\ProfanityFilterService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -108,7 +109,7 @@ class ListingRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
-            $profanityFilter = app(\App\Services\ProfanityFilterService::class);
+            $profanityFilter = app(ProfanityFilterService::class);
 
             $titleError = $profanityFilter->validateText($this->input('title'));
             if ($titleError) {

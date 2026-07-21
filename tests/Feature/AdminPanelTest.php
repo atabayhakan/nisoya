@@ -7,6 +7,7 @@ use App\Models\User;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -87,7 +88,7 @@ class AdminPanelTest extends TestCase
             'Sistem & Araçlar',
         ];
 
-        $panel = \Filament\Facades\Filament::getPanel('admin');
+        $panel = Filament::getPanel('admin');
         $offenders = [];
 
         foreach ([...$panel->getResources(), ...$panel->getPages()] as $class) {

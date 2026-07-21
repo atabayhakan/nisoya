@@ -75,11 +75,12 @@ class ProfanityFilterService
             foreach (self::BAD_WORDS as $badWord) {
                 if ($word === $badWord || $cleaned === $badWord) {
                     $found[] = $badWord;
+
                     continue;
                 }
 
                 // Çok karakterli küfür köklerinde kelime içi eşleşme
-                if (strlen($badWord) >= 4 && (str_contains($word, $badWord) || str_contains((string)$cleaned, $badWord))) {
+                if (strlen($badWord) >= 4 && (str_contains($word, $badWord) || str_contains((string) $cleaned, $badWord))) {
                     $found[] = $badWord;
                 }
             }
@@ -87,7 +88,7 @@ class ProfanityFilterService
 
         // Doğrudan cümle içi tam eşleşme kontrolleri (ör. "a.m.k", "o.ç")
         foreach (self::BAD_WORDS as $badWord) {
-            if (str_contains($normalized, ' ' . $badWord . ' ') || str_starts_with($normalized, $badWord . ' ') || str_ends_with($normalized, ' ' . $badWord)) {
+            if (str_contains($normalized, ' '.$badWord.' ') || str_starts_with($normalized, $badWord.' ') || str_ends_with($normalized, ' '.$badWord)) {
                 $found[] = $badWord;
             }
         }
@@ -108,7 +109,7 @@ class ProfanityFilterService
 
         $result = $text;
         foreach ($found as $badWord) {
-            $pattern = '/' . preg_quote($badWord, '/') . '/i';
+            $pattern = '/'.preg_quote($badWord, '/').'/i';
             $result = (string) preg_replace($pattern, $mask, $result);
         }
 
