@@ -17,7 +17,12 @@
             </div>
         </div>
 
-        <div id="harita" class="mt-4 h-[72vh] w-full overflow-hidden rounded-2xl border border-stone-200 shadow-sm dark:border-stone-800"></div>
+        {{-- isolate: Leaflet kendi panellerini (z-index:400) ve kontrollerini
+             (z-index:1000) kök yığın bağlamına sızdırır; bu, header'ın (z-30)
+             "Keşfet" mega-menüsünün haritanın ARKASINDA kalmasına yol açıyordu.
+             isolation:isolate haritayı kendi yığın bağlamına hapseder → header
+             ve açılır menü haritanın üstünde kalır. --}}
+        <div id="harita" class="isolate mt-4 h-[72vh] w-full overflow-hidden rounded-2xl border border-stone-200 shadow-sm dark:border-stone-800"></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
