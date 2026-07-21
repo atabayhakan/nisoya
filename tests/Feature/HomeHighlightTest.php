@@ -127,4 +127,30 @@ class HomeHighlightTest extends TestCase
         ]);
         $this->get('/')->assertOk();
     }
+
+    public function test_homepage_renders_video_with_custom_autoplay_muted_settings(): void
+    {
+        HomeHighlight::create([
+            'slot' => HomeHighlight::SLOT_BIG,
+            'title' => 'Video Vurgu',
+            'text' => 'Video Açıklama',
+            'icon' => 'sparkles',
+            'media' => [
+                [
+                    'type' => 'video',
+                    'data' => [
+                        'path' => 'highlights/sample.mp4',
+                        'autoplay' => true,
+                        'muted' => false,
+                        'loop' => true,
+                    ],
+                ],
+            ],
+        ]);
+
+        $response = $this->get('/');
+        $response->assertOk();
+        $response->assertSee('autoplay');
+        $response->assertSee('playsinline');
+    }
 }

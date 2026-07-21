@@ -8,6 +8,8 @@ use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 
+use Filament\Forms\Components\Toggle;
+
 /**
  * Büyük/küçük vurgu kartlarındaki medya alanının (bkz.
  * HomeHighlightResourceBase::form, docs/plans/2026-07-18-buyuk-kart-medya-design.md)
@@ -48,6 +50,13 @@ class HighlightMediaBlocks
                                 }
                             },
                         ]),
+                    Toggle::make('autoplay')
+                        ->label('Otomatik başlasın')
+                        ->default(true),
+                    Toggle::make('muted')
+                        ->label('Sessiz başlasın')
+                        ->default(true)
+                        ->helperText('Tarayıcılar otomatik başlayan videoları genellikle sessiz modda kabul eder.'),
                 ]),
 
             Builder\Block::make('video')
@@ -61,6 +70,16 @@ class HighlightMediaBlocks
                         ->acceptedFileTypes(['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v', 'video/ogg'])
                         ->maxSize(51200)
                         ->required(),
+                    Toggle::make('autoplay')
+                        ->label('Otomatik başlasın')
+                        ->default(true),
+                    Toggle::make('muted')
+                        ->label('Sessiz başlasın')
+                        ->default(true)
+                        ->helperText('Sessiz kapalı olursa bazı tarayıcılar (Chrome/Safari) otomatik başlatmaya izin vermeyebilir.'),
+                    Toggle::make('loop')
+                        ->label('Sürekli dönsün (Loop)')
+                        ->default(true),
                 ]),
         ];
     }
