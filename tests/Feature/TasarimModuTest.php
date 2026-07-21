@@ -165,6 +165,22 @@ class TasarimModuTest extends TestCase
         $this->get('/')->assertOk()->assertSee('transition-duration: 0.01ms', false);
     }
 
+    public function test_obsidian_mode_locks_dark_and_hides_theme_toggle(): void
+    {
+        // Varsayılan modda: koyu-mod kilidi yok, tema değiştir butonu var.
+        $this->get('/')->assertOk()
+            ->assertSee('const FORCE_DARK = false', false)
+            ->assertSee('Karanlık/aydınlık tema değiştir', false);
+
+        // Obsidian: koyu moda kilitlenir (isim/önizleme ile tutarlı) ve artık
+        // no-op olacak tema-değiştir butonu gizlenir.
+        Settings::setMany(['gorunum.tasarim_modu' => 'obsidian']);
+
+        $this->get('/')->assertOk()
+            ->assertSee('const FORCE_DARK = true', false)
+            ->assertDontSee('Karanlık/aydınlık tema değiştir', false);
+    }
+
     public function test_obsidian_no_longer_hijacks_stone_50(): void
     {
         // Denetim #4: obsidian artık stone-50'yi near-black yapmamalı.

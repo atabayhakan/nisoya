@@ -207,17 +207,20 @@
                     :default-country="$emergencyDefaultCountry"
                 />
 
-                {{-- Dark mode toggle --}}
-                <button
-                    type="button"
-                    onclick="window.toggleTheme && window.toggleTheme()"
-                    class="inline-flex rounded-lg p-2 text-stone-600 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
-                    title="Temayı değiştir"
-                    aria-label="Karanlık/aydınlık tema değiştir"
-                >
-                    <x-heroicon-o-moon class="h-5 w-5 dark:hidden" />
-                    <x-heroicon-o-sun class="hidden h-5 w-5 dark:inline" />
-                </button>
+                {{-- Dark mode toggle — obsidian teması koyu moda kilitli olduğu
+                     için o modda gizlenir (aksi hâlde no-op buton kalırdı). --}}
+                @unless (setting('gorunum.tasarim_modu', 'eski') === 'obsidian')
+                    <button
+                        type="button"
+                        onclick="window.toggleTheme && window.toggleTheme()"
+                        class="inline-flex rounded-lg p-2 text-stone-600 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+                        title="Temayı değiştir"
+                        aria-label="Karanlık/aydınlık tema değiştir"
+                    >
+                        <x-heroicon-o-moon class="h-5 w-5 dark:hidden" />
+                        <x-heroicon-o-sun class="hidden h-5 w-5 dark:inline" />
+                    </button>
+                @endunless
 
                 {{-- Faz H3: bildirim/profil/Panelim/İlan Ver/Giriş-Kayıt-Çıkış
                      mobilde alt sekme çubuğuna taşındı (bkz. x-mobile-tab-bar) —
