@@ -64,6 +64,8 @@ class ActivityLog extends Page implements HasForms, HasTable
                 ->color(fn (?string $state): string => match ($state) {
                     'user' => 'info',
                     'listing' => 'success',
+                    'ayar' => 'warning',
+                    'auth' => 'danger',
                     default => 'gray',
                 })
                 ->placeholder('—'),
@@ -117,6 +119,8 @@ class ActivityLog extends Page implements HasForms, HasTable
                 ->options([
                     'user' => 'Kullanıcı',
                     'listing' => 'İlan',
+                    'ayar' => 'Ayarlar',
+                    'auth' => 'Güvenlik',
                 ]),
             Filter::make('created_at')
                 ->form([
