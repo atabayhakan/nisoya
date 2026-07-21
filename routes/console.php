@@ -22,3 +22,8 @@ Schedule::command('geoip:update')->weekly()->withoutOverlapping();
 
 // Etkinlik medyası saklama politikası: 11. ayda ev sahibini uyar, 12. ayda sil
 Schedule::command('events:purge-media')->dailyAt('03:30')->withoutOverlapping();
+
+// Günlük tam yedek (veritabanı + medya) + eski yedekleri temizle.
+// Sahibin geliştirici olmadan siteyi kurtarabilmesi için güvenlik ağı
+// (bkz. Admin → Sistem → Yedekleme). Saat config/backup.php'den ayarlanabilir.
+Schedule::command('backup:run')->dailyAt(config('backup.daily_time', '04:00'))->withoutOverlapping();

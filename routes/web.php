@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BackupDownloadController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\CompanyController;
@@ -115,6 +116,11 @@ Route::middleware(['auth', 'active.user', 'admin.role'])->prefix('yonetim')->gro
         Route::get('/cluster', [ExifMapController::class, 'clusters'])->name('clusters');
         Route::get('/istatistik', [ExifMapController::class, 'stats'])->name('stats');
     });
+
+    // Yedek indirme (dosyalar web'e kapalı storage/app/backups altında)
+    Route::get('/yedek/{name}/indir', BackupDownloadController::class)
+        ->where('name', '[A-Za-z0-9._-]+')
+        ->name('admin.backup.download');
 });
 
 // PWA offline yedek sayfası
