@@ -62,9 +62,9 @@ input[type='week'] {
    BEYAZ kartlarda görünmez oluyordu ("yazı beyaz kalıyor" — 2026-07-21 iletişim
    formu raporu). Bare girdilere tema-bağımsız, kendi içinde tutarlı stil ver:
    açık zemin + koyu metin → hangi kartta olursa olsun okunur.
-   :where() özgüllüğü 0 olduğundan Tailwind bg-*/text-* sınıfları (ör. dark-mode
-   farkında bilinçli stillenmiş formlar) bu kuralı EZER; yalnızca stillenmemiş
-   girdileri etkiler. Filament admin ayrı tema kullandığından etkilenmez. */
+   :where() özgüllüğü 0 olduğundan Tailwind'in "bg-" ve "text-" renk sınıfları
+   (ör. dark-mode farkında bilinçli stillenmiş formlar) bu kuralı EZER; yalnızca
+   stillenmemiş girdileri etkiler. Filament admin ayrı tema, etkilenmez. */
 input:where(:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color'])),
 textarea,
 select {

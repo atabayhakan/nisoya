@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\UserRole;
 use App\Filament\Pages\AnasayfaBolumleri;
+use App\Models\HomeHighlight;
 use App\Models\User;
 use App\Support\HomeSections;
 use App\Support\Settings;
@@ -89,5 +90,24 @@ class HomeSectionsTest extends TestCase
         $this->actingAs($member)
             ->get('/yonetim/anasayfa-bolumleri')
             ->assertRedirect(route('dashboard'));
+    }
+
+    /** Görselli vurgu kartı: resim render edilir + başlık overlay'de görünür (görsel-öncelikli). */
+    public function test_highlight_with_image_renders_image_forward(): void
+    {
+        HomeHighlight::create([
+            'slot' => HomeHighlight::SLOT_BIG,
+            'title' => 'Görselli Vurgu Kartı',
+            'text' => 'Test açıklama',
+            'icon' => 'language',
+            'media' => [['type' => 'resim', 'data' => ['path' => 'highlights/test-gorsel.png']]],
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('highlights/test-gorsel.png') // görsel gerçekten render edildi
+            ->assertSee('Görselli Vurgu Kartı');       // başlık overlay'de
     }
 }
