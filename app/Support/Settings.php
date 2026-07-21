@@ -42,6 +42,60 @@ class Settings
         }
 
         self::forget();
+
+        self::logChange(array_keys($values));
+    }
+
+    /**
+     * Denetim izi: kim hangi ayar alanını değiştirdi (Faz 4 · İşlem Geçmişi).
+     * Yalnızca panelden (kimlik doğrulanmış) yapılan değişiklikler loglanır;
+     * seeder/console/test sessizce atlanır. Değerler DEĞİL, yalnızca anahtarlar
+     * kaydedilir (parola gibi hassas değerler günlüğe sızmaz).
+     *
+     * @param  array<int,string>  $keys
+     */
+    protected static function logChange(array $keys): void
+    {
+        if ($keys === [] || ! auth()->check()) {
+            return;
+        }
+
+        try {
+            activity('ayar')
+                ->causedBy(auth()->user())
+                ->withProperties(['keys' => $keys])
+                ->log(self::describeChange($keys));
+        } catch (\Throwable) {
+            // Denetim kaydı ayar kaydını asla bozmamalı.
+        }
+    }
+
+    /**
+     * Değişen anahtarların ön eklerinden okunur bir alan adı üretir
+     * (ör. "E-posta (SMTP), Modüller ayarları güncellendi").
+     *
+     * @param  array<int,string>  $keys
+     */
+    protected static function describeChange(array $keys): string
+    {
+        $labels = [
+            'mail' => 'E-posta (SMTP)', 'mail_template' => 'E-posta metinleri',
+            'modul' => 'Modüller', 'seo' => 'SEO', 'duyuru' => 'Duyuru bandı',
+            'ai' => 'Yapay zeka', 'home' => 'Anasayfa', 'gorunum' => 'Görünüm',
+            'reklam' => 'Reklam', 'bagis' => 'Bağış', 'nabiz' => 'Nabız',
+            'iletisim' => 'İletişim', 'footer' => 'Footer', 'header' => 'Header',
+            'genel' => 'Genel',
+        ];
+
+        $prefixes = array_values(array_unique(array_map(
+            fn (string $key): string => explode('.', $key)[0],
+            $keys
+        )));
+
+        $names = array_map(fn (string $prefix): string => $labels[$prefix] ?? $prefix, $prefixes);
+        $shown = implode(', ', array_slice($names, 0, 4));
+
+        return $shown.' ayarları güncellendi';
     }
 
     public static function forget(): void
