@@ -43,7 +43,7 @@
     </section>
 
     {{-- Canlı Akış: son ilanlar arasında geçiş yapan şerit --}}
-    @if ($activityFeed->isNotEmpty())
+    @if (\App\Support\HomeSections::visible('canli_akis') && $activityFeed->isNotEmpty())
         <div
             x-data="activityTicker({{ $activityFeed->count() }})"
             class="border-y border-stone-200 bg-white/80 backdrop-blur dark:border-stone-800 dark:bg-stone-900/80"
@@ -128,6 +128,7 @@
         </section>
     @endif
 
+    @if (\App\Support\HomeSections::visible('deger_onerileri'))
     {{-- Değer önerileri + istatistik şeridi (bento grid) --}}
     <section class="border-y border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-950">
         <div class="mx-auto max-w-6xl px-4 py-14">
@@ -277,6 +278,7 @@
             </div>
         </div>
     </section>
+    @endif
 
     {{-- Faz İ2 ("2. Tasarım" pilotu): istatistik kartındaki "22 ülke" metnini
          gerçek veriyle gösteren Nabız Haritası. Sadece yeni tasarım modunda —
@@ -289,6 +291,7 @@
         </section>
     @endif
 
+    @if (\App\Support\HomeSections::visible('kategoriler'))
     {{-- Kategoriler --}}
     <section class="mx-auto max-w-6xl px-4 py-14" x-data x-reveal>
         <div class="flex items-end justify-between">
@@ -307,9 +310,10 @@
             @endforeach
         </div>
     </section>
+    @endif
 
     {{-- Popüler ülkeler --}}
-    @if ($countries->isNotEmpty())
+    @if (\App\Support\HomeSections::visible('ulkeler') && $countries->isNotEmpty())
         <section class="mx-auto max-w-6xl px-4 pb-2" x-data x-reveal>
             <h2 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Ülkeler</h2>
             <div class="mt-5 flex flex-wrap gap-2">
@@ -329,6 +333,7 @@
         <x-zone zone-key="anasayfa_ust" />
     </div>
 
+    @if (\App\Support\HomeSections::visible('yeni_ilanlar'))
     {{-- Yeni ilanlar --}}
     <section class="mt-14 bg-white py-14 dark:bg-stone-900" x-data x-reveal>
         <div class="mx-auto max-w-6xl px-4">
@@ -356,7 +361,9 @@
             @endif
         </div>
     </section>
+    @endif
 
+    @if (\App\Support\HomeSections::visible('nasil_calisir'))
     {{-- Nasıl çalışır --}}
     <section class="bg-white py-14 dark:bg-stone-900" x-data x-reveal>
         <div class="mx-auto max-w-6xl px-4">
@@ -382,7 +389,9 @@
             </div>
         </div>
     </section>
+    @endif
 
+    @if (\App\Support\HomeSections::visible('cta'))
     {{-- CTA --}}
     <section class="mx-auto max-w-6xl px-4 py-14" x-data x-reveal>
         <div class="rounded-3xl bg-emerald-600 px-6 py-12 text-center text-white sm:px-12 dark:bg-emerald-700">
@@ -391,6 +400,7 @@
             <a href="{{ url('/kayit') }}" class="mt-6 inline-block rounded-xl bg-white px-6 py-3 font-semibold text-emerald-700 shadow-lg transition hover:-translate-y-0.5 hover:bg-emerald-50 hover:shadow-xl dark:bg-stone-50 dark:hover:bg-stone-100 dark:text-emerald-700">{{ setting('home.cta_buton') }}</a>
         </div>
     </section>
+    @endif
 
     {{-- Alan: sayfa sonu (reklam/duyuru) --}}
     <div class="mx-auto max-w-6xl px-4 pb-6">
