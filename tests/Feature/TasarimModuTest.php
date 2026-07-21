@@ -154,6 +154,17 @@ class TasarimModuTest extends TestCase
         $this->get('/')->assertOk()->assertSee('backdrop-filter: none', false);
     }
 
+    public function test_smooth_animations_off_emits_reduced_motion(): void
+    {
+        // Kapalıyken tüm geçişler anlık olur (reduced-motion); açıkken (varsayılan)
+        // böyle bir kural yok.
+        $this->get('/')->assertOk()->assertDontSee('transition-duration: 0.01ms', false);
+
+        Settings::setMany(['gorunum.smooth_animations' => '0']);
+
+        $this->get('/')->assertOk()->assertSee('transition-duration: 0.01ms', false);
+    }
+
     public function test_obsidian_no_longer_hijacks_stone_50(): void
     {
         // Denetim #4: obsidian artık stone-50'yi near-black yapmamalı.

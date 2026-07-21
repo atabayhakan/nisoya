@@ -175,6 +175,20 @@ class Listing extends Model
         return $query->where('status', ListingStatus::Aktif->value);
     }
 
+    /**
+     * Öne çıkanları ÜSTTE sıralar — ama yalnızca SÜRESİ GEÇMEMİŞ olanları.
+     * Ham is_featured'a göre sıralamak, süresi dolan ilanları günlük
+     * expire komutuna kadar ~24 saate dek haksız yere üstte tutuyordu
+     * (bkz. isCurrentlyFeatured / denetim). SQLite + MySQL uyumlu.
+     */
+    public function scopeOrderByFeatured($query)
+    {
+        return $query->orderByRaw(
+            '(is_featured = 1 and (featured_until is null or featured_until > ?)) desc',
+            [now()]
+        );
+    }
+
     /** Activity log: status + featured değişikliklerini logla. */
     public function getActivitylogOptions(): LogOptions
     {

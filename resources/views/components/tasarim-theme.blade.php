@@ -4,6 +4,7 @@
     $fontFamily = setting('gorunum.font_family', 'sans');
     $borderRadius = setting('gorunum.border_radius', 'modern');
     $glass = setting('gorunum.glassmorphism', '1') === '1';
+    $smoothAnimations = setting('gorunum.smooth_animations', '1') === '1';
 
     // Geçerli #rgb / #rrggbb değilse güvenli varsayılana düş — böylece hem bozuk
     // :root bloğu hem de <style> içine CSS enjeksiyonu (denetim #10) engellenir.
@@ -105,6 +106,18 @@
         [class*="backdrop-blur"] {
             -webkit-backdrop-filter: none !important;
             backdrop-filter: none !important;
+        }
+    @endunless
+
+    @unless ($smoothAnimations)
+        /* "Akıcı Geçiş Animasyonları" kapalı → tüm geçiş/animasyonlar anlık olur
+           (reduced-motion modu). Bileşenler çalışmaya devam eder, yalnızca
+           yumuşak geçiş efekti kalkar. */
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
         }
     @endunless
 </style>

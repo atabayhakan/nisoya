@@ -109,6 +109,19 @@ class JobListing extends Model
         return $query->where('status', JobStatus::Aktif->value);
     }
 
+    /**
+     * Öne çıkanları ÜSTTE sıralar — ama yalnızca SÜRESİ GEÇMEMİŞ olanları
+     * (ham is_featured, süresi dolanı günlük expire'a kadar üstte tutuyordu).
+     * SQLite + MySQL uyumlu.
+     */
+    public function scopeOrderByFeatured($query)
+    {
+        return $query->orderByRaw(
+            '(is_featured = 1 and (featured_until is null or featured_until > ?)) desc',
+            [now()]
+        );
+    }
+
     /** Son başvuru tarihi geçmiş mi? */
     public function isExpired(): bool
     {

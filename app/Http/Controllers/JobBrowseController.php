@@ -43,9 +43,9 @@ class JobBrowseController extends Controller
             $query->where('is_remote', true);
         }
 
-        // Sıralama: öne çıkanlar önce, sonra en yeni
+        // Sıralama: öne çıkanlar (süresi geçmemiş) önce, sonra en yeni
         $jobs = $query
-            ->orderByDesc('is_featured')
+            ->orderByFeatured()
             ->latest()
             ->paginate(12)
             ->withQueryString();

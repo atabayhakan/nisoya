@@ -87,7 +87,7 @@ class PropertyBrowseController extends Controller
             $query->whereHas('propertyDetail', fn ($d) => $d->where('max_guests', '>=', $guests));
         }
 
-        $query->orderByDesc('is_featured');
+        $query->orderByFeatured();
 
         match ($request->string('sirala')->toString()) {
             'fiyat_artan' => $query->orderBy('price'),

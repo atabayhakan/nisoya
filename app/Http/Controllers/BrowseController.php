@@ -69,8 +69,8 @@ class BrowseController extends Controller
             $query->where('type', $type);
         }
 
-        // Öne çıkanlar her zaman üstte, sonra seçilen sıralama
-        $query->orderByDesc('is_featured');
+        // Öne çıkanlar (süresi geçmemiş) her zaman üstte, sonra seçilen sıralama
+        $query->orderByFeatured();
 
         match ($request->string('sirala')->toString()) {
             'fiyat_artan' => $query->orderBy('price'),
