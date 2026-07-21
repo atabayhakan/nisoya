@@ -52,17 +52,14 @@ abstract class HomeHighlightResourceBase extends Resource
         return $schema->components([
             TextInput::make('title')
                 ->label('Başlık')
-                ->required()
                 ->maxLength(60),
             TextInput::make('text')
                 ->label('Metin')
-                ->required()
                 ->maxLength(160),
             Select::make('icon')
                 ->label('İkon')
                 ->options(HighlightIcon::OPTIONS)
                 ->native(false)
-                ->required()
                 ->helperText('Aşağıya medya eklenirse kartta ikon yerine o gösterilir.'),
             MediaBuilder::make('media')
                 ->label('Medya (opsiyonel)')

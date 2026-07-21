@@ -181,18 +181,30 @@
                                         </div>
                                     @endforeach
                                 </div>
-                                <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent"></div>
-                                <div class="absolute inset-x-0 bottom-0 p-6 lg:p-8">
-                                    <h3 class="text-2xl font-bold text-white drop-shadow-md">{{ $highlight->title }}</h3>
-                                    <p class="mt-1 max-w-sm text-sm text-white/90 drop-shadow">{{ $highlight->text }}</p>
-                                </div>
+                                @if ($highlight->title || $highlight->text)
+                                    <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent"></div>
+                                    <div class="absolute inset-x-0 bottom-0 p-6 lg:p-8">
+                                        @if ($highlight->title)
+                                            <h3 class="text-2xl font-bold text-white drop-shadow-md">{{ $highlight->title }}</h3>
+                                        @endif
+                                        @if ($highlight->text)
+                                            <p class="mt-1 max-w-sm text-sm text-white/90 drop-shadow">{{ $highlight->text }}</p>
+                                        @endif
+                                    </div>
+                                @endif
                             @else
                                 <div class="p-6 lg:p-8">
-                                    <span class="grid h-12 w-12 place-items-center rounded-2xl bg-white/15">
-                                        <x-dynamic-component :component="'heroicon-o-'.$highlight->heroicon()" class="h-6 w-6" />
-                                    </span>
-                                    <h3 class="mt-6 text-2xl font-bold">{{ $highlight->title }}</h3>
-                                    <p class="mt-2 max-w-xs text-emerald-50">{{ $highlight->text }}</p>
+                                    @if ($highlight->icon)
+                                        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-white/15">
+                                            <x-dynamic-component :component="'heroicon-o-'.$highlight->heroicon()" class="h-6 w-6" />
+                                        </span>
+                                    @endif
+                                    @if ($highlight->title)
+                                        <h3 class="mt-6 text-2xl font-bold">{{ $highlight->title }}</h3>
+                                    @endif
+                                    @if ($highlight->text)
+                                        <p class="mt-2 max-w-xs text-emerald-50">{{ $highlight->text }}</p>
+                                    @endif
                                 </div>
                             @endif
                         </div>
@@ -258,18 +270,30 @@
                                         </div>
                                     @endforeach
                                 </div>
-                                <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent"></div>
-                                <div class="absolute inset-x-0 bottom-0 p-4">
-                                    <h3 class="font-semibold text-white drop-shadow">{{ $highlight->title }}</h3>
-                                    <p class="mt-0.5 text-xs text-white/90 drop-shadow">{{ $highlight->text }}</p>
-                                </div>
+                                @if ($highlight->title || $highlight->text)
+                                    <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent"></div>
+                                    <div class="absolute inset-x-0 bottom-0 p-4">
+                                        @if ($highlight->title)
+                                            <h3 class="font-semibold text-white drop-shadow">{{ $highlight->title }}</h3>
+                                        @endif
+                                        @if ($highlight->text)
+                                            <p class="mt-0.5 text-xs text-white/90 drop-shadow">{{ $highlight->text }}</p>
+                                        @endif
+                                    </div>
+                                @endif
                             @else
                                 <div class="p-6">
-                                    <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
-                                        <x-dynamic-component :component="'heroicon-o-'.$highlight->heroicon()" class="h-5 w-5" />
-                                    </span>
-                                    <h3 class="mt-4 font-semibold text-stone-900 dark:text-stone-100">{{ $highlight->title }}</h3>
-                                    <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">{{ $highlight->text }}</p>
+                                    @if ($highlight->icon)
+                                        <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
+                                            <x-dynamic-component :component="'heroicon-o-'.$highlight->heroicon()" class="h-5 w-5" />
+                                        </span>
+                                    @endif
+                                    @if ($highlight->title)
+                                        <h3 class="mt-4 font-semibold text-stone-900 dark:text-stone-100">{{ $highlight->title }}</h3>
+                                    @endif
+                                    @if ($highlight->text)
+                                        <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">{{ $highlight->text }}</p>
+                                    @endif
                                 </div>
                             @endif
                         </div>

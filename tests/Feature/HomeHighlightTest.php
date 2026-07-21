@@ -106,4 +106,25 @@ class HomeHighlightTest extends TestCase
         $this->actingAs($member)->get('/yonetim/big-highlights')->assertRedirect(route('dashboard'));
         $this->actingAs($member)->get('/yonetim/small-highlights')->assertRedirect(route('dashboard'));
     }
+
+    public function test_highlight_can_be_saved_with_null_title_text_and_icon(): void
+    {
+        $highlight = HomeHighlight::create([
+            'slot' => HomeHighlight::SLOT_BIG,
+            'title' => null,
+            'text' => null,
+            'icon' => null,
+            'media' => [
+                ['type' => 'video', 'data' => ['path' => 'highlights/sample.mp4']],
+            ],
+        ]);
+
+        $this->assertDatabaseHas('home_highlights', [
+            'id' => $highlight->id,
+            'title' => null,
+            'text' => null,
+            'icon' => null,
+        ]);
+        $this->get('/')->assertOk();
+    }
 }

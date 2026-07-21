@@ -58,8 +58,8 @@ class HighlightMediaBlocks
                         ->label('Video dosyası')
                         ->disk('public')
                         ->directory('highlights')
-                        ->acceptedFileTypes(['video/mp4'])
-                        ->maxSize(20480)
+                        ->acceptedFileTypes(['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v', 'video/ogg'])
+                        ->maxSize(51200)
                         ->required(),
                 ]),
         ];
