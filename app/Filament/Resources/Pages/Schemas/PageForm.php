@@ -6,6 +6,7 @@ use App\Enums\PageStatus;
 use App\Filament\Support\ContentBlocks;
 use App\Models\Page;
 use Filament\Forms\Components\Builder;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -45,6 +46,11 @@ class PageForm
                         ->options(PageStatus::class)
                         ->default(PageStatus::Taslak->value)
                         ->required(),
+                    DateTimePicker::make('publish_at')
+                        ->label('Yayın zamanı (ileri tarih)')
+                        ->seconds(false)
+                        ->native(false)
+                        ->helperText('Boş = hemen yayında. İleri bir tarih seçersen, durum "Yayında" olsa bile o ana kadar ziyaretçilere görünmez; zamanı gelince otomatik yayınlanır.'),
                     TextInput::make('sort_order')
                         ->label('Sıra (footer)')
                         ->numeric()

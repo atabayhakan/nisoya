@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Pages\Tables;
 
 use App\Enums\PageStatus;
+use App\Models\Page;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -30,6 +31,14 @@ class PagesTable
                 TextColumn::make('status')
                     ->label('Durum')
                     ->badge(),
+                TextColumn::make('publish_at')
+                    ->label('Zamanlanan yayın')
+                    ->badge()
+                    ->color('warning')
+                    ->placeholder('—')
+                    ->state(fn (Page $record): ?string => $record->isScheduled()
+                        ? $record->publish_at?->format('d.m.Y H:i')
+                        : null),
                 IconColumn::make('show_in_footer')
                     ->label('Footer')
                     ->boolean(),
