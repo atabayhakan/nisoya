@@ -24,16 +24,18 @@
                 </span>
                 <span class="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50">Nisoya</span>
             </a>
-            <button
-                type="button"
-                onclick="window.toggleTheme && window.toggleTheme()"
-                class="ml-2 inline-flex rounded-lg p-2 text-stone-500 transition hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
-                title="Temayı değiştir"
-                aria-label="Karanlık/aydınlık tema değiştir"
-            >
-                <x-heroicon-o-moon class="h-5 w-5 dark:hidden" />
-                <x-heroicon-o-sun class="hidden h-5 w-5 dark:inline" />
-            </button>
+            @unless (setting('gorunum.tasarim_modu', 'eski') === 'obsidian')
+                <button
+                    type="button"
+                    onclick="window.toggleTheme && window.toggleTheme()"
+                    class="ml-2 inline-flex rounded-lg p-2 text-stone-500 transition hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
+                    title="Temayı değiştir"
+                    aria-label="Karanlık/aydınlık tema değiştir"
+                >
+                    <x-heroicon-o-moon class="h-5 w-5 dark:hidden" />
+                    <x-heroicon-o-sun class="hidden h-5 w-5 dark:inline" />
+                </button>
+            @endunless
         </div>
 
         <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-stone-200 dark:bg-stone-900 dark:ring-stone-800">

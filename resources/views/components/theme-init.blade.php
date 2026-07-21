@@ -1,9 +1,11 @@
+@php $forceDark = setting('gorunum.tasarim_modu', 'eski') === 'obsidian'; @endphp
 <script>
     // Karanlık/aydınlık tema yönetimi.
     // - İlk yüklemede: localStorage > sistem tercihi > 'light'
     // - Diğer sekmelerle senkronize (storage event)
     // - FOUC (flash of wrong theme) önlemek için <head>'de inline çalıştırılmalı
     (function () {
+        const FORCE_DARK = @json($forceDark);
         const KEY = 'nisoya_theme';
 
         function getStored() {
@@ -24,6 +26,16 @@
             } else {
                 root.classList.remove('dark');
             }
+        }
+
+        // "Midnight Obsidian" teması koyu moda KİLİTLENİR — isim/önizleme/açıklama
+        // ile tutarlı ve okunur olması için. Kullanıcının kayıtlı tercihi
+        // DEĞİŞTİRİLMEZ; obsidian'dan çıkınca tercihi geri gelir.
+        if (FORCE_DARK) {
+            applyTheme('dark');
+            window.toggleTheme = function () { return 'dark'; };
+
+            return;
         }
 
         // İlk yükleme — senkron (FOUC önleme)
