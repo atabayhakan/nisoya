@@ -31,7 +31,9 @@ class HighlightMediaBlocks
                         ->image()
                         ->disk('public')
                         ->directory('highlights')
-                        ->maxSize(10240),
+                        ->maxSize(10240)
+                        ->fetchFileInformation(false)
+                        ->nullable(),
                 ]),
 
             Builder\Block::make('youtube')
@@ -68,6 +70,8 @@ class HighlightMediaBlocks
                         ->directory('highlights')
                         ->acceptedFileTypes(['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v', 'video/ogg'])
                         ->maxSize(51200)
+                        ->fetchFileInformation(false)
+                        ->nullable()
                         ->helperText('Yükleme tamamen bittikten sonra "Değişiklikleri kaydet" butonuna basın.'),
                     Toggle::make('autoplay')
                         ->label('Otomatik başlasın')

@@ -84,6 +84,7 @@ php artisan event:cache
 # cache/log dosyaları root sahipli olur. php-fpm (www-data) storage ve
 # bootstrap/cache içine YAZABİLMELİ. SADECE bu iki dizin chown edilir — tüm
 # ağaçta chown (vendor'da binlerce dosya) SSH komutunu 5 dk timeout'a takar.
+mkdir -p storage/app/public/highlights storage/app/livewire-tmp
 info "storage + bootstrap/cache sahipliği www-data'ya veriliyor..."
 chown -R www-data:www-data storage bootstrap/cache
 
