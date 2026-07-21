@@ -183,6 +183,53 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->mergeAiConfig();
+        $this->mergeMailConfig();
+    }
+
+    /**
+     * E-posta (SMTP) ayarlarını (admin panel → Mail Ayarları) config('mail.*')
+     * üzerine runtime'da yaz. Öncelik: DB > env > kod varsayılanı. Böylece
+     * e-posta sağlayıcısı değişince .env düzenlemeye/SSH'a gerek kalmaz.
+     * Yalnızca DB'de bir SMTP sunucusu (host) girilmişse devreye girer; aksi
+     * halde env varsayılanları korunur (Faz 1 · G3).
+     */
+    protected function mergeMailConfig(): void
+    {
+        $host = Settings::get('mail.host');
+        if (! $host) {
+            return; // DB'de ayar yok → env/config korunur
+        }
+
+        Config::set('mail.default', 'smtp');
+        Config::set('mail.mailers.smtp.host', $host);
+
+        $port = Settings::get('mail.port');
+        if ($port) {
+            Config::set('mail.mailers.smtp.port', (int) $port);
+        }
+
+        // Kullanıcı adı/parola boş olabilir (kimlik doğrulamasız sunucular) →
+        // null olarak yazılır ki eski env değeri sızmasın.
+        Config::set('mail.mailers.smtp.username', Settings::get('mail.username') ?: null);
+        Config::set('mail.mailers.smtp.password', Settings::get('mail.password') ?: null);
+
+        // Symfony şeması: SSL (465) → smtps (örtük TLS); TLS (587) → smtp (STARTTLS).
+        $encryption = Settings::get('mail.encryption');
+        Config::set('mail.mailers.smtp.scheme', match ($encryption) {
+            'ssl' => 'smtps',
+            'tls' => 'smtp',
+            default => null,
+        });
+
+        $fromAddress = Settings::get('mail.from_address');
+        if ($fromAddress) {
+            Config::set('mail.from.address', $fromAddress);
+        }
+
+        $fromName = Settings::get('mail.from_name');
+        if ($fromName) {
+            Config::set('mail.from.name', $fromName);
+        }
     }
 
     /**
@@ -219,6 +266,15 @@ class AppServiceProvider extends ServiceProvider
         $moderation = Settings::get('ai.moderasyon_aktif');
         if ($moderation !== null && $moderation !== '') {
             Config::set('ai.features.image_moderation', $moderation === '1');
+        }
+
+        // Ana anahtar (Faz 1): '0' ise sağlayıcı/anahtar girili ve alt özellikler
+        // açık olsa bile TÜM yapay zekayı kapat. Sağlayıcı çökerse ya da maliyeti
+        // durdurmak için sahibin tek düğmesi. En sonda ezer ki üstteki bireysel
+        // ayarları geçersiz kılsın.
+        if (Settings::get('ai.aktif') === '0') {
+            Config::set('ai.features.quick_listing', false);
+            Config::set('ai.features.image_moderation', false);
         }
     }
 }

@@ -116,6 +116,9 @@ return [
         // Varsayılanlar boş: DB boşsa Settings::get boş döner → mergeRuntimeConfig
         // env/config varsayılanına düşer (DB > env > kod). API anahtarı hassas
         // olduğundan varsayılanı boş.
+        // Ana anahtar: '0' ise sağlayıcı/anahtar girili ve alt özellikler açık
+        // olsa bile TÜM AI kapanır (bkz. mergeAiConfig — sağlayıcı çökerse tek düğme).
+        'ai.aktif' => ['group' => 'yapay_zeka', 'label' => 'Yapay zeka açık', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
         'ai.saglayici' => ['group' => 'yapay_zeka', 'label' => 'Sağlayıcı', 'type' => 'select', 'options' => [
             'openrouter' => 'OpenRouter',
             'openai' => 'OpenAI',
@@ -126,6 +129,19 @@ return [
         'ai.model' => ['group' => 'yapay_zeka', 'label' => 'Model', 'type' => 'text', 'default' => ''],
         'ai.hizli_ilan_aktif' => ['group' => 'yapay_zeka', 'label' => 'Fotoğrafla hızlı ilan', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
         'ai.moderasyon_aktif' => ['group' => 'yapay_zeka', 'label' => 'Görsel moderasyonu (uygunsuz içerik ön-elemesi)', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
+
+        // --- E-posta (SMTP) ---
+        // NOT: 'yapay_zeka' gibi bu grup da bilinçli olarak 'groups' listesine
+        // EKLENMEDİ — genel İçerik formunda render edilmez; kendi sayfası var
+        // (MailAyarlari). Parola hassastır. Varsayılanlar boş: DB boşsa
+        // AppServiceProvider::mergeMailConfig() env/config'e düşer (DB > env > kod).
+        'mail.host' => ['group' => 'mail', 'label' => 'SMTP sunucusu', 'type' => 'text', 'default' => ''],
+        'mail.port' => ['group' => 'mail', 'label' => 'Port', 'type' => 'text', 'default' => ''],
+        'mail.username' => ['group' => 'mail', 'label' => 'Kullanıcı adı', 'type' => 'text', 'default' => ''],
+        'mail.password' => ['group' => 'mail', 'label' => 'Parola', 'type' => 'password', 'default' => ''],
+        'mail.encryption' => ['group' => 'mail', 'label' => 'Şifreleme', 'type' => 'select', 'options' => ['ssl' => 'SSL (port 465)', 'tls' => 'TLS/STARTTLS (port 587)'], 'default' => ''],
+        'mail.from_address' => ['group' => 'mail', 'label' => 'Gönderen e-posta', 'type' => 'text', 'default' => ''],
+        'mail.from_name' => ['group' => 'mail', 'label' => 'Gönderen adı', 'type' => 'text', 'default' => ''],
 
         // --- Nisoya Nabzı: topluluk hedefi + şehir elçileri ---
         'nabiz.hedef_sayi' => ['group' => 'nabiz', 'label' => 'Hedef sayı (0 = özelliği tamamen gizle)', 'type' => 'text', 'default' => '0'],
