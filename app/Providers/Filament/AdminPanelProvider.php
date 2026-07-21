@@ -46,20 +46,18 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->darkMode(true) // Sistem teması ile otomatik senkronize; kullanıcı override edebilir.
             ->defaultThemeMode(ThemeMode::System)
-            // Grup sırası kullanım sıklığına göre: önce günlük içerik
-            // (Pazaryeri, İş İlanları, Topluluk), sonra ara sıra dokunulan
-            // yapılandırma (Site Yönetimi, Tasarım, Ayarlar), en sonda
-            // sadece denetim amaçlı Sistem. Bu, Resource'ların kendi
-            // navigationSort'larından bağımsız olarak grup sırasını sabitler.
+            // Grup sırası kullanım sıklığına göre sabitlenir (Resource'ların
+            // kendi navigationSort'larından bağımsız). Bu adlar, tüm
+            // Resource/Page'lerin bildirdiği KANONİK 6 grup adıyla birebir
+            // eşleşmelidir — aksi hâlde eşleşmeyen grup sidebar'ın en sonuna
+            // düşer (bkz. 2026-07-22 denetimi #7).
             ->navigationGroups([
-                NavigationGroup::make('Pazaryeri'),
-                NavigationGroup::make('İş İlanları'),
-                NavigationGroup::make('Topluluk'),
-                NavigationGroup::make('İletişim'),
-                NavigationGroup::make('Site Yönetimi'),
-                NavigationGroup::make('Tasarım'),
-                NavigationGroup::make('Ayarlar'),
-                NavigationGroup::make('Sistem'),
+                NavigationGroup::make('Pazaryeri & Ticaret'),
+                NavigationGroup::make('İş & Kariyer Portalı'),
+                NavigationGroup::make('Topluluk & Etkinlikler'),
+                NavigationGroup::make('Kullanıcılar & Güvenlik'),
+                NavigationGroup::make('İçerik & Tasarım (CMS)'),
+                NavigationGroup::make('Sistem & Araçlar'),
             ])
             ->userMenuItems([
                 MenuItem::make()

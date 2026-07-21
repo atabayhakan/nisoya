@@ -92,6 +92,18 @@ class JobModuleTest extends TestCase
         $this->assertDatabaseHas('job_listings', ['company_id' => $company->id, 'title' => 'Garson']);
     }
 
+    public function test_job_listing_with_profanity_is_rejected(): void
+    {
+        // Denetim #8: iş ilanı da küfür filtresinden geçmeli.
+        [$employer] = $this->employerWithJob();
+
+        $this->actingAs($employer)->post('/panel/is-ilani', [
+            'title' => 'Garson amk', 'description' => 'Hafta sonu garson.', 'employment_type' => 'yari_zamanli', 'positions' => 2,
+        ])->assertSessionHasErrors('title');
+
+        $this->assertDatabaseMissing('job_listings', ['title' => 'Garson amk']);
+    }
+
     public function test_employer_cannot_edit_another_companys_job(): void
     {
         [, , $job] = $this->employerWithJob();

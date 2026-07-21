@@ -54,4 +54,19 @@ class JobListingRequest extends FormRequest
             'positions' => 'pozisyon sayısı',
         ];
     }
+
+    public function withValidator($validator): void
+    {
+        // İş ilanı başlığı/açıklaması da pazaryeri ilanları gibi küfür
+        // filtresinden geçmeli (denetim #8 — kapsam boşluğu).
+        $validator->after(function ($validator): void {
+            $filter = app(\App\Services\ProfanityFilterService::class);
+
+            foreach (['title', 'description'] as $field) {
+                if ($error = $filter->validateText($this->input($field))) {
+                    $validator->errors()->add($field, $error);
+                }
+            }
+        });
+    }
 }

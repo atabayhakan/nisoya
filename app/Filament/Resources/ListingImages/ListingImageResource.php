@@ -35,7 +35,7 @@ class ListingImageResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Pazaryeri';
+    protected static string|UnitEnum|null $navigationGroup = 'Pazaryeri & Ticaret';
 
     protected static ?int $navigationSort = 5;
 

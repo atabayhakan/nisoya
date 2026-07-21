@@ -25,6 +25,12 @@ class ContactMessageController extends Controller
             'category' => 'konu', 'message' => 'mesaj',
         ]);
 
+        // İletişim mesajı da küfür filtresinden geçmeli (denetim #8).
+        $profanityError = app(\App\Services\ProfanityFilterService::class)->validateText($data['message']);
+        if ($profanityError) {
+            return back()->withErrors(['message' => $profanityError])->withInput();
+        }
+
         $contactMessage = ContactMessage::create([
             ...$data,
             'user_id' => $request->user()?->id,
