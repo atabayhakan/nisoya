@@ -30,16 +30,37 @@ class OpenAiProvider implements AiProvider
 
     public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
     {
+        return $this->postChat([[
+            'role' => 'user',
+            'content' => [
+                ['type' => 'text', 'text' => $prompt],
+                ['type' => 'image_url', 'image_url' => ['url' => "data:{$mediaType};base64,{$base64Image}"]],
+            ],
+        ]], $jsonSchema, $timeoutSeconds);
+    }
+
+    public function analyzeText(string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
+    {
+        return $this->postChat([[
+            'role' => 'user',
+            'content' => $prompt,
+        ]], $jsonSchema, $timeoutSeconds);
+    }
+
+    /**
+     * Chat Completions çağrısını yapıp yanıtı JSON'a çözer. analyzeImage ve
+     * analyzeText yalnızca "messages" içeriğiyle farklılaşır; gerisi ortak.
+     *
+     * @param  array<int, array<string, mixed>>  $messages
+     * @param  array<string, mixed>|null  $jsonSchema
+     * @return array<string, mixed>|null
+     */
+    private function postChat(array $messages, ?array $jsonSchema, ?int $timeoutSeconds): ?array
+    {
         $body = [
             'model' => $this->config['model'],
             'max_tokens' => 1024,
-            'messages' => [[
-                'role' => 'user',
-                'content' => [
-                    ['type' => 'text', 'text' => $prompt],
-                    ['type' => 'image_url', 'image_url' => ['url' => "data:{$mediaType};base64,{$base64Image}"]],
-                ],
-            ]],
+            'messages' => $messages,
             'response_format' => $this->responseFormat($jsonSchema),
         ];
 

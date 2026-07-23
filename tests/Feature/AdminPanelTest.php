@@ -43,6 +43,7 @@ class AdminPanelTest extends TestCase
             '/yonetim/company-reviews/create',
             '/yonetim/job-feature-requests',
             '/yonetim/job-feature-requests/create',
+            '/yonetim/outreach-targets',
         ];
 
         foreach ($pages as $page) {
