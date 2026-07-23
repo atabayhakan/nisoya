@@ -3,9 +3,11 @@
 namespace Tests\Feature\Growth;
 
 use App\Enums\UserRole;
+use App\Filament\Resources\OutreachTargets\Pages\ListOutreachTargets;
 use App\Models\OutreachTarget;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class OutreachResourceTest extends TestCase
@@ -61,5 +63,17 @@ class OutreachResourceTest extends TestCase
         $this->actingAs($moderator)
             ->get('/yonetim/outreach-targets')
             ->assertForbidden();
+    }
+
+    public function test_panel_button_runs_discovery(): void
+    {
+        $this->actingAs($this->admin());
+
+        Livewire::test(ListOutreachTargets::class)
+            ->call('runDiscovery', 'US', 3);
+
+        // Panelden tetiklenen keşif havuzu doldurdu.
+        $this->assertGreaterThan(0, OutreachTarget::where('country', 'US')->count());
+        $this->assertNotNull(OutreachTarget::where('name', 'Anadolu Kebap House')->first());
     }
 }
