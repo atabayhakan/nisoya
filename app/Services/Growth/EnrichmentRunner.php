@@ -22,46 +22,49 @@ final class EnrichmentRunner
      */
     public function run(?string $country = null, int $limit = 50): array
     {
-        $query = OutreachTarget::query()
-            ->whereNull('contact_email')
-            ->whereNotNull('website')
-            ->where('detection_band', '!=', DetectionResult::BAND_NOT);
+        $candidates = OutreachTarget::query()
+            ->pendingEnrichment()
+            ->when($country !== null, fn ($q) => $q->where('country', strtoupper((string) $country)))
+            ->limit($limit)
+            ->get();
 
-        if ($country !== null) {
-            $query->where('country', strtoupper($country));
-        }
-
-        $candidates = $query->limit($limit)->get();
-
-        $enriched = 0;
-        $skippedBlocked = 0;
-        $noEmail = 0;
+        $stats = ['candidates' => $candidates->count(), 'enriched' => 0, 'skipped_blocked' => 0, 'no_email' => 0];
 
         foreach ($candidates as $target) {
-            // GDPR: gönderim engelli bölgede kişisel iletişim TOPLAMA.
-            if ($target->marketing_status !== RegionPolicy::ALLOWED) {
-                $skippedBlocked++;
-
-                continue;
-            }
-
-            $email = $this->enricher->enrich($target->website);
-
-            if ($email === null) {
-                $noEmail++;
-
-                continue;
-            }
-
-            $target->update(['contact_email' => $email]);
-            $enriched++;
+            match ($this->enrichOne($target)) {
+                'enriched' => $stats['enriched']++,
+                'blocked' => $stats['skipped_blocked']++,
+                default => $stats['no_email']++,
+            };
         }
 
-        return [
-            'candidates' => $candidates->count(),
-            'enriched' => $enriched,
-            'skipped_blocked' => $skippedBlocked,
-            'no_email' => $noEmail,
-        ];
+        return $stats;
+    }
+
+    /**
+     * Tek bir adayı zenginleştirir (kuyruk işinin birimi). GDPR: gönderim engelli
+     * bölgede kişisel iletişim TOPLANMAZ.
+     *
+     * @return 'enriched'|'blocked'|'no_email'
+     */
+    public function enrichOne(OutreachTarget $target): string
+    {
+        if ($target->marketing_status !== RegionPolicy::ALLOWED) {
+            return 'blocked';
+        }
+
+        if ($target->website === null || $target->contact_email !== null) {
+            return 'no_email';
+        }
+
+        $email = $this->enricher->enrich($target->website);
+
+        if ($email === null) {
+            return 'no_email';
+        }
+
+        $target->update(['contact_email' => $email]);
+
+        return 'enriched';
     }
 }
