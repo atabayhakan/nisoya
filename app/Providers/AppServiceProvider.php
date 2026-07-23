@@ -196,6 +196,22 @@ class AppServiceProvider extends ServiceProvider
 
         $this->mergeAiConfig();
         $this->mergeMailConfig();
+        $this->mergeGrowthConfig();
+    }
+
+    /**
+     * Büyüme Ajanı ayarlarını (admin panel → Büyüme Ajanı) config('growth.*')
+     * üzerine runtime'da yaz. Öncelik: DB > env. Google Places anahtarı panelden
+     * girilince gerçek keşif ANINDA aktifleşir (yoksa fixture kaynağı) —
+     * config:cache/SSH gerekmez. BusinessDiscoverySource bağlaması bu config'i
+     * tembel (resolve anında) okuduğu için değeri buradan alır.
+     */
+    protected function mergeGrowthConfig(): void
+    {
+        $placesKey = Settings::get('growth.google_places_api_key');
+        if ($placesKey) {
+            Config::set('growth.google_places.api_key', $placesKey);
+        }
     }
 
     /**

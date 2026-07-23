@@ -68,6 +68,39 @@ final class GooglePlacesDiscoverySource implements BusinessDiscoverySource
         }
     }
 
+    /**
+     * Anahtarın gerçekten çalıştığını doğrular (admin panel "test et" için).
+     * search()'ten farklı: HTTP durumunu ayırt eder — boş sonuç ≠ hata.
+     *
+     * @return array{ok: bool, message: string}
+     */
+    public function probe(): array
+    {
+        if (! $this->isConfigured()) {
+            return ['ok' => false, 'message' => 'API anahtarı girilmemiş.'];
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'X-Goog-Api-Key' => $this->apiKey,
+                'X-Goog-FieldMask' => 'places.id',
+            ])->timeout(10)->post(self::ENDPOINT, [
+                'textQuery' => 'Turkish restaurant New York',
+                'maxResultCount' => 1,
+            ]);
+
+            if ($response->successful()) {
+                $count = count($response->json('places') ?? []);
+
+                return ['ok' => true, 'message' => "Google Places yanıt verdi ({$count} sonuç). Anahtar çalışıyor."];
+            }
+
+            return ['ok' => false, 'message' => $response->json('error.message') ?? ('HTTP '.$response->status())];
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'message' => $e->getMessage()];
+        }
+    }
+
     /** @param  array<string, mixed>  $place */
     private function map(array $place, ?string $country): DiscoveredBusiness
     {
