@@ -4,9 +4,12 @@ namespace Tests\Feature\Growth;
 
 use App\Enums\UserRole;
 use App\Filament\Resources\OutreachTargets\Pages\ListOutreachTargets;
+use App\Jobs\RunDiscoveryJob;
 use App\Models\OutreachTarget;
 use App\Models\User;
+use App\Services\Growth\DiscoveryRunner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -65,15 +68,24 @@ class OutreachResourceTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_panel_button_runs_discovery(): void
+    public function test_panel_button_queues_discovery_jobs(): void
     {
+        Queue::fake();
         $this->actingAs($this->admin());
 
         Livewire::test(ListOutreachTargets::class)
             ->call('runDiscovery', 'US', 3);
 
-        // Panelden tetiklenen keşif havuzu doldurdu.
-        $this->assertGreaterThan(0, OutreachTarget::where('country', 'US')->count());
+        // ABD: 5 şehir × 3 meslek = 15 iş kuyruklanır (senkron değil → 504 yok).
+        Queue::assertPushed(RunDiscoveryJob::class, 15);
+    }
+
+    public function test_discovery_job_persists_targets(): void
+    {
+        (new RunDiscoveryJob('US', 'New York', ['key' => 'lokanta', 'tr' => 'lokanta', 'en' => 'restaurant', 'osm' => 'amenity=restaurant']))
+            ->handle(app(DiscoveryRunner::class));
+
+        // Fixture kaynağı (auto, anahtar yok) şehir/meslekten bağımsız US döndürür.
         $this->assertNotNull(OutreachTarget::where('name', 'Anadolu Kebap House')->first());
     }
 }
