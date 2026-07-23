@@ -24,7 +24,9 @@ final class DiscoveryRunner
     ) {}
 
     /**
-     * Bir ülke için katalogdaki şehir × meslek kombinasyonlarında keşif çalıştırır.
+     * Bir ülke için katalogdaki TÜM şehir × meslek kombinasyonlarında keşif
+     * çalıştırır (senkron — CLI içindir; panel yavaşlamamak için kombo başına
+     * kuyruk işi kullanır, bkz. App\Jobs\RunDiscoveryJob).
      *
      * @return array{source:string, queries:int, discovered:int, turkish:int, ambiguous:int, blocked:int, saved:int, created:int}
      */
@@ -34,23 +36,39 @@ final class DiscoveryRunner
         $cities = GrowthCatalog::CITIES[$country] ?? [];
         $trades = array_slice(GrowthCatalog::tradesForCountry($country), 0, $tradeLimit);
 
-        // Her şehir × meslek için kaynaktan çek + external_id ile tekilleştir
-        // (aynı işletme birden çok aramada çıkabilir; tespiti bir kez yapmak
-        // için önce toplarız). Metin-arama sorgu üretimi Google kaynağının içinde;
-        // Overpass etiket tabanlı çalışır — runner kaynak-agnostiktir.
-        /** @var array<string, DiscoveredBusiness> $found */
-        $found = [];
-        $searches = 0;
+        $totals = ['queries' => 0, 'discovered' => 0, 'turkish' => 0, 'ambiguous' => 0, 'blocked' => 0, 'saved' => 0, 'created' => 0];
+
         foreach ($cities as $city) {
             foreach ($trades as $trade) {
-                $searches++;
-                foreach ($this->source->discover($city, $country, $trade, $perQuery) as $business) {
-                    $found[$business->id()] = $business;
+                foreach ($this->runForCityTrade($country, $city, $trade, $perQuery, $useLlm) as $key => $value) {
+                    $totals[$key] += $value;
                 }
             }
         }
 
-        $stats = ['turkish' => 0, 'ambiguous' => 0, 'blocked' => 0, 'saved' => 0, 'created' => 0];
+        return ['source' => $this->source->name(), ...$totals];
+    }
+
+    /**
+     * Tek bir şehir × meslek kombinasyonu için keşif+tespit+kalıcılaştırma.
+     * Kısa sürer (birkaç ağ çağrısı) — kuyruk işlerinin çalıştırdığı birim budur.
+     *
+     * @param  array{key: string, tr: string, en: string, osm?: string, local?: string}  $trade
+     * @return array{queries:int, discovered:int, turkish:int, ambiguous:int, blocked:int, saved:int, created:int}
+     */
+    public function runForCityTrade(string $country, string $city, array $trade, int $perQuery = 20, bool $useLlm = false): array
+    {
+        $country = strtoupper($country);
+
+        // Kaynaktan çek + external_id ile tekilleştir (aynı işletme birden çok
+        // dil varyantında çıkabilir; tespiti bir kez yapmak için önce toplarız).
+        /** @var array<string, DiscoveredBusiness> $found */
+        $found = [];
+        foreach ($this->source->discover($city, $country, $trade, $perQuery) as $business) {
+            $found[$business->id()] = $business;
+        }
+
+        $stats = ['queries' => 1, 'discovered' => count($found), 'turkish' => 0, 'ambiguous' => 0, 'blocked' => 0, 'saved' => 0, 'created' => 0];
 
         foreach ($found as $business) {
             $result = $useLlm
@@ -90,11 +108,6 @@ final class DiscoveryRunner
             $stats['blocked'] += $marketing === RegionPolicy::BLOCKED ? 1 : 0;
         }
 
-        return [
-            'source' => $this->source->name(),
-            'queries' => $searches,
-            'discovered' => count($found),
-            ...$stats,
-        ];
+        return $stats;
     }
 }

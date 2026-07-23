@@ -31,3 +31,11 @@ Schedule::command('backup:run')->dailyAt(config('backup.daily_time', '04:00'))->
 // Zamanı gelen ileri tarihli sayfaların footer menü önbelleğini tazele
 // (sayfanın kendisi zaten otomatik görünür — bkz. Faz 4 zamanlanmış yayın).
 Schedule::command('content:publish-due')->everyFifteenMinutes()->withoutOverlapping();
+
+// Büyüme Ajanı keşif işlerini (RunDiscoveryJob, 'database' kuyruğu) her dakika
+// işle. Ayrı bir queue worker/supervisor gerektirmez — scheduler kuyruğu
+// boşaltır. --stop-when-empty: iş yoksa hemen çıkar; --max-time: dakikayı aşma;
+// withoutOverlapping: aynı anda iki işleyici olmasın (çift işleme job kilidiyle
+// zaten önlenir, bu ek güvence).
+Schedule::command('queue:work database --stop-when-empty --max-time=55 --tries=1')
+    ->everyMinute()->withoutOverlapping();

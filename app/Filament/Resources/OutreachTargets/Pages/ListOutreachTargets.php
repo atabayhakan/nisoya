@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\OutreachTargets\Pages;
 
 use App\Filament\Resources\OutreachTargets\OutreachTargetResource;
-use App\Services\Growth\DiscoveryRunner;
+use App\Jobs\RunDiscoveryJob;
 use App\Support\Growth\GrowthCatalog;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -23,7 +23,7 @@ class ListOutreachTargets extends ListRecords
                 ->label('Yeni keşif çalıştır')
                 ->icon(Heroicon::OutlinedMagnifyingGlass)
                 ->modalHeading('Ülkede Türk işletme keşfet')
-                ->modalDescription('Seçtiğin ülkede katalogdaki şehir ve mesleklerde keşif çalıştırılır; sonuçlar bu havuza eklenir. (Gönderim yapılmaz.)')
+                ->modalDescription('Seçtiğin ülkede katalogdaki şehir ve mesleklerde keşif ARKA PLANDA çalışır; sonuçlar birkaç dakika içinde bu havuza düşer (sayfayı yenile). Gönderim yapılmaz.')
                 ->modalSubmitActionLabel('Keşfet')
                 ->schema([
                     Select::make('country')
@@ -43,10 +43,11 @@ class ListOutreachTargets extends ListRecords
     }
 
     /**
-     * Keşfi senkron çalıştırır (şu an fixture kaynağı — anlık). Gerçek Google
-     * Places anahtarı eklendiğinde çok sayıda API çağrısı yavaş olacağından bu
-     * kuyruğa alınmalı (sonraki adım). Livewire ile test edilebilsin diye ayrı
-     * public metot (bkz. repo deseni: KurtarmaKiti/Yedekleme).
+     * Keşfi ARKA PLANA alır: her şehir × meslek için bir kuyruk işi kuyruklar
+     * (RunDiscoveryJob), böylece HTTP isteği anında döner. Gerçek kaynakla
+     * (Overpass/Google) senkron keşif nginx'te 504 veriyordu — bu yüzden işe
+     * bölündü. Livewire ile test edilebilsin diye ayrı public metot (bkz. repo
+     * deseni: KurtarmaKiti/Yedekleme).
      */
     public function runDiscovery(string $country, int $trades = 3): void
     {
@@ -58,11 +59,20 @@ class ListOutreachTargets extends ListRecords
             return;
         }
 
-        $stats = app(DiscoveryRunner::class)->runForCountry($country, $trades);
+        $cities = GrowthCatalog::CITIES[$country];
+        $tradeList = array_slice(GrowthCatalog::tradesForCountry($country), 0, max(1, $trades));
+
+        $count = 0;
+        foreach ($cities as $city) {
+            foreach ($tradeList as $trade) {
+                RunDiscoveryJob::dispatch($country, $city, $trade)->onConnection('database');
+                $count++;
+            }
+        }
 
         Notification::make()
-            ->title("Keşif tamamlandı: {$country}")
-            ->body("{$stats['discovered']} işletme bulundu · {$stats['turkish']} Türk · {$stats['ambiguous']} sınırda · {$stats['saved']} havuza yazıldı.")
+            ->title('Keşif kuyruğa alındı')
+            ->body("{$country} için {$count} arama arka planda çalışacak. Sonuçlar birkaç dakika içinde bu havuza düşer — sayfayı yenileyerek takip edebilirsin.")
             ->success()
             ->send();
     }
