@@ -90,7 +90,25 @@ class OutreachTargetsTable
                     ->label('İnceleme bekleyen'),
             ])
             ->defaultSort('detection_confidence', 'desc')
+            // Uzun havuzda gezinmeyi kolaylaştır: sayfa boyutu seçenekleri +
+            // sayfa değişince otomatik en üste kaydır (Filament sayfa numaralarını
+            // tablonun ALTINDA gösterir — üstte arama + filtreler zaten var).
+            ->paginationPageOptions([10, 25, 50, 100])
+            ->defaultPaginationPageOption(25)
+            ->scrollToTopOnPageChange()
             ->recordActions([
+                Action::make('google')
+                    ->label('Google')
+                    ->icon(Heroicon::OutlinedMagnifyingGlass)
+                    ->color('gray')
+                    ->url(fn (OutreachTarget $r): string => 'https://www.google.com/search?q='.rawurlencode(trim($r->name.' '.$r->city.' '.$r->country)))
+                    ->openUrlInNewTab(),
+                Action::make('maps')
+                    ->label('Maps')
+                    ->icon(Heroicon::OutlinedMapPin)
+                    ->color('gray')
+                    ->url(fn (OutreachTarget $r): string => 'https://www.google.com/maps/search/?api=1&query='.rawurlencode(trim($r->name.' '.$r->city)))
+                    ->openUrlInNewTab(),
                 Action::make('onayla')
                     ->label('Onayla')
                     ->icon(Heroicon::OutlinedCheck)
