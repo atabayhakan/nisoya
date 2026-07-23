@@ -19,6 +19,7 @@ use App\Services\Ai\AiManager;
 use App\Services\Growth\Discovery\BusinessDiscoverySource;
 use App\Services\Growth\Discovery\FixtureDiscoverySource;
 use App\Services\Growth\Discovery\GooglePlacesDiscoverySource;
+use App\Services\Growth\Discovery\OverpassDiscoverySource;
 use App\Services\PerformanceService;
 use App\Services\VisitorLocationService;
 use App\Support\Settings;
@@ -46,13 +47,19 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AiManager::class);
         $this->app->bind(AiProvider::class, fn ($app) => $app->make(AiManager::class)->provider());
 
-        // Büyüme Ajanı keşif kaynağı: Google Places anahtarı varsa gerçek Places,
-        // yoksa fixture (yerel/test/demo uçtan uca çalışsın). Runner yalnızca
-        // BusinessDiscoverySource arayüzünü konuşur.
-        $this->app->bind(BusinessDiscoverySource::class, function () {
-            $google = new GooglePlacesDiscoverySource(config('growth.google_places.api_key'));
+        // Büyüme Ajanı keşif kaynağı — admin panelden seçilir (config('growth.source')):
+        //  overpass → OpenStreetMap (ÜCRETSİZ), google → Google Places (anahtar),
+        //  fixture → demo, auto → anahtar varsa Google yoksa fixture (güvenli
+        //  varsayılan; testler bunu kullanır). Runner yalnızca arayüzü konuşur.
+        $this->app->bind(BusinessDiscoverySource::class, function ($app) {
+            $google = fn () => new GooglePlacesDiscoverySource(config('growth.google_places.api_key'));
 
-            return $google->isConfigured() ? $google : new FixtureDiscoverySource;
+            return match (config('growth.source', 'auto')) {
+                'overpass' => $app->make(OverpassDiscoverySource::class),
+                'google' => $google()->isConfigured() ? $google() : $app->make(OverpassDiscoverySource::class),
+                'fixture' => new FixtureDiscoverySource,
+                default => $google()->isConfigured() ? $google() : new FixtureDiscoverySource,
+            };
         });
     }
 
@@ -211,6 +218,11 @@ class AppServiceProvider extends ServiceProvider
         $placesKey = Settings::get('growth.google_places_api_key');
         if ($placesKey) {
             Config::set('growth.google_places.api_key', $placesKey);
+        }
+
+        $source = Settings::get('growth.source');
+        if ($source) {
+            Config::set('growth.source', $source);
         }
     }
 

@@ -30,21 +30,22 @@ final class GrowthCatalog
 
     /**
      * Meslek presetleri — Nisoya hizmet kategorileriyle örtüşür. Her biri Türkçe
-     * (tr), İngilizce (en) ve gerektiğinde yerel (local) terim taşır.
+     * (tr), İngilizce (en), gerektiğinde yerel (local) terim ve OpenStreetMap
+     * etiketi (osm, "key=value") taşır. osm alanı Overpass keşif kaynağı içindir.
      *
-     * @var list<array{key: string, tr: string, en: string, local?: string}>
+     * @var list<array{key: string, tr: string, en: string, osm: string, local?: string}>
      */
     public const TRADES = [
-        ['key' => 'berber', 'tr' => 'berber', 'en' => 'barber'],
-        ['key' => 'kuafor', 'tr' => 'kuaför', 'en' => 'hair salon'],
-        ['key' => 'mobilyaci', 'tr' => 'mobilyacı', 'en' => 'furniture maker'],
-        ['key' => 'elektrikci', 'tr' => 'elektrikçi', 'en' => 'electrician'],
-        ['key' => 'cilingir', 'tr' => 'çilingir', 'en' => 'locksmith'],
-        ['key' => 'lokanta', 'tr' => 'lokanta', 'en' => 'restaurant'],
-        ['key' => 'insaat', 'tr' => 'inşaat ustası', 'en' => 'contractor'],
-        ['key' => 'oto', 'tr' => 'oto tamir', 'en' => 'auto repair'],
-        ['key' => 'terzi', 'tr' => 'terzi', 'en' => 'tailor'],
-        ['key' => 'nakliyat', 'tr' => 'nakliyat', 'en' => 'moving company'],
+        ['key' => 'berber', 'tr' => 'berber', 'en' => 'barber', 'osm' => 'shop=hairdresser'],
+        ['key' => 'kuafor', 'tr' => 'kuaför', 'en' => 'hair salon', 'osm' => 'shop=beauty'],
+        ['key' => 'mobilyaci', 'tr' => 'mobilyacı', 'en' => 'furniture maker', 'osm' => 'shop=furniture'],
+        ['key' => 'elektrikci', 'tr' => 'elektrikçi', 'en' => 'electrician', 'osm' => 'craft=electrician'],
+        ['key' => 'cilingir', 'tr' => 'çilingir', 'en' => 'locksmith', 'osm' => 'craft=locksmith'],
+        ['key' => 'lokanta', 'tr' => 'lokanta', 'en' => 'restaurant', 'osm' => 'amenity=restaurant'],
+        ['key' => 'insaat', 'tr' => 'inşaat ustası', 'en' => 'contractor', 'osm' => 'craft=builder'],
+        ['key' => 'oto', 'tr' => 'oto tamir', 'en' => 'auto repair', 'osm' => 'shop=car_repair'],
+        ['key' => 'terzi', 'tr' => 'terzi', 'en' => 'tailor', 'osm' => 'craft=tailor'],
+        ['key' => 'nakliyat', 'tr' => 'nakliyat', 'en' => 'moving company', 'osm' => 'office=moving_company'],
     ];
 
     /**
@@ -63,7 +64,7 @@ final class GrowthCatalog
     /**
      * Bir ülke için meslekleri yerel-dil terimiyle zenginleştirilmiş döndürür.
      *
-     * @return list<array{key: string, tr: string, en: string, local?: string}>
+     * @return list<array{key: string, tr: string, en: string, osm: string, local?: string}>
      */
     public static function tradesForCountry(string $country): array
     {

@@ -2,6 +2,7 @@
 
 namespace App\Services\Growth\Discovery;
 
+use App\Services\Growth\QueryPermutationEngine;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -33,12 +34,33 @@ final class GooglePlacesDiscoverySource implements BusinessDiscoverySource
         return filled($this->apiKey);
     }
 
-    public function search(string $query, ?string $country = null, int $limit = 20): array
+    /**
+     * @param  array{key: string, tr: string, en: string, osm?: string, local?: string}  $trade
+     * @return list<DiscoveredBusiness>
+     */
+    public function discover(string $city, string $country, array $trade, int $limit = 20): array
     {
         if (! $this->isConfigured()) {
             return [];
         }
 
+        // Şehir+meslek için çok-dilli + "Türk/Turkish" enjekteli metin sorguları
+        // üret; her birini Places'te ara, sonuçları place_id ile tekilleştir.
+        $term = ['tr' => $trade['tr'], 'en' => $trade['en'], 'local' => $trade['local'] ?? ''];
+
+        $found = [];
+        foreach ((new QueryPermutationEngine)->build([$city], [$term]) as $query) {
+            foreach ($this->searchText($query, $country, $limit) as $business) {
+                $found[$business->id()] = $business;
+            }
+        }
+
+        return array_values($found);
+    }
+
+    /** @return list<DiscoveredBusiness> */
+    private function searchText(string $query, string $country, int $limit): array
+    {
         try {
             $response = Http::withHeaders([
                 'X-Goog-Api-Key' => $this->apiKey,
@@ -70,7 +92,7 @@ final class GooglePlacesDiscoverySource implements BusinessDiscoverySource
 
     /**
      * Anahtarın gerçekten çalıştığını doğrular (admin panel "test et" için).
-     * search()'ten farklı: HTTP durumunu ayırt eder — boş sonuç ≠ hata.
+     * discover()'dan farklı: HTTP durumunu ayırt eder — boş sonuç ≠ hata.
      *
      * @return array{ok: bool, message: string}
      */

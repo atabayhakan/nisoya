@@ -3,11 +3,11 @@
 namespace App\Services\Growth\Discovery;
 
 /**
- * Google Places anahtarı yokken (yerel geliştirme / test / demo) devreye giren
- * kaynak. Gerçekçi, ülkeye göre gruplu örnek işletmeler döndürür — böylece tüm
- * keşif → tespit → kalıcılaştırma hattı anahtarsız uçtan uca çalışır ve test
- * edilebilir. Sorgu metnini yok sayar (ülkeye göre sabit set); tekilleştirme
- * runner'da external_id ile yapılır.
+ * Dış kaynak (Google/Overpass) seçili değilken (yerel geliştirme / test / demo)
+ * devreye giren kaynak. Gerçekçi, ülkeye göre gruplu örnek işletmeler döndürür —
+ * böylece tüm keşif → tespit → kalıcılaştırma hattı dış bağımlılık olmadan
+ * uçtan uca çalışır ve test edilebilir. Şehir/meslek parametrelerini yok sayar
+ * (ülkeye göre sabit set); tekilleştirme runner'da external_id ile yapılır.
  */
 final class FixtureDiscoverySource implements BusinessDiscoverySource
 {
@@ -21,9 +21,9 @@ final class FixtureDiscoverySource implements BusinessDiscoverySource
         return true;
     }
 
-    public function search(string $query, ?string $country = null, int $limit = 20): array
+    public function discover(string $city, string $country, array $trade, int $limit = 20): array
     {
-        $c = strtoupper(trim((string) $country));
+        $c = strtoupper(trim($country));
 
         $rows = array_values(array_filter(
             $this->catalog(),

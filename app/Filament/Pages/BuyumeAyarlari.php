@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Services\Growth\Discovery\GooglePlacesDiscoverySource;
 use App\Support\Settings;
 use BackedEnum;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -46,6 +47,7 @@ class BuyumeAyarlari extends Page
     public function mount(): void
     {
         $this->form->fill([
+            'source' => Settings::get('growth.source') ?: 'auto',
             'google_places_api_key' => Settings::get('growth.google_places_api_key') ?: '',
         ]);
     }
@@ -56,6 +58,23 @@ class BuyumeAyarlari extends Page
 
         return $schema
             ->components([
+                Section::make('Keşif kaynağı')
+                    ->description('Ajanın işletmeleri nereden bulacağı. OpenStreetMap ÜCRETSİZDİR — kart, fatura ya da anahtar gerektirmez (önerilen). Google Places daha geniş kapsam sunar ama anahtar + faturalandırma ister.')
+                    ->schema([
+                        Select::make('source')
+                            ->label('Kaynak')
+                            ->options([
+                                'overpass' => 'OpenStreetMap — ÜCRETSİZ (önerilen)',
+                                'google' => 'Google Places (anahtar + faturalandırma gerekir)',
+                                'fixture' => 'Demo (örnek veri — test için)',
+                                'auto' => 'Otomatik (anahtar varsa Google, yoksa demo)',
+                            ])
+                            ->required()
+                            ->native(false)
+                            ->helperText('OpenStreetMap kapsamı Google kadar geniş değildir (özellikle Avrupa dışında) ama tamamen bedavadır ve Nisoya zaten haritada OSM kullanır.')
+                            ->columnSpanFull(),
+                    ]),
+
                 Section::make('Google Places (keşif kaynağı)')
                     ->description('Anahtar girilince ajan GERÇEK Google Places verisiyle Türk işletme keşfeder. Boş bırakırsan güvenli demo (fixture) kaynağı kullanılır — hiçbir dış çağrı yapılmaz. Anahtarı Google Cloud Console → Keys & Credentials\'tan alırsın; "Places API (New)" etkin ve faturalandırma açık olmalı.')
                     ->schema([
@@ -87,14 +106,20 @@ class BuyumeAyarlari extends Page
         $state = $this->form->getState();
 
         Settings::setMany([
+            'growth.source' => $state['source'] ?? 'auto',
             'growth.google_places_api_key' => $state['google_places_api_key'] ?? '',
         ]);
 
+        $sourceLabel = match ($state['source'] ?? 'auto') {
+            'overpass' => 'OpenStreetMap (ücretsiz)',
+            'google' => 'Google Places',
+            'fixture' => 'Demo verisi',
+            default => 'Otomatik',
+        };
+
         Notification::make()
             ->title('Büyüme Ajanı ayarları kaydedildi')
-            ->body(filled($state['google_places_api_key'] ?? null)
-                ? 'Gerçek Google Places keşfi anında aktif.'
-                : 'Anahtar boş — güvenli demo (fixture) kaynağı kullanılacak.')
+            ->body("Keşif kaynağı: {$sourceLabel}. Değişiklik anında geçerli.")
             ->success()
             ->send();
     }

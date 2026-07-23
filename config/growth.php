@@ -22,7 +22,13 @@ return [
     // Reklam Kanunu ön-onay ister); AB-27 + TR zaten RegionPolicy sabitinde.
     'restricted_countries' => ['RU'],
 
-    // Google Places (Text Search) — anahtar yoksa keşif fixture kaynağına düşer.
+    // Keşif kaynağı: 'overpass' (OpenStreetMap — ÜCRETSİZ, kart/anahtar yok),
+    // 'google' (Google Places — anahtar + faturalandırma gerekir),
+    // 'fixture' (demo), 'auto' (anahtar varsa Google, yoksa fixture — güvenli
+    // varsayılan). Admin panelden (Büyüme Ajanı) değiştirilir.
+    'source' => env('GROWTH_SOURCE', 'auto'),
+
+    // Google Places (Text Search) — anahtar yoksa/kaynak seçili değilse fixture.
     'google_places' => [
         'api_key' => env('GOOGLE_PLACES_API_KEY'),
     ],

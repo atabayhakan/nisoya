@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\Growth\Discovery\BusinessDiscoverySource;
 use App\Services\Growth\Discovery\FixtureDiscoverySource;
 use App\Services\Growth\Discovery\GooglePlacesDiscoverySource;
+use App\Services\Growth\Discovery\OverpassDiscoverySource;
 use App\Support\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -43,13 +44,33 @@ class BuyumeAyarlariTest extends TestCase
         $this->assertSame('test-places-key', Settings::get('growth.google_places_api_key'));
     }
 
-    public function test_binding_uses_google_when_key_present_else_fixture(): void
+    public function test_binding_auto_uses_google_when_key_present_else_fixture(): void
     {
-        config(['growth.google_places.api_key' => 'k']);
+        config(['growth.source' => 'auto', 'growth.google_places.api_key' => 'k']);
         $this->assertInstanceOf(GooglePlacesDiscoverySource::class, app(BusinessDiscoverySource::class));
 
-        config(['growth.google_places.api_key' => null]);
+        config(['growth.source' => 'auto', 'growth.google_places.api_key' => null]);
         $this->assertInstanceOf(FixtureDiscoverySource::class, app(BusinessDiscoverySource::class));
+    }
+
+    public function test_binding_respects_explicit_source_selection(): void
+    {
+        config(['growth.source' => 'overpass']);
+        $this->assertInstanceOf(OverpassDiscoverySource::class, app(BusinessDiscoverySource::class));
+
+        config(['growth.source' => 'fixture']);
+        $this->assertInstanceOf(FixtureDiscoverySource::class, app(BusinessDiscoverySource::class));
+    }
+
+    public function test_save_persists_source_selection(): void
+    {
+        $this->actingAs($this->admin());
+
+        Livewire::test(BuyumeAyarlari::class)
+            ->set('data.source', 'overpass')
+            ->call('save');
+
+        $this->assertSame('overpass', Settings::get('growth.source'));
     }
 
     public function test_probe_reports_success(): void
