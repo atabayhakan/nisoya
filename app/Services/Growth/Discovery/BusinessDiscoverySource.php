@@ -16,9 +16,12 @@ interface BusinessDiscoverySource
     public function isConfigured(): bool;
 
     /**
-     * Bir sorgu için işletme listesi döndürür.
+     * Bir şehir + meslek için işletme listesi döndürür. Metin-arama kaynakları
+     * (Google Places) trade'in dil terimlerinden sorgu üretir; alan+etiket
+     * kaynakları (Overpass) trade'in osm etiketini kullanır.
      *
+     * @param  array{key: string, tr: string, en: string, osm?: string, local?: string}  $trade
      * @return list<DiscoveredBusiness>
      */
-    public function search(string $query, ?string $country = null, int $limit = 20): array;
+    public function discover(string $city, string $country, array $trade, int $limit = 20): array;
 }

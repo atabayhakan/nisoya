@@ -21,11 +21,10 @@ final class DiscoveryRunner
     public function __construct(
         private readonly BusinessDiscoverySource $source,
         private readonly TurkishBusinessDetector $detector,
-        private readonly QueryPermutationEngine $queries,
     ) {}
 
     /**
-     * Bir ülke için katalogdaki şehir/mesleklerle keşif çalıştırır.
+     * Bir ülke için katalogdaki şehir × meslek kombinasyonlarında keşif çalıştırır.
      *
      * @return array{source:string, queries:int, discovered:int, turkish:int, ambiguous:int, blocked:int, saved:int, created:int}
      */
@@ -34,15 +33,20 @@ final class DiscoveryRunner
         $country = strtoupper($country);
         $cities = GrowthCatalog::CITIES[$country] ?? [];
         $trades = array_slice(GrowthCatalog::tradesForCountry($country), 0, $tradeLimit);
-        $queryList = $this->queries->build($cities, $trades);
 
-        // Kaynaktan çek + external_id ile tekilleştir (aynı işletme birden çok
-        // sorguda çıkabilir; tespiti bir kez yapmak için önce toplarız).
+        // Her şehir × meslek için kaynaktan çek + external_id ile tekilleştir
+        // (aynı işletme birden çok aramada çıkabilir; tespiti bir kez yapmak
+        // için önce toplarız). Metin-arama sorgu üretimi Google kaynağının içinde;
+        // Overpass etiket tabanlı çalışır — runner kaynak-agnostiktir.
         /** @var array<string, DiscoveredBusiness> $found */
         $found = [];
-        foreach ($queryList as $query) {
-            foreach ($this->source->search($query, $country, $perQuery) as $business) {
-                $found[$business->id()] = $business;
+        $searches = 0;
+        foreach ($cities as $city) {
+            foreach ($trades as $trade) {
+                $searches++;
+                foreach ($this->source->discover($city, $country, $trade, $perQuery) as $business) {
+                    $found[$business->id()] = $business;
+                }
             }
         }
 
@@ -88,7 +92,7 @@ final class DiscoveryRunner
 
         return [
             'source' => $this->source->name(),
-            'queries' => count($queryList),
+            'queries' => $searches,
             'discovered' => count($found),
             ...$stats,
         ];
