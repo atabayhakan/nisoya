@@ -43,4 +43,13 @@ class OutreachTarget extends Model
     {
         return $query->where('needs_review', true);
     }
+
+    /** İletişim e-postası aranabilecek adaylar: site var, e-posta yok, Türk değil değil. */
+    public function scopePendingEnrichment($query)
+    {
+        return $query
+            ->whereNull('contact_email')
+            ->whereNotNull('website')
+            ->where('detection_band', '!=', DetectionResult::BAND_NOT);
+    }
 }

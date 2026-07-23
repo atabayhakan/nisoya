@@ -4,11 +4,14 @@ namespace Tests\Feature\Growth;
 
 use App\Enums\UserRole;
 use App\Filament\Resources\OutreachTargets\Pages\ListOutreachTargets;
+use App\Jobs\EnrichTargetJob;
 use App\Jobs\RunDiscoveryJob;
 use App\Models\OutreachTarget;
 use App\Models\User;
 use App\Services\Growth\DiscoveryRunner;
+use App\Services\Growth\EnrichmentRunner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -87,5 +90,29 @@ class OutreachResourceTest extends TestCase
 
         // Fixture kaynağı (auto, anahtar yok) şehir/meslekten bağımsız US döndürür.
         $this->assertNotNull(OutreachTarget::where('name', 'Anadolu Kebap House')->first());
+    }
+
+    public function test_enrich_button_queues_jobs_for_allowed_pending_only(): void
+    {
+        Queue::fake();
+        $this->target(['external_id' => 'e1', 'website' => 'https://a.test']);                                              // gönderilebilir + site + e-posta yok → kuyruk
+        $this->target(['external_id' => 'e2', 'website' => 'https://b.test', 'country' => 'DE', 'marketing_status' => 'region_blocked']); // engelli → GDPR, atla
+        $this->target(['external_id' => 'e3', 'website' => 'https://c.test', 'contact_email' => 'zaten@var.com']);          // zaten var → atla
+        $this->target(['external_id' => 'e4']);                                                                             // site yok → atla
+
+        $this->actingAs($this->admin());
+        Livewire::test(ListOutreachTargets::class)->call('runEnrichment');
+
+        Queue::assertPushed(EnrichTargetJob::class, 1);
+    }
+
+    public function test_enrich_target_job_persists_email(): void
+    {
+        Http::fake(['*' => Http::response('<a href="mailto:info@site.com">x</a>')]);
+        $target = $this->target(['external_id' => 'e1', 'website' => 'https://site.test']);
+
+        (new EnrichTargetJob($target->id))->handle(app(EnrichmentRunner::class));
+
+        $this->assertSame('info@site.com', $target->fresh()->contact_email);
     }
 }
