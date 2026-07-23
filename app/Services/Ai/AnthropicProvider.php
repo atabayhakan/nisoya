@@ -34,19 +34,40 @@ class AnthropicProvider implements AiProvider
 
     public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
     {
+        return $this->postMessages([[
+            'role' => 'user',
+            'content' => [
+                [
+                    'type' => 'image',
+                    'source' => ['type' => 'base64', 'media_type' => $mediaType, 'data' => $base64Image],
+                ],
+                ['type' => 'text', 'text' => $prompt],
+            ],
+        ]], $jsonSchema, $timeoutSeconds);
+    }
+
+    public function analyzeText(string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
+    {
+        return $this->postMessages([[
+            'role' => 'user',
+            'content' => [['type' => 'text', 'text' => $prompt]],
+        ]], $jsonSchema, $timeoutSeconds);
+    }
+
+    /**
+     * Messages API çağrısını yapıp yanıtı JSON'a çözer. Görsel/metin yalnızca
+     * "content" bloğunda farklılaşır; istek/hata/çözme mantığı ortak.
+     *
+     * @param  array<int, array<string, mixed>>  $messages
+     * @param  array<string, mixed>|null  $jsonSchema
+     * @return array<string, mixed>|null
+     */
+    private function postMessages(array $messages, ?array $jsonSchema, ?int $timeoutSeconds): ?array
+    {
         $body = [
             'model' => $this->config['model'],
             'max_tokens' => 1024,
-            'messages' => [[
-                'role' => 'user',
-                'content' => [
-                    [
-                        'type' => 'image',
-                        'source' => ['type' => 'base64', 'media_type' => $mediaType, 'data' => $base64Image],
-                    ],
-                    ['type' => 'text', 'text' => $prompt],
-                ],
-            ]],
+            'messages' => $messages,
         ];
 
         if ($jsonSchema) {

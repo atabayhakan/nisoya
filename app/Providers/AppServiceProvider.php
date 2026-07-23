@@ -16,6 +16,9 @@ use App\Observers\ListingImageObserver;
 use App\Observers\PortfolioItemObserver;
 use App\Observers\UserObserver;
 use App\Services\Ai\AiManager;
+use App\Services\Growth\Discovery\BusinessDiscoverySource;
+use App\Services\Growth\Discovery\FixtureDiscoverySource;
+use App\Services\Growth\Discovery\GooglePlacesDiscoverySource;
 use App\Services\PerformanceService;
 use App\Services\VisitorLocationService;
 use App\Support\Settings;
@@ -42,6 +45,15 @@ class AppServiceProvider extends ServiceProvider
         // özellik kodu sağlayıcıyı bilmez. Bkz. App\Services\Ai\AiManager.
         $this->app->singleton(AiManager::class);
         $this->app->bind(AiProvider::class, fn ($app) => $app->make(AiManager::class)->provider());
+
+        // Büyüme Ajanı keşif kaynağı: Google Places anahtarı varsa gerçek Places,
+        // yoksa fixture (yerel/test/demo uçtan uca çalışsın). Runner yalnızca
+        // BusinessDiscoverySource arayüzünü konuşur.
+        $this->app->bind(BusinessDiscoverySource::class, function () {
+            $google = new GooglePlacesDiscoverySource(config('growth.google_places.api_key'));
+
+            return $google->isConfigured() ? $google : new FixtureDiscoverySource;
+        });
     }
 
     public function boot(): void

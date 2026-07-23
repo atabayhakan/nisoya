@@ -111,6 +111,11 @@ class ImageModerationTest extends TestCase
 
                 return ['uygunsuz' => false, 'kategori' => null];
             }
+
+            public function analyzeText(string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
+            {
+                return null;
+            }
         };
         $this->app->instance(AiProvider::class, $fake);
         config(['ai.features.image_moderation' => true]);

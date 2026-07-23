@@ -37,4 +37,17 @@ interface AiProvider
      * @return array<string, mixed>|null Çözülmüş JSON; hata/güvenlik reddi durumunda null
      */
     public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array;
+
+    /**
+     * Salt-metin bir yönergeyi analiz edip yapılandırılmış JSON döndürür
+     * (görsel yok). Metin sınıflandırma / çıkarım işleri için — ör. bir
+     * işletme adının Türk olup olmadığını sınıflandırmak (Büyüme Ajanı).
+     * Yönerge beklenen JSON anahtarlarını tam tarif etmeli; $jsonSchema
+     * verilirse ve sağlayıcı destekliyorsa çıktı şemayla zorlanır.
+     *
+     * @param  array<string, mixed>|null  $jsonSchema  JSON Schema (opsiyonel)
+     * @param  int|null  $timeoutSeconds  HTTP çağrısı zaman aşımı (null → varsayılan)
+     * @return array<string, mixed>|null Çözülmüş JSON; hata/güvenlik reddi durumunda null
+     */
+    public function analyzeText(string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array;
 }

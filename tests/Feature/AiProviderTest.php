@@ -174,6 +174,52 @@ class AiProviderTest extends TestCase
 
         $this->assertNull($result);
     }
+
+    public function test_openrouter_analyze_text_sends_plain_text_message(): void
+    {
+        Http::fake(['openrouter.ai/*' => Http::response([
+            'choices' => [['finish_reason' => 'stop', 'message' => ['content' => '{"turk_mu":true}']]],
+        ])]);
+
+        $result = (new OpenRouterProvider([
+            'api_key' => 'or-key',
+            'model' => 'openai/gpt-4o-mini',
+            'base_url' => 'https://openrouter.ai/api/v1',
+        ]))->analyzeText('bu işletme Türk mü?', ['type' => 'object']);
+
+        $this->assertSame(['turk_mu' => true], $result);
+        Http::assertSent(function ($r) {
+            // Görsel yok; içerik düz metin dizisi + json_object modu.
+            return str_contains($r->url(), 'openrouter.ai/api/v1/chat/completions')
+                && data_get($r->data(), 'messages.0.content') === 'bu işletme Türk mü?'
+                && data_get($r->data(), 'response_format.type') === 'json_object';
+        });
+    }
+
+    public function test_anthropic_analyze_text_sends_text_content_block(): void
+    {
+        Http::fake(['api.anthropic.com/*' => Http::response([
+            'stop_reason' => 'end_turn',
+            'content' => [['type' => 'text', 'text' => '{"g":1}']],
+        ])]);
+
+        $result = (new AnthropicProvider(['api_key' => 'k', 'model' => 'm']))->analyzeText('metin');
+
+        $this->assertSame(['g' => 1], $result);
+        Http::assertSent(fn ($r) => data_get($r->data(), 'messages.0.content.0.text') === 'metin');
+    }
+
+    public function test_gemini_analyze_text_sends_text_part(): void
+    {
+        Http::fake(['generativelanguage.googleapis.com/*' => Http::response([
+            'candidates' => [['content' => ['parts' => [['text' => '{"g":2}']]]]],
+        ])]);
+
+        $result = (new GeminiProvider(['api_key' => 'k', 'model' => 'm']))->analyzeText('metin');
+
+        $this->assertSame(['g' => 2], $result);
+        Http::assertSent(fn ($r) => data_get($r->data(), 'contents.0.parts.0.text') === 'metin');
+    }
 }
 
 /** Test için basit sahte sağlayıcı. */
@@ -197,6 +243,11 @@ class FakeAiProvider implements AiProvider
     }
 
     public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
+    {
+        return ['fake' => true];
+    }
+
+    public function analyzeText(string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
     {
         return ['fake' => true];
     }

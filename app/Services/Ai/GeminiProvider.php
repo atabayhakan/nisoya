@@ -34,13 +34,29 @@ class GeminiProvider implements AiProvider
 
     public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
     {
+        return $this->generate([
+            ['inline_data' => ['mime_type' => $mediaType, 'data' => $base64Image]],
+            ['text' => $prompt],
+        ], $timeoutSeconds);
+    }
+
+    public function analyzeText(string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
+    {
+        return $this->generate([['text' => $prompt]], $timeoutSeconds);
+    }
+
+    /**
+     * generateContent çağrısını yapıp yanıtı JSON'a çözer. Görsel/metin
+     * yalnızca "parts" dizisinde farklılaşır; gerisi ortak. (Gemini şemayı
+     * responseMimeType=json + prompt yönlendirmesiyle karşılar, bkz. sınıf notu.)
+     *
+     * @param  array<int, array<string, mixed>>  $parts
+     * @return array<string, mixed>|null
+     */
+    private function generate(array $parts, ?int $timeoutSeconds): ?array
+    {
         $body = [
-            'contents' => [[
-                'parts' => [
-                    ['inline_data' => ['mime_type' => $mediaType, 'data' => $base64Image]],
-                    ['text' => $prompt],
-                ],
-            ]],
+            'contents' => [['parts' => $parts]],
             'generationConfig' => ['responseMimeType' => 'application/json'],
         ];
 
