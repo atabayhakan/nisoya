@@ -22,10 +22,92 @@
         </div>
     </x-filament::section>
 
-    {{-- 🎨 4 İmza Tema Preset'i --}}
+    {{-- 🚪 Site Teması: Klasik ↔ Vitrin (view ağacını değiştirir) --}}
     <div class="mt-6">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white">Site Teması</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+            Sitenin tamamının hangi tasarımla sunulacağını seçer. Geçiş anında uygulanır, geri dönüş tek tıkla — klasik dosyalara dokunulmaz.
+        </p>
+
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            {{-- Klasik --}}
+            <div
+                @class([
+                    'relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-5 transition shadow-sm dark:bg-gray-800',
+                    'border-emerald-500 ring-2 ring-emerald-500/30' => $aktifTema === 'klasik',
+                    'border-gray-200 hover:border-gray-300 dark:border-gray-700' => $aktifTema !== 'klasik',
+                ])
+            >
+                @if ($aktifTema === 'klasik')
+                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                        ✓ Aktif
+                    </span>
+                @endif
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="h-4 w-4 rounded-full bg-emerald-600"></span>
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white">Klasik</h4>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        Bugünkü tasarım. Aşağıdaki Tasarım Modu preset'leri ve tüm ince ayarlar bu temada geçerlidir.
+                    </p>
+                </div>
+                <x-filament::button
+                    size="sm"
+                    color="gray"
+                    class="mt-4 w-full"
+                    :disabled="$aktifTema === 'klasik'"
+                    wire:click="secTema('klasik')"
+                >
+                    Etkinleştir
+                </x-filament::button>
+            </div>
+
+            {{-- Vitrin --}}
+            <div
+                @class([
+                    'relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-5 transition shadow-sm dark:bg-gray-800',
+                    'border-emerald-500 ring-2 ring-emerald-500/30' => $aktifTema === 'vitrin',
+                    'border-gray-200 hover:border-gray-300 dark:border-gray-700' => $aktifTema !== 'vitrin',
+                ])
+            >
+                @if ($aktifTema === 'vitrin')
+                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                        ✓ Aktif
+                    </span>
+                @endif
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="h-4 w-4 rounded-full" style="background:#3E63F0"></span>
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white">Vitrin</h4>
+                        <span class="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-300">Hazırlanıyor</span>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        Yeni nesil tasarım: Deniz mavisi palet, Plus Jakarta Sans, bento hero. Karşılığı hazır olmayan sayfalar klasik görünümle sunulur.
+                    </p>
+                </div>
+                <x-filament::button
+                    size="sm"
+                    color="gray"
+                    class="mt-4 w-full"
+                    :disabled="$aktifTema === 'vitrin'"
+                    wire:click="secTema('vitrin')"
+                >
+                    Etkinleştir
+                </x-filament::button>
+            </div>
+        </div>
+    </div>
+
+    {{-- 🎨 4 İmza Tema Preset'i --}}
+    <div @class(['mt-6', 'opacity-50' => $aktifTema === 'vitrin'])>
         <h3 class="text-base font-bold text-gray-900 dark:text-white">İmza Tema Preset'leri</h3>
         <p class="text-xs text-gray-500 dark:text-gray-400">2027 trendlerine uygun hazırlanmış hazıl tasarım stilleri</p>
+        @if ($aktifTema === 'vitrin')
+            <p class="mt-1 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                ⚠ Bu preset'ler yalnız Klasik temada geçerlidir — Vitrin aktifken görünüme etki etmezler, seçiminiz Klasik'e dönünce uygulanır.
+            </p>
+        @endif
 
         <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {{-- 1. Zümrüt Klasik --}}
@@ -82,7 +164,7 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <span class="h-4 w-4 rounded-full" style="background:#0f5c42"></span>
-                        <h4 class="font-bold text-sm text-gray-900 dark:text-white">2. 2027 Neo-Craft</h4>
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white">2. Neo-Craft 2027</h4>
                     </div>
                     <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
                         Vitrin Yeşili, sıcak Tezgah Kremi zemin ve Instrument Serif italik — Esnaf/vitrin ruhlu yeni stil.

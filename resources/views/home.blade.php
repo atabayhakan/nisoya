@@ -15,7 +15,7 @@
                 </span>
                 {{-- "2. Tasarım" modunda (bkz. /yonetim Tasarım Modu) başlık Instrument
                      Serif italik ile — 2027 vizyon pilotunun tek somut tipografi izi. --}}
-                <h1 class="mt-5 text-4xl tracking-tight text-stone-900 sm:text-5xl md:text-6xl dark:text-stone-50 {{ setting('gorunum.tasarim_modu', 'eski') === 'yeni' ? 'font-serif italic font-normal' : 'font-extrabold' }}">
+                <h1 class="mt-5 text-4xl tracking-tight text-stone-900 sm:text-5xl md:text-6xl dark:text-stone-50 {{ \App\Support\Tema::tasarimModu() === 'yeni' ? 'font-serif italic font-normal' : 'font-extrabold' }}">
                     {{ setting('home.hero_satir1') }}<br>
                     <span class="text-emerald-600 dark:text-emerald-400">{{ setting('home.hero_vurgu') }}</span> {{ setting('home.hero_satir2') }}
                 </h1>
@@ -323,7 +323,7 @@
     {{-- Faz İ2 ("2. Tasarım" pilotu): istatistik kartındaki "22 ülke" metnini
          gerçek veriyle gösteren Nabız Haritası. Sadece yeni tasarım modunda —
          bkz. /yonetim Tasarım Modu. --}}
-    @if (setting('gorunum.tasarim_modu', 'eski') === 'yeni')
+    @if (\App\Support\Tema::tasarimModu() === 'yeni')
         <section class="border-b border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-950">
             <div class="mx-auto max-w-6xl px-4 py-14">
                 <x-pulse-map :countries="$pulseCountries" />

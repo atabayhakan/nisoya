@@ -24,7 +24,7 @@
                 </span>
                 <span class="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50">Nisoya</span>
             </a>
-            @unless (setting('gorunum.tasarim_modu', 'eski') === 'obsidian')
+            @unless (\App\Support\Tema::koyuKilit())
                 <button
                     type="button"
                     onclick="window.toggleTheme && window.toggleTheme()"

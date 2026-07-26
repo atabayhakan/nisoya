@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Concerns\RestrictsToAdmins;
 use App\Support\Settings;
+use App\Support\Tema;
 use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -28,7 +29,9 @@ class TasarimAyarlari extends Page
 
     protected string $view = 'filament.pages.tasarim-ayarlari';
 
-    public string $aktifMod = 'eski'; // eski, yeni, obsidian, nordic
+    public string $aktifTema = 'klasik'; // klasik, vitrin — view ağacını seçer (bkz. App\Support\Tema)
+
+    public string $aktifMod = 'eski'; // eski, yeni, obsidian, nordic — yalnız klasik temada hükümlü
 
     public string $primaryColor = '#059669';
 
@@ -53,12 +56,44 @@ class TasarimAyarlari extends Page
     /** Bileşen durumunu kalıcı ayarlardan (tek doğruluk kaynağı) yükler. */
     private function hydrateFromSettings(): void
     {
+        $this->aktifTema = Settings::get('gorunum.tema', 'klasik');
         $this->aktifMod = Settings::get('gorunum.tasarim_modu', 'eski');
         $this->primaryColor = Settings::get('gorunum.primary_color', '#059669');
         $this->fontFamily = Settings::get('gorunum.font_family', 'sans');
         $this->borderRadius = Settings::get('gorunum.border_radius', 'modern');
         $this->glassmorphism = Settings::get('gorunum.glassmorphism', '1') === '1';
         $this->smoothAnimations = Settings::get('gorunum.smooth_animations', '1') === '1';
+    }
+
+    /**
+     * Tema geçişi (Vitrin projesi): view ağacını değiştirir, deploy gerekmez.
+     * Geri dönüş de tek tık — klasik dosyalara hiç dokunulmadığı için
+     * `klasik` seçildiğinde site birebir eski haline döner. tasarim_modu
+     * preset'leri yalnız klasik temada hükümlüdür (App\Support\Tema).
+     */
+    public function secTema(string $tema): void
+    {
+        if (! in_array($tema, Tema::TEMALAR, true)) {
+            return;
+        }
+
+        Settings::setMany(['gorunum.tema' => $tema]);
+
+        // Adminin kendi bayat ?tema_onizleme oturum bayrağı kalıcı ayarın
+        // ÖNÜNE geçer (Tema::aktif sırası) — temizlenmezse bildirim "klasiğe
+        // dönüldü" derken admin hâlâ önizlemedeki temayı görürdü (P0 inceleme
+        // bulgusu #2). Panel ve site aynı oturumu paylaşır.
+        session()->forget('tema_onizleme');
+
+        $this->hydrateFromSettings();
+
+        Notification::make()
+            ->title($tema === 'vitrin' ? 'Vitrin teması etkinleştirildi' : 'Klasik temaya dönüldü')
+            ->body($tema === 'vitrin'
+                ? 'Vitrin karşılığı henüz hazırlanmamış sayfalar klasik görünümle sunulmaya devam eder.'
+                : 'Site birebir klasik görünümüne döndü; Tasarım Modu preset\'leri yeniden hükümlü.')
+            ->success()
+            ->send();
     }
 
     public function secPreset(string $preset): void
@@ -108,7 +143,10 @@ class TasarimAyarlari extends Page
 
         $names = [
             'eski' => '1. Zümrüt Klasik',
-            'yeni' => '2. 2027 Vitrin & Neo-Craft',
+            // "Vitrin" adı artık tema ekseninde (secTema) yaşıyor — preset'in
+            // eski "2027 Vitrin & Neo-Craft" etiketi karışıklık yaratmasın
+            // diye yeniden adlandırıldı.
+            'yeni' => '2. Neo-Craft 2027',
             'obsidian' => '3. Midnight Obsidian',
             'nordic' => '4. Nordik Minimal',
         ];
