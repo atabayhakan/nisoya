@@ -40,12 +40,17 @@ return [
 
         // --- Anasayfa: Hero ---
         'home.hero_badge' => ['group' => 'anasayfa', 'label' => 'Hero rozet metni', 'type' => 'text', 'default' => '🌍 Yurt dışındaki Türkler için'],
-        'home.hero_satir1' => ['group' => 'anasayfa', 'label' => 'Başlık — 1. satır', 'type' => 'text', 'default' => 'Yeteneğini paraya dönüştür,'],
-        'home.hero_vurgu' => ['group' => 'anasayfa', 'label' => 'Başlık — vurgulu kısım', 'type' => 'text', 'default' => 'kendi insanından'],
-        'home.hero_satir2' => ['group' => 'anasayfa', 'label' => 'Başlık — vurgudan sonrası', 'type' => 'text', 'default' => 'hizmet al'],
-        'home.hero_aciklama' => ['group' => 'anasayfa', 'label' => 'Hero açıklama', 'type' => 'textarea', 'default' => "İngilizce ders mi veriyorsun, taşınmada mı yardım ediyorsun, ev yemeği mi yapıyorsun? Nisoya'da yeteneğini ilan et; bulunduğun ülkedeki Türklerle güvenle buluş."],
-        'home.arama_placeholder' => ['group' => 'anasayfa', 'label' => 'Arama kutusu metni', 'type' => 'text', 'default' => 'Ne arıyorsun? (ör. İngilizce öğretmeni)'],
-        'home.populer_metin' => ['group' => 'anasayfa', 'label' => 'Popüler aramalar satırı', 'type' => 'text', 'default' => 'Popüler: dil dersi · taşınma · ev yemeği · web tasarım · tercüme'],
+        // Slogan Set 3 ("soru" kancası, 2026-07-26): tek nefeste hem satıcıya
+        // hem alıcıya seslenen eski başlık yerine, 3 saniyede "ne işe yarar"ı
+        // kapatan soru formatı. Vurgu satırı birincil renkte render edilir;
+        // hero_satir2 bilinçli boş (başlık 2 satır). Canlı DB kayıtları
+        // UpdateHeroCopyToSet3 migration'ıyla güncellenir.
+        'home.hero_satir1' => ['group' => 'anasayfa', 'label' => 'Başlık — 1. satır', 'type' => 'text', 'default' => 'Nakliyeci mi, hoca mı?'],
+        'home.hero_vurgu' => ['group' => 'anasayfa', 'label' => 'Başlık — vurgulu kısım', 'type' => 'text', 'default' => 'Hepsi burada, Türkçe.'],
+        'home.hero_satir2' => ['group' => 'anasayfa', 'label' => 'Başlık — vurgudan sonrası (ops.)', 'type' => 'text', 'default' => ''],
+        'home.hero_aciklama' => ['group' => 'anasayfa', 'label' => 'Hero açıklama', 'type' => 'textarea', 'default' => 'Taşınma, ders, tamir, ev yemeği, davetiye — yaşadığın şehirde Türkçe konuşan birini dakikalar içinde bul, direkt yaz.'],
+        'home.arama_placeholder' => ['group' => 'anasayfa', 'label' => 'Arama kutusu metni', 'type' => 'text', 'default' => 'Kim lazım? (ör. Berlin\'de nakliyeci)'],
+        'home.populer_metin' => ['group' => 'anasayfa', 'label' => 'Popüler aramalar satırı', 'type' => 'text', 'default' => 'Popüler: taşınma · matematik dersi · araba tamiri · davetiye · ikinci el'],
 
         // --- Anasayfa: Değer önerileri ---
         'home.deger1_baslik' => ['group' => 'anasayfa', 'label' => 'Değer 1 — başlık', 'type' => 'text', 'default' => 'Tamamen Türkçe'],
@@ -65,9 +70,11 @@ return [
         'home.adim3_metin' => ['group' => 'anasayfa', 'label' => 'Adım 3 — metin', 'type' => 'textarea', 'default' => 'Karşı tarafla mesajlaş, güvenle anlaş. Ödeme aranızda.'],
 
         // --- Anasayfa: CTA ---
-        'home.cta_baslik' => ['group' => 'anasayfa', 'label' => 'CTA — başlık', 'type' => 'text', 'default' => 'Bir yeteneğin mutlaka vardır.'],
-        'home.cta_metin' => ['group' => 'anasayfa', 'label' => 'CTA — metin', 'type' => 'text', 'default' => 'Hadi onu paraya dönüştür. İlan vermek tamamen ücretsiz.'],
-        'home.cta_buton' => ['group' => 'anasayfa', 'label' => 'CTA — buton', 'type' => 'text', 'default' => 'Hemen Başla'],
+        // Set 3'ün "satıcı bandı" karşılığı — ölçülebilir ve tutulabilir söz
+        // ("3 dakika + sıfır ücret"), doğrulanamayan likidite iddiası yok.
+        'home.cta_baslik' => ['group' => 'anasayfa', 'label' => 'CTA — başlık', 'type' => 'text', 'default' => 'İlk ilanın 3 dakikada yayında, kuruş ödemeden.'],
+        'home.cta_metin' => ['group' => 'anasayfa', 'label' => 'CTA — metin', 'type' => 'text', 'default' => 'İlan ver, mesajlaş, anlaş — hepsi tamamen ücretsiz.'],
+        'home.cta_buton' => ['group' => 'anasayfa', 'label' => 'CTA — buton', 'type' => 'text', 'default' => 'Ücretsiz ilan ver'],
 
         // --- Görünüm (Marka) ---
         'gorunum.logo_path' => ['group' => 'gorunum', 'label' => 'Logo (opsiyonel — yüklenmezse varsayılan "N" işareti kullanılır)', 'type' => 'image', 'default' => ''],
@@ -79,6 +86,14 @@ return [
             'options' => array_map(fn (array $c) => $c['label'], config('brand_colors', [])),
             'default' => 'emerald',
         ],
+
+        // --- Tema motoru (Vitrin) ---
+        // BİLİNÇLİ olarak grup anahtarı 'groups' listesinde YOK — genel
+        // İçerik formunda render edilmez (AI alanlarıyla aynı desen). Tek
+        // yönetim yeri: Tasarım Modu sayfasındaki Klasik/Vitrin segmenti
+        // (TasarimAyarlari::secTema). Burada tanımlı olması setMany'nin
+        // doğru grup yazması ve Settings::get varsayılanı içindir.
+        'gorunum.tema' => ['group' => 'tema_motoru', 'label' => 'Site teması', 'type' => 'select', 'options' => ['klasik' => 'Klasik', 'vitrin' => 'Vitrin'], 'default' => 'klasik'],
 
         // --- Üst Menü (Header) ---
         'header.ozel_kod' => ['group' => 'header', 'label' => 'Header özel kod (</head> öncesi)', 'type' => 'code', 'default' => ''],

@@ -1,4 +1,4 @@
-@php $forceDark = setting('gorunum.tasarim_modu', 'eski') === 'obsidian'; @endphp
+@php $forceDark = \App\Support\Tema::koyuKilit(); @endphp
 <script>
     // Karanlık/aydınlık tema yönetimi.
     // - İlk yüklemede: localStorage > sistem tercihi > 'light'

@@ -41,7 +41,7 @@
                         <h1 class="text-xl font-bold text-stone-900 dark:text-stone-50">{{ $company->name }}</h1>
                         @if ($company->is_verified)
                             {{-- Faz İ3: "2. Tasarım"da mühür renkleriyle, "1. Tasarım"da eski turkuaz pil aynen kalıyor. --}}
-                            @if (setting('gorunum.tasarim_modu', 'eski') === 'yeni')
+                            @if (\App\Support\Tema::tasarimModu() === 'yeni')
                                 <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold text-white" style="background: linear-gradient(135deg, var(--nisoya-seal, #c1440e), #a9713c);"><x-heroicon-s-check-badge class="h-3.5 w-3.5" /> Doğrulandı</span>
                             @else
                                 <span class="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-700 dark:bg-sky-900/40 dark:text-sky-300"><x-heroicon-s-check-badge class="h-3.5 w-3.5" /> Doğrulandı</span>

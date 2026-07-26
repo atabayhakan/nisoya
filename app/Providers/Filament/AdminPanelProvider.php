@@ -120,6 +120,14 @@ class AdminPanelProvider extends PanelProvider
         $key = 'emerald';
 
         if (Schema::hasTable('site_settings')) {
+            // Vitrin teması aktifken panel de Vitrin birincil rengini (Deniz
+            // mavisi) kullanır — handoff gereği site ile admin tutarlı kalır.
+            // Kayıtlı ayara bakılır (oturum önizlemesi DEĞİL: panel rengi
+            // provider kaydında, session'dan önce çözülür).
+            if (Settings::get('gorunum.tema', 'klasik') === 'vitrin') {
+                return Color::hex('#3E63F0');
+            }
+
             $key = Settings::get('gorunum.marka_rengi', 'emerald');
         }
 

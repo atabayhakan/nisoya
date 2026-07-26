@@ -1,7 +1,7 @@
 @props(['size' => 'sm'])
 
 @php
-    $yeni = setting('gorunum.tasarim_modu', 'eski') === 'yeni';
+    $yeni = \App\Support\Tema::tasarimModu() === 'yeni';
     $px = match ($size) {
         'xs' => 14,
         'base' => 20,

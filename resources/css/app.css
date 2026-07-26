@@ -140,8 +140,12 @@ textarea::placeholder {
 }
 
 /* Header her sayfada aynı — geçiş sırasında solmasın/titremesin diye kendi
-   sabit view-transition katmanında tutulur (root'un fade+scale'inden muaf). */
-header {
+   sabit view-transition katmanında tutulur (root'un fade+scale'inden muaf).
+   Seçici bilinçli olarak `body > header` (eski hali çıplak `header`): sayfa
+   gövdesinde ikinci bir semantik <header> kullanılırsa aynı ada iki eleman
+   düşer ve tarayıcı TÜM view-transition'ı sessizce iptal ederdi (Vitrin
+   risk denetimi #5). Site iskeletinin header'ı body'nin doğrudan çocuğudur. */
+body > header {
     view-transition-name: site-header;
 }
 

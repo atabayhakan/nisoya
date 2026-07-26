@@ -7,6 +7,7 @@ use App\Http\Middleware\HoneypotMiddleware;
 use App\Http\Middleware\PerformanceMetricsMiddleware;
 use App\Http\Middleware\QueryLogMiddleware;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\TemaViewYollari;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Application;
@@ -24,6 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
+            // Tema motoru (Vitrin): StartSession core web grubunda olduğu
+            // için append edilen bu middleware her zaman ondan sonra koşar
+            // (admin tema-önizleme oturumu okunabilir).
+            TemaViewYollari::class,
             EnsureUserIsActive::class,
             PerformanceMetricsMiddleware::class,
             QueryLogMiddleware::class,

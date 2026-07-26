@@ -14,7 +14,7 @@
     }
 
     // Obsidian teması koyu moda kilitli — tema değiştirme aksiyonu o modda no-op olur.
-    if (setting('gorunum.tasarim_modu', 'eski') !== 'obsidian') {
+    if (! \App\Support\Tema::koyuKilit()) {
         $staticEntries->push(['category' => 'Aksiyon', 'title' => 'Temayı Değiştir', 'action' => 'toggleTheme']);
     }
 @endphp

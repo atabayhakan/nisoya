@@ -29,7 +29,7 @@ class HomeSectionsTest extends TestCase
         $this->seed([CurrencySeeder::class, CountrySeeder::class, CategorySeeder::class]);
     }
 
-    private const CTA_TEXT = 'Bir yeteneğin mutlaka vardır.';
+    private const CTA_TEXT = 'İlk ilanın 3 dakikada yayında, kuruş ödemeden.';
 
     // ------------------------------------------------------------ Yardımcı
 

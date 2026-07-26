@@ -1,5 +1,11 @@
+{{-- Vitrin temasında bu bileşen TAMAMEN susar: preset'lerin tasarim_modu ile
+     birlikte yazdığı font/renk/radius/cam ayarları da klasiğin iç varyantıdır
+     (panel metni: "tüm ince ayarlar Klasik temada geçerlidir"). Yalnız $mod'u
+     bastırıp bunları uygulamak, vitrin'e düşen fallback sayfalara önceki
+     preset'in serif fontunu/özel rengini sızdırırdı (P0 inceleme bulgusu #4). --}}
+@unless (\App\Support\Tema::vitrinMi())
 @php
-    $mod = setting('gorunum.tasarim_modu', 'eski');
+    $mod = \App\Support\Tema::tasarimModu();
     $primaryColor = setting('gorunum.primary_color', '#059669');
     $fontFamily = setting('gorunum.font_family', 'sans');
     $borderRadius = setting('gorunum.border_radius', 'modern');
@@ -121,3 +127,4 @@
         }
     @endunless
 </style>
+@endunless

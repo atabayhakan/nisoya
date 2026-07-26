@@ -27,8 +27,10 @@ class SiteContentTest extends TestCase
 
     public function test_setting_falls_back_to_config_default_when_not_in_db(): void
     {
-        // DB boş — config varsayılanı dönmeli
-        $this->assertSame('Hemen Başla', setting('home.cta_buton'));
+        // DB boş — config varsayılanı dönmeli. hero_badge bilinçli seçildi:
+        // UpdateHeroCopyToSet3 migration'ı cta_buton dahil 9 anahtarı DB'ye
+        // yazdığı için onlar artık config-fallback yolunu sınayamaz.
+        $this->assertSame('🌍 Yurt dışındaki Türkler için', setting('home.hero_badge'));
         // Hiç tanımsız anahtar → verilen yedek
         $this->assertSame('YEDEK', setting('hic.yok', 'YEDEK'));
     }
