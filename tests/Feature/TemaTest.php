@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\UserRole;
 use App\Filament\Pages\TasarimAyarlari;
+use App\Models\Listing;
 use App\Models\User;
 use App\Support\Settings;
 use App\Support\Tema;
@@ -38,6 +39,8 @@ class TemaTest extends TestCase
         'components/layouts/app.blade.php',
         'components/layouts/guest.blade.php',
         'home.blade.php',
+        'listings/index.blade.php',
+        'listings/show.blade.php',
     ];
 
     protected function setUp(): void
@@ -229,6 +232,109 @@ class TemaTest extends TestCase
             ->assertSet('aktifTema', 'vitrin'); // geçersiz değer yok sayılır
 
         $this->assertSame('vitrin', setting('gorunum.tema'));
+    }
+
+    public function test_vitrin_listings_index_preserves_filter_contract(): void
+    {
+        Settings::setMany(['gorunum.tema' => 'vitrin']);
+
+        $html = $this->get('/ilanlar')->assertOk()->getContent();
+
+        // İskelet + Vitrin paleti
+        $this->assertStringContainsString('data-tema="vitrin"', $html);
+
+        // Filtre sözleşmesi: BrowseController'ın okuduğu her alan adı formda olmalı
+        foreach (['name="q"', 'name="tip"', 'name="kategori"', 'name="ulke"', 'name="sehir"', 'name="min"', 'name="max"', 'name="uzaktan"', 'name="sirala"'] as $alan) {
+            $this->assertStringContainsString($alan, $html, "Filtre alanı kayıp: {$alan}");
+        }
+        // GET formu klasikle aynı hedefe gider (kategori sayfasından bile)
+        $this->assertStringContainsString('action="'.route('listings.index').'"', $html);
+        // Harita kısayolu korunur
+        $this->assertStringContainsString(route('listings.map'), $html);
+    }
+
+    public function test_vitrin_listings_index_keeps_empty_state_and_zone(): void
+    {
+        Settings::setMany(['gorunum.tema' => 'vitrin']);
+
+        // Sonuç yokken klasikle AYNI boş-durum sözleşmesi (EmptyStateTest ile aynı dizeler)
+        $this->get('/ilanlar?q=kesinliklebulunmayanbirsey')->assertOk()
+            ->assertSee('Sonuç bulunamadı', false)
+            ->assertSee('Tüm ilanları gör', false)
+            ->assertSee('viewBox="0 0 120 90"', false);
+    }
+
+    public function test_vitrin_listing_card_keeps_image_and_featured_contracts(): void
+    {
+        Settings::setMany(['gorunum.tema' => 'vitrin']);
+
+        $listing = Listing::factory()->create([
+            'status' => 'aktif',
+            'is_featured' => true,
+            'featured_until' => now()->addWeek(),
+        ]);
+
+        $html = $this->get('/ilanlar')->assertOk()->getContent();
+
+        // Ücretli öne-çıkarma görünürlüğü vitrin kartında da korunmalı
+        $this->assertStringContainsString('Öne çıkan', $html);
+        $this->assertStringContainsString($listing->title, $html);
+    }
+
+    public function test_vitrin_listing_show_gallery_bento_handles_multiple_images(): void
+    {
+        // Galeri, klasikten en çok ayrışan bölüm (bento: hero + yan sütun +
+        // "+N foto" örtüsü). Görsel sözleşmeleri (srcset/sizes/fetchpriority)
+        // ve TEK morph adı burada da korunmalı.
+        Settings::setMany(['gorunum.tema' => 'vitrin']);
+
+        $listing = Listing::factory()->create(['status' => 'aktif']);
+        foreach (range(1, 6) as $i) {
+            $listing->images()->create([
+                'path' => "listings/large/{$i}.webp",
+                'path_thumb' => "listings/thumb/{$i}.webp",
+                'path_medium' => "listings/medium/{$i}.webp",
+                'path_large' => "listings/large/{$i}.webp",
+                'sort_order' => $i,
+                'is_cover' => $i === 1,
+            ]);
+        }
+
+        $html = $this->get(route('listings.show', [$listing, $listing->slug]))->assertOk()->getContent();
+
+        $this->assertStringContainsString('fetchpriority="high"', $html);
+        $this->assertStringContainsString('sizes=', $html);
+        $this->assertStringContainsString('1 / 6', $html, 'galeri sayacı');
+        // 6 görsel: hero + yan sütunda 3 → örtüde kalan 2
+        $this->assertStringContainsString('+2 foto', $html);
+        $this->assertSame(
+            1,
+            substr_count($html, '--listing-transition-name: listing-image-'.$listing->id),
+            'çoklu galeride bile morph adı tam bir kez basılmalı'
+        );
+    }
+
+    public function test_vitrin_listing_show_preserves_seo_and_safety_contracts(): void
+    {
+        Settings::setMany(['gorunum.tema' => 'vitrin']);
+
+        $listing = Listing::factory()->create(['status' => 'aktif', 'type' => 'hizmet']);
+
+        $html = $this->get(route('listings.show', [$listing, $listing->slug]))->assertOk()->getContent();
+
+        $this->assertStringContainsString('data-tema="vitrin"', $html);
+        // JSON-LD sözleşmesi (klasikle birebir aynı tipler)
+        $this->assertStringContainsString('"@type": "BreadcrumbList"', $html);
+        $this->assertStringContainsString('"@type": "Service"', $html);
+        // Ödeme güvenliği kartı ve zone kaybolmamalı
+        $this->assertStringContainsString('Mal ve Hizmetler', $html);
+        // Morph geçiş adı TAM BİR kez basılmalı (iki kez basılırsa tarayıcı
+        // geçişi sessizce iptal eder)
+        $this->assertSame(
+            1,
+            substr_count($html, '--listing-transition-name: listing-image-'.$listing->id),
+            'view-transition adı tam bir kez basılmalı'
+        );
     }
 
     /**
