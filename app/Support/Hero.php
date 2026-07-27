@@ -13,8 +13,11 @@ use Illuminate\Support\Facades\Storage;
  * sayfasının tamamı Settings::setMany() üzerinden yazıyor ve cache
  * invalidasyonu (Settings::forget) ile denetim izini (Settings::logChange)
  * oradan alıyor. Ayrı tablo bu ikisini elle yeniden yazmayı gerektirirdi.
- * Kampanya/A-B ikinci tura ertelendiği için tarih tabanlı cache
- * invalidasyonu bugün gerekmiyor — ertelemenin asıl teknik gerekçesi bu.
+ *
+ * Zamanlanmış kampanya (P4c) bu kararla ÇAKIŞMAZ: cache'e yalnız ham
+ * tarihler girer, "şu an kampanya penceresinde miyiz" kıyaslaması her
+ * render'da yapılır (bkz. kampanyaAktifMi). Bu yüzden tarih sınırlarında
+ * cache temizlemeye, TTL'e veya zamanlanmış işe gerek yoktur.
  *
  * Hero Yöneticisi VİTRİN temasına özgüdür; klasik tema hero metinlerini
  * `home.hero_*` üzerinden (İçerik sayfası) yönetmeye devam eder. Vitrin
