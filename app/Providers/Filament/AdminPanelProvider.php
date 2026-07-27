@@ -2,7 +2,10 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\BekleyenIslerWidget;
 use App\Filament\Widgets\ExifPrivacyWidget;
+use App\Filament\Widgets\IlanHareketleriWidget;
+use App\Filament\Widgets\KategoriDagilimiWidget;
 use App\Filament\Widgets\StatsOverview;
 use App\Filament\Widgets\SystemHealthWidget;
 use App\Http\Middleware\SecurityHeaders;
@@ -72,10 +75,17 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            // Sıra: önce "bugün ne yapmalıyım" (bekleyen işler), sonra sayılar,
+            // sonra eğilim grafikleri, en sonda sistem/hesap kartları.
+            // getSort() değerleri: BekleyenIsler -4, StatsOverview -3,
+            // IlanHareketleri -2, KategoriDagilimi -1.
             ->widgets([
+                BekleyenIslerWidget::class,
                 SystemHealthWidget::class,
                 ExifPrivacyWidget::class,
                 StatsOverview::class,
+                IlanHareketleriWidget::class,
+                KategoriDagilimiWidget::class,
                 AccountWidget::class,
                 FilamentInfoWidget::class,
             ])
