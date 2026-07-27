@@ -246,3 +246,5 @@ redis-cli Info stats
 > AKTİF dosyada yapılmalı. Yedeği include edilen dizin İÇİNE koyma (`*` glob'una
 > takılıp "duplicate listen" hatası verir) — `/root/` altına al.
 - [ ] .env dosyası .gitignore'da ve yedeklenmiyor
+
+<!-- Otomatik deploy dogrulamasi: 2026-07-27T03:05:12Z -->
