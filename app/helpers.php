@@ -1,6 +1,7 @@
 <?php
 
 use App\Support\Settings;
+use App\Support\Tema;
 
 if (! function_exists('setting')) {
     /** Site içerik ayarını döndürür (cache'li, varsayılana düşer). */
@@ -19,7 +20,7 @@ if (! function_exists('brandColorHex')) {
     {
         // Vitrin temasında favicon/theme-color da Vitrin birincilini kullanır
         // (marka_rengi ayarı klasiğin eksenidir — panelde de öyle etiketlenir).
-        if (\App\Support\Tema::vitrinMi()) {
+        if (Tema::vitrinMi()) {
             return '#3E63F0';
         }
 
