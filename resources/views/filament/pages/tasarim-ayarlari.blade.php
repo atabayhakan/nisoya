@@ -264,8 +264,33 @@
         </div>
     </div>
 
+    {{-- ÖLÜ KONTROL UYARISI (2026-07-28)
+
+         Aşağıdaki ince ayarların tamamı yalnız KLASİK temada çalışır: klasik
+         iskelet <x-brand-theme /> + <x-tasarim-theme /> basar, Vitrin iskeleti
+         yalnız <x-vitrin-theme /> basar. Vitrin açıkken bu kontroller
+         kaydediliyor ama siteye hiç yansımıyordu ve sayfada tek bir uyarı
+         yoktu — sahip düğmeleri çeviriyor, hiçbir şey değişmiyordu.
+         Hangi ayarın hangi temada yaşadığı App\Support\TemaJetonlari'nda
+         beyan edilir ve TemaJetonlariTest bunu makineyle doğrular. --}}
+    @if (\App\Support\Tema::vitrinMi())
+        <div class="mt-8 rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/30">
+            <p class="text-sm font-semibold text-amber-900 dark:text-amber-200">
+                Şu an <strong>Vitrin</strong> teması açık — aşağıdaki ince ayarlar bu temada bir şey yapmaz.
+            </p>
+            <p class="mt-1 text-xs text-amber-800 dark:text-amber-300">
+                Vitrin kendi yazı tipini, köşe ölçeğini ve gölgelerini taşır. Vitrin'in vurgu rengini
+                sitenin üzerindeki <strong>Görünüm</strong> panelinden değiştirebilirsin; buradaki
+                ayarlar Klasik temaya geçtiğinde geçerli olur.
+            </p>
+        </div>
+    @endif
+
     {{-- 🎛️ İnce Ayar Kontrol Paneli & Canlı Simülatör --}}
-    <div class="mt-8 grid gap-8 lg:grid-cols-3">
+    <div @class([
+        'mt-8 grid gap-8 lg:grid-cols-3',
+        'opacity-60' => \App\Support\Tema::vitrinMi(),
+    ])>
         {{-- İnce Ayar Kontrolleri --}}
         <div class="space-y-6 lg:col-span-2">
             <x-filament::section>
@@ -313,10 +338,13 @@
                             wire:model.live="fontFamily"
                             class="mt-1.5 w-full rounded-xl border-gray-300 text-xs focus:border-primary-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                         >
-                            <option value="sans">Instrument Sans (Modern Minimal)</option>
-                            <option value="serif">Instrument Serif (İtalik Prestij)</option>
-                            <option value="inter">Inter Display (SaaS Bold)</option>
-                            <option value="outfit">Outfit (Futuristik Modern)</option>
+                            {{-- Seçenekler tek kaynaktan (TemaJetonlari::FONTLAR) gelir:
+                                 orada YALNIZ self-host edilen aileler bulunur. Buraya elle
+                                 seçenek eklemek, sahibin seçip hiçbir şeyin değişmediği ölü
+                                 bir kontrol üretir — 'Inter'/'Outfit' tam olarak öyleydi. --}}
+                            @foreach (\App\Support\TemaJetonlari::fontSecenekleri() as $fontAnahtar => $fontEtiket)
+                                <option value="{{ $fontAnahtar }}">{{ $fontEtiket }}</option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -369,12 +397,9 @@
                     'pill' => '24px',
                     default => '14px',
                 };
-                $simFont = match($fontFamily) {
-                    'serif' => 'Instrument Serif, Georgia, serif',
-                    'inter' => 'Inter, system-ui, sans-serif',
-                    'outfit' => 'Outfit, system-ui, sans-serif',
-                    default => 'Instrument Sans, system-ui, sans-serif',
-                };
+                // Önizleme, sitenin gerçekte uygulayacağı CSS'in AYNISINI kullanır;
+                // ayrı bir eşleme tutmak ikisinin sessizce ayrışmasına yol açardı.
+                $simFont = \App\Support\TemaJetonlari::fontCss($fontFamily);
             @endphp
 
             <div

@@ -19,19 +19,21 @@ use Illuminate\Validation\Rule;
  */
 class TemaOzellestiriciController extends Controller
 {
-    /**
-     * Klasik temada seçilebilen yazı tipleri.
-     *
-     * BİLİNÇLİ OLARAK KISITLI: vite.config.js yalnız Instrument Sans,
-     * Instrument Serif ve Plus Jakarta Sans'ı self-host ediyor. Mevcut
-     * Filament sayfasındaki 'inter' ve 'outfit' seçenekleri hiçbir yerde
-     * yüklenmediği için sessizce sistem sans'ına düşüyor — yani sahip
-     * seçiyor ama hiçbir şey değişmiyor. Özelleştirici o iki ölü seçeneği
-     * tekrarlamaz.
-     */
-    public const FONTLAR = ['sans', 'serif'];
-
     public const KOSELER = ['sharp', 'soft', 'modern', 'pill'];
+
+    /**
+     * Seçilebilir yazı tipleri — TEK KAYNAK App\Support\TemaJetonlari::FONTLAR.
+     *
+     * Orada yalnız gerçekten self-host edilen aileler bulunur; liste bir kez
+     * çoğaltıldığı için panelde 'inter'/'outfit' gibi hiçbir şey yapmayan
+     * seçenekler yıllarca durabilmişti.
+     *
+     * @return array<int, string>
+     */
+    public static function fontAnahtarlari(): array
+    {
+        return array_keys(TemaJetonlari::FONTLAR);
+    }
 
     private function yetkiKontrol(Request $request): void
     {
@@ -55,7 +57,7 @@ class TemaOzellestiriciController extends Controller
             // tasarim-theme.blade.php'deki ikinci savunma hattı korunuyor
             // (denetim #10: <style> içine CSS enjeksiyonu).
             'primary_color' => ['nullable', 'regex:/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/'],
-            'font_family' => ['nullable', Rule::in(self::FONTLAR)],
+            'font_family' => ['nullable', Rule::in(self::fontAnahtarlari())],
             'border_radius' => ['nullable', Rule::in(self::KOSELER)],
             'glassmorphism' => ['nullable', 'boolean'],
             'smooth_animations' => ['nullable', 'boolean'],

@@ -83,6 +83,48 @@ final class TemaJetonlari
         ],
     ];
 
+    /**
+     * Seçilebilir yazı tiplerinin TEK KAYNAĞI.
+     *
+     * NEDEN BURADA: panelde uzun süre 'inter' ve 'outfit' seçenekleri durdu;
+     * ikisi de hiçbir yerden YÜKLENMİYORDU (vite.config.js yalnız Instrument
+     * Sans, Instrument Serif ve Plus Jakarta Sans'ı self-host ediyor). Sahip
+     * seçiyor, kaydediliyor, site sessizce sistem sans'ına düşüyordu. Üstelik
+     * "obsidian" ve "nordic" hazır ayarları o ölü değerleri kendiliğinden
+     * yazıyordu. Liste tek yerde tutulur ve TemaJetonlariTest her seçeneğin
+     * gerçekten self-host edildiğini vite.config.js'ten doğrular.
+     *
+     * @var array<string, array{etiket: string, aile: string, css: string}>
+     */
+    public const FONTLAR = [
+        'sans' => [
+            'etiket' => 'Instrument Sans (varsayılan)',
+            'aile' => 'Instrument Sans',
+            'css' => "'Instrument Sans', ui-sans-serif, system-ui, sans-serif",
+        ],
+        'serif' => [
+            'etiket' => 'Instrument Serif',
+            'aile' => 'Instrument Serif',
+            'css' => "'Instrument Serif', Georgia, 'Times New Roman', serif",
+        ],
+    ];
+
+    /** Geçerli font anahtarı mı? Değilse varsayılana düşülür. */
+    public static function fontCss(?string $anahtar): string
+    {
+        return (self::FONTLAR[$anahtar] ?? self::FONTLAR['sans'])['css'];
+    }
+
+    /**
+     * Panel açılır menüsü için anahtar => etiket.
+     *
+     * @return array<string, string>
+     */
+    public static function fontSecenekleri(): array
+    {
+        return array_map(fn (array $f) => $f['etiket'], self::FONTLAR);
+    }
+
     /** Temaların iskelet dosyaları — bekçi testi bileşenin gerçekten basıldığını buradan doğrular. */
     public const ISKELETLER = [
         'klasik' => 'resources/views/components/layouts/app.blade.php',

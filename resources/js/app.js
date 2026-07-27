@@ -1037,6 +1037,7 @@ Alpine.data('temaOzellestirici', (yapilandirma) => ({
     ...yapilandirma.baslangic,
     aksanlar: yapilandirma.aksanlar,
     aileler: yapilandirma.aileler,
+    fontlar: yapilandirma.fontlar,
     aktifTema: yapilandirma.aktifTema,
     kayitUrl: yapilandirma.kayitUrl,
     sifirlaUrl: yapilandirma.sifirlaUrl,
@@ -1114,11 +1115,9 @@ Alpine.data('temaOzellestirici', (yapilandirma) => ({
                 }
             }
 
-            const fontlar = {
-                serif: "'Instrument Serif', Georgia, 'Times New Roman', serif",
-                sans: "'Instrument Sans', ui-sans-serif, system-ui, sans-serif",
-            };
-            acikKurallar += `--font-sans:${fontlar[this.font_family] || fontlar.sans};`;
+            // Font CSS'i sunucudan gelir (TemaJetonlari::FONTLAR) — burada ikinci
+            // bir kopya tutmak önizlemeyi kaydedilen sonuçtan ayırırdı.
+            acikKurallar += `--font-sans:${this.fontlar[this.font_family] || this.fontlar.sans};`;
 
             const olcek = {
                 sharp: ['2px', '3px', '4px', '6px'],

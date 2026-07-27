@@ -118,7 +118,10 @@ class TasarimAyarlari extends Page
             'obsidian' => [
                 'gorunum.tasarim_modu' => 'obsidian',
                 'gorunum.primary_color' => '#10b981',
-                'gorunum.font_family' => 'inter',
+                // Eskiden 'inter' yazıyordu; o aile hiçbir yerden yüklenmediği
+                // için bu hazır ayarı uygulayan sahip sessizce sistem sans'ına
+                // düşüyordu. Artık gerçekten yüklü olan aile yazılır.
+                'gorunum.font_family' => 'sans',
                 'gorunum.border_radius' => 'modern',
                 'gorunum.glassmorphism' => '1',
                 'gorunum.smooth_animations' => '1',
@@ -126,7 +129,8 @@ class TasarimAyarlari extends Page
             'nordic' => [
                 'gorunum.tasarim_modu' => 'nordic',
                 'gorunum.primary_color' => '#0f172a',
-                'gorunum.font_family' => 'outfit',
+                // Eskiden 'outfit' yazıyordu — bkz. obsidian'daki not.
+                'gorunum.font_family' => 'sans',
                 'gorunum.border_radius' => 'pill',
                 'gorunum.glassmorphism' => '0',
                 'gorunum.smooth_animations' => '1',
