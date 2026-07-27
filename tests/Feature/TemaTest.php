@@ -115,8 +115,8 @@ class TemaTest extends TestCase
         // Hero metinleri (Slogan Set 3) vitrin hero'sunda da settings'ten akar;
         // klasiğin brand/tasarim theme'leri vitrin'de basılmaz.
         $this->get('/')->assertOk()
-            ->assertSee('Nakliyeci mi, hoca mı?', false)
-            ->assertSee('Hepsi burada, Türkçe.', false)
+            ->assertSee('Tarif etmeye çalışma.', false)
+            ->assertSee('Türkçe anlat, iş bitsin.', false)
             ->assertDontSee('nisoya-tasarim-theme', false);
     }
 
@@ -419,12 +419,15 @@ class TemaTest extends TestCase
         }
     }
 
-    public function test_hero_copy_set3_is_live(): void
+    public function test_hero_slogani_yayinda(): void
     {
-        // Slogan Set 3 migration'ı: yeni metinler ana sayfada.
+        // 2026-07-28: Slogan Set 3 ("Nakliyeci mi, hoca mı?") yerini
+        // çok-ajanlı tasarım turunun kazananına bıraktı. Metin site_settings'te
+        // yaşıyor; korumalı migration eski değeri birebir eşleştiğinde günceller
+        // (bkz. 2026_07_28_140000_hero_sloganini_guncelle).
         $this->get('/')->assertOk()
-            ->assertSee('Nakliyeci mi, hoca mı?', false)
-            ->assertSee('Hepsi burada, Türkçe.', false)
+            ->assertSee('Tarif etmeye çalışma.', false)
+            ->assertSee('Türkçe anlat, iş bitsin.', false)
             ->assertDontSee('Yeteneğini paraya dönüştür', false);
     }
 }
