@@ -55,6 +55,26 @@ class MobilYaziBoyutuTest extends TestCase
         }
     }
 
+    public function test_ciplak_girdi_kurali_base_katmaninda_kalir(): void
+    {
+        $css = $this->appCss();
+
+        // Cascade layer'lar ÖZGÜLLÜĞÜN ÖNÜNE geçer: katmansız bir kural,
+        // @layer utilities içindeki Tailwind sınıflarını her zaman ezer —
+        // :where() ile özgüllüğü 0 yapılsa bile. Bu kural bir zamanlar
+        // katmansızdı ve "yalnızca stillenmemiş girdileri etkiler" sanılıyordu;
+        // gerçekte bilinçli stillenmiş formları da eziyordu (ana sayfadaki ülke
+        // seçici bg-stone-100 yazmasına rağmen beyaz render oluyordu).
+        preg_match('/@layer base \{(.+?)\n\}/s', $css, $m);
+        $this->assertNotEmpty($m, 'Çıplak girdi kuralı @layer base içinde değil — katmansız hâlde Tailwind sınıflarını ezer.');
+
+        $this->assertStringContainsString(
+            "input:where(:not([type='checkbox'])",
+            $m[1],
+            'Çıplak girdi kuralı base katmanının dışına çıkarılmış.'
+        );
+    }
+
     public function test_hicbir_sayfa_pinch_zoomu_kapatmaz(): void
     {
         $ihlaller = [];

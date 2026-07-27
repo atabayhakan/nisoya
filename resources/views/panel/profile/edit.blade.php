@@ -33,9 +33,16 @@
                             @if ($user->avatarUsesLegacyFocal()) style="object-position: {{ $user->avatarObjectPosition() }}" @endif
                         >
                     </div>
-                    <div>
+                    {{-- min-w-0 + w-full İKİSİ BİRDEN gerekli — ölçüldü, tek başına hiçbiri
+                         yetmiyor. input[type=file] native genişliği 257px'te sabittir (dosya adı
+                         uzasa bile büyümez, içeride kısaltılır) ve bu blok 96px avatarın flex
+                         kardeşi olduğu için 393px'lik telefonda 17px yatay taşma yapıyordu.
+                         min-w-0 flex öğesinin varsayılan `min-width:auto` kilidini açar — yoksa
+                         öğe içeriğinin altına inemez; w-full ise girdiyi artık küçülebilen
+                         kolona bağlar. Biri eksikse taşma geri gelir. --}}
+                    <div class="min-w-0">
                         <label for="avatar" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Profil fotoğrafı</label>
-                        <input id="avatar" name="avatar" type="file" accept="image/*" class="mt-1 text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
+                        <input id="avatar" name="avatar" type="file" accept="image/*" class="mt-1 w-full text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
                         @error('avatar') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         <button type="button" @click="openModal()" class="mt-2 flex items-center gap-1 text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">
                             <span aria-hidden="true">✏️</span> Profil fotoğrafını düzenle
@@ -132,9 +139,12 @@
                     <div class="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-3xl font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                         {{ mb_strtoupper(mb_substr($user->name, 0, 1)) }}
                     </div>
-                    <div>
+                    {{-- min-w-0 + w-full: yukarıdaki avatarlı daldaki notun aynısı. İki dal da
+                         96px'lik bir daire + dosya girdisi barındıran aynı flex satırı olduğu
+                         için taşma ikisinde de oluşur; düzeltme ikisine de uygulanmalı. --}}
+                    <div class="min-w-0">
                         <label for="avatar" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Profil fotoğrafı</label>
-                        <input id="avatar" name="avatar" type="file" accept="image/*" class="mt-1 text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
+                        <input id="avatar" name="avatar" type="file" accept="image/*" class="mt-1 w-full text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
                         @error('avatar') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
