@@ -59,7 +59,15 @@ class Conversation extends Model
     public static function findOrCreateBetween(int $userId, int $otherId, ?int $listingId): self
     {
         $existing = static::query()
-            ->where('listing_id', $listingId)
+            // whereNull ŞART: ilansız sohbette (profilden başlatılan mesaj)
+            // `where('listing_id', null)` SQL'de HİÇBİR satırla eşleşmez, yani
+            // her mesaj yeni bir konuşma açardı ve iki kişi arasında onlarca
+            // kopuk sohbet birikirdi. Unique index de NULL'ları ayrı saydığı
+            // için veritabanı bunu engellemez — koruma burada olmak zorunda.
+            ->when($listingId === null,
+                fn ($q) => $q->whereNull('listing_id'),
+                fn ($q) => $q->where('listing_id', $listingId),
+            )
             ->where(function ($q) use ($userId, $otherId) {
                 $q->where(['user_one_id' => $userId, 'user_two_id' => $otherId])
                     ->orWhere(['user_one_id' => $otherId, 'user_two_id' => $userId]);
