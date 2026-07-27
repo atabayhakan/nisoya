@@ -15,6 +15,7 @@ use App\Models\ListingImage;
 use App\Services\GeocodingService;
 use App\Services\ImageService;
 use App\Support\Modules;
+use App\Support\Tema;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -235,7 +236,38 @@ class ListingController extends Controller
             'count' => $sellerReviews->count(),
         ];
 
-        return view('listings.show', compact('listing', 'isOwner', 'isFavorited', 'sellerRating'));
+        // Vitrin (Faz P4) — yalnız Vitrin teması aktifken yüklenir:
+        // klasik tema bu blokları göstermediği için orada sorgu maliyeti
+        // doğurmaz (ilan detayı <25 sorgu bütçesi, PerformanceBenchmarkTest).
+        $similarListings = collect();
+        $recentReviews = collect();
+
+        if (Tema::vitrinMi()) {
+            // Benzer ilanlar: aynı kategori, kendisi hariç, aktif. Aynı
+            // şehirdekiler önce gelsin (yakınlık daha alakalı) — tek sorgu.
+            $similarListings = $listing->category_id
+                ? Listing::query()->active()
+                    ->where('category_id', $listing->category_id)
+                    ->whereKeyNot($listing->id)
+                    ->with(['coverImage', 'country'])
+                    ->when($listing->city, fn ($q) => $q->orderByRaw('(city = ?) desc', [$listing->city]))
+                    ->latest()
+                    ->take(4)
+                    ->get()
+                : collect();
+
+            // Satıcının son değerlendirmeleri (profiles.show ile aynı sözleşme).
+            $recentReviews = $listing->user->reviewsReceived()
+                ->where('status', 'yayinda')
+                ->with('reviewer')
+                ->latest()
+                ->take(3)
+                ->get();
+        }
+
+        return view('listings.show', compact(
+            'listing', 'isOwner', 'isFavorited', 'sellerRating', 'similarListings', 'recentReviews'
+        ));
     }
 
     /** Form için ortak veri (tipe göre filtreli kategoriler, para birimleri, ülkeler). */

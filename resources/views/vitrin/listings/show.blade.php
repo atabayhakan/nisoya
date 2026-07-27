@@ -324,6 +324,51 @@
                     </div>
                 @endif
 
+                {{-- Değerlendirmeler (Faz P4) — satıcının son yorumları.
+                     Veri ListingController'da YALNIZ vitrin aktifken yükleniyor;
+                     yorum yoksa blok hiç basılmaz. --}}
+                @if ($recentReviews->isNotEmpty())
+                    <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-800 dark:bg-stone-900">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <h2 class="text-[17px] font-extrabold tracking-[-0.018em] text-stone-800 dark:text-stone-100">Değerlendirmeler</h2>
+                            @if ($sellerRating['count'] > 0)
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-[17px] font-extrabold text-stone-800 dark:text-stone-100">★ {{ $sellerRating['avg'] }}</span>
+                                    <span class="text-[12.5px] font-semibold text-stone-500 dark:text-stone-400">{{ $sellerRating['count'] }} değerlendirme</span>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="mt-4 grid gap-3">
+                            @foreach ($recentReviews as $review)
+                                <div class="flex gap-3 rounded-[14px] border border-stone-200 p-3.5 dark:border-stone-700">
+                                    <x-avatar :user="$review->reviewer" size="h-10 w-10" text="text-sm" />
+                                    <div class="min-w-0">
+                                        <div class="flex flex-wrap items-baseline gap-2">
+                                            <span class="text-[13px] font-bold text-stone-800 dark:text-stone-100">{{ $review->reviewer->name }}</span>
+                                            <span class="text-[11.5px] font-semibold text-stone-400 dark:text-stone-500">
+                                                @if ($review->reviewer->city){{ $review->reviewer->city }} · @endif{{ $review->created_at->diffForHumans() }}
+                                            </span>
+                                        </div>
+                                        <div class="mt-0.5 text-[12px] font-bold text-amber-500 dark:text-amber-400" aria-label="{{ $review->rating }} yıldız">
+                                            {{ str_repeat('★', (int) $review->rating) }}<span class="text-stone-300 dark:text-stone-600">{{ str_repeat('★', 5 - (int) $review->rating) }}</span>
+                                        </div>
+                                        @if ($review->comment)
+                                            <p class="mt-1.5 text-[13px] font-medium leading-relaxed text-stone-600 dark:text-stone-300">{{ $review->comment }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        @if ($sellerRating['count'] > $recentReviews->count())
+                            <a href="{{ route('profiles.show', $listing->user->username) }}" class="mt-3 inline-block text-sm font-bold text-emerald-600 hover:underline dark:text-emerald-400">
+                                Tüm değerlendirmeleri gör →
+                            </a>
+                        @endif
+                    </div>
+                @endif
+
                 @auth
                     @unless ($isOwner)
                         <details class="text-sm">
@@ -484,6 +529,47 @@
                     <a href="{{ route('profiles.show', $listing->user->username) }}" class="mt-3 block text-sm font-bold text-emerald-600 hover:underline dark:text-emerald-400">Profili ve değerlendirmeleri gör →</a>
                     @include('partials.payment-safety-card', ['seller' => $listing->user])
                 </div>
+
+                {{-- Benzer ilanlar (Faz P4) — aynı kategori, aynı şehir öncelikli.
+                     Veri yalnız vitrin aktifken yükleniyor; yoksa blok basılmaz. --}}
+                @if ($similarListings->isNotEmpty())
+                    <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-[18px] shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                        <h2 class="text-[14.5px] font-extrabold tracking-[-0.015em] text-stone-800 dark:text-stone-100">Benzer ilanlar</h2>
+                        <div class="mt-3.5 grid gap-3">
+                            @foreach ($similarListings as $benzer)
+                                <a href="{{ route('listings.show', [$benzer, $benzer->slug]) }}" class="group flex items-center gap-3">
+                                    <div class="h-11 w-14 shrink-0 overflow-hidden rounded-[10px] bg-stone-100 dark:bg-stone-800">
+                                        @if ($benzer->coverImage)
+                                            <img src="{{ $benzer->coverImage->url('thumb') ?? Storage::url($benzer->coverImage->path) }}"
+                                                 alt="" width="56" height="44" loading="lazy" decoding="async"
+                                                 class="h-full w-full object-cover"
+                                                 style="object-position: {{ $benzer->coverImage->objectPosition() }}">
+                                        @else
+                                            <div class="flex h-full w-full items-center justify-center text-stone-300 dark:text-stone-600">
+                                                <x-heroicon-o-photo class="h-4 w-4" />
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="line-clamp-2 text-[12.5px] font-bold leading-[1.35] text-stone-800 group-hover:text-emerald-700 dark:text-stone-100 dark:group-hover:text-emerald-400" style="text-wrap: pretty">{{ $benzer->title }}</div>
+                                        <div class="mt-1 flex flex-wrap items-baseline gap-2">
+                                            @if ($benzer->country)
+                                                <span class="text-[11px] font-semibold text-stone-500 dark:text-stone-400">{{ $benzer->country->emoji }} {{ $benzer->city ?: $benzer->country->name_tr }}</span>
+                                            @endif
+                                            <span class="text-[12px] font-extrabold text-emerald-600 dark:text-emerald-400">
+                                                @if ($benzer->price !== null)
+                                                    {{ number_format((float) $benzer->price, 0) }} {{ $benzer->currency }}
+                                                @else
+                                                    Görüşülür
+                                                @endif
+                                            </span>
+                                        </div>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
 
                 {{-- Alan: sidebar alt (reklam/duyuru) --}}
                 <x-zone zone-key="ilan_detay_yan" />
