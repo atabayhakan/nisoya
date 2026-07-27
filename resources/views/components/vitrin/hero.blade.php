@@ -1,4 +1,4 @@
-@props(['countries', 'stats', 'latestListings', 'activityFeed'])
+@props(['countries', 'stats', 'latestListings', 'activityFeed', 'pulseCountries' => [], 'heroCips' => null])
 
 {{-- VİTRİN HERO (P1 → P3) — artık Hero Yöneticisi'nden yönetilir
      (App\Support\Hero / Filament: İçerik & Tasarım → Hero Yöneticisi):
@@ -25,8 +25,22 @@
     $cta1 = $hero::cta(1);
     $cta2 = $hero::cta(2);
     $oneCikanIlan = $latestListings->first();
-    $barlar = [46, 63, 39, 72, 88, 55, 67];
-    $gunler = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+
+    // "Nerede ne var" — sahte haftalık çubukların yerine GERÇEK ülke hareketi.
+    // Veri zaten HomeController'da hesaplanıp view'a geliyor (NabizService::
+    // countryActivity, 5 dk cache); burada yeni sorgu YOK.
+    // countryActivity() ilanı olmayan ülkeleri de count=0 ile döndürür —
+    // önce sıfırlar elenir, sonra azalan sıralanır. Aksi hâlde ekranda
+    // "0 ilan" yazan satırlar çıkardı ki bu sahte veriden beter olurdu.
+    $ulkeHareketi = collect($pulseCountries)
+        ->filter(fn ($u) => ($u['count'] ?? 0) > 0)
+        ->sortByDesc('count')
+        ->take(4)
+        ->values();
+    $enYuksek = (int) ($ulkeHareketi->max('count') ?: 0);
+
+    // "Canlı akış" başlığı ancak gerçekten taze içerik varken dürüsttür.
+    $akisTaze = collect($activityFeed)->contains(fn ($i) => $i['taze'] ?? false);
 @endphp
 
 <section class="relative overflow-hidden {{ $koyu ? 'bg-stone-900' : '' }}">
@@ -58,7 +72,11 @@
         </div>
     @endif
 
-    <div class="relative z-10 mx-auto max-w-6xl px-4 py-12 lg:py-14 {{ $sahne ? '' : 'grid items-center gap-10 lg:grid-cols-[minmax(0,505px)_minmax(0,1fr)]' }}">
+    {{-- Sol sütun 505px → 560px: arama kutusu ilk 3 saniyenin son adımı, ama
+         505px'te ülke seçici ve "Ara" butonundan sonra girdiye ~170px kalıyordu
+         (yaklaşık 11 karakter). Sağ bento zaten esnek kolonda, 55px onu
+         bozmuyor. --}}
+    <div class="relative z-10 mx-auto max-w-6xl px-4 py-12 lg:py-14 {{ $sahne ? '' : 'grid items-center gap-10 lg:grid-cols-[minmax(0,560px)_minmax(0,1fr)]' }}">
         <div class="{{ $sahne ? 'mx-auto max-w-2xl text-center' : '' }}">
             @if ($hero::rozet())
                 <span class="inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-semibold shadow-sm {{ $koyu
@@ -91,6 +109,7 @@
                     :countries="$countries"
                     :stats="$stats"
                     :latest-listings="$latestListings"
+                    :hero-cips="$heroCips"
                     :koyu="$koyu"
                 />
             @endforeach
@@ -113,6 +132,20 @@
             @endif
         </div>
 
+        {{-- MOBİL KANIT ŞERİDİ: sağ bento yalnız lg+'da basıldığı için mobil
+             ziyaretçi bugüne dek sadece İDDİA görüyordu, KANIT görmüyordu —
+             diaspora trafiğinin ağırlığı ise mobil. Tek satır, tek tıklama
+             hedefi, aynı gerçek veri. Veri yoksa hiç basılmaz. --}}
+        @if (! $sahne && $ulkeHareketi->isNotEmpty())
+            <a href="{{ url('/ilanlar') }}?ulke={{ $ulkeHareketi->first()['code'] }}"
+               class="mt-6 flex min-h-11 items-center gap-2 rounded-2xl border border-stone-200/70 bg-white px-3 py-2 text-[13px] shadow-brand lg:hidden dark:border-stone-800 dark:bg-stone-900">
+                <span aria-hidden="true">{{ $ulkeHareketi->first()['emoji'] }}</span>
+                <span class="min-w-0 flex-1 truncate font-semibold text-stone-700 dark:text-stone-200">{{ $ulkeHareketi->first()['name'] }}</span>
+                <span class="shrink-0 font-extrabold text-emerald-600 dark:text-emerald-400">{{ $ulkeHareketi->first()['count'] }}</span>
+                <span class="shrink-0 text-stone-400 dark:text-stone-500">aktif ilan</span>
+            </a>
+        @endif
+
         {{-- Bento düzeninin sağ sütunu: yüzen canlı veri kartları (yalnız lg+;
              mobilde hero + arama ilk ekranda kalmalı). "Sahne" düzeninde
              sayfa tek kolon olduğu için hiç basılmaz. --}}
@@ -121,47 +154,88 @@
                 <div class="absolute inset-0 rounded-[26px] border border-stone-200/70 bg-gradient-to-br from-emerald-100/60 via-stone-100 to-emerald-50/40 dark:border-stone-800 dark:from-emerald-950/40 dark:via-stone-900 dark:to-stone-950" aria-hidden="true"></div>
 
                 <div class="relative grid grid-cols-2 gap-3.5 p-5">
-                    {{-- (a) Dekoratif haftalık ritim çubukları — eksen/rakam iddiası yok --}}
-                    <div class="col-span-2 rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
-                        <div class="flex items-start justify-between gap-3">
-                            <div>
-                                <div class="text-sm font-bold text-stone-800 dark:text-stone-100">Topluluk her gün büyüyor</div>
-                                <div class="mt-0.5 text-xs font-medium text-stone-500 dark:text-stone-400">Son 7 gün · tüm kategoriler</div>
-                            </div>
-                            <span class="rounded-full bg-[#e7f7f1] px-2 py-1 text-[11px] font-bold text-[#0f9d76] dark:bg-emerald-950/60 dark:text-emerald-400">canlı</span>
-                        </div>
-                        <div class="mt-4 flex items-end gap-3" aria-hidden="true">
-                            @foreach ($barlar as $i => $yuzde)
-                                <div class="flex flex-1 flex-col items-center gap-2">
-                                    <div class="relative h-[74px] w-2 rounded-full bg-stone-100 dark:bg-stone-800">
-                                        <div class="vitrin-bar absolute inset-x-0 bottom-0 rounded-full {{ $i === 4 ? 'bg-gradient-to-b from-[#4fd2a4] to-[#16a97f]' : 'bg-gradient-to-b from-emerald-400 to-emerald-600' }}"
-                                             style="height: {{ $yuzde }}%; animation-delay: {{ 50 + $i * 60 }}ms"></div>
-                                    </div>
-                                    <span class="text-[10px] font-semibold {{ $i === 4 ? 'text-[#16a97f]' : 'text-stone-400 dark:text-stone-500' }}">{{ $gunler[$i] }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
+                    {{-- (a) "Şu an nerede ilan var" — GERÇEK ülke hareketi.
 
-                    {{-- (b) Canlı akış — gerçek son ilanlar (activityTicker yeniden kullanımı) --}}
-                    @if (\App\Support\HomeSections::visible('canli_akis') && $activityFeed->isNotEmpty())
-                        <div x-data="activityTicker({{ $activityFeed->count() }})" class="relative min-h-[132px] overflow-hidden rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
-                            <div class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
-                                <span class="relative inline-flex h-1.5 w-1.5" aria-hidden="true"><span class="vitrin-pulse absolute inset-0 rounded-full bg-emerald-500"></span><span class="absolute inset-0 rounded-full bg-emerald-500"></span></span>
-                                Canlı akış
+                         Buradaki eski kart, başlığı "Topluluk her gün büyüyor",
+                         alt etiketi "Son 7 gün · tüm kategoriler" ve "canlı"
+                         rozetiyle bir VERİ İDDİASINDA bulunuyordu; çubuklar ise
+                         elle yazılmış sabit sayılardı ([46,63,39,72,88,55,67]).
+                         Güven üzerine kurulu bir pazaryerinin ilk ekranında
+                         uydurma grafik olamaz — kart gerçek veriye bağlandı.
+                         Veri yoksa kart DOM'a hiç basılmaz. --}}
+                    @if ($ulkeHareketi->isNotEmpty())
+                        <div class="col-span-2 rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <div class="text-sm font-bold text-stone-800 dark:text-stone-100">Şu an nerede ilan var</div>
+                                    <div class="mt-0.5 text-xs font-medium text-stone-500 dark:text-stone-400">Aktif ilanlar · ülkeye göre</div>
+                                </div>
                             </div>
-                            @foreach ($activityFeed as $i => $item)
-                                <a href="{{ $item['href'] }}" x-show="index === {{ $i }}" x-transition.opacity.duration.400ms class="absolute inset-x-4 bottom-4 top-10 flex flex-col justify-center" @if ($i > 0) x-cloak @endif>
-                                    <span class="line-clamp-2 text-sm font-semibold text-stone-800 dark:text-stone-100">{{ $item['firstName'] }} yeni bir ilan paylaştı</span>
-                                    <span class="mt-1 text-xs font-medium text-stone-500 dark:text-stone-400">{{ $item['categoryName'] }} @if ($item['place'])· {{ $item['flag'] }} {{ $item['place'] }}@endif · {{ $item['timeAgo'] }}</span>
-                                </a>
-                            @endforeach
+                            <ul class="mt-3 space-y-1">
+                                @foreach ($ulkeHareketi as $ulke)
+                                    <li>
+                                        <a href="{{ url('/ilanlar') }}?ulke={{ $ulke['code'] }}"
+                                           class="flex min-h-11 items-center gap-3 rounded-xl px-2 transition hover:bg-stone-50 dark:hover:bg-stone-800">
+                                            <span class="text-base" aria-hidden="true">{{ $ulke['emoji'] }}</span>
+                                            <span class="min-w-0 flex-1 truncate text-[13px] font-semibold text-stone-700 dark:text-stone-200">{{ $ulke['name'] }}</span>
+                                            <span class="h-1.5 w-20 shrink-0 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800" aria-hidden="true">
+                                                <span class="block h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600"
+                                                      style="width: {{ $enYuksek > 0 ? max(8, (int) round($ulke['count'] / $enYuksek * 100)) : 0 }}%"></span>
+                                            </span>
+                                            <span class="w-10 shrink-0 text-right text-sm font-extrabold text-stone-800 dark:text-stone-100">{{ $ulke['count'] }}</span>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    {{-- (b) Son eklenenler — 3 satır, STATİK.
+
+                         Eskiden tek öğe dönüyordu (activityTicker): aynı 132px'te
+                         tek bilgi, tek tıklanabilir hedef ve sürekli hareket.
+                         Statik liste aynı yerde 3 kat bilgi ve 3 hedef verir,
+                         JS gerektirmez, reduced-motion derdi yoktur.
+
+                         Satır sırası da değişti: kalın satır artık İŞ (kategori),
+                         gri satır kim/nerede/ne zaman. "Hakan yeni bir ilan
+                         paylaştı" kim'i söylüyordu ama ne iş olduğunu söylemiyordu;
+                         iş öne alınınca başlığın vaadi tekrarlanmış oluyor.
+
+                         Başlık taze içerik yoksa "canlı" demez — nabız noktası da
+                         yalnız o zaman yanar. --}}
+                    @if (\App\Support\HomeSections::visible('canli_akis') && $activityFeed->isNotEmpty())
+                        <div class="col-span-2 rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                            <div class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+                                @if ($akisTaze)
+                                    <span class="relative inline-flex h-1.5 w-1.5" aria-hidden="true"><span class="vitrin-pulse absolute inset-0 rounded-full bg-emerald-500"></span><span class="absolute inset-0 rounded-full bg-emerald-500"></span></span>
+                                    Canlı akış
+                                @else
+                                    Son eklenenler
+                                @endif
+                            </div>
+                            <ul class="mt-2 space-y-0.5">
+                                @foreach ($activityFeed->take(3) as $item)
+                                    <li>
+                                        <a href="{{ $item['href'] }}" class="flex min-h-11 flex-col justify-center rounded-xl px-2 transition hover:bg-stone-50 dark:hover:bg-stone-800">
+                                            <span class="line-clamp-1 text-[13px] font-bold text-stone-800 dark:text-stone-100">{{ $item['categoryName'] }}</span>
+                                            <span class="line-clamp-1 text-[11.5px] font-medium text-stone-500 dark:text-stone-400">
+                                                {{ $item['firstName'] }} @if ($item['place'])· {{ $item['flag'] }} {{ $item['place'] }}@endif · {{ $item['timeAgo'] }}
+                                            </span>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
                         </div>
                     @endif
 
                     {{-- (c) Yüzen mini ilan kartı — gerçek son ilan --}}
                     @if ($oneCikanIlan)
-                        <a href="{{ route('listings.show', [$oneCikanIlan, $oneCikanIlan->slug]) }}" class="vitrin-float block rounded-[18px] border border-stone-200/60 bg-white p-3 shadow-brand-lg transition hover:border-emerald-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-emerald-700 {{ \App\Support\HomeSections::visible('canli_akis') && $activityFeed->isNotEmpty() ? '' : 'col-span-2' }}">
+                        {{-- Vitrindeki ilan hizmete DARALTILMADI: platform hizmet,
+                             ürün, emlak, vasıta hepsini taşıyor ve vitrini tek tipe
+                             indirmek envanteri gizlemek olurdu. Kapsam mesajını
+                             artık gerçek kategorilerden kurulan çip satırı veriyor. --}}
+                        <a href="{{ route('listings.show', [$oneCikanIlan, $oneCikanIlan->slug]) }}" class="vitrin-float col-span-2 block rounded-[18px] border border-stone-200/60 bg-white p-3 shadow-brand-lg transition hover:border-emerald-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-emerald-700">
                             <div class="relative h-24 overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800">
                                 @if ($oneCikanIlan->coverImage)
                                     <img src="{{ $oneCikanIlan->coverImage->srcset()['thumb'] ?? Storage::url($oneCikanIlan->coverImage->path) }}"

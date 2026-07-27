@@ -45,11 +45,13 @@ return [
         // kapatan soru formatı. Vurgu satırı birincil renkte render edilir;
         // hero_satir2 bilinçli boş (başlık 2 satır). Canlı DB kayıtları
         // UpdateHeroCopyToSet3 migration'ıyla güncellenir.
-        'home.hero_satir1' => ['group' => 'anasayfa', 'label' => 'Başlık — 1. satır', 'type' => 'text', 'default' => 'Nakliyeci mi, hoca mı?'],
-        'home.hero_vurgu' => ['group' => 'anasayfa', 'label' => 'Başlık — vurgulu kısım', 'type' => 'text', 'default' => 'Hepsi burada, Türkçe.'],
+        'home.hero_satir1' => ['group' => 'anasayfa', 'label' => 'Başlık — 1. satır', 'type' => 'text', 'default' => 'Tarif etmeye çalışma.'],
+        'home.hero_vurgu' => ['group' => 'anasayfa', 'label' => 'Başlık — vurgulu kısım', 'type' => 'text', 'default' => 'Türkçe anlat, iş bitsin.'],
         'home.hero_satir2' => ['group' => 'anasayfa', 'label' => 'Başlık — vurgudan sonrası (ops.)', 'type' => 'text', 'default' => ''],
-        'home.hero_aciklama' => ['group' => 'anasayfa', 'label' => 'Hero açıklama', 'type' => 'textarea', 'default' => 'Taşınma, ders, tamir, ev yemeği, davetiye — yaşadığın şehirde Türkçe konuşan birini dakikalar içinde bul, direkt yaz.'],
-        'home.arama_placeholder' => ['group' => 'anasayfa', 'label' => 'Arama kutusu metni', 'type' => 'text', 'default' => 'Kim lazım? (ör. Berlin\'de nakliyeci)'],
+        'home.hero_aciklama' => ['group' => 'anasayfa', 'label' => 'Hero açıklama', 'type' => 'textarea', 'default' => 'Nakliyeci, hoca, tamirci, kuaför, tercüman — şehrindeki Türkçe konuşan kişiyi bul, aracısız yaz, işini gör.'],
+        // Kısa tutuldu: dokunmatikte alanlar 16px'e çıktığı için uzun
+        // placeholder kırpılıyordu; örnek zaten çip satırında duruyor.
+        'home.arama_placeholder' => ['group' => 'anasayfa', 'label' => 'Arama kutusu metni', 'type' => 'text', 'default' => 'Kim lazım?'],
         'home.populer_metin' => ['group' => 'anasayfa', 'label' => 'Popüler aramalar satırı', 'type' => 'text', 'default' => 'Popüler: taşınma · matematik dersi · araba tamiri · davetiye · ikinci el'],
 
         // --- Anasayfa: Değer önerileri ---
