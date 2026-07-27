@@ -28,15 +28,29 @@
             <div class="flex flex-wrap items-center gap-4">
                 <x-avatar :user="$user" size="h-20 w-20" text="text-3xl" />
                 <div class="min-w-0 flex-1">
-                    <h1 class="flex flex-wrap items-center gap-2 text-2xl font-bold text-stone-900 dark:text-stone-50">
-                        {{ $user->name }}
+                    {{-- Rozetler h1'in DIŞINDA: içerideyken ekran okuyucu başlığı
+                         "Hakan Güvenilir Doğrulanmış" diye tek parça okuyordu.
+                         Başlık kişinin adıdır; rozetler onun yanındaki ayrı
+                         bilgilerdir. --}}
+                    <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">{{ $user->name }}</h1>
+                    <div class="mt-1 flex flex-wrap items-center gap-2">
                         <x-trust-badge :user="$user" />
                         @if ($user->is_verified)
                             <span class="inline-flex items-center gap-1 text-base text-emerald-600 dark:text-emerald-400">
                                 <x-verified-badge size="base" /> Doğrulanmış
                             </span>
                         @endif
-                    </h1>
+                        {{-- Tamamlanan anlaşma: User::trustProfile() bunu zaten
+                             hesaplıyordu ama hiçbir yerde basılmıyordu. Bir
+                             pazaryerinde "bu kişiyle gerçekten iş yapılmış"
+                             sinyali, puandan sonraki en güçlü kanıttır. --}}
+                        @php($guven = $user->trustProfile())
+                        @if (($guven['completed_deals'] ?? 0) > 0)
+                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                                ✓ {{ $guven['completed_deals'] }} tamamlanan anlaşma
+                            </span>
+                        @endif
+                    </div>
                     <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
                         @if ($user->city){{ $user->city }} · @endif{{ $user->country_code }} · Üyelik: {{ $user->created_at->translatedFormat('F Y') }}
                         @if ($user->jobCategory) · <span class="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-500 dark:bg-stone-800 dark:text-stone-400">{{ $user->jobCategory->name }}</span>@endif
@@ -80,6 +94,45 @@
                     <div class="text-xs text-stone-500 dark:text-stone-400">aktif ilan</div>
                 </div>
             </div>
+
+            {{-- BİRİNCİL EYLEM: doğrudan mesaj.
+
+                 Bu sayfada eylem çağrısı HİÇ YOKTU. Mesajlaşmanın tek yolu bir
+                 İLAN üzerindendi (POST /ilan/{listing}/mesaj), dolayısıyla aktif
+                 ilanı olmayan bir yetenek /adaylar listesinde görünüyor,
+                 profiline girilebiliyor ama kendisine ULAŞILAMIYORDU — huni tam
+                 burada kopuyordu. conversations.listing_id zaten nullable'dı;
+                 eksik olan giriş noktasıydı. --}}
+            @auth
+                @if (auth()->id() !== $user->id)
+                    <form method="POST" action="{{ route('messages.startWithUser', $user->username) }}"
+                          class="mt-5 rounded-xl border border-stone-200 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-900/50">
+                        @csrf
+                        {{-- Honeypot: rota 'honeypot' middleware'i kullanıyor
+                             (bkz. HoneypotMiddleware docblock — alan adı "website"). --}}
+                        <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
+                        <label for="profil-mesaj" class="block text-sm font-semibold text-stone-800 dark:text-stone-100">
+                            {{ \Illuminate\Support\Str::before($user->name, ' ') }} kişisine yaz
+                        </label>
+                        <p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400">Türkçe yaz, doğrudan kendisine ulaşsın.</p>
+                        <textarea id="profil-mesaj" name="body" rows="3" required maxlength="2000"
+                                  placeholder="Merhaba, ..."
+                                  class="mt-2 w-full rounded-lg border-stone-300 text-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">{{ old('body') }}</textarea>
+                        @error('body')
+                            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                        <button type="submit"
+                                class="mt-2 inline-flex min-h-11 items-center rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white hover:bg-emerald-700 md:min-h-0 md:py-2.5 dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">
+                            Mesaj gönder
+                        </button>
+                    </form>
+                @endif
+            @else
+                <div class="mt-5 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm dark:border-stone-800 dark:bg-stone-900/50">
+                    <a href="{{ route('login') }}" class="font-semibold text-emerald-700 hover:underline dark:text-emerald-400">Giriş yap</a>
+                    <span class="text-stone-600 dark:text-stone-300">— {{ \Illuminate\Support\Str::before($user->name, ' ') }} kişisine doğrudan yazabilmek için.</span>
+                </div>
+            @endauth
 
             @if ($user->paymentLinks->isNotEmpty())
                 @include('partials.payment-safety-card', ['seller' => $user])

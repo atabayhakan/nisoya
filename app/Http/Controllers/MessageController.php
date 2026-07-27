@@ -8,6 +8,7 @@ use App\Models\Conversation;
 use App\Models\Currency;
 use App\Models\Listing;
 use App\Models\Message;
+use App\Models\User;
 use App\Notifications\NewMessageNotification;
 use App\Services\ImageModerationService;
 use App\Services\ImageService;
@@ -275,6 +276,47 @@ class MessageController extends Controller
         $conversation->update(['last_message_at' => now()]);
 
         $listing->user->notify(new NewMessageNotification($message->body, $user->name, $conversation->id));
+
+        return redirect()->route('panel.messages.show', $conversation)
+            ->with('status', 'Mesajın gönderildi.');
+    }
+
+    /**
+     * Bir KİŞİYE doğrudan mesaj (ilan üzerinden değil, profilinden).
+     *
+     * KIRIK HUNİ: mesajlaşma yalnız bir ilan üzerinden başlatılabiliyordu.
+     * Aktif ilanı olmayan bir yetenek /adaylar listesinde görünüyor, profiline
+     * girilebiliyor ama kendisine ULAŞILAMIYORDU — yani "yeteneğini paraya
+     * dönüştür" vaadinin karşılığı olan tek yol kapalıydı.
+     * conversations.listing_id zaten nullable; eksik olan giriş noktasıydı.
+     */
+    public function startWithUser(Request $request, User $user): RedirectResponse
+    {
+        $gonderen = $request->user();
+
+        if ($gonderen->id === $user->id) {
+            return back()->with('status', 'Kendine mesaj gönderemezsin.');
+        }
+
+        $data = $request->validate(
+            ['body' => ['required', 'string', 'max:2000']],
+            attributes: ['body' => 'mesaj'],
+        );
+
+        $profanityError = app(ProfanityFilterService::class)->validateText($data['body']);
+        if ($profanityError) {
+            return back()->withErrors(['body' => $profanityError])->withInput();
+        }
+
+        $conversation = Conversation::findOrCreateBetween($gonderen->id, $user->id, null);
+
+        $message = $conversation->messages()->create([
+            'sender_id' => $gonderen->id,
+            'body' => $data['body'],
+        ]);
+        $conversation->update(['last_message_at' => now()]);
+
+        $user->notify(new NewMessageNotification($message->body, $gonderen->name, $conversation->id));
 
         return redirect()->route('panel.messages.show', $conversation)
             ->with('status', 'Mesajın gönderildi.');

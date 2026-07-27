@@ -223,6 +223,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware(['honeypot', 'throttle:message-start'])
         ->name('messages.start');
 
+    // Profilden doğrudan mesaj — aktif ilanı olmayan yeteneğe ulaşmanın TEK yolu
+    // (ilan üzerinden mesaj o kişiye kapalıydı). Aynı honeypot + oran sınırı.
+    Route::post('/profil/{user:username}/mesaj', [MessageController::class, 'startWithUser'])
+        ->middleware(['honeypot', 'throttle:message-start'])
+        ->name('messages.startWithUser');
+
     // Değerlendirme & şikayet
     Route::post('/uye/{user:username}/degerlendir', [ReviewController::class, 'store'])
         ->middleware(['honeypot', 'throttle:review-store'])
