@@ -22,14 +22,12 @@
     // OKLCH tonlarını bozmayalım; yalnızca ÖZEL renk seçilince rampayı türet.
     $customPrimary = strtolower($primaryColor) !== '#059669';
 
-    // Başlık/gövde yazı tipi (tipografi motoru). Inter/Outfit yüklü değilse
-    // sistem sans'ına zarafetle düşer; serif belirgin şekilde farklıdır.
-    $fontFamilyCss = match ($fontFamily) {
-        'serif' => "'Instrument Serif', Georgia, 'Times New Roman', serif",
-        'inter' => "'Inter', system-ui, sans-serif",
-        'outfit' => "'Outfit', system-ui, sans-serif",
-        default => "'Instrument Sans', ui-sans-serif, system-ui, sans-serif",
-    };
+    // Başlık/gövde yazı tipi. Liste tek kaynaktan gelir (TemaJetonlari::FONTLAR)
+    // ve orada YALNIZ self-host edilen aileler bulunur; eskiden buradaki
+    // 'inter'/'outfit' dalları hiçbir yerden yüklenmeyen ailelere işaret ediyor,
+    // yani sessizce sistem sans'ına düşüyordu. Geçersiz/eski kayıtlı değerler
+    // artık doğrudan varsayılana düşer.
+    $fontFamilyCss = \App\Support\TemaJetonlari::fontCss($fontFamily);
 
     // Köşe yuvarlatma ölçeği — Tailwind --radius-* token'larını hedefler.
     // 'modern' bilerek Tailwind varsayılanlarına eşittir (dokunmamış siteler

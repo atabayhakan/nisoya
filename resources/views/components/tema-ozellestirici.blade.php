@@ -30,7 +30,7 @@
             'marka_rengi' => setting('gorunum.marka_rengi', 'emerald'),
             'primary_color' => $ozelRenk,
             'renk_kaynagi' => strtolower((string) $ozelRenk) !== '#059669' ? 'ozel' : 'aile',
-            'font_family' => in_array(setting('gorunum.font_family', 'sans'), \App\Http\Controllers\TemaOzellestiriciController::FONTLAR, true)
+            'font_family' => array_key_exists((string) setting('gorunum.font_family', 'sans'), \App\Support\TemaJetonlari::FONTLAR)
                 ? setting('gorunum.font_family', 'sans')
                 : 'sans',
             'border_radius' => setting('gorunum.border_radius', 'modern'),
@@ -44,6 +44,9 @@
             aktifTema: @js($aktifTema),
             aksanlar: @js($aksanlar),
             aileler: @js(array_map(fn ($a) => $a['hex'], $aileler)),
+            {{-- Font CSS'i sunucudan gelir: JS'te ikinci bir kopya tutmak,
+                 önizlemenin kaydedilen sonuçtan sessizce sapmasına yol açar. --}}
+            fontlar: @js(array_map(fn ($f) => $f['css'], \App\Support\TemaJetonlari::FONTLAR)),
             kayitUrl: @js(route('panel.gorunum.kaydet')),
             sifirlaUrl: @js(route('panel.gorunum.sifirla')),
             baslangic: @js($baslangic),
@@ -157,8 +160,9 @@
                 <label class="mt-3 block text-xs font-medium text-stone-600 dark:text-stone-300">Yazı tipi</label>
                 <select x-model="font_family" @change="degisti()" :disabled="klasikKilitli" :aria-disabled="klasikKilitli"
                         class="mt-1 w-full rounded-lg border-stone-300 py-2 text-sm disabled:cursor-not-allowed dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
-                    <option value="sans">Instrument Sans (varsayılan)</option>
-                    <option value="serif">Instrument Serif</option>
+                    @foreach (\App\Support\TemaJetonlari::fontSecenekleri() as $fontAnahtar => $fontEtiket)
+                        <option value="{{ $fontAnahtar }}">{{ $fontEtiket }}</option>
+                    @endforeach
                 </select>
 
                 <label class="mt-3 block text-xs font-medium text-stone-600 dark:text-stone-300">Köşe yuvarlatma</label>

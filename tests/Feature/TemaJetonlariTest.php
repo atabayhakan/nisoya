@@ -132,6 +132,43 @@ class TemaJetonlariTest extends TestCase
         $this->assertSame('#3E63F0', TemaJetonlari::vitrinAksani('uydurma-renk')['acik'][600]);
     }
 
+    public function test_sunulan_her_yazi_tipi_gercekten_self_host_edilir(): void
+    {
+        // BULUNAN HATA: panelde 'inter' ve 'outfit' seçenekleri duruyordu ama
+        // o aileler hiçbir yerden yüklenmiyordu — sahip seçiyor, site sessizce
+        // sistem sans'ına düşüyordu. Üstelik "obsidian"/"nordic" hazır ayarları
+        // o ölü değerleri kendiliğinden yazıyordu.
+        $vite = File::get(base_path('vite.config.js'));
+
+        foreach (TemaJetonlari::FONTLAR as $anahtar => $font) {
+            $this->assertStringContainsString(
+                "bunny('{$font['aile']}'",
+                $vite,
+                "'{$anahtar}' seçeneği '{$font['aile']}' ailesini vaat ediyor ama vite.config.js onu ".
+                'self-host etmiyor — seçilse de sistem fontuna düşer, yani ölü bir kontrol.'
+            );
+
+            // CSS listesi de o aileyle başlamalı, yoksa vaat edilen font hiç denenmez.
+            $this->assertStringContainsString($font['aile'], $font['css']);
+        }
+    }
+
+    public function test_hazir_ayarlar_olu_yazi_tipi_yazmaz(): void
+    {
+        $sayfa = File::get(base_path('app/Filament/Pages/TasarimAyarlari.php'));
+
+        preg_match_all("/'gorunum\.font_family'\s*=>\s*'([^']+)'/", $sayfa, $m);
+        $this->assertNotEmpty($m[1], 'Hazır ayarlarda font_family bulunamadı — test kendi hedefini kaybetmiş.');
+
+        foreach ($m[1] as $deger) {
+            $this->assertArrayHasKey(
+                $deger,
+                TemaJetonlari::FONTLAR,
+                "Hazır ayarlardan biri '{$deger}' yazıyor ama bu geçerli bir yazı tipi değil."
+            );
+        }
+    }
+
     public function test_gecerlilik_sorgusu_temaya_gore_ayirir(): void
     {
         $this->assertTrue(TemaJetonlari::gecerliMi('gorunum.vitrin_aksan', 'vitrin'));
