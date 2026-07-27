@@ -33,6 +33,20 @@ class MailTemplates
                 'outro' => 'Nisoya — Ne İş Olursa Yaparım',
             ],
         ],
+        'destek_yaniti' => [
+            'label' => 'Destek bileti yanıtı',
+            'placeholders' => [
+                '{ad}' => 'yazan kişinin adı',
+                '{konu}' => 'biletin konusu (kategori)',
+            ],
+            'parts' => [
+                'subject' => 'Nisoya destek: {konu}',
+                'greeting' => 'Merhaba {ad},',
+                'intro' => 'Bize ilettiğin mesaj için teşekkürler. Yanıtımız aşağıda:',
+                'action' => 'Nisoya\'ya git',
+                'outro' => 'Bu e-postayı yanıtlayarak bize tekrar yazabilirsin.',
+            ],
+        ],
         'kayitli_arama' => [
             'label' => 'Kayıtlı arama uyarısı',
             'placeholders' => [
