@@ -37,6 +37,22 @@
 
             return route('listings.index', $query);
         };
+
+        // Kategori sayaçları (Faz P4): controller category_id başına adet verir;
+        // kök kategoride alt kategorilerin adetleri de toplanır.
+        $kategoriAdedi = function ($cat) use ($kategoriSayaclari) {
+            if (empty($cat->id)) {
+                return 0;
+            }
+            $toplam = $kategoriSayaclari[$cat->id] ?? 0;
+            foreach ($cat->children as $alt) {
+                $toplam += $kategoriSayaclari[$alt->id] ?? 0;
+            }
+
+            return $toplam;
+        };
+
+        $enYuksekKova = ! empty($fiyatDagilimi) ? max($fiyatDagilimi['kovalar']) : 0;
     @endphp
 
     <div x-data="{ filtreAcik: false }">
@@ -107,6 +123,11 @@
                                             <x-heroicon-s-check class="h-2.5 w-2.5" />
                                         </span>
                                         <span class="truncate">@if ($cat->icon){{ $cat->icon }} @endif{{ $cat->name }}</span>
+                                        {{-- Sayaç (Faz P4): mevcut diğer filtrelerle bu kategoride kaç
+                                             ilan olduğu. Kök kategori için alt kategoriler de toplanır. --}}
+                                        @if ($cat->slug !== '' && ($catAdet = $kategoriAdedi($cat)) > 0)
+                                            <span class="ml-auto shrink-0 text-[11.5px] font-semibold text-stone-400 dark:text-stone-500">{{ $catAdet }}</span>
+                                        @endif
                                     </label>
                                 @endforeach
                             </div>
@@ -129,7 +150,41 @@
 
                         {{-- Fiyat --}}
                         <div class="rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
-                            <h3 class="text-[13px] font-bold text-stone-800 dark:text-stone-100">Fiyat aralığı</h3>
+                            <div class="flex items-baseline justify-between gap-2">
+                                <h3 class="text-[13px] font-bold text-stone-800 dark:text-stone-100">Fiyat aralığı</h3>
+                                @if (! empty($fiyatDagilimi))
+                                    <span class="text-[11.5px] font-semibold text-stone-500 dark:text-stone-400">
+                                        {{ number_format($fiyatDagilimi['min'], 0) }}–{{ number_format($fiyatDagilimi['max'], 0) }}
+                                    </span>
+                                @endif
+                            </div>
+
+                            {{-- Histogram (Faz P4): fiyatlı ilanların 9 kovaya dağılımı.
+                                 Anlamlı dağılım yoksa (fiyatlı ilan yok / hepsi aynı fiyat)
+                                 controller boş döner ve blok HİÇ basılmaz. Seçili aralıktaki
+                                 kovalar birincil renkte. --}}
+                            @if (! empty($fiyatDagilimi) && $enYuksekKova > 0)
+                                @php
+                                    $hMin = $fiyatDagilimi['min'];
+                                    $hAdim = ($fiyatDagilimi['max'] - $hMin) / 9;
+                                    $secMin = filled($filters['min']) ? (float) $filters['min'] : null;
+                                    $secMax = filled($filters['max']) ? (float) $filters['max'] : null;
+                                @endphp
+                                <div class="mt-3 flex h-[52px] items-end gap-[3px]" aria-hidden="true" data-fiyat-histogrami>
+                                    @foreach ($fiyatDagilimi['kovalar'] as $i => $adet)
+                                        @php
+                                            $kovaAlt = $hMin + $i * $hAdim;
+                                            $kovaUst = $kovaAlt + $hAdim;
+                                            $secili = ($secMin === null || $kovaUst >= $secMin)
+                                                && ($secMax === null || $kovaAlt <= $secMax);
+                                            $yukseklik = max(6, (int) round($adet / $enYuksekKova * 100));
+                                        @endphp
+                                        <div class="vitrin-bar flex-1 rounded-[3px] {{ $secili ? 'bg-emerald-600 dark:bg-emerald-500' : 'bg-stone-200 dark:bg-stone-700' }}"
+                                             style="height: {{ $yukseklik }}%; animation-delay: {{ $i * 40 }}ms"></div>
+                                    @endforeach
+                                </div>
+                            @endif
+
                             <div class="mt-3.5 flex items-center gap-2">
                                 <input type="number" name="min" min="0" value="{{ $filters['min'] }}" placeholder="En az" aria-label="En az fiyat"
                                        class="h-[34px] w-full rounded-[9px] border border-stone-300 bg-white px-2.5 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
