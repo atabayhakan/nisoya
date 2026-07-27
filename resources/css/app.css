@@ -77,6 +77,49 @@ textarea::placeholder {
     color: var(--color-stone-400);
 }
 
+/* iOS Safari, yazı boyutu 16px'in ALTINDA olan bir metin/seçim alanına
+   dokunulduğunda sayfayı otomatik büyütür — ve odak kalkınca GERİ KÜÇÜLTMEZ.
+   Kullanıcı zoomlanmış, yatay kaymış bir sayfayla baş başa kalır. Sitenin en
+   çok kullanılan kontrolleri tam olarak bu eşiğin altındaydı: 2026-07-27
+   taraması 115 açık <16px alan (ana arama kutusu, ülke/kategori/tip/sıralama
+   seçicileri) + hiç boyut sınıfı verilmemiş 80 alan (tüm auth formları;
+   tarayıcı varsayılanı ~13.3px) buldu. 16px veya üstünde KASTEN büyük tek bir
+   alan yoktu — bu yüzden alt sınırı toptan yükseltmek hiçbir tasarımı bozmaz.
+
+   `user-scalable=no` / `maximum-scale=1` ile susturmak YASAK: pinch-zoom'u
+   öldürür (erişilebilirlik) ve iOS 10'dan beri zaten yok sayılıyor. Alanın
+   gerçekten 16px olmasından başka çözümü yok.
+
+   `pointer: coarse` genişlik yerine GİRDİ TÜRÜNÜ hedefler: telefonun yanı sıra
+   1024px genişliğindeki iPad'i de kapsar, buna karşılık masaüstü tarayıcıyı
+   pencere daraltılsa bile etkilemez — masaüstü tasarımı hiç değişmez.
+
+   Bu blok, hemen yukarıdaki :where() kuralının TERSİNE, bilinçli olarak
+   katmansız: Tailwind utility'leri @layer utilities içinde olduğundan
+   katmansız kurallar onları özgüllükten bağımsız ezer. Burada istenen tam
+   olarak bu — text-sm/text-xs yazan her alan dokunmatikte 16px'e çıkmalı.
+   Tip listesi beyaz liste: buton/onay kutusu/dosya girdilerinin görünümü
+   değişmesin diye yalnızca odaklanınca zoom TETİKLEYEN alanlar sayılır. */
+@media (pointer: coarse) {
+    input:not([type]),
+    input[type='text'],
+    input[type='search'],
+    input[type='email'],
+    input[type='tel'],
+    input[type='url'],
+    input[type='password'],
+    input[type='number'],
+    input[type='date'],
+    input[type='datetime-local'],
+    input[type='month'],
+    input[type='time'],
+    input[type='week'],
+    textarea,
+    select {
+        font-size: 16px;
+    }
+}
+
 /* Sürükleyerek hizalama (focalDrag / avatarAlignModal, bkz. app.js +
    panel/profile/edit.blade.php + panel/listings/edit.blade.php): gerçek
    parmak/fare girdisiyle tarayıcının kendi resim sürükleme mekanizması
