@@ -45,6 +45,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SavedSearchController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StoryController;
+use App\Http\Controllers\TemaOzellestiriciController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\VehicleBrowseController;
 use App\Http\Controllers\WebAuthn\WebAuthnRegisterController;
@@ -285,6 +286,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('throttle:application-status')
         ->name('panel.applications.status');
     Route::get('/panel/basvuru/{application}/cv', [JobApplicationController::class, 'downloadCv'])->name('panel.applications.cv');
+
+    // Canlı tema özelleştirici (yalnız admin — yetki controller'da da doğrulanır).
+    Route::post('/panel/gorunum', [TemaOzellestiriciController::class, 'kaydet'])
+        ->middleware('throttle:tema-ozellestirici')
+        ->name('panel.gorunum.kaydet');
+    Route::post('/panel/gorunum/sifirla', [TemaOzellestiriciController::class, 'sifirla'])
+        ->middleware('throttle:tema-ozellestirici')
+        ->name('panel.gorunum.sifirla');
 
     // İş ilanı yer imleri (aday)
     Route::get('/panel/is-yer-imlerim', [JobBookmarkController::class, 'index'])->name('panel.job-bookmarks.index');

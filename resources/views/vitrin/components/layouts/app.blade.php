@@ -209,5 +209,8 @@
     @endunless
 
     <x-mobile-tab-bar :nav-links-mega="$navLinksMega" :nav-links-single="$navLinksSingle" />
+
+    {{-- Klasik iskeletteki notun eşi: özelleştirici İKİ düzende de basılmalı. --}}
+    <x-tema-ozellestirici />
 </body>
 </html>

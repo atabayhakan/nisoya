@@ -1022,5 +1022,202 @@ Alpine.data('kanbanPano', (ilkDurum) => ({
     },
 }));
 
+// Canlı tema özelleştirici (bkz. components/tema-ozellestirici.blade.php).
+//
+// ÖNİZLEME NEDEN SATIR İÇİ STİL DEĞİL, <style> BLOĞU:
+// documentElement.style.setProperty() ile yazılan satır içi değerler hem açık
+// hem koyu modu aynı anda ezer ve satır içi stille ".dark" koşulu İFADE
+// EDİLEMEZ. Vitrin'in koyu setinde --color-emerald-600 bilerek açık moddakinden
+// DAHA AÇIK bir tona çıkar (buton metni koyu olduğu için); satır içi tek bir
+// değer bu sözleşmeyi sessizce kırar ve koyu modda okunmaz butonlar üretirdi.
+// Bu yüzden önizleme, `html:root {}` ve `html:root.dark {}` kurallarını içeren
+// tek bir <style> bloğu olarak yazılır — tema bileşenleriyle aynı dili konuşur.
+// (CSP style-src'ı kısıtlamıyor, bkz. SecurityHeaders docblock.)
+Alpine.data('temaOzellestirici', (yapilandirma) => ({
+    ...yapilandirma.baslangic,
+    aksanlar: yapilandirma.aksanlar,
+    aileler: yapilandirma.aileler,
+    aktifTema: yapilandirma.aktifTema,
+    kayitUrl: yapilandirma.kayitUrl,
+    sifirlaUrl: yapilandirma.sifirlaUrl,
+
+    acik: false,
+    kucuk: false,
+    kirli: false,
+    calisiyor: false,
+    mesaj: '',
+    mesajTipi: 'bilgi',
+
+    init() {
+        // Kaydetmeden ayrılmak, denenen görünümün kaybolması demek. Sessizce
+        // olmasın.
+        window.addEventListener('beforeunload', (e) => {
+            if (this.kirli) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    },
+
+    get vitrinMi() {
+        return this.aktifTema === 'vitrin';
+    },
+
+    /** Klasik-özel kontroller Vitrin aktifken gerçekten çalışmaz. */
+    get klasikKilitli() {
+        return this.vitrinMi;
+    },
+
+    degisti() {
+        this.kirli = true;
+        this.mesaj = '';
+        this.onizle();
+    },
+
+    onizle() {
+        let acikKurallar = '';
+        let koyuKurallar = '';
+
+        if (this.vitrinMi) {
+            const rampa = this.aksanlar[this.vitrin_aksan];
+            if (rampa) {
+                for (const [basamak, renk] of Object.entries(rampa.acik)) {
+                    acikKurallar += `--color-emerald-${basamak}:${renk};`;
+                }
+                for (const [basamak, renk] of Object.entries(rampa.koyu)) {
+                    koyuKurallar += `--color-emerald-${basamak}:${renk};`;
+                }
+                acikKurallar += `--nisoya-primary:${rampa.hex};--nisoya-seal:${rampa.hex};`;
+            }
+        } else {
+            if (this.renk_kaynagi === 'ozel') {
+                // tasarim-theme.blade.php ile AYNI türetme; böylece önizleme ve
+                // kaydedilmiş hâl birbirinden sapmaz.
+                const c = this.primary_color;
+                acikKurallar +=
+                    `--color-emerald-50:color-mix(in srgb, ${c} 8%, white);` +
+                    `--color-emerald-100:color-mix(in srgb, ${c} 15%, white);` +
+                    `--color-emerald-200:color-mix(in srgb, ${c} 28%, white);` +
+                    `--color-emerald-300:color-mix(in srgb, ${c} 45%, white);` +
+                    `--color-emerald-400:color-mix(in srgb, ${c} 68%, white);` +
+                    `--color-emerald-500:color-mix(in srgb, ${c} 85%, white);` +
+                    `--color-emerald-600:${c};` +
+                    `--color-emerald-700:color-mix(in srgb, ${c} 80%, black);` +
+                    `--color-emerald-800:color-mix(in srgb, ${c} 62%, black);` +
+                    `--color-emerald-900:color-mix(in srgb, ${c} 45%, black);` +
+                    `--nisoya-primary:${c};`;
+            } else if (this.marka_rengi !== 'emerald') {
+                // brand-theme.blade.php ile aynı yönlendirme; bu değişkenler
+                // app.css'teki @source inline(...) sayesinde derlenmiş durumda.
+                for (const b of [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]) {
+                    acikKurallar += `--color-emerald-${b}:var(--color-${this.marka_rengi}-${b});`;
+                }
+            }
+
+            const fontlar = {
+                serif: "'Instrument Serif', Georgia, 'Times New Roman', serif",
+                sans: "'Instrument Sans', ui-sans-serif, system-ui, sans-serif",
+            };
+            acikKurallar += `--font-sans:${fontlar[this.font_family] || fontlar.sans};`;
+
+            const olcek = {
+                sharp: ['2px', '3px', '4px', '6px'],
+                soft: ['6px', '8px', '10px', '14px'],
+                pill: ['14px', '18px', '24px', '32px'],
+                modern: ['.5rem', '.75rem', '1rem', '1.5rem'],
+            }[this.border_radius] || ['.5rem', '.75rem', '1rem', '1.5rem'];
+            acikKurallar += `--radius-lg:${olcek[0]};--radius-xl:${olcek[1]};--radius-2xl:${olcek[2]};--radius-3xl:${olcek[3]};`;
+        }
+
+        let ekKurallar = '';
+        if (!this.vitrinMi && !this.glassmorphism) {
+            ekKurallar += '[class*="backdrop-blur"]{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;}';
+        }
+        if (!this.vitrinMi && !this.smooth_animations) {
+            ekKurallar += '*,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important;}';
+        }
+
+        // html:root — tema bileşenlerinin :root kuralından daha yüksek
+        // özgüllük, böylece kaynak sırasından bağımsız olarak kazanır.
+        const css =
+            (acikKurallar ? `html:root{${acikKurallar}}` : '') +
+            (koyuKurallar ? `html:root.dark{${koyuKurallar}}` : '') +
+            ekKurallar;
+
+        let blok = document.getElementById('tema-onizleme');
+        if (!blok) {
+            blok = document.createElement('style');
+            blok.id = 'tema-onizleme';
+            document.head.appendChild(blok);
+        }
+        blok.textContent = css;
+    },
+
+    onizlemeyiKaldir() {
+        document.getElementById('tema-onizleme')?.remove();
+    },
+
+    govde() {
+        const g = {};
+        if (this.vitrinMi) {
+            g.vitrin_aksan = this.vitrin_aksan;
+        } else {
+            if (this.renk_kaynagi === 'ozel') {
+                g.primary_color = this.primary_color;
+            } else {
+                g.marka_rengi = this.marka_rengi;
+            }
+            g.font_family = this.font_family;
+            g.border_radius = this.border_radius;
+            g.glassmorphism = this.glassmorphism;
+            g.smooth_animations = this.smooth_animations;
+        }
+
+        return g;
+    },
+
+    async gonder(url, govde) {
+        this.calisiyor = true;
+        try {
+            const yanit = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': this.$refs.jeton.value,
+                },
+                body: JSON.stringify(govde),
+            });
+            if (!yanit.ok) throw new Error('kaydedilemedi');
+            const veri = await yanit.json();
+            this.kirli = false;
+            this.mesaj = veri.mesaj;
+            this.mesajTipi = 'basari';
+        } catch (_) {
+            this.mesaj = 'Kaydedilemedi. Bağlantını kontrol edip tekrar dene.';
+            this.mesajTipi = 'hata';
+        } finally {
+            this.calisiyor = false;
+        }
+    },
+
+    kaydet() {
+        return this.gonder(this.kayitUrl, this.govde());
+    },
+
+    async sifirla() {
+        await this.gonder(this.sifirlaUrl, {});
+        this.onizlemeyiKaldir();
+        window.location.reload();
+    },
+
+    vazgec() {
+        this.onizlemeyiKaldir();
+        this.kirli = false;
+        this.acik = false;
+        window.location.reload();
+    },
+}));
+
 window.Alpine = Alpine;
 Alpine.start();

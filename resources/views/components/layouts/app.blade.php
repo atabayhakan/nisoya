@@ -236,5 +236,11 @@
     {{-- Mobil alt sekme çubuğu (Faz H3) — panel sayfaları dahil her yerde;
          bağış FAB'ının aksine kendi yerini body padding'iyle ayırıyor, taşmıyor. --}}
     <x-mobile-tab-bar :nav-links-mega="$navLinksMega" :nav-links-single="$navLinksSingle" />
+
+    {{-- Canlı tema özelleştirici — kendi kendini kapılar (yalnız admin, panel/
+         yönetim dışı sayfalarda). Vitrin iskeletinde de AYNI satır var; iki
+         düzenden birine eklemeyi unutmak vitrin/README.md'nin uyardığı
+         sürüklenme tuzağıdır. --}}
+    <x-tema-ozellestirici />
 </body>
 </html>
