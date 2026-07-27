@@ -111,6 +111,19 @@ return [
         'hero.odak' => ['group' => 'hero', 'label' => 'Görsel odak noktası', 'type' => 'text', 'default' => 'merkez'],
         'hero.bloklar' => ['group' => 'hero', 'label' => 'Blok sırası ve açık/kapalı durumu (JSON)', 'type' => 'text', 'default' => ''],
 
+        // Zamanlanmış kampanya (Faz P4c). "Şu an aktif mi" kıyaslaması HER
+        // RENDER'DA yapılır — cache'e yalnız ham tarihler girer, o yüzden
+        // başlangıç/bitiş anında cache temizlemeye veya zamanlanmış işe
+        // GEREK YOKTUR (bkz. App\Support\Hero::kampanyaAktifMi).
+        'hero.kampanya_aktif' => ['group' => 'hero', 'label' => 'Kampanya açık', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '0'],
+        'hero.kampanya_ad' => ['group' => 'hero', 'label' => 'Kampanya adı (yalnız panelde görünür)', 'type' => 'text', 'default' => ''],
+        'hero.kampanya_baslangic' => ['group' => 'hero', 'label' => 'Kampanya başlangıcı', 'type' => 'text', 'default' => ''],
+        'hero.kampanya_bitis' => ['group' => 'hero', 'label' => 'Kampanya bitişi', 'type' => 'text', 'default' => ''],
+        'hero.kampanya_rozet' => ['group' => 'hero', 'label' => 'Kampanya — rozet metni', 'type' => 'text', 'default' => ''],
+        'hero.kampanya_baslik' => ['group' => 'hero', 'label' => 'Kampanya — başlık 1. satır', 'type' => 'text', 'default' => ''],
+        'hero.kampanya_vurgu' => ['group' => 'hero', 'label' => 'Kampanya — vurgulu satır', 'type' => 'text', 'default' => ''],
+        'hero.kampanya_alt_baslik' => ['group' => 'hero', 'label' => 'Kampanya — alt başlık', 'type' => 'textarea', 'default' => ''],
+
         // --- Tema motoru (Vitrin) ---
         // BİLİNÇLİ olarak grup anahtarı 'groups' listesinde YOK — genel
         // İçerik formunda render edilmez (AI alanlarıyla aynı desen). Tek

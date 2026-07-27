@@ -7,6 +7,7 @@ use App\Support\Hero;
 use App\Support\Settings;
 use App\Support\Tema;
 use BackedEnum;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
@@ -78,6 +79,14 @@ class HeroYoneticisi extends Page
             'overlay' => (string) Hero::overlay(),
             'odak' => Settings::get('hero.odak', 'merkez'),
             'bloklar' => Hero::blokFormDurumu(),
+            'kampanya_aktif' => Settings::get('hero.kampanya_aktif', '0') === '1',
+            'kampanya_ad' => Settings::get('hero.kampanya_ad') ?: null,
+            'kampanya_baslangic' => Settings::get('hero.kampanya_baslangic') ?: null,
+            'kampanya_bitis' => Settings::get('hero.kampanya_bitis') ?: null,
+            'kampanya_rozet' => Settings::get('hero.kampanya_rozet') ?: null,
+            'kampanya_baslik' => Settings::get('hero.kampanya_baslik') ?: null,
+            'kampanya_vurgu' => Settings::get('hero.kampanya_vurgu') ?: null,
+            'kampanya_alt_baslik' => Settings::get('hero.kampanya_alt_baslik') ?: null,
         ]);
     }
 
@@ -178,6 +187,44 @@ class HeroYoneticisi extends Page
                             ->visible(fn ($get) => $get('arkaplan_tipi') === 'gorsel'),
                     ]),
 
+                Section::make('Zamanlanmış kampanya')
+                    ->description('Belirlediğin tarih aralığında hero metinleri kampanya sürümüyle değişir; bitişte kendiliğinden normale döner (zamanlanmış işe gerek yok). Boş bıraktığın kampanya alanı normal değerini korur.')
+                    ->collapsed(fn ($get) => ! (bool) $get('kampanya_aktif'))
+                    ->schema([
+                        Toggle::make('kampanya_aktif')
+                            ->label('Kampanyayı etkinleştir')
+                            ->helperText('Kapalıyken tarihler dolu olsa bile kampanya çalışmaz.')
+                            ->live(),
+
+                        TextInput::make('kampanya_ad')
+                            ->label('Kampanya adı')
+                            ->maxLength(60)
+                            ->helperText('Yalnız panelde görünür — hangi kampanya olduğunu hatırlaman için. Ör: Kurban Bayramı')
+                            ->visible(fn ($get) => (bool) $get('kampanya_aktif')),
+
+                        DateTimePicker::make('kampanya_baslangic')
+                            ->label('Başlangıç')
+                            ->seconds(false)
+                            ->helperText('Boş bırakılırsa hemen başlar.')
+                            ->visible(fn ($get) => (bool) $get('kampanya_aktif')),
+
+                        DateTimePicker::make('kampanya_bitis')
+                            ->label('Bitiş')
+                            ->seconds(false)
+                            ->after('kampanya_baslangic')
+                            ->helperText('Boş bırakılırsa elle kapatana kadar sürer.')
+                            ->visible(fn ($get) => (bool) $get('kampanya_aktif')),
+
+                        TextInput::make('kampanya_rozet')->label('Kampanya rozeti')->maxLength(60)
+                            ->visible(fn ($get) => (bool) $get('kampanya_aktif')),
+                        TextInput::make('kampanya_baslik')->label('Kampanya başlığı — 1. satır')->maxLength(70)
+                            ->visible(fn ($get) => (bool) $get('kampanya_aktif')),
+                        TextInput::make('kampanya_vurgu')->label('Kampanya başlığı — vurgulu satır')->maxLength(70)
+                            ->visible(fn ($get) => (bool) $get('kampanya_aktif')),
+                        Textarea::make('kampanya_alt_baslik')->label('Kampanya alt başlığı')->rows(2)->maxLength(140)
+                            ->visible(fn ($get) => (bool) $get('kampanya_aktif')),
+                    ]),
+
                 Section::make('Bloklar')
                     ->description('Sürükleyerek sırala, anahtarla kapat. Kapanan blok sayfaya hiç basılmaz.')
                     ->schema([
@@ -229,6 +276,14 @@ class HeroYoneticisi extends Page
             'hero.overlay' => (string) max(0, min(100, (int) ($state['overlay'] ?? 58))),
             'hero.odak' => array_key_exists($state['odak'] ?? '', Hero::ODAKLAR) ? $state['odak'] : 'merkez',
             'hero.bloklar' => $bloklar === [] ? '' : json_encode($bloklar, JSON_UNESCAPED_UNICODE),
+            'hero.kampanya_aktif' => ! empty($state['kampanya_aktif']) ? '1' : '0',
+            'hero.kampanya_ad' => $state['kampanya_ad'] ?? '',
+            'hero.kampanya_baslangic' => (string) ($state['kampanya_baslangic'] ?? ''),
+            'hero.kampanya_bitis' => (string) ($state['kampanya_bitis'] ?? ''),
+            'hero.kampanya_rozet' => $state['kampanya_rozet'] ?? '',
+            'hero.kampanya_baslik' => $state['kampanya_baslik'] ?? '',
+            'hero.kampanya_vurgu' => $state['kampanya_vurgu'] ?? '',
+            'hero.kampanya_alt_baslik' => $state['kampanya_alt_baslik'] ?? '',
         ]);
 
         Notification::make()
