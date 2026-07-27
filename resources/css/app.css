@@ -62,19 +62,31 @@ input[type='week'] {
    BEYAZ kartlarda görünmez oluyordu ("yazı beyaz kalıyor" — 2026-07-21 iletişim
    formu raporu). Bare girdilere tema-bağımsız, kendi içinde tutarlı stil ver:
    açık zemin + koyu metin → hangi kartta olursa olsun okunur.
-   :where() özgüllüğü 0 olduğundan Tailwind'in "bg-" ve "text-" renk sınıfları
-   (ör. dark-mode farkında bilinçli stillenmiş formlar) bu kuralı EZER; yalnızca
-   stillenmemiş girdileri etkiler. Filament admin ayrı tema, etkilenmez. */
-input:where(:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color'])),
-textarea,
-select {
-    background-color: #fff;
-    color: var(--color-stone-900);
-}
+   @layer base ŞART — ve kuralın en kritik parçası bu. Kural başlangıçta
+   KATMANSIZ yazılmış, yanına da ":where() özgüllüğü 0 olduğundan Tailwind'in
+   bg-/text- sınıfları bunu EZER, yalnızca stillenmemiş girdileri etkiler" notu
+   düşülmüştü. Bu not YANLIŞTI: cascade layer'lar özgüllüğün ÖNÜNE geçer, yani
+   katmansız bir kural @layer utilities içindeki Tailwind sınıflarını her zaman
+   ezer — özgüllüğü 0 olsa bile. Sonuç, notun tam tersiydi: bilinçli stillenmiş
+   formlar da eziliyordu. 2026-07-27 ölçümü: ana sayfadaki ülke seçici
+   bg-stone-100 yazmasına rağmen BEYAZ, hesap silme alanları dark:bg-red-950/40
+   yazmasına rağmen koyu modda BEYAZ render oluyordu.
+   Kuralı base katmanına almak sırayı düzeltir (utilities > base): sınıf verilmiş
+   girdiler kendi stillerini alır, yalnızca çıplak girdiler bu kurala düşer —
+   notun en başından beri anlattığı davranış. Filament admin ayrı tema,
+   etkilenmez. */
+@layer base {
+    input:where(:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color'])),
+    textarea,
+    select {
+        background-color: #fff;
+        color: var(--color-stone-900);
+    }
 
-input:where(:not([type='checkbox']):not([type='radio']))::placeholder,
-textarea::placeholder {
-    color: var(--color-stone-400);
+    input:where(:not([type='checkbox']):not([type='radio']))::placeholder,
+    textarea::placeholder {
+        color: var(--color-stone-400);
+    }
 }
 
 /* iOS Safari, yazı boyutu 16px'in ALTINDA olan bir metin/seçim alanına
