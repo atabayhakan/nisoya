@@ -17,6 +17,12 @@ if (! function_exists('brandColorHex')) {
      */
     function brandColorHex(): string
     {
+        // Vitrin temasında favicon/theme-color da Vitrin birincilini kullanır
+        // (marka_rengi ayarı klasiğin eksenidir — panelde de öyle etiketlenir).
+        if (\App\Support\Tema::vitrinMi()) {
+            return '#3E63F0';
+        }
+
         $brand = setting('gorunum.marka_rengi') ?: 'emerald';
         $colors = config('brand_colors', []);
 

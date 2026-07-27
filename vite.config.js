@@ -16,6 +16,10 @@ export default defineConfig({
                     weights: [400],
                     styles: ['normal', 'italic'],
                 }),
+                // Vitrin temasının yazı tipi (P1) — self-host, Google'a istek yok.
+                bunny('Plus Jakarta Sans', {
+                    weights: [400, 500, 600, 700, 800],
+                }),
             ],
         }),
         tailwindcss(),

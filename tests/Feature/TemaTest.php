@@ -34,7 +34,11 @@ class TemaTest extends TestCase
      * Liste ile dizin içeriği birebir eşleşmezse CI kırmızı (sessiz
      * sürüklenmeye karşı bekçi — mimari plan, Ö2 aşısı).
      */
-    private const OVERRIDE_LISTESI = [];
+    private const OVERRIDE_LISTESI = [
+        'components/layouts/app.blade.php',
+        'components/layouts/guest.blade.php',
+        'home.blade.php',
+    ];
 
     protected function setUp(): void
     {
@@ -56,15 +60,49 @@ class TemaTest extends TestCase
         $this->get('/')->assertOk()->assertDontSee('data-tema="vitrin"', false);
     }
 
-    public function test_vitrin_without_overrides_serves_klasik_views(): void
+    public function test_vitrin_renders_overrides_and_falls_back_elsewhere(): void
     {
-        // P0: vitrin dizini yok → prepend edilen yol boş; her sayfa klasik
-        // dosyayla, hatasız render edilmeli (fallback garantisi).
         Settings::setMany(['gorunum.tema' => 'vitrin']);
 
         $this->assertTrue(Tema::vitrinMi());
-        $this->get('/')->assertOk();
-        $this->get('/ilanlar')->assertOk();
+
+        // Override'ı olan sayfa vitrin iskeletiyle (data-tema işareti + palet
+        // remap'i + Plus Jakarta) render edilir...
+        $this->get('/')->assertOk()
+            ->assertSee('data-tema="vitrin"', false)
+            ->assertSee('--color-emerald-600: #3E63F0', false)
+            ->assertSee('Plus Jakarta Sans', false);
+
+        // ...override'ı OLMAYAN sayfa klasik gövdeyle ama vitrin kabuğu
+        // olmadan (kendi klasik iskeletiyle değil — layout override'ı
+        // sayesinde vitrin iskeletiyle) hatasız açılır (fallback garantisi).
+        $this->get('/ilanlar')->assertOk()->assertSee('data-tema="vitrin"', false);
+    }
+
+    public function test_vitrin_guest_pages_use_vitrin_palette(): void
+    {
+        // Giriş/kayıt sayfaları klasik guest iskeletini kullanıyordu ve o iskelet
+        // hiçbir tema bileşeni basmadığı için vitrin'de emerald sınıfları
+        // Tailwind'in varsayılan YEŞİLİne çözülüyordu (mavi sitenin ortasında
+        // yeşil auth sayfası). Override bunu kapatır.
+        Settings::setMany(['gorunum.tema' => 'vitrin']);
+
+        $this->get('/giris')->assertOk()
+            ->assertSee('data-tema="vitrin"', false)
+            ->assertSee('--color-emerald-600: #3E63F0', false)
+            ->assertDontSee('#059669', false);
+    }
+
+    public function test_vitrin_home_preserves_content_contracts(): void
+    {
+        Settings::setMany(['gorunum.tema' => 'vitrin']);
+
+        // Hero metinleri (Slogan Set 3) vitrin hero'sunda da settings'ten akar;
+        // klasiğin brand/tasarim theme'leri vitrin'de basılmaz.
+        $this->get('/')->assertOk()
+            ->assertSee('Nakliyeci mi, hoca mı?', false)
+            ->assertSee('Hepsi burada, Türkçe.', false)
+            ->assertDontSee('nisoya-tasarim-theme', false);
     }
 
     public function test_invalid_theme_value_falls_back_to_klasik(): void
