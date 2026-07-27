@@ -1,0 +1,15 @@
+[Unit]
+Description=Nisoya otomatik deploy yoklayıcısı (2 dakikada bir)
+Documentation=file:///var/www/nisoya/deploy/DEPLOY.md
+
+[Timer]
+# Açılıştan 2 dk sonra ilk tur, sonra her 2 dakikada bir.
+OnBootSec=2min
+OnUnitActiveSec=2min
+# Sunucudaki tüm timer'lar aynı saniyede uyanmasın.
+RandomizedDelaySec=15
+Unit=nisoya-autodeploy.service
+Persistent=false
+
+[Install]
+WantedBy=timers.target

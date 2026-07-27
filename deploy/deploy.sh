@@ -15,6 +15,24 @@
 #  10. Smoke test (temel sağlık kontrolleri)
 set -euo pipefail
 
+# TEK DEPLOY GARANTİSİ — hangi yoldan çağrılırsa çağrılsın (pull yoklayıcısı,
+# GitHub Actions workflow_dispatch, ya da elle SSH atan bir insan) aynı anda
+# iki deploy çalışamaz. İki eşzamanlı deploy `migrate --force`u paralel
+# koşturur (Laravel'de migration kilidi yoktur → yarım/çift uygulanmış
+# migration) ve biri `npm ci` ile node_modules'ü silerken diğeri build eder.
+#
+# env korumalı re-exec: flock'u DOĞRUDAN burada `exec 9>` ile almak, bizi
+# çağıran yoklayıcı zaten kilidi tutuyorsa kendi kendimizi bloklardı
+# (çocuk süreç fd'yi miras alır ama yeni bir open-file-description açmak
+# ebeveynin kilidine takılır).
+if [ -z "${NISOYA_DEPLOY_LOCK:-}" ]; then
+    mkdir -p /var/lib/nisoya
+    export NISOYA_DEPLOY_LOCK=1
+    # `bash "$0"` şart: bu dosya 644 (çalıştırma biti yok), flock doğrudan
+    # exec etmeye çalışırsa "failed to execute ... Permission denied" verir.
+    exec flock -w 900 /var/lib/nisoya/deploy.lock bash "$0" "$@"
+fi
+
 cd /var/www/nisoya
 
 # Renkli çıktı
