@@ -35,4 +35,24 @@ enum ApplicationStatus: string implements HasColor, HasLabel
             self::Red => 'danger',
         };
     }
+
+    /**
+     * Bu duruma geçmek adaya e-posta gönderilmesini gerektirir mi?
+     *
+     * Kanban panosu durum değiştirmeyi ÇOK ucuzlaştırıyor (kartı sürükle,
+     * bitti). "Gönderildi" ve "İncelendi" işverenin kendi iç triyaj adımları:
+     * aday için haber değeri yok, buna karşılık her elemeyi tek tek gezen bir
+     * işveren onlarca gereksiz e-posta üretebilir. Adayın hayatını gerçekten
+     * etkileyen üç durum bildirilir: görüşmeye çağrıldı, kabul, olumsuz.
+     *
+     * Bu "görünmez sihir" olmamalı — pano sütun başlıkları hangi sütunun
+     * sessiz olduğunu zil/üstü çizili zil ikonuyla açıkça gösterir.
+     */
+    public function bildirimGerektirir(): bool
+    {
+        return match ($this) {
+            self::Gonderildi, self::Incelendi => false,
+            self::Gorusme, self::Kabul, self::Red => true,
+        };
+    }
 }

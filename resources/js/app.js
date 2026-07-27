@@ -844,5 +844,183 @@ document.addEventListener('animationstart', (event) => {
     });
 }, true);
 
+// Kanban panosu: aday kartlarını sütunlar arasında sürükleme (bkz.
+// panel/jobs/applicants.blade.php).
+//
+// SÜRÜKLEME YALNIZCA BİR HIZLANDIRICIDIR. Her kartta durum <select>'i +
+// "Uygula" butonu vardır; klavye, ekran okuyucu ve JS'siz tarayıcı o yoldan
+// gider. Sürükleme sadece `pointer: fine` (fare) ortamda açılır: dokunmatikte
+// sütunlar tek tek gösterildiği için sürüklenecek hedef yoktur, üstelik
+// sürükleme yatay/dikey kaydırmayla çakışır.
+//
+// Pointer Events, focalDrag'deki ev deseninin aynısı: pointerdown +
+// setPointerCapture + window'a bağlı move/up/cancel. pointercancel şart —
+// sistem bir gesture'ı devralırsa tek kurtarıcı odur.
+Alpine.data('kanbanPano', (ilkDurum) => ({
+    fareVar: false,
+    aktifSutun: ilkDurum, // mobil tek-sütun modu — bilinçli olarak KALICI DEĞİL
+    surukleniyor: false,
+    kart: null,
+    hayalet: null,
+    kaynakDurum: null,
+    hedefDurum: null,
+    aktifPointerId: null,
+    tutmaX: 0,
+    tutmaY: 0,
+    baslamaX: 0,
+    baslamaY: 0,
+    mesaj: '',
+    mesajTipi: 'bilgi',
+    _move: null,
+    _up: null,
+    _key: null,
+
+    init() {
+        this.fareVar = window.matchMedia('(pointer: fine)').matches;
+    },
+
+    tut(e, durum) {
+        if (!this.fareVar || this.aktifPointerId !== null) return;
+        // Kart içindeki etkileşimli öğeler sürüklemeyi devralmamalı; aksi
+        // halde CV linkine tıklamak ya da açılır menüyü kullanmak imkânsızlaşır.
+        if (e.target.closest('a, button, select, textarea, input, summary, details, label')) return;
+        if (e.button !== 0) return;
+
+        this.kart = e.currentTarget;
+        this.kaynakDurum = durum;
+        this.baslamaX = e.clientX;
+        this.baslamaY = e.clientY;
+        this.aktifPointerId = e.pointerId;
+
+        this._move = (ev) => this.hareket(ev);
+        this._up = () => this.birak();
+        this._key = (ev) => {
+            if (ev.key === 'Escape') this.iptal();
+        };
+        window.addEventListener('pointermove', this._move);
+        window.addEventListener('pointerup', this._up);
+        window.addEventListener('pointercancel', this._up);
+        window.addEventListener('keydown', this._key);
+    },
+
+    hareket(e) {
+        if (this.aktifPointerId === null) return;
+
+        if (!this.surukleniyor) {
+            // Eşik: 6px'in altındaki hareket sürükleme değil tıklamadır.
+            // Bu olmadan karttaki her tıklama hayalet üretirdi.
+            if (Math.hypot(e.clientX - this.baslamaX, e.clientY - this.baslamaY) < 6) return;
+            this.hayaletiOlustur();
+        }
+
+        this.hayalet.style.left = e.clientX - this.tutmaX + 'px';
+        this.hayalet.style.top = e.clientY - this.tutmaY + 'px';
+
+        // Hayaletin pointer-events'i none olduğu için elementFromPoint altındaki
+        // gerçek sütunu görür.
+        const sutun = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-durum]');
+        this.hedefDurum = sutun ? sutun.dataset.durum : null;
+    },
+
+    hayaletiOlustur() {
+        const kutu = this.kart.getBoundingClientRect();
+        this.tutmaX = this.baslamaX - kutu.left;
+        this.tutmaY = this.baslamaY - kutu.top;
+
+        const h = this.kart.cloneNode(true);
+        h.style.position = 'fixed';
+        h.style.left = kutu.left + 'px';
+        h.style.top = kutu.top + 'px';
+        h.style.width = kutu.width + 'px';
+        h.style.pointerEvents = 'none';
+        // z-40: header ve mobil sekme çubuğunun (z-30) üstünde, modalların
+        // (z-50) altında — panel sayfalarında z-40 boştur (bağış FAB'ı orada yok).
+        h.style.zIndex = '40';
+        h.style.margin = '0';
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            h.style.transform = 'rotate(1.5deg)';
+            h.style.boxShadow = '0 20px 45px -12px rgba(0,0,0,0.35)';
+        }
+        document.body.appendChild(h);
+
+        this.hayalet = h;
+        this.surukleniyor = true;
+        this.kart.style.opacity = '0.35';
+    },
+
+    async birak() {
+        const kart = this.kart;
+        const kaynak = this.kaynakDurum;
+        const hedef = this.hedefDurum;
+        const suruklendi = this.surukleniyor;
+        this.temizle();
+
+        if (!suruklendi || !hedef || hedef === kaynak || !kart) return;
+
+        const hedefListe = document.querySelector('[data-durum="' + hedef + '"] [data-liste]');
+        if (!hedefListe) return;
+        const kaynakListe = kart.parentElement;
+
+        // İyimser taşıma: sunucu yanıtını beklemeden kartı yerine koy, hata
+        // olursa geri al. Sahibin 20 kartı hızlıca elemesi gereken bir ekran.
+        hedefListe.prepend(kart);
+        this.sayaciDegistir(kaynak, -1);
+        this.sayaciDegistir(hedef, 1);
+
+        try {
+            const yanit = await fetch(kart.dataset.url, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': kart.querySelector('input[name="_token"]')?.value ?? '',
+                },
+                body: JSON.stringify({ status: hedef }),
+            });
+            if (!yanit.ok) throw new Error('durum kaydedilemedi');
+            const veri = await yanit.json();
+
+            // Erişilebilir yol (select) ile sürükleme aynı gerçeği göstermeli.
+            const sec = kart.querySelector('select[name="status"]');
+            if (sec) sec.value = veri.durum;
+
+            this.mesajiGoster(veri.mesaj, 'basari');
+        } catch (_) {
+            kaynakListe.prepend(kart);
+            this.sayaciDegistir(hedef, -1);
+            this.sayaciDegistir(kaynak, 1);
+            this.mesajiGoster('Durum kaydedilemedi — bağlantını kontrol edip tekrar dene.', 'hata');
+        }
+    },
+
+    iptal() {
+        this.temizle();
+    },
+
+    temizle() {
+        window.removeEventListener('pointermove', this._move);
+        window.removeEventListener('pointerup', this._up);
+        window.removeEventListener('pointercancel', this._up);
+        window.removeEventListener('keydown', this._key);
+        if (this.hayalet) this.hayalet.remove();
+        if (this.kart) this.kart.style.opacity = '';
+        this.hayalet = null;
+        this.surukleniyor = false;
+        this.aktifPointerId = null;
+        this.hedefDurum = null;
+    },
+
+    sayaciDegistir(durum, fark) {
+        const el = document.querySelector('[data-sayac="' + durum + '"]');
+        if (!el) return;
+        el.textContent = Math.max(0, (parseInt(el.textContent, 10) || 0) + fark);
+    },
+
+    mesajiGoster(metin, tip) {
+        this.mesaj = metin;
+        this.mesajTipi = tip;
+    },
+}));
+
 window.Alpine = Alpine;
 Alpine.start();
