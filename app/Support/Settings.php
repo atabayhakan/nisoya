@@ -82,6 +82,7 @@ class Settings
             'mail' => 'E-posta (SMTP)', 'mail_template' => 'E-posta metinleri',
             'modul' => 'Modüller', 'seo' => 'SEO', 'duyuru' => 'Duyuru bandı',
             'ai' => 'Yapay zeka', 'home' => 'Anasayfa', 'gorunum' => 'Görünüm',
+            'hero' => 'Hero (Vitrin)',
             'reklam' => 'Reklam', 'bagis' => 'Bağış', 'nabiz' => 'Nabız',
             'iletisim' => 'İletişim', 'footer' => 'Footer', 'header' => 'Header',
             'genel' => 'Genel',

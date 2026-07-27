@@ -87,6 +87,30 @@ return [
             'default' => 'emerald',
         ],
 
+        // --- Hero Yöneticisi (Vitrin — Faz P3) ---
+        // BİLİNÇLİ olarak 'groups' listesinde YOK: genel İçerik formunda
+        // render edilmez, kendi sayfası var (HeroYoneticisi). Boş bırakılan
+        // metin alanları klasik `home.hero_*` değerlerine düşer (App\Support\Hero),
+        // böylece panel hiç açılmadan da vitrin hero'su doğru çalışır.
+        // Kampanya/A-B alanları BUGÜN EKLENMEZ (ölü alan yasağı — 2026-07-22 denetimi).
+        'hero.duzen' => ['group' => 'hero', 'label' => 'Hero düzeni', 'type' => 'select', 'options' => ['bento' => 'Bento Vitrin', 'sahne' => 'Sahne'], 'default' => 'bento'],
+        'hero.rozet' => ['group' => 'hero', 'label' => 'Rozet metni', 'type' => 'text', 'default' => ''],
+        'hero.baslik' => ['group' => 'hero', 'label' => 'Başlık — 1. satır', 'type' => 'text', 'default' => ''],
+        'hero.vurgu' => ['group' => 'hero', 'label' => 'Başlık — vurgulu satır', 'type' => 'text', 'default' => ''],
+        'hero.alt_baslik' => ['group' => 'hero', 'label' => 'Alt başlık', 'type' => 'textarea', 'default' => ''],
+        'hero.cta1_etiket' => ['group' => 'hero', 'label' => 'Birincil buton — etiket', 'type' => 'text', 'default' => ''],
+        'hero.cta1_url' => ['group' => 'hero', 'label' => 'Birincil buton — URL', 'type' => 'text', 'default' => ''],
+        'hero.cta2_aktif' => ['group' => 'hero', 'label' => 'İkincil buton açık', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '0'],
+        'hero.cta2_etiket' => ['group' => 'hero', 'label' => 'İkincil buton — etiket', 'type' => 'text', 'default' => ''],
+        'hero.cta2_url' => ['group' => 'hero', 'label' => 'İkincil buton — URL', 'type' => 'text', 'default' => ''],
+        'hero.arkaplan_tipi' => ['group' => 'hero', 'label' => 'Arka plan tipi', 'type' => 'select', 'options' => ['yok' => 'Yok (degrade)', 'gorsel' => 'Görsel', 'video' => 'Video'], 'default' => 'yok'],
+        'hero.gorsel_masaustu' => ['group' => 'hero', 'label' => 'Arka plan görseli (masaüstü)', 'type' => 'image', 'default' => ''],
+        'hero.gorsel_mobil' => ['group' => 'hero', 'label' => 'Arka plan görseli (mobil)', 'type' => 'image', 'default' => ''],
+        'hero.video_url' => ['group' => 'hero', 'label' => 'Arka plan video URL (mp4/webm)', 'type' => 'text', 'default' => ''],
+        'hero.overlay' => ['group' => 'hero', 'label' => 'Karartma yüzdesi', 'type' => 'text', 'default' => '58'],
+        'hero.odak' => ['group' => 'hero', 'label' => 'Görsel odak noktası', 'type' => 'text', 'default' => 'merkez'],
+        'hero.bloklar' => ['group' => 'hero', 'label' => 'Blok sırası ve açık/kapalı durumu (JSON)', 'type' => 'text', 'default' => ''],
+
         // --- Tema motoru (Vitrin) ---
         // BİLİNÇLİ olarak grup anahtarı 'groups' listesinde YOK — genel
         // İçerik formunda render edilmez (AI alanlarıyla aynı desen). Tek
