@@ -11,11 +11,21 @@ name: Deploy
 #     && git fetch origin && git checkout -f -b main origin/main
 
 on:
-  # main'e her push'ta VPS'e otomatik deploy. Kurulum 2026-07-04'te tamamlandı:
-  # 3 secret (SSH_HOST/USER/PRIVATE_KEY) eklendi, sunucu git deposuna çevrildi
-  # (repo deploy key ile), workflow_dispatch ile elle test başarılı oldu.
-  push:
-    branches: [main]
+  # PUSH TETİĞİ 2026-07-27'DE KAPATILDI — deploy artık PULL-tabanlı.
+  #
+  # Gerekçe: Hostinger'ın ağ katmanı GitHub runner'larından GELEN SSH'ı
+  # aralıklı olarak kesiyor (son 8 denemenin 6'sı `dial tcp :22 i/o timeout`;
+  # tcpdump ile doğrulandı: başarısız denemelerde SYN paketi sunucuya hiç
+  # ulaşmıyor). Deploy'u sunucudaki `nisoya-autodeploy.timer` yapıyor —
+  # sunucu GitHub'ı yokluyor, GİDEN bağlantı sorunsuz çalışıyor.
+  # Bkz. deploy/pull-deploy.sh ve deploy/DEPLOY.md.
+  #
+  # Push tetiği geri açılMAMALI: iki mekanizma aynı anda çalışırsa aynı
+  # commit iki kez deploy edilir, kötü durumda `migrate --force` paralel
+  # koşar. (deploy.sh artık flock ile korunuyor, ama çift deploy yine de
+  # gereksiz bir bakım-modu penceresi demek.)
+  #
+  # Elle tetikleme (SSH tuttuğu turlarda çalışır) hâlâ mümkün:
   workflow_dispatch:
 
 jobs:
@@ -50,3 +60,8 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             bash deploy/deploy.sh
+            # Yoklayıcıyla sözleşme: elle tetiklenen bu deploy'dan sonra
+            # "son deploy edilen sürüm" işaretlenmezse, yoklayıcı 2 dakika
+            # içinde AYNI commit'i bir kez daha deploy eder.
+            mkdir -p /var/lib/nisoya
+            git rev-parse HEAD > /var/lib/nisoya/last-deployed

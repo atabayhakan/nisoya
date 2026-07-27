@@ -1,0 +1,29 @@
+[Unit]
+Description=Nisoya pull-tabanlı otomatik deploy (GitHub'ı yoklar, değişiklik varsa deploy eder)
+Documentation=file:///var/www/nisoya/deploy/DEPLOY.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/var/www/nisoya
+
+# KRİTİK: systemd sistem servisleri interaktif root kabuğunun ortamını
+# DEVRALMAZ. $HOME yalnızca User= verildiğinde export edilir. HOME olmadan:
+#   - git /root/.gitconfig'i okuyamaz → www-data sahipli depoda
+#     "detected dubious ownership" ile durur (safe.directory orada tanımlı),
+#   - composer HOME'suz çalışmayı reddeder.
+Environment=HOME=/root
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+ExecStart=/usr/local/sbin/nisoya-autodeploy
+
+# deploy.sh composer/npm/migrate çalıştırıyor — cömert ama sonsuz değil.
+# Zaman aşımında systemd cgroup'a SIGTERM atar; script'in trap'i siteyi
+# yayına almaya çalışır, alamazsa bir sonraki tur kurtarma ağı temizler.
+TimeoutStartSec=900
+
+# oneshot servis çalışırken timer yeniden tetiklemez → üst üste binme olmaz.
+
+[Install]
+WantedBy=multi-user.target
