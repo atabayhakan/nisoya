@@ -41,6 +41,18 @@ class TemaTest extends TestCase
         'home.blade.php',
         'listings/index.blade.php',
         'listings/show.blade.php',
+
+        // G5 (2026-07-28): anasayfa bölümleri sıralanabilir olsun diye
+        // partial'lara çıkarıldı. Her biri klasik ağaçtaki adaşının Vitrin
+        // yüzeyidir; aynı-ad kuralı burada da geçerli — bu yüzden bekçinin
+        // "klasik ağaçta adaşı var mı" kontrolü bunları da kapsar.
+        'partials/home/capa-nabiz.blade.php',
+        'partials/home/cta.blade.php',
+        'partials/home/deger_onerileri.blade.php',
+        'partials/home/kategoriler.blade.php',
+        'partials/home/nasil_calisir.blade.php',
+        'partials/home/ulkeler.blade.php',
+        'partials/home/yeni_ilanlar.blade.php',
     ];
 
     protected function setUp(): void
