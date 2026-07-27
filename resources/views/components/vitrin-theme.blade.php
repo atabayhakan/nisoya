@@ -3,20 +3,21 @@
      sınıfları CSS değişken yönlendirmesiyle Vitrin paletine bürünür. Böylece
      vitrin karşılığı henüz yazılmamış fallback sayfalar da tutarlı görünür.
      Palet: handoff README "Renk (Vitrin / açık + karanlık)" tabloları. --}}
+@php
+    // Vurgu rampası artık seçilebilir (bkz. config/vitrin_accents.php +
+    // App\Support\TemaJetonlari). Nötrler, yazı tipi ve gölgeler BİLİNÇLİ
+    // olarak kilitli: Vitrin'in kimliği tek bir hex değil, gri-mavi nötr
+    // sistemi + Plus Jakarta Sans + 12/14/20/24 yarıçap ölçeğidir.
+    // Varsayılan 'deniz' rampası, bu değişiklikten önceki sabit değerlerle
+    // BİREBİR aynıdır — dokunulmamış sitede çıktı bayt bayt değişmez.
+    $aksan = \App\Support\TemaJetonlari::vitrinAksani();
+@endphp
 <style>
     :root {
-        /* Birincil: Deniz mavisi rampası (#3E63F0; 950 = mürekkep #10203c) */
-        --color-emerald-50: #eef2ff;
-        --color-emerald-100: #dfe6fb;
-        --color-emerald-200: #c3d0fa;
-        --color-emerald-300: #a8c0ff;
-        --color-emerald-400: #8ea5ff;
-        --color-emerald-500: #5b7cff;
-        --color-emerald-600: #3E63F0;
-        --color-emerald-700: #2f4fd0;
-        --color-emerald-800: #26409f;
-        --color-emerald-900: #1d316f;
-        --color-emerald-950: #10203c;
+        /* Birincil vurgu rampası ({{ $aksan['label'] }}) */
+        @foreach ($aksan['acik'] as $basamak => $renk)
+        --color-emerald-{{ $basamak }}: {{ $renk }};
+        @endforeach
 
         /* Nötrler: taş grisi → Vitrin gri-mavisi (zemin #eef2f8, mürekkep #10203c) */
         --color-stone-50: #eef2f8;
@@ -45,8 +46,8 @@
         --shadow-brand: 0 2px 4px rgba(16, 32, 64, 0.04), 0 20px 40px -28px rgba(16, 32, 64, 0.5);
         --shadow-brand-lg: 0 24px 50px -22px rgba(16, 32, 64, 0.75);
 
-        --nisoya-primary: #3E63F0;
-        --nisoya-seal: #3E63F0;
+        --nisoya-primary: {{ $aksan['hex'] }};
+        --nisoya-seal: {{ $aksan['hex'] }};
     }
 
     /* Karanlık set: zemin #0b1220, kart #131c2f, birincil açık mavi #6b8afd
@@ -54,11 +55,9 @@
        yönlendiği için bu sözleşme kendiliğinden tutar). Gölge yok; ayrım
        kenarlık + yüzey açıklığıyla. */
     .dark {
-        --color-emerald-300: #a8c0ff;
-        --color-emerald-400: #8ea5ff;
-        --color-emerald-500: #6b8afd;
-        --color-emerald-600: #6b8afd;
-        --color-emerald-700: #8ea5ff;
+        @foreach ($aksan['koyu'] as $basamak => $renk)
+        --color-emerald-{{ $basamak }}: {{ $renk }};
+        @endforeach
 
         --color-stone-50: #f2f5fb;
         --color-stone-100: #e6ebf5;

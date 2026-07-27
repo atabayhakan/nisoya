@@ -94,6 +94,11 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('job-bookmark-toggle', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip())
         );
 
+        // Tema özelleştirici: sahip deneyerek ilerler, ama her deneme
+        // kaydedilmez (önizleme istemcide). Cömert ama sınırsız değil.
+        RateLimiter::for('tema-ozellestirici', fn (Request $request) => Limit::perMinute(30)->by($request->user()?->id ?: $request->ip())
+        );
+
         // Kanban panosunda durum değişikliği bir sürükleme kadar ucuz; toplu
         // triyaj yapan işvereni engellemeyecek ama otomatik bir döngünün
         // kuyruğu doldurmasına izin vermeyecek bir tavan.
