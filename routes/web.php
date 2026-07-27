@@ -281,7 +281,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware(['honeypot', 'throttle:job-apply'])
         ->name('jobs.apply');
     Route::get('/panel/basvurularim', [JobApplicationController::class, 'mine'])->name('panel.applications.mine');
-    Route::patch('/panel/basvuru/{application}/durum', [JobApplicationController::class, 'updateStatus'])->name('panel.applications.status');
+    Route::patch('/panel/basvuru/{application}/durum', [JobApplicationController::class, 'updateStatus'])
+        ->middleware('throttle:application-status')
+        ->name('panel.applications.status');
     Route::get('/panel/basvuru/{application}/cv', [JobApplicationController::class, 'downloadCv'])->name('panel.applications.cv');
 
     // İş ilanı yer imleri (aday)

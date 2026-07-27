@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property ApplicationStatus $status
+ * @property ?string $notified_status
  */
 class JobApplication extends Model
 {
@@ -17,6 +18,7 @@ class JobApplication extends Model
         'cover_letter',
         'cv_path',
         'status',
+        'notified_status',
     ];
 
     protected function casts(): array
@@ -40,5 +42,17 @@ class JobApplication extends Model
     public function applicant(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Adaya, güncel durumundan haberi olmayan bir değişiklik var mı?
+     *
+     * Gecikmeli bildirim işinin tek karar kaynağı budur: iş çalıştığında
+     * durum tekrar eski hâline dönmüşse (işveren kartı geri sürüklediyse)
+     * status === notified_status olur ve aday hiçbir şey görmez.
+     */
+    public function bildirimBekliyor(): bool
+    {
+        return $this->status->value !== $this->notified_status;
     }
 }

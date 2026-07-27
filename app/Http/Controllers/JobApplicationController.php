@@ -3,14 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ApplicationStatus;
+use App\Jobs\BasvuruDurumBildirimi;
 use App\Models\JobApplication;
 use App\Models\JobListing;
-use App\Notifications\ApplicationStatusNotification;
 use App\Notifications\NewApplicationNotification;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -58,36 +60,95 @@ class JobApplicationController extends Controller
         return back()->with('status', 'Başvurun gönderildi! İşveren profilini ve (varsa) CV\'ni görebilecek.');
     }
 
-    /** İşveren: bir ilana gelen başvurular. */
+    /**
+     * Bir sütunda en fazla kaç kart basılır.
+     *
+     * Tavanın altındaki gerçek toplam ayrı bir sayım sorgusundan gelir; kart
+     * listesi kısıtlı olsa bile işveren "38 başvurudan 25'i" bilgisini görür.
+     */
+    public const SUTUN_TAVANI = 25;
+
+    /** İşveren: bir ilana gelen başvurular — Kanban panosu. */
     public function applicants(Request $request, JobListing $job): View
     {
         Gate::authorize('manageApplications', $job);
 
-        $applications = $job->applications()
-            ->with('applicant')
-            ->latest()
-            ->get();
+        // Sütun başına ayrı, TAVANLI sorgu: tek sorgu + PHP'de gruplama,
+        // 500 başvurulu bir ilanda hepsini belleğe alırdı.
+        $sutunlar = [];
+        foreach (ApplicationStatus::cases() as $durum) {
+            $sutunlar[$durum->value] = $job->applications()
+                ->where('status', $durum->value)
+                ->with('applicant')
+                ->latest()
+                ->limit(self::SUTUN_TAVANI)
+                ->get();
+        }
 
-        return view('panel.jobs.applicants', compact('job', 'applications'));
+        // Gerçek toplamlar tavandan bağımsız. toBase(): sayım satırlarını
+        // model olarak hidrate etmeye gerek yok.
+        $sayimlar = JobApplication::query()
+            ->where('job_listing_id', $job->id)
+            ->toBase()
+            ->selectRaw('status, count(*) as adet')
+            ->groupBy('status')
+            ->pluck('adet', 'status')
+            ->all();
+
+        return view('panel.jobs.applicants', compact('job', 'sutunlar', 'sayimlar'));
     }
 
-    /** İşveren: başvuru durumunu değiştirir → adayı bilgilendirir. */
-    public function updateStatus(Request $request, JobApplication $application): RedirectResponse
+    /**
+     * İşveren: başvuru durumunu değiştirir.
+     *
+     * Bildirim burada GÖNDERİLMEZ — gecikmeli bir işe bırakılır (bkz.
+     * BasvuruDurumBildirimi). Böylece yanlış sütuna bırakılan bir kart geri
+     * alınabilir ve arka arkaya taşımalar tek e-postada birleşir.
+     */
+    public function updateStatus(Request $request, JobApplication $application): RedirectResponse|JsonResponse
     {
         $job = $application->jobListing;
         Gate::authorize('manageApplications', $job);
 
-        $request->validate(['status' => ['required', 'in:gonderildi,incelendi,gorusme,kabul,red']]);
-        $application->update(['status' => $request->input('status')]);
+        $data = $request->validate(
+            ['status' => ['required', Rule::enum(ApplicationStatus::class)]],
+            attributes: ['status' => 'durum'],
+        );
+        $yeni = ApplicationStatus::from($data['status']);
 
-        $application->applicant?->notify(new ApplicationStatusNotification(
-            $job->title,
-            $application->status->getLabel(),
-            $job->id,
-            $job->slug,
-        ));
+        // Kirli-kontrol: kartı geldiği sütuna geri bırakmak (ya da aynı
+        // seçeneği yeniden seçmek) ne DB'ye yazar ne kuyruğa iş atar.
+        if ($application->status === $yeni) {
+            return $this->durumYaniti($request, $application, 'Durum zaten buydu.');
+        }
 
-        return back()->with('status', 'Başvuru durumu güncellendi.');
+        $application->update(['status' => $yeni]);
+
+        if ($yeni->bildirimGerektirir()) {
+            BasvuruDurumBildirimi::dispatch($application->id)
+                ->delay(now()->addMinutes(BasvuruDurumBildirimi::GECIKME_DAKIKA));
+
+            $mesaj = 'Durum güncellendi. Aday yaklaşık '.BasvuruDurumBildirimi::GECIKME_DAKIKA
+                .' dakika içinde bilgilendirilecek — o süre içinde geri alırsan hiç haberi olmaz.';
+        } else {
+            $mesaj = 'Durum güncellendi. Bu sütun sessiz: adaya bildirim gitmez.';
+        }
+
+        return $this->durumYaniti($request, $application, $mesaj);
+    }
+
+    /** Pano sürüklemesi fetch ile gelir (JSON), açılır menü klasik form gönderir. */
+    private function durumYaniti(Request $request, JobApplication $application, string $mesaj): RedirectResponse|JsonResponse
+    {
+        if ($request->wantsJson()) {
+            return response()->json([
+                'durum' => $application->status->value,
+                'etiket' => $application->status->getLabel(),
+                'mesaj' => $mesaj,
+            ]);
+        }
+
+        return back()->with('status', $mesaj);
     }
 
     /** Aday: kendi başvurularım. */
