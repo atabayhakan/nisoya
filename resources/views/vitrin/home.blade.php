@@ -75,7 +75,7 @@
                    class="group mt-6 grid gap-4 rounded-[22px] border border-stone-200/60 bg-white p-3.5 shadow-brand-lg transition hover:border-emerald-300 md:grid-cols-[minmax(0,420px)_minmax(0,1fr)] dark:border-stone-800 dark:bg-stone-900 dark:hover:border-emerald-700">
                     <div class="relative aspect-[4/3] overflow-hidden rounded-2xl bg-stone-100 md:aspect-auto md:min-h-[250px] dark:bg-stone-800">
                         @if ($vitrinOne->coverImage)
-                            @php($vSrc = $vitrinOne->coverImage->srcset())
+                            @php $vSrc = $vitrinOne->coverImage->srcset(); @endphp
                             <img src="{{ $vSrc['medium'] ?? Storage::url($vitrinOne->coverImage->path) }}"
                                  srcset="{{ $vSrc['medium'] ?? '' }} 800w, {{ $vSrc['large'] ?? '' }} 1600w"
                                  sizes="(min-width: 768px) 420px, 100vw"
