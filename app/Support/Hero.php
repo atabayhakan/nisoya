@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -12,8 +13,11 @@ use Illuminate\Support\Facades\Storage;
  * sayfasının tamamı Settings::setMany() üzerinden yazıyor ve cache
  * invalidasyonu (Settings::forget) ile denetim izini (Settings::logChange)
  * oradan alıyor. Ayrı tablo bu ikisini elle yeniden yazmayı gerektirirdi.
- * Kampanya/A-B ikinci tura ertelendiği için tarih tabanlı cache
- * invalidasyonu bugün gerekmiyor — ertelemenin asıl teknik gerekçesi bu.
+ *
+ * Zamanlanmış kampanya (P4c) bu kararla ÇAKIŞMAZ: cache'e yalnız ham
+ * tarihler girer, "şu an kampanya penceresinde miyiz" kıyaslaması her
+ * render'da yapılır (bkz. kampanyaAktifMi). Bu yüzden tarih sınırlarında
+ * cache temizlemeye, TTL'e veya zamanlanmış işe gerek yoktur.
  *
  * Hero Yöneticisi VİTRİN temasına özgüdür; klasik tema hero metinlerini
  * `home.hero_*` üzerinden (İçerik sayfası) yönetmeye devam eder. Vitrin
@@ -45,26 +49,96 @@ final class Hero
         return in_array($duzen, self::DUZENLER, true) ? $duzen : 'bento';
     }
 
-    /** Başlığın ilk satırı — boşsa klasik hero metnine düşer. */
+    /**
+     * Zamanlanmış kampanya penceresinde miyiz? (Faz P4c)
+     *
+     * KARAR HER RENDER'DA VERİLİR, cache'lenmez. Settings::all()
+     * rememberForever ile cache'li ama oraya giren şey HAM DEĞERLER
+     * (tarihler); "şu an aktif mi" kıyaslaması burada, istek anında yapılır.
+     * Bu yüzden kampanya başlangıç/bitiş anında cache temizlemeye,
+     * zamanlanmış işe ya da TTL'e GEREK YOKTUR — bitiş saatinden sonraki
+     * ilk istekte hero kendiliğinden normale döner.
+     */
+    public static function kampanyaAktifMi(): bool
+    {
+        if (Settings::get('hero.kampanya_aktif', '0') !== '1') {
+            return false;
+        }
+
+        $simdi = now();
+
+        try {
+            $baslangic = Settings::get('hero.kampanya_baslangic');
+            $bitis = Settings::get('hero.kampanya_bitis');
+
+            if (filled($baslangic) && $simdi->lt(Carbon::parse($baslangic))) {
+                return false;   // henüz başlamadı
+            }
+
+            if (filled($bitis) && $simdi->gt(Carbon::parse($bitis))) {
+                return false;   // süresi doldu → otomatik normale dönüş
+            }
+        } catch (\Throwable) {
+            return false;       // bozuk tarih kampanyayı açmasın
+        }
+
+        return true;
+    }
+
+    /** Kampanya penceresindeyken kampanya değeri, değilse normal değer. */
+    private static function kampanyaliDeger(string $kampanyaAnahtari, string $normalDeger): string
+    {
+        if (self::kampanyaAktifMi()) {
+            $kampanya = trim((string) Settings::get($kampanyaAnahtari, ''));
+
+            if ($kampanya !== '') {
+                return $kampanya;
+            }
+        }
+
+        return $normalDeger;
+    }
+
+    /** Panelde göstermek için kampanyanın adı (boşsa varsayılan etiket). */
+    public static function kampanyaAdi(): string
+    {
+        $ad = trim((string) Settings::get('hero.kampanya_ad', ''));
+
+        return $ad !== '' ? $ad : 'Kampanya';
+    }
+
+    /** Başlığın ilk satırı — kampanya > panel değeri > klasik hero metni. */
     public static function baslik(): string
     {
-        return trim((string) (Settings::get('hero.baslik') ?: setting('home.hero_satir1', '')));
+        return self::kampanyaliDeger(
+            'hero.kampanya_baslik',
+            trim((string) (Settings::get('hero.baslik') ?: setting('home.hero_satir1', '')))
+        );
     }
 
     /** Başlığın vurgulu (birincil renkli) ikinci satırı. */
     public static function vurgu(): string
     {
-        return trim((string) (Settings::get('hero.vurgu') ?: setting('home.hero_vurgu', '')));
+        return self::kampanyaliDeger(
+            'hero.kampanya_vurgu',
+            trim((string) (Settings::get('hero.vurgu') ?: setting('home.hero_vurgu', '')))
+        );
     }
 
     public static function altBaslik(): string
     {
-        return trim((string) (Settings::get('hero.alt_baslik') ?: setting('home.hero_aciklama', '')));
+        return self::kampanyaliDeger(
+            'hero.kampanya_alt_baslik',
+            trim((string) (Settings::get('hero.alt_baslik') ?: setting('home.hero_aciklama', '')))
+        );
     }
 
     public static function rozet(): string
     {
-        return trim((string) (Settings::get('hero.rozet') ?: setting('home.hero_badge', '')));
+        return self::kampanyaliDeger(
+            'hero.kampanya_rozet',
+            trim((string) (Settings::get('hero.rozet') ?: setting('home.hero_badge', '')))
+        );
     }
 
     /**

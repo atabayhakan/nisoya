@@ -198,6 +198,85 @@ class HeroYoneticisiTest extends TestCase
             ->assertDontSee('Küçük kart başlığı', false);
     }
 
+    public function test_kampanya_yalniz_tarih_araliginda_gecerlidir(): void
+    {
+        // Kampanya kararı HER RENDER'DA verilir (cache'e yalnız ham tarihler
+        // girer) — bu yüzden başlangıç/bitişte cache temizlemeye ya da
+        // zamanlanmış işe gerek yoktur. Test bunu üç pencerede doğrular.
+        Settings::setMany([
+            'gorunum.tema' => 'vitrin',
+            'hero.baslik' => 'Normal başlık',
+            'hero.kampanya_aktif' => '1',
+            'hero.kampanya_baslik' => 'Bayram başlığı',
+            'hero.kampanya_baslangic' => now()->addDay()->toDateTimeString(),
+            'hero.kampanya_bitis' => now()->addDays(3)->toDateTimeString(),
+        ]);
+
+        // 1) Henüz başlamadı → normal metin
+        $this->assertFalse(Hero::kampanyaAktifMi());
+        $this->get('/')->assertOk()->assertSee('Normal başlık', false)->assertDontSee('Bayram başlığı', false);
+
+        // 2) Pencere içinde → kampanya metni
+        Settings::setMany([
+            'hero.kampanya_baslangic' => now()->subHour()->toDateTimeString(),
+            'hero.kampanya_bitis' => now()->addHour()->toDateTimeString(),
+        ]);
+        $this->assertTrue(Hero::kampanyaAktifMi());
+        $this->get('/')->assertOk()->assertSee('Bayram başlığı', false)->assertDontSee('Normal başlık', false);
+
+        // 3) Süresi doldu → kendiliğinden normale döner
+        Settings::setMany([
+            'hero.kampanya_baslangic' => now()->subDays(3)->toDateTimeString(),
+            'hero.kampanya_bitis' => now()->subDay()->toDateTimeString(),
+        ]);
+        $this->assertFalse(Hero::kampanyaAktifMi());
+        $this->get('/')->assertOk()->assertSee('Normal başlık', false)->assertDontSee('Bayram başlığı', false);
+    }
+
+    public function test_kampanya_kapaliyken_tarihler_dolu_olsa_bile_calismaz(): void
+    {
+        Settings::setMany([
+            'gorunum.tema' => 'vitrin',
+            'hero.baslik' => 'Normal başlık',
+            'hero.kampanya_aktif' => '0',
+            'hero.kampanya_baslik' => 'Bayram başlığı',
+            'hero.kampanya_baslangic' => now()->subHour()->toDateTimeString(),
+            'hero.kampanya_bitis' => now()->addHour()->toDateTimeString(),
+        ]);
+
+        $this->assertFalse(Hero::kampanyaAktifMi());
+        $this->get('/')->assertOk()->assertSee('Normal başlık', false);
+    }
+
+    public function test_bozuk_kampanya_tarihi_kampanyayi_acmaz(): void
+    {
+        Settings::setMany([
+            'gorunum.tema' => 'vitrin',
+            'hero.kampanya_aktif' => '1',
+            'hero.kampanya_baslik' => 'Bayram başlığı',
+            'hero.kampanya_baslangic' => 'bozuk-tarih',
+        ]);
+
+        $this->assertFalse(Hero::kampanyaAktifMi());
+        $this->get('/')->assertOk()->assertDontSee('Bayram başlığı', false);
+    }
+
+    public function test_bos_birakilan_kampanya_alani_normal_degerini_korur(): void
+    {
+        Settings::setMany([
+            'gorunum.tema' => 'vitrin',
+            'hero.baslik' => 'Normal başlık',
+            'hero.alt_baslik' => 'Normal alt başlık',
+            'hero.kampanya_aktif' => '1',
+            'hero.kampanya_baslik' => 'Bayram başlığı',
+            // kampanya_alt_baslik bilinçli olarak boş
+        ]);
+
+        $this->get('/')->assertOk()
+            ->assertSee('Bayram başlığı', false)
+            ->assertSee('Normal alt başlık', false);
+    }
+
     public function test_hero_settings_are_inert_while_klasik_theme_is_active(): void
     {
         // Vitrin'e özgü: klasik tema aktifken hero.* ayarları ön yüzü etkilemez.
