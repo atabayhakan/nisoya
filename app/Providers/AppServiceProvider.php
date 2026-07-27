@@ -23,6 +23,7 @@ use App\Services\Growth\Discovery\OverpassDiscoverySource;
 use App\Services\PerformanceService;
 use App\Services\VisitorLocationService;
 use App\Support\Settings;
+use Illuminate\Mail\Markdown;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
@@ -71,6 +72,17 @@ class AppServiceProvider extends ServiceProvider
         // null döndürmek "karar verme, normal policy'ye devam et" demektir —
         // yani moderatör/üye için varsayılan yetkilendirme akışı korunur.
         Gate::before(fn (User $user) => $user->isAdmin() ? true : null);
+
+        // GÜVENLİK (2026-07-27, destek sistemi keşfinde bulundu): giden
+        // e-postalarda MARKDOWN ENJEKSİYONU. Blade `{{ }}` yalnız `<` `>`
+        // kaçırır; `[` `]` `(` `)` `*` dokunulmadan kalır. Yani iletişim
+        // formuna yazılan `[Hesabını doğrula](https://kotu-site.example)`
+        // metni, yöneticiye giden bildirim mailinde GERÇEK TIKLANABİLİR
+        // BİR LİNK olarak render ediliyordu (NewContactMessageNotification
+        // ad/e-posta/mesaj alanlarını ham geçiriyor). withSecuredEncoding()
+        // markdown özel karakterlerini kaçırır — tek satırda TÜM mailleri
+        // (mevcut + yeni destek yanıtları) korur.
+        Markdown::withSecuredEncoding();
 
         // Kullanıcı banlandığında aktif ilanları otomatik pasif yap.
         User::observe(UserObserver::class);

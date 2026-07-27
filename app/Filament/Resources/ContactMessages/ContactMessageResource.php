@@ -43,7 +43,9 @@ class ContactMessageResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return (string) (ContactMessage::query()->where('status', 'yeni')->count() ?: '');
+        // Rozet artık AÇIK biletleri sayar (yeni + okundu): "okundu" ama
+        // hâlâ yanıtlanmamış bir bilet de ilgi bekliyor.
+        return (string) (ContactMessage::query()->acik()->count() ?: '');
     }
 
     public static function getNavigationBadgeColor(): ?string
