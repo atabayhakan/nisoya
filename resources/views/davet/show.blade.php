@@ -15,6 +15,8 @@
     {{-- Davetiye tasarlanmış bir üründür: her misafirde AYNI görünür. Cihazın
          OS temasını takip etmez (tema paleti config/event_themes.php'de sabittir;
          koyu temalar <html>'e statik `dark` sınıfı ekler). --}}
+    <x-layout-fonts />
+
     @vite(['resources/css/app.css'])
 </head>
 <body class="min-h-screen antialiased {{ $theme['page'] }}">
@@ -35,7 +37,7 @@
                 <div class="mt-3 text-sm font-medium uppercase tracking-[0.25em] {{ $theme['accent'] }}">
                     {{ $event->type->emoji() }} {{ $event->type->getLabel() }}
                 </div>
-                <h1 class="mt-4 text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">{{ $event->title }}</h1>
+                <h1 class="mt-4 text-balance text-3xl font-semibold leading-tight sm:text-4xl">{{ $event->title }}</h1>
                 <div class="mx-auto mt-6 flex items-center justify-center gap-3" aria-hidden="true">
                     <span class="h-px w-10 bg-current opacity-25"></span>
                     <span class="text-sm {{ $theme['accent'] }}">{{ $theme['ornament'] }}</span>

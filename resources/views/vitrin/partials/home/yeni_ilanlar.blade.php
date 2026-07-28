@@ -3,7 +3,7 @@
         <section class="mx-auto max-w-6xl px-4 pt-14" x-data x-reveal>
             <div class="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h2 class="text-2xl font-extrabold tracking-tight text-stone-800 sm:text-3xl dark:text-stone-50">Öne çıkan ilanlar</h2>
+                    <h2 class="text-2xl font-extrabold text-stone-800 sm:text-3xl dark:text-stone-50">Öne çıkan ilanlar</h2>
                     <p class="mt-1.5 text-sm font-medium text-stone-500 dark:text-stone-400">Şehrindeki Türk esnaf ve satıcılardan en yeniler.</p>
                 </div>
                 <a href="{{ url('/ilanlar') }}" class="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400">Tümünü gör <x-heroicon-o-arrow-right class="h-4 w-4" /></a>
@@ -54,7 +54,7 @@
                                 <span class="rounded-full bg-[#e7f7f1] px-2.5 py-1 font-bold text-[#0f9d76] dark:bg-teal-950/60 dark:text-teal-300">Online</span>
                             @endif
                         </div>
-                        <h3 class="mt-2.5 text-xl font-extrabold tracking-tight text-stone-800 group-hover:text-emerald-700 sm:text-2xl dark:text-stone-50 dark:group-hover:text-emerald-400">{{ $vitrinOne->title }}</h3>
+                        <h3 class="mt-2.5 text-xl font-extrabold text-stone-800 group-hover:text-emerald-700 sm:text-2xl dark:text-stone-50 dark:group-hover:text-emerald-400">{{ $vitrinOne->title }}</h3>
                         @if ($vitrinOne->description)
                             <p class="mt-2 line-clamp-2 text-sm font-medium leading-relaxed text-stone-500 dark:text-stone-400">{{ $vitrinOne->description }}</p>
                         @endif

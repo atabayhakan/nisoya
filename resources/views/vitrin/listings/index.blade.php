@@ -94,7 +94,7 @@
                 {{-- Filtre kolonu (mobilde çekmece — alanlar DOM'da kalır, gizlense de gönderilir) --}}
                 <aside :class="filtreAcik ? 'grid' : 'hidden lg:grid'" class="hidden content-start gap-3.5 lg:grid">
                     <div class="flex items-center justify-between">
-                        <h2 class="text-base font-extrabold tracking-tight text-stone-800 dark:text-stone-100">Filtreler</h2>
+                        <h2 class="text-base font-extrabold text-stone-800 dark:text-stone-100">Filtreler</h2>
                         <a href="{{ route('listings.index') }}" class="text-xs font-bold text-emerald-600 hover:underline dark:text-emerald-400">Temizle</a>
                     </div>
 

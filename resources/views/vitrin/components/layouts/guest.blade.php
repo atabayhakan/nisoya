@@ -18,6 +18,9 @@
 
     <x-theme-init />
 
+    <x-layout-fonts />
+
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <x-vitrin-theme />
@@ -29,7 +32,7 @@
                 <span class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-brand dark:text-stone-900">
                     <x-logo-mark class="h-5 w-5" />
                 </span>
-                <span class="text-2xl font-extrabold tracking-tight text-stone-800 dark:text-stone-50">nisoya</span>
+                <span class="text-2xl font-extrabold text-stone-800 dark:text-stone-50">nisoya</span>
             </a>
             @unless (\App\Support\Tema::koyuKilit())
                 <button

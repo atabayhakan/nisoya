@@ -60,7 +60,7 @@
                     <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent"></div>
                     <div class="absolute inset-x-0 bottom-0 {{ $buyuk ? 'p-6 lg:p-7' : 'p-5' }}">
                         @if ($highlight->title)
-                            <h3 class="{{ $buyuk ? 'text-2xl' : 'text-base' }} font-extrabold tracking-tight text-white drop-shadow-md">{{ $highlight->title }}</h3>
+                            <h3 class="{{ $buyuk ? 'text-2xl' : 'text-base' }} font-extrabold text-white drop-shadow-md">{{ $highlight->title }}</h3>
                         @endif
                         @if ($highlight->text)
                             <p class="mt-1 max-w-sm {{ $buyuk ? 'text-sm' : 'text-xs' }} font-medium text-white/90 drop-shadow">{{ $highlight->text }}</p>
@@ -75,7 +75,7 @@
                         </span>
                     @endif
                     @if ($highlight->title)
-                        <h3 class="{{ $buyuk ? 'mt-5 text-2xl' : 'mt-3 text-base' }} font-extrabold tracking-tight">{{ $highlight->title }}</h3>
+                        <h3 class="{{ $buyuk ? 'mt-5 text-2xl' : 'mt-3 text-base' }} font-extrabold ">{{ $highlight->title }}</h3>
                     @endif
                     @if ($highlight->text)
                         <p class="mt-1.5 max-w-xs {{ $buyuk ? 'text-sm' : 'text-xs' }} font-medium text-white/80">{{ $highlight->text }}</p>
@@ -89,7 +89,7 @@
             <span class="grid {{ $buyuk ? 'h-11 w-11' : 'h-9 w-9' }} place-items-center rounded-xl bg-white/15">
                 <x-dynamic-component :component="'heroicon-o-'.$yedekIkon" class="{{ $buyuk ? 'h-6 w-6' : 'h-5 w-5' }}" />
             </span>
-            <h3 class="{{ $buyuk ? 'mt-5 text-2xl' : 'mt-3 text-base' }} font-extrabold tracking-tight">{{ $yedekBaslik }}</h3>
+            <h3 class="{{ $buyuk ? 'mt-5 text-2xl' : 'mt-3 text-base' }} font-extrabold ">{{ $yedekBaslik }}</h3>
             <p class="mt-1.5 max-w-xs {{ $buyuk ? 'text-sm' : 'text-xs' }} font-medium text-white/80">{{ $yedekMetin }}</p>
         </div>
     @endforelse

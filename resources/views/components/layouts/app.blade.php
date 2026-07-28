@@ -15,6 +15,9 @@
          template'i + nisoyaActivateConsent — paylaşılan tek kopya. --}}
     <x-layout-head-scripts />
 
+    <x-layout-fonts />
+
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     {{-- Marka rengi override'ı (admin panelden — Site Yönetimi → İçerik → Görünüm) --}}
@@ -69,7 +72,7 @@
                         <x-logo-mark class="h-5 w-5" />
                     </span>
                 @endif
-                <span class="text-xl font-bold tracking-tight text-stone-900 dark:text-stone-50">{{ setting('genel.site_adi') }}</span>
+                <span class="text-xl font-bold text-stone-900 dark:text-stone-50">{{ setting('genel.site_adi') }}</span>
             </a>
 
             <nav class="hidden items-center gap-6 text-sm font-medium text-stone-600 md:flex dark:text-stone-300">

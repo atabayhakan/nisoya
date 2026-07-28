@@ -11,7 +11,7 @@
                             </span>
                             Nisoya Nabzı
                         </span>
-                        <h2 class="mt-1 text-xl font-extrabold tracking-tight text-stone-800 dark:text-stone-50">{{ $nabizGoal['baslik'] }}: {{ $nabizGoal['mevcut'] }} / {{ $nabizGoal['hedef'] }}</h2>
+                        <h2 class="mt-1 text-xl font-extrabold text-stone-800 dark:text-stone-50">{{ $nabizGoal['baslik'] }}: {{ $nabizGoal['mevcut'] }} / {{ $nabizGoal['hedef'] }}</h2>
                         @if ($nabizGoal['odul'])
                             <p class="mt-1 text-sm font-medium text-stone-600 dark:text-stone-300">{{ $nabizGoal['odul'] }}</p>
                         @endif
