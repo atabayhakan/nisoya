@@ -15,7 +15,15 @@
                 </span>
                 {{-- "2. Tasarım" modunda (bkz. /yonetim Tasarım Modu) başlık Instrument
                      Serif italik ile — 2027 vizyon pilotunun tek somut tipografi izi. --}}
-                <h1 class="mt-5 text-4xl tracking-tight text-stone-900 sm:text-5xl md:text-6xl dark:text-stone-50 {{ \App\Support\Tema::tasarimModu() === 'yeni' ? 'font-serif italic font-normal' : 'font-extrabold' }}">
+                {{-- font-bold (700), font-extrabold (800) DEĞİL: Instrument Sans'ın
+                     800'ü yüklenmiyor, tarayıcı onu sahte kalın olarak çiziyordu —
+                     sitenin en büyük yazısında en görünür yerde. Gerçek 700, sahte
+                     800'den daima daha iyi görünür. Tek bir başlık için ayrı bir
+                     font dosyası indirmek de ziyaret başına ödenecek bir bedeldi.
+                     Ayrıca elle yazılan dar harf aralığı kaldırıldı: 4xl–6xl basamaklarının
+                     harf aralığı artık ölçeğin kendisinde tanımlı (tipografi.css),
+                     elle üstüne yazmak o reçeteyi geçersiz kılıyordu. --}}
+                <h1 class="mt-5 text-4xl text-stone-900 sm:text-5xl md:text-6xl dark:text-stone-50 {{ \App\Support\Tema::tasarimModu() === 'yeni' ? 'font-serif italic font-normal' : 'font-bold' }}">
                     {{ setting('home.hero_satir1') }}<br>
                     <span class="text-emerald-600 dark:text-emerald-400">{{ setting('home.hero_vurgu') }}</span> {{ setting('home.hero_satir2') }}
                 </h1>

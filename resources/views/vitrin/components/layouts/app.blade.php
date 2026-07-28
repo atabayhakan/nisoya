@@ -17,6 +17,9 @@
 
     <x-layout-head-scripts />
 
+    <x-layout-fonts />
+
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     {{-- Vitrin palet/tipografi motoru — klasikteki brand-theme + tasarim-theme
@@ -56,7 +59,7 @@
                         <x-logo-mark class="h-5 w-5" />
                     </span>
                 @endif
-                <span class="text-xl font-extrabold tracking-tight text-stone-800 dark:text-stone-50">{{ Str::lower(setting('genel.site_adi')) }}</span>
+                <span class="text-xl font-extrabold text-stone-800 dark:text-stone-50">{{ Str::lower(setting('genel.site_adi')) }}</span>
             </a>
 
             <nav class="hidden items-center gap-6 text-sm font-semibold text-stone-600 md:flex dark:text-stone-300">
@@ -141,7 +144,7 @@
                             <x-logo-mark class="h-4 w-4" />
                         </span>
                     @endif
-                    <span class="text-lg font-extrabold tracking-tight text-stone-800 dark:text-stone-50">{{ Str::lower(setting('genel.site_adi')) }}</span>
+                    <span class="text-lg font-extrabold text-stone-800 dark:text-stone-50">{{ Str::lower(setting('genel.site_adi')) }}</span>
                 </div>
                 <p class="mt-3 text-sm leading-relaxed text-stone-500 dark:text-stone-400">{{ setting('footer.aciklama') }}</p>
                 @if (setting('footer.sosyal_instagram') || setting('footer.sosyal_facebook') || setting('footer.sosyal_whatsapp'))

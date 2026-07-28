@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $event->title }} — QR Masa Kartı</title>
     <meta name="robots" content="noindex, nofollow">
+    <x-layout-fonts />
+
     @vite(['resources/css/app.css'])
     <style>
         @media print {

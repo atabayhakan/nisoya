@@ -13,6 +13,9 @@
 
     <x-theme-init />
 
+    <x-layout-fonts />
+
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-stone-50 text-stone-800 antialiased dark:bg-stone-950 dark:text-stone-200">
@@ -22,7 +25,7 @@
                 <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900">
                     <x-logo-mark class="h-5 w-5" />
                 </span>
-                <span class="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50">Nisoya</span>
+                <span class="text-2xl font-bold text-stone-900 dark:text-stone-50">Nisoya</span>
             </a>
             @unless (\App\Support\Tema::koyuKilit())
                 <button

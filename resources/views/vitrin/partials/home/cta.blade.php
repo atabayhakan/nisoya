@@ -6,7 +6,7 @@
                 <div class="relative grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
                     <div>
                         <span class="inline-flex rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-300">Satıcı ol</span>
-                        <h2 class="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl" style="text-wrap: pretty">{{ setting('home.cta_baslik') }}</h2>
+                        <h2 class="mt-3 text-2xl font-extrabold sm:text-3xl" style="text-wrap: pretty">{{ setting('home.cta_baslik') }}</h2>
                         <p class="mt-2 max-w-lg text-sm font-medium leading-relaxed text-white/70">{{ setting('home.cta_metin') }}</p>
                         <div class="mt-6 flex flex-wrap gap-3">
                             <a href="{{ url('/panel/ilan/yeni') }}" class="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-stone-800 transition hover:bg-stone-100">
