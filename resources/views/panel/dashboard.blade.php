@@ -1,81 +1,59 @@
+{{--
+    KULLANICI PANELİ (/panel)
+
+    Bu sayfa tek bir soruya göre sıralanır: "benden bir şey bekleniyor mu?"
+
+    Eskiden 14 eşit ağırlıklı kart vardı, hiçbirinde sayı yoktu ve rota
+    `Route::view` olduğu için sayfaya veri bile geçmiyordu. Artık:
+      K1 Bekleyenler — yalnız EYLEM gerektirenler, sabit kanonik sırada
+      K2 Durumun     — gerçek rakamlar; değeri 0 olan kutu BASILMAZ
+      K3 Bölümler    — her zaman görünür dizin (rol kapısı YOK, modül kapısı VAR)
+      K4 Başlangıç   — yalnız K1 ve K2'nin İKİSİ de boşsa
+      K5 Hesap       — çıkış (mobilde hesaptan çıkmanın tek yolu)
+
+    Hiçbir partial kendi sorgusunu atmaz; her şey $sinyaller içinde gelir
+    (bkz. App\Support\PanelSinyalleri — azaltma defteri orada).
+--}}
 <x-layouts.app title="Panelim — Nisoya">
     @php
         $user = auth()->user();
-        $cards = [
-            ['ad' => 'İlanlarım', 'aciklama' => 'İlanlarını yönet', 'ikon' => 'clipboard-document-list', 'url' => '/panel/ilanlarim'],
-            ['ad' => 'Mesajlar', 'aciklama' => 'Gelen mesajların', 'ikon' => 'chat-bubble-left-right', 'url' => '/panel/mesajlar'],
-            ['ad' => 'Bildirimler', 'aciklama' => 'Tüm bildirimlerin', 'ikon' => 'bell', 'url' => '/panel/bildirimler'],
-            ['ad' => 'Aramalarım', 'aciklama' => 'Kayıtlı aramalar', 'ikon' => 'bookmark', 'url' => '/panel/aramalarim'],
-            ['ad' => 'Favorilerim', 'aciklama' => 'Kaydettiğin ilanlar', 'ikon' => 'heart', 'url' => '/panel/favorilerim'],
-            ['ad' => 'İş İlanlarım', 'aciklama' => 'İşveren: ilan ver & yönet', 'ikon' => 'briefcase', 'url' => '/panel/is-ilanlarim'],
-            ['ad' => 'Başvurularım', 'aciklama' => 'Başvurduğun işler', 'ikon' => 'document-text', 'url' => '/panel/basvurularim'],
-            ['ad' => 'İş Yer İmlerim', 'aciklama' => 'Kaydettiğin iş ilanları', 'ikon' => 'bookmark', 'url' => '/panel/is-yer-imlerim'],
-            ['ad' => 'İş Aramalarım', 'aciklama' => 'Kayıtlı iş uyarıları', 'ikon' => 'bell', 'url' => '/panel/is-aramalarim'],
-            ['ad' => 'Şirket Profili', 'aciklama' => 'İşveren profilin', 'ikon' => 'building-office-2', 'url' => '/panel/sirket'],
-            ['ad' => 'Profilim', 'aciklama' => 'Bilgilerini düzenle', 'ikon' => 'user-circle', 'url' => '/panel/profil'],
-            ['ad' => 'Davetiyelerim', 'aciklama' => 'Düğün, sünnet, iftar... davetiye oluştur', 'ikon' => 'envelope-open', 'url' => '/panel/etkinlikler'],
-            ['ad' => 'Arkadaşını Davet Et', 'aciklama' => 'Davet bağlantını paylaş', 'ikon' => 'gift', 'url' => '/panel/davet'],
-            ['ad' => 'İlanlara Göz At', 'aciklama' => 'Hizmet ara', 'ikon' => 'magnifying-glass', 'url' => '/ilanlar'],
-        ];
     @endphp
 
     <div class="mx-auto max-w-6xl px-4 py-10">
-        @if (request('verified'))
-            <div class="mb-6 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-                ✓ E-posta adresin doğrulandı. Aramıza hoş geldin!
-            </div>
-        @endif
-
         @if (session('status'))
-            {{-- Flash bilgi (ör. yönetim paneline yetkisiz erişim yönlendirmesi). --}}
             <div class="mb-6 rounded-lg bg-stone-100 px-4 py-3 text-sm text-stone-700 dark:bg-stone-800 dark:text-stone-200">
                 {{ session('status') }}
             </div>
         @endif
 
-        <div class="flex flex-wrap items-center justify-between gap-4">
-            <div>
-                <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Merhaba, {{ $user->name }} 👋</h1>
-                <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
-                    @if ($user->city){{ $user->city }}, @endif{{ $user->country_code }} · Panelin hazır.
-                </p>
-            </div>
-            <a href="{{ url('/panel/ilan/yeni') }}" class="rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
-                + Yeni İlan Ver
-            </a>
-        </div>
-
-        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            @foreach ($cards as $c)
-                <a href="{{ url($c['url']) }}" class="group flex items-start gap-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-brand dark:border-stone-800 dark:bg-stone-900 dark:shadow-none dark:hover:border-emerald-700">
-                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600 transition group-hover:bg-emerald-600 group-hover:text-white dark:bg-emerald-900/40 dark:text-emerald-300 dark:group-hover:bg-emerald-500 dark:group-hover:text-stone-900">
-                        <x-dynamic-component :component="'heroicon-o-'.$c['ikon']" class="h-5 w-5" />
-                    </span>
-                    <span>
-                        <span class="block font-semibold text-stone-800 dark:text-stone-100">{{ $c['ad'] }}</span>
-                        <span class="block text-sm text-stone-500 dark:text-stone-400">{{ $c['aciklama'] }}</span>
-                    </span>
-                </a>
-            @endforeach
-        </div>
-
-        <p class="mt-8 text-sm text-stone-400 dark:text-stone-500">
-            Not: Panel bölümleri (ilan ekleme, mesajlar, favoriler, profil) sonraki adımlarda devreye girecek.
+        {{-- K0 · Selamlama. Sağdaki "+ Yeni İlan Ver" butonu KALDIRILDI:
+             aynı eylem üst çubukta ve mobil FAB'da zaten sabit duruyor. --}}
+        <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Merhaba, {{ $user->name }} 👋</h1>
+        <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
+            @if ($user->city){{ $user->city }}, @endif{{ $user->country_code }}
         </p>
 
-        {{-- Çıkış Yap: masaüstü header'da (md+) zaten var, ama mobilde alt
-             sekme çubuğuna taşınacağı belirtilip hiç eklenmemişti — mobil
-             kullanıcının hesaptan çıkacak hiçbir yolu yoktu (2026-07-17
-             kullanıcı raporu). "Panelim" sekmesi doğrudan bu sayfaya
-             indiği için en garantili keşfedilebilir yer burası. --}}
-        <div class="mt-6 border-t border-stone-200 pt-6 dark:border-stone-800">
+        @include('panel.partials.bekleyenler', ['s' => $sinyaller])
+        @include('panel.partials.durumun', ['s' => $sinyaller])
+
+        @if ($sinyaller->bosDurum())
+            @include('panel.partials.baslangic', ['s' => $sinyaller, 'user' => $user])
+        @endif
+
+        @include('panel.partials.bolumler', ['s' => $sinyaller])
+
+        {{-- K5 · Hesap. Çıkış formu mobilde hesaptan çıkmanın TEK yolu —
+             düşük vurgulu ama her zaman erişilebilir. --}}
+        <div class="mt-10 flex flex-wrap items-center gap-4 border-t border-stone-200 pt-6 dark:border-stone-800">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-xl border border-stone-200 px-4 py-3 text-sm font-medium text-stone-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-stone-800 dark:text-stone-400 dark:hover:border-red-900 dark:hover:bg-red-950/30 dark:hover:text-red-400">
-                    <x-heroicon-o-arrow-right-start-on-rectangle class="h-4 w-4" />
+                <button type="submit" class="min-h-11 text-sm font-medium text-stone-500 hover:text-stone-800 md:min-h-0 dark:text-stone-400 dark:hover:text-stone-100">
                     Çıkış Yap
                 </button>
             </form>
+            <a href="{{ url('/panel/profil') }}" class="min-h-11 text-sm text-stone-400 hover:text-stone-700 md:min-h-0 dark:text-stone-500 dark:hover:text-stone-200">
+                Profil ayarları
+            </a>
         </div>
     </div>
 </x-layouts.app>
