@@ -269,6 +269,23 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
     protected ?array $trustProfileCache = null;
 
     /**
+     * Okunmamış mesaj/bildirim sayıları — istek başına BİR KEZ.
+     *
+     * Bu iki sayı zaten her sayfa yüklemesinde koşuyordu: mesaj sayısı mobil
+     * sekme çubuğunda, bildirim sayısı header zilinde. Panel de aynı sayılara
+     * ihtiyaç duyunca üçüncü ve dördüncü kez sorgulanacaktı; tek kaynağa
+     * bağlanınca panelin bu iki sinyali SIFIR ek sorguya mal oluyor.
+     *
+     * ÖRNEK property, static DEĞİL: static olsaydı PHP sürecinde istekler
+     * arasında sıfırlanmaz, feature testinde ikinci istek ilkinin sayısını
+     * okur ve sahte yeşil üretirdi. auth()->user() istek boyunca aynı örneği
+     * döndürdüğü için örnek property doğru davranışı verir.
+     */
+    protected ?int $okunmamisMesajCache = null;
+
+    protected ?int $okunmamisBildirimCache = null;
+
+    /**
      * Satıcının HESAPLANMIŞ güven profili — tamamen objektif, taklit edilemez
      * sinyallerden türetilir (admin'in keyfî `is_verified` boolean'ından farklı,
      * bkz. TrustTier). Tek bir toplu sorguyla değerlendirme sayısı/ortalamasını
@@ -277,6 +294,27 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
      *
      * @return array{tier: TrustTier, review_count: int, avg: float, age_days: int, email_verified: bool, profile_complete: bool}
      */
+    /**
+     * Okunmamış mesaj sayısı.
+     *
+     * Tanım MessageController@show ile BİREBİR aynı olmak zorundur — okundu
+     * işaretlemesini yapan yer orası; tanımlar ayrışırsa rozet hiç sönmez.
+     */
+    public function okunmamisMesajSayisi(): int
+    {
+        return $this->okunmamisMesajCache ??= Message::query()
+            ->where('sender_id', '!=', $this->id)
+            ->whereNull('read_at')
+            ->whereHas('conversation', fn ($q) => $q->where('user_one_id', $this->id)->orWhere('user_two_id', $this->id))
+            ->count();
+    }
+
+    /** Okunmamış bildirim sayısı (header zili + panel aynı kaynaktan okur). */
+    public function okunmamisBildirimSayisi(): int
+    {
+        return $this->okunmamisBildirimCache ??= $this->unreadNotifications()->count();
+    }
+
     public function trustProfile(): array
     {
         if ($this->trustProfileCache !== null) {

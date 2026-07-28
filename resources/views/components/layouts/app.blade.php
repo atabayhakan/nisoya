@@ -109,7 +109,7 @@
                      mobilde alt sekme çubuğuna taşındı (bkz. x-mobile-tab-bar) —
                      burada yalnızca masaüstünde (md+) görünür. --}}
                 @auth
-                    @php($unreadCount = auth()->user()->unreadNotifications()->count())
+                    @php($unreadCount = auth()->user()->okunmamisBildirimSayisi())
                     <a href="{{ route('panel.notifications.index') }}" class="relative hidden rounded-lg p-2 text-stone-600 hover:bg-stone-100 md:inline-flex dark:text-stone-300 dark:hover:bg-stone-800" title="Bildirimler">
                         {{-- Faz H4: okunmamış varsa sayfa yüklenince zil bir kez "çalar" (bkz. app.css nisoya-bell-ring) --}}
                         <x-heroicon-o-bell class="h-5 w-5 {{ $unreadCount ? 'animate-[nisoya-bell-ring_0.6s_ease-in-out_1]' : '' }}" />

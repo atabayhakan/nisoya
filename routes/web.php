@@ -32,6 +32,7 @@ use App\Http\Controllers\NabizController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PagesController;
+use App\Http\Controllers\PanelController;
 use App\Http\Controllers\PaymentLinkController;
 use App\Http\Controllers\PortfolioItemController;
 use App\Http\Controllers\ProfileController;
@@ -135,7 +136,7 @@ Route::view('/offline', 'offline')->name('offline');
 
 // Üye paneli (giriş + e-posta doğrulaması gerekli)
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('/panel', 'panel.dashboard')->name('dashboard');
+    Route::get('/panel', PanelController::class)->name('dashboard');
 
     // İlan yönetimi
     Route::get('/panel/ilanlarim', [ListingController::class, 'index'])->name('panel.listings.index');

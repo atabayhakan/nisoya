@@ -4,13 +4,9 @@
     // Mesajlar sekmesindeki rozet: karşı taraftan gelen, henüz okunmamış
     // mesaj sayısı (bkz. App\Http\Controllers\MessageController@show — aynı
     // "sender != ben + read_at null" tanımı orada tek tek okundu işaretlenir).
-    $unreadMessages = auth()->check()
-        ? \App\Models\Message::query()
-            ->where('sender_id', '!=', auth()->id())
-            ->whereNull('read_at')
-            ->whereHas('conversation', fn ($q) => $q->where('user_one_id', auth()->id())->orWhere('user_two_id', auth()->id()))
-            ->count()
-        : 0;
+    // Tek kaynak: User::okunmamisMesajSayisi() istek başına bir kez sorgular.
+    // Panel de aynı metodu çağırır → panelin bu sinyali 0 ek sorguya mal olur.
+    $unreadMessages = auth()->user()?->okunmamisMesajSayisi() ?? 0;
 @endphp
 
 {{-- Faz H3: native-app hissi veren sabit alt sekme çubuğu. Panel sayfaları
