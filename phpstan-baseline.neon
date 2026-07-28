@@ -25,12 +25,6 @@ parameters:
 			path: app/Filament/Resources/ListingImages/Pages/ViewListingImage.php
 
 		-
-			message: '#^Call to static method make\(\) on an unknown class Filament\\Infolists\\Components\\Section\.$#'
-			identifier: class.notFound
-			count: 4
-			path: app/Filament/Resources/Listings/Infolists/ListingImageInfolist.php
-
-		-
 			message: '#^Cannot access property \$slug on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
 			identifier: property.nonObject
 			count: 1

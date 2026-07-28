@@ -5,8 +5,12 @@ namespace App\Filament\Resources\Listings\Infolists;
 use App\Models\ListingImage;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\KeyValueEntry;
-use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+// Section, Filament 5'te Infolists'te DEĞİL Schemas'ta yaşar; entry'lerin
+// (ImageEntry/KeyValueEntry/TextEntry) aksine yerleşim bileşenidir. Yanlış
+// namespace bu sayfayı canlıda 500'e düşürüyordu ve hata phpstan-baseline'da
+// class.notFound olarak bastırıldığı için CI hiç uyarmadı.
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 /**
@@ -98,7 +102,12 @@ class ListingImageInfolist
                             ->columnSpanFull(),
                     ])
                     ->icon('heroicon-o-finger-print')
-                    ->color('gray'),
+                    // Section'da `color()` YOKTUR (o TextEntry gibi entry'lerin
+                    // metodu); yerleşim bileşeninin renklendirdiği şey başlık
+                    // ikonudur → HasIconColor::iconColor(). Yanlış import
+                    // düzeltilince ortaya çıkan ikinci hataydı: sayfa yine 500
+                    // veriyordu, yani tek satırlık düzeltme yetmiyordu.
+                    ->iconColor('gray'),
 
                 Section::make('Ham Veri (JSON)')
                     ->collapsible()
