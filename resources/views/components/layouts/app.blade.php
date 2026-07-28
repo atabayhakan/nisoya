@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     {{-- SEO/og/favicon/manifest meta'ları — paylaşılan tek kopya (Vitrin P0
          ekstraksiyonu; vitrin iskeleti de aynı bileşeni kullanacak). --}}
-    <x-layout-head-meta :title="$title ?? null" :description="$description ?? null" :og-image="$ogImage ?? null" />
+    <x-layout-head-meta :title="$title ?? null" :description="$description ?? null" :og-image="$ogImage ?? null" :noindex="$noindex ?? false" />
 
     {{-- Tema başlatma (FOUC önleme: head içinde inline çalışmalı) --}}
     <x-theme-init />

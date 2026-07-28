@@ -129,6 +129,19 @@ class BrowseController extends Controller
             'listings' => $listings,
             'kategoriSayaclari' => $kategoriSayaclari,
             'fiyatDagilimi' => $fiyatDagilimi,
+            // BOŞ SONUÇ SAYFASI İNDEKSLENMEZ.
+            //
+            // Sitede 97 kategori sayfasının 93'ünde sıfır ilan vardı ve hepsi
+            // indekslenebilir durumdaydı. İçeriği olmayan yüzlerce benzer sayfa
+            // "thin content" desenidir ve değerlendirme site geneline yansır.
+            // Sitemap'ten çıkarmak tek başına yetmez — arama motoru bu sayfalara
+            // iç bağlantılardan da ulaşır; asıl kapı sayfanın kendi robots
+            // etiketidir.
+            //
+            // Yalnız KATEGORİ sayfaları için: filtreli aramaların (?q=, ?sehir=)
+            // boş dönmesi normaldir ve zaten indekslenmeleri istenmez; burada
+            // ölçüt "kalıcı bir kategori sayfası bugün boş mu".
+            'noindex' => $activeCategory !== null && $listings->total() === 0,
             // children eager load: Vitrin filtre kolonu kök kategori sayacına
             // alt kategorileri de topluyor — lazy kalırsa kategori başına bir
             // sorgu (N+1) doğar.

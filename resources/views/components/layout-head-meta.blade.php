@@ -1,4 +1,4 @@
-@props(['title' => null, 'description' => null, 'ogImage' => null])
+@props(['title' => null, 'description' => null, 'ogImage' => null, 'noindex' => false])
 {{-- PAYLAŞILAN SÖZLEŞME BİLEŞENİ (Vitrin P0): SEO/og/canonical/favicon/manifest
      meta'larının TEK kopyası. Hem klasik iskelet (layouts/app) hem gelecekteki
      vitrin iskeleti bunu kullanır — iki iskelet arasında meta sürüklenmesi
@@ -14,6 +14,15 @@
 @endphp
 @if (setting('seo.robots_index', '1') === '0')
     <meta name="robots" content="noindex,nofollow">
+@elseif ($noindex)
+    {{-- SAYFA BAZLI noindex — site geneli ayardan bağımsız.
+         İçeriği olmayan bir liste sayfası (ilanı kalmamış kategori) indekse
+         girerse "thin content" sayılır ve bu değerlendirme SİTENİN TAMAMINA
+         yansır; dolu sayfaların da sıralaması düşer. `follow` bilinçli:
+         sayfayı indeksleme ama üzerindeki bağlantıları izlemeye devam et,
+         böylece gezinme akışı ve dolu sayfaların keşfi bozulmaz.
+         Sayfa SİLİNMEZ — ilan girilince kendiliğinden indekslenebilir olur. --}}
+    <meta name="robots" content="noindex,follow">
 @endif
 <title>{{ $seoTitle }}</title>
 <meta name="description" content="{{ $seoDescription }}">

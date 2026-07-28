@@ -91,6 +91,64 @@ class NabizService
     }
 
     /**
+     * Bir kullanıcının kendi şehrindeki elçilik durumu — davet sayfasında
+     * gösterilir.
+     *
+     * NEDEN VAR: sitede iki ayrı tanınma yüzeyi vardı ve birbirlerinden
+     * habersizdiler. `/panel/davet` davet sayısını gösteriyor ama bu sayının
+     * bir şeye yaradığını söylemiyordu; `/nabiz` "şehrinin elçisi ol" diyor
+     * ama davet sayfasına hiç bağlanmıyordu. Kullanıcının davet etmesi için
+     * bir sebep, tam davet edeceği ekranda görünmüyordu.
+     *
+     * Yeni bir ödül katmanı EKLEMEK yerine var olanı görünür kılıyoruz: aylık
+     * davet sayısı zaten `cityAmbassadors()` ölçütü, burada aynı ölçüt tek
+     * kullanıcı için hesaplanıyor.
+     *
+     * Şehri olmayan kullanıcı için `sehir` null döner — elçilik şehir başına
+     * olduğu için o kullanıcı yarışta değildir ve arayüz bunu bilmelidir.
+     *
+     * @return array{sehir: ?string, benimBuAy: int, lider: int, elciMiyim: bool, fark: int}
+     */
+    public function sehirElciligiDurumu(User $user): array
+    {
+        $sehir = trim((string) $user->city);
+
+        $benimBuAy = User::query()
+            ->where('referred_by', $user->id)
+            ->where('created_at', '>=', now()->startOfMonth())
+            ->count();
+
+        if ($sehir === '') {
+            return ['sehir' => null, 'benimBuAy' => $benimBuAy, 'lider' => 0, 'elciMiyim' => false, 'fark' => 0];
+        }
+
+        // Aynı şehirdeki en yüksek aylık davet sayısı. cityAmbassadors() ile
+        // aynı ölçüt; orada şehir başına tek temsilci seçilir, burada yalnız
+        // eşiği öğreniyoruz. Cache YOK: bu sayfa kullanıcıya özeldir ve
+        // kullanıcı kendi davetinin etkisini ANINDA görmeli.
+        // Cast PARANTEZ İÇİNDE: `(int) ... ?? 0` yazımında cast `??`'den önce
+        // bağlanır, sol taraf hiç null olamaz ve `?? 0` ölü koda dönüşür —
+        // şehirde hiç davet yoksa value() null döner ve (int) null = 0 olur,
+        // yani sonuç tesadüfen doğrudur ama ifade yanıltıcıdır.
+        $lider = (int) (User::query()
+            ->join('users as r', 'r.referred_by', '=', 'users.id')
+            ->whereRaw('LOWER(TRIM(users.city)) = ?', [mb_strtolower($sehir)])
+            ->where('r.created_at', '>=', now()->startOfMonth())
+            ->groupBy('users.id')
+            ->selectRaw('COUNT(r.id) as adet')
+            ->orderByDesc('adet')
+            ->value('adet') ?? 0);
+
+        return [
+            'sehir' => $sehir,
+            'benimBuAy' => $benimBuAy,
+            'lider' => $lider,
+            'elciMiyim' => $benimBuAy > 0 && $benimBuAy >= $lider,
+            'fark' => max(0, $lider - $benimBuAy) + 1,
+        ];
+    }
+
+    /**
      * "Nabız Haritası" (Faz İ2, "2. Tasarım" pilotu) için ülke başına aktif
      * ilan sayısı — ülkenin gerçek enlem/boylamı basit bir eşdik-açılı
      * (equirectangular) izdüşümle 0-1 aralığında x/y'ye çevrilir. Süs değil,

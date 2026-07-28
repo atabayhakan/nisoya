@@ -1,4 +1,4 @@
-<x-layouts.app :title="($activeCategory?->name ?? 'Tüm İlanlar').' — Nisoya'">
+<x-layouts.app :title="($activeCategory?->name ?? 'Tüm İlanlar').' — Nisoya'" :noindex="$noindex ?? false">
     {{-- VİTRİN İLAN LİSTESİ (P2) — klasik listings/index'in aynı-ad override'ı.
          Korunan sözleşmeler: GET formu route('listings.index')'e gider ve alan
          adları birebir aynıdır (q, tip, kategori, ulke, sehir, min, max,

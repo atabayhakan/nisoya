@@ -38,6 +38,33 @@
             </p>
         </div>
 
+        {{-- ŞEHİR ELÇİLİĞİ BAĞI.
+             Sitede iki ayrı tanınma yüzeyi vardı ve birbirinden habersizdi:
+             burası davet sayısını gösteriyordu ama bu sayının bir şeye
+             yaradığını söylemiyordu; /nabiz "şehrinin elçisi ol" diyordu ama
+             buraya hiç bağlanmıyordu. Yani davet etmek için sebep, tam davet
+             edilecek ekranda görünmüyordu. Yeni bir rozet eklemeden önce var
+             olan katmanı görünür kılmak. --}}
+        <a href="{{ route('nabiz') }}"
+           class="mt-6 flex min-h-11 items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 transition hover:border-emerald-300 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:hover:border-emerald-700">
+            <span class="relative flex h-2 w-2 shrink-0" aria-hidden="true">
+                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+            </span>
+            <span class="min-w-0 flex-1 text-sm text-stone-700 dark:text-stone-300">
+                @if ($elcilik['sehir'] === null)
+                    Profiline şehir eklersen <strong class="font-semibold">şehrinin elçisi</strong> olma yarışına girersin.
+                @elseif ($elcilik['elciMiyim'])
+                    Bu ay <strong class="font-semibold">{{ $elcilik['benimBuAy'] }} davetle {{ $elcilik['sehir'] }} elçisisin.</strong> Nabız sayfasında görün.
+                @elseif ($elcilik['lider'] === 0)
+                    Bu ay {{ $elcilik['sehir'] }}'da henüz kimse davet etmemiş — <strong class="font-semibold">tek davetle şehrinin ilk elçisi</strong> olabilirsin.
+                @else
+                    Bu ay {{ $elcilik['benimBuAy'] }} davetin var. <strong class="font-semibold">{{ $elcilik['fark'] }} davet daha</strong> ile {{ $elcilik['sehir'] }} elçisi olabilirsin.
+                @endif
+            </span>
+            <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-stone-600 dark:text-stone-400" />
+        </a>
+
         {{-- Davet istatistiği --}}
         <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
             <div class="flex items-center justify-between">
