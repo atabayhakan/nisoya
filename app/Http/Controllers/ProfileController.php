@@ -22,13 +22,43 @@ class ProfileController extends Controller
             ->latest()
             ->paginate(12);
 
-        $reviews = $user->reviewsReceived()->where('status', 'yayinda')->with('reviewer')->latest()->get();
+        // DEĞERLENDİRMELER SAYFALANIR — ama üç şey AYRI sorgudan gelmek zorunda.
+        //
+        // Önceden hepsi sınırsız `->get()` ile tek koleksiyondan türetiliyordu:
+        // ortalama, toplam sayı ve "kullanıcının kendi yorumu". İlanlar zaten
+        // 12'şer sayfalanıyordu, değerlendirmeler sayfalanmıyordu — 200
+        // değerlendirmesi olan bir profil hepsini birden çekiyordu.
+        //
+        // Düz `paginate()` eklemek İKİ SESSİZ BOZULMA üretirdi:
+        //   1. avg/count yalnız GÖRÜNEN sayfadan hesaplanır → 4.8 olan puan
+        //      ikinci sayfada bambaşka çıkar. Rozet eşikleri buna bakıyor.
+        //   2. `firstWhere('reviewer_id', ...)` yalnız görünen sayfada arar →
+        //      kullanıcının kendi yorumu 2. sayfadaysa form "Güncelle" yerine
+        //      "Gönder" moduna düşer ve ikinci bir kayıt denemesi yapılır.
+        //
+        // Bu yüzden ortalama/sayı ayrı bir toplama sorgusundan, kendi yorumu da
+        // ayrı bir sorgudan geliyor (User::trustProfile aynı deseni kullanıyor).
+        $yayindaki = $user->reviewsReceived()->where('status', 'yayinda');
+
+        $reviews = (clone $yayindaki)
+            ->with('reviewer')
+            ->latest()
+            // Paginator ADLANDIRILDI: adlandırılmazsa ilanlarla aynı `page`
+            // parametresini paylaşır ve yorum sayfasını çevirmek ilan listesini
+            // de kaydırır (ilanlar varsayılan `page`'i kullanıyor).
+            ->paginate(10, ['*'], 'yorum');
+
+        $ozet = (clone $yayindaki)
+            ->selectRaw('COUNT(*) as adet, AVG(rating) as ortalama')
+            ->first();
+
         $rating = [
-            'avg' => round((float) $reviews->avg('rating'), 1),
-            'count' => $reviews->count(),
+            'avg' => round((float) ($ozet->ortalama ?? 0), 1),
+            'count' => (int) ($ozet->adet ?? 0),
         ];
+
         $myReview = auth()->check()
-            ? $reviews->firstWhere('reviewer_id', auth()->id())
+            ? (clone $yayindaki)->where('reviewer_id', auth()->id())->first()
             : null;
         // Değerlendirme yalnızca daha önce iletişime geçmiş (mesajlaşmış) kullanıcılar
         // için açılır — bkz. ReviewController::store().
