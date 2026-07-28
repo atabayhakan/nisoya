@@ -85,8 +85,8 @@
                             @else
                                 <video preload="metadata" class="aspect-square w-full object-cover" src="{{ Storage::disk(\App\Models\EventMedia::DISK)->url($item->path) }}"></video>
                             @endif
-                            <div class="truncate px-1.5 pt-1 text-[10px] text-stone-500 dark:text-stone-400">{{ $item->uploaderName() }}</div>
-                            <div class="flex items-center justify-between px-1.5 pb-1.5 pt-0.5 text-[11px]">
+                            <div class="truncate px-1.5 pt-1 text-2xs text-stone-500 dark:text-stone-400">{{ $item->uploaderName() }}</div>
+                            <div class="flex items-center justify-between px-1.5 pb-1.5 pt-0.5 text-2xs">
                                 <form method="POST" action="{{ route('panel.events.media.approve', [$event, $item]) }}">
                                     @csrf
                                     <button type="submit" class="font-semibold text-emerald-700 hover:underline dark:text-emerald-400">Onayla</button>

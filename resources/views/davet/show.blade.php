@@ -159,7 +159,7 @@
                         <input name="files[]" type="file" multiple required accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
                                class="max-w-xs text-xs opacity-80 file:mr-2 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-2 file:text-xs file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:file:bg-emerald-900/40 dark:file:text-emerald-300">
                         <button type="submit" class="rounded-xl px-4 py-2 text-sm font-semibold transition {{ $theme['button'] }}">{{ __('davet.paylas') }}</button>
-                        <p class="w-full text-center text-[11px] opacity-50">{{ __('davet.yukleme_kurali') }}</p>
+                        <p class="w-full text-center text-2xs opacity-50">{{ __('davet.yukleme_kurali') }}</p>
                     </form>
                 @else
                     <p class="mt-4 rounded-xl bg-stone-100 px-4 py-3 text-center text-sm text-stone-600 dark:bg-stone-800 dark:text-stone-300">
@@ -184,10 +184,10 @@
                                 @endif
 
                                 @if ($item->status === 'beklemede')
-                                    <span class="absolute left-1.5 top-1.5 rounded bg-amber-500/90 px-1.5 py-0.5 text-[10px] font-semibold text-white">{{ __('davet.onay_bekliyor') }}</span>
+                                    <span class="absolute left-1.5 top-1.5 rounded bg-amber-500/90 px-1.5 py-0.5 text-2xs font-semibold text-white">{{ __('davet.onay_bekliyor') }}</span>
                                 @endif
 
-                                <figcaption class="flex items-center justify-between gap-1 px-2 py-1.5 text-[11px] opacity-70">
+                                <figcaption class="flex items-center justify-between gap-1 px-2 py-1.5 text-2xs opacity-70">
                                     <span class="truncate">{{ $item->event_guest_id ? $item->uploaderName() : __('davet.ev_sahibi') }}</span>
                                     @if ($isHost || ($myGuest && $item->event_guest_id === $myGuest->id))
                                         <form method="POST" action="{{ route('davet.media.destroy', [$event->token, $item]) }}"

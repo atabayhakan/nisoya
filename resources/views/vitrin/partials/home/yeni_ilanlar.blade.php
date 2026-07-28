@@ -40,7 +40,7 @@
                             </div>
                         @endif
                         @if ($vitrinOne->isCurrentlyFeatured())
-                            <span class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-stone-800 px-2.5 py-1.5 text-[10.5px] font-bold uppercase tracking-wide text-white dark:bg-stone-950">
+                            <span class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-stone-800 px-2.5 py-1.5 text-2xs font-bold uppercase tracking-wide text-white dark:bg-stone-950">
                                 <x-heroicon-s-star class="h-3 w-3 text-amber-400" /> Öne çıkan
                             </span>
                         @endif
@@ -67,7 +67,7 @@
                                 @endif
                             </div>
                             <div class="flex items-center gap-2 text-xs font-medium text-stone-500 dark:text-stone-400">
-                                <x-avatar :user="$vitrinOne->user" size="h-7 w-7" text="text-[10px]" />
+                                <x-avatar :user="$vitrinOne->user" size="h-7 w-7" text="text-2xs" />
                                 <span class="max-w-[140px] truncate">{{ $vitrinOne->user->name }}</span>
                                 @if ($vitrinOne->country)<span>· {{ $vitrinOne->country->emoji }} {{ $vitrinOne->city ?: $vitrinOne->country->name_tr }}</span>@endif
                             </div>

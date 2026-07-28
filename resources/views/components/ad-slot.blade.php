@@ -37,7 +37,7 @@
             data-ad-format="{{ $format }}"
             data-full-width-responsive="{{ $responsive ? 'true' : 'false' }}"
         ></ins>
-        <div class="border-t border-stone-200 bg-white px-3 py-1 text-center text-[10px] uppercase tracking-wider text-stone-400 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-500">
+        <div class="border-t border-stone-200 bg-white px-3 py-1 text-center text-2xs uppercase tracking-wider text-stone-400 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-500">
             Reklam
         </div>
     </div>

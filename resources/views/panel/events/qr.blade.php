@@ -37,7 +37,7 @@
             <p class="mt-6 text-lg font-semibold text-stone-800">📸 Fotoğraflarını bizimle paylaş!</p>
             <p class="mt-1 text-sm text-stone-500">QR kodu telefonunla okut,<br>çektiğin kareleri anı akışına yükle.</p>
 
-            <p class="mt-6 text-[11px] uppercase tracking-widest text-stone-300">nisoya.com</p>
+            <p class="mt-6 text-2xs uppercase tracking-widest text-stone-300">nisoya.com</p>
         </div>
     </div>
 </body>

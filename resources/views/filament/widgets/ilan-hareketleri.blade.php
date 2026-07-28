@@ -36,7 +36,7 @@
                                      title="{{ $ay['kapanan'] }} kapanan"></div>
                             </div>
                         </div>
-                        <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400">{{ $ay['etiket'] }}</span>
+                        <span class="text-2xs font-medium text-gray-500 dark:text-gray-400">{{ $ay['etiket'] }}</span>
                     </div>
                 @endforeach
             </div>

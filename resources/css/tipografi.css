@@ -1,0 +1,42 @@
+/* ==========================================================================
+   NİSOYA TİPOGRAFİ TOKEN'LARI — TEK KAYNAK
+
+   Bu dosya İKİ Vite girişinden de import edilir:
+     · resources/css/app.css                  (ana site)
+     · resources/css/filament/admin/theme.css (yönetim paneli)
+
+   NEDEN AYRI DOSYA: Filament kendi Vite girişini kullanıyor ve app.css'i
+   import ETMİYOR. Token'ları yalnız app.css'e yazmak, resources/views/
+   filament/ altındaki kullanımların sessizce miras boyuta düşmesi demekti —
+   "tek yerden değişir" vaadi yönetim panelinde tutmazdı. Token'ı iki dosyaya
+   KOPYALAMAK ise kaçınılmaz kayma üretirdi. Tek kaynak + iki import doğrusu.
+
+   Buraya yalnızca İKİ pakette de aynı olması gereken tipografi token'ları
+   girer. Temaya özgü olanlar (font ailesi, palet) kendi tema dosyalarında
+   kalır: Vitrin'inki components/vitrin-theme.blade.php, Klasik'inki
+   components/tasarim-theme.blade.php.
+   ========================================================================== */
+
+@theme {
+    /* --------------------------------------------------------------------
+       2xs — ölçeğin en küçük basamağı (11px)
+
+       Sitedeki 134 ölçek-dışı `text-[Npx]` değerinin %52'si (10 / 10.5 /
+       11px) `text-xs`'in (12px) de ALTINDAydı. Bu "tasarımcı ölçeği
+       beğenmedi" değil, "ölçekte o basamak yok" durumuydu; rol tutarlıydı:
+       rozet · okunmamış sayaç balonu · ⌘K tuş çipi · "Reklam" etiketi ·
+       fiyat birimi eki · takvim gün kısaltması.
+
+       12px'e ZORLAMAK +9–20% büyüme demekti ve sabit geometrili rozet/sayaç
+       kutularını taşırıyordu. Tek basamak eklemek aynı kullanımları
+       neredeyse sıfır görsel değişimle sisteme alıyor.
+
+       Satır kutusu MUTLAK 1rem: h-4 (16px) sayaç dairesine birebir oturur.
+       Keyfi `text-[10px]` kendi satır yüksekliğini ÜRETMEZ (html'den 1.5
+       miras alır = 15px), bu yüzden göç sırasında kutular itilebilirdi —
+       sabit 16px bunu engeller.
+       -------------------------------------------------------------------- */
+    --text-2xs: 0.6875rem;
+    --text-2xs--line-height: 1rem;
+    --text-2xs--letter-spacing: 0.01em;
+}

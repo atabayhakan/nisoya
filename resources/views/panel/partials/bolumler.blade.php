@@ -73,7 +73,7 @@
                 <span class="min-w-0 truncate">{{ $s->sirketVar ? 'Şirket Profili' : 'Şirket profili oluştur' }}</span>
             </span>
             @unless ($s->sirketVar)
-                <span class="pl-6.5 text-[11px] leading-tight text-stone-400 dark:text-stone-500">hesabın kurumsala geçer, Yetenek Havuzu'nda görünmezsin</span>
+                <span class="pl-6.5 text-2xs leading-tight text-stone-400 dark:text-stone-500">hesabın kurumsala geçer, Yetenek Havuzu'nda görünmezsin</span>
             @endunless
         </a>
     </div>

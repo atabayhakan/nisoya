@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+/* Tipografi token'ları TEK KAYNAK — yönetim paneli de aynı dosyayı import
+   eder (Filament ayrı bir Vite girişi kullanıyor ve app.css'i görmüyor). */
+@import './tipografi.css';
 @plugin '@tailwindcss/typography';
 
 @custom-variant dark (&:where(.dark, .dark *));

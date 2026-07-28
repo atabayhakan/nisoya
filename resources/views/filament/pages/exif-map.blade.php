@@ -106,7 +106,7 @@
                         ${user}
                         ${camera}
                         <div class="mt-1 text-xs text-stone-400">${date}</div>
-                        <div class="mt-1 text-[10px] text-stone-400">${m.lat.toFixed(4)}, ${m.lng.toFixed(4)}</div>
+                        <div class="mt-1 text-2xs text-stone-400">${m.lat.toFixed(4)}, ${m.lng.toFixed(4)}</div>
                     </div>
                 `;
             }

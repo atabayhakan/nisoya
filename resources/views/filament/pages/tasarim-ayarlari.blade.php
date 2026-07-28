@@ -39,7 +39,7 @@
                 ])
             >
                 @if ($aktifTema === 'klasik')
-                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-2xs font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
                         ✓ Aktif
                     </span>
                 @endif
@@ -72,7 +72,7 @@
                 ])
             >
                 @if ($aktifTema === 'vitrin')
-                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-2xs font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
                         ✓ Aktif
                     </span>
                 @endif
@@ -80,7 +80,7 @@
                     <div class="flex items-center gap-2">
                         <span class="h-4 w-4 rounded-full" style="background:#3E63F0"></span>
                         <h4 class="font-bold text-sm text-gray-900 dark:text-white">Vitrin</h4>
-                        <span class="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-300">Hazırlanıyor</span>
+                        <span class="rounded-full bg-blue-100 px-2 py-0.5 text-2xs font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-300">Hazırlanıyor</span>
                     </div>
                     <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
                         Yeni nesil tasarım: Deniz mavisi palet, Plus Jakarta Sans, bento hero. Karşılığı hazır olmayan sayfalar klasik görünümle sunulur.
@@ -119,7 +119,7 @@
                 ])
             >
                 @if ($aktifMod === 'eski')
-                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-2xs font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
                         ✓ Aktif
                     </span>
                 @endif
@@ -157,7 +157,7 @@
                 ])
             >
                 @if ($aktifMod === 'yeni')
-                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-2xs font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
                         ✓ Aktif
                     </span>
                 @endif
@@ -195,7 +195,7 @@
                 ])
             >
                 @if ($aktifMod === 'obsidian')
-                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-2xs font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
                         ✓ Aktif
                     </span>
                 @endif
@@ -233,7 +233,7 @@
                 ])
             >
                 @if ($aktifMod === 'nordic')
-                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                    <span class="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-2xs font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
                         ✓ Aktif
                     </span>
                 @endif
@@ -368,7 +368,7 @@
                         <input type="checkbox" wire:model.live="glassmorphism" class="rounded text-primary-600 focus:ring-primary-500" />
                         <div>
                             <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">Glassmorphism (Cam Efekti & Blur)</span>
-                            <span class="block text-[11px] text-gray-400">Kartlar ve menülerde şeffaf cam efekti uygular</span>
+                            <span class="block text-2xs text-gray-400">Kartlar ve menülerde şeffaf cam efekti uygular</span>
                         </div>
                     </label>
 
@@ -376,7 +376,7 @@
                         <input type="checkbox" wire:model.live="smoothAnimations" class="rounded text-primary-600 focus:ring-primary-500" />
                         <div>
                             <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">Akıcı Geçiş Animasyonları</span>
-                            <span class="block text-[11px] text-gray-400">Hover ve tıklamalarda yumuşak yay efekti</span>
+                            <span class="block text-2xs text-gray-400">Hover ve tıklamalarda yumuşak yay efekti</span>
                         </div>
                     </label>
                 </div>
@@ -387,7 +387,7 @@
         <div class="space-y-4">
             <h3 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <span>👁️ Canlı Simülatör</span>
-                <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">Anlık Önizleme</span>
+                <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-2xs text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">Anlık Önizleme</span>
             </h3>
 
             @php
@@ -409,7 +409,7 @@
                 {{-- Simülatör Rozeti --}}
                 <span
                     style="background: {{ $primaryColor }}20; color: {{ $primaryColor }}; border-radius: {{ $simRadius }};"
-                    class="inline-block px-2.5 py-1 text-[11px] font-bold"
+                    class="inline-block px-2.5 py-1 text-2xs font-bold"
                 >
                     ✨ 2027 Gurbetçi Vitrini
                 </span>
@@ -444,7 +444,7 @@
                         <span class="font-bold text-gray-800 dark:text-gray-200">Berlin İçi Nakliye</span>
                         <span style="color: {{ $primaryColor }};" class="font-bold">75 EUR</span>
                     </div>
-                    <p class="mt-1 text-[11px] text-gray-400">Almanya · Hizmet İlanı</p>
+                    <p class="mt-1 text-2xs text-gray-400">Almanya · Hizmet İlanı</p>
                 </div>
             </div>
         </div>

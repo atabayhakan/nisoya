@@ -26,7 +26,7 @@
                 <p class="body whitespace-pre-line break-words text-sm">{{ $message->body }}</p>
             @endif
 
-            <p class="meta mt-1 flex items-center justify-end gap-1.5 text-[10px] {{ $mine ? 'text-emerald-100' : 'text-stone-400 dark:text-stone-500' }}">
+            <p class="meta mt-1 flex items-center justify-end gap-1.5 text-2xs {{ $mine ? 'text-emerald-100' : 'text-stone-400 dark:text-stone-500' }}">
                 <span>{{ $message->created_at->format('d.m H:i') }}</span>
                 @if ($mine && $message->read_at)<span class="read-mark">· okundu</span>@endif
                 @if ($mine)<button type="button" class="recall-btn font-medium underline decoration-dotted underline-offset-2 hover:no-underline">· geri al</button>@endif

@@ -90,7 +90,7 @@
         @endif
 
         {{-- Breadcrumb --}}
-        <nav class="flex items-center gap-2 text-[12.5px] font-semibold text-stone-500 dark:text-stone-400">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-stone-500 dark:text-stone-400">
             <a href="{{ url('/ilanlar') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İlanlar</a>
             @if ($listing->category)
                 <span class="text-stone-300 dark:text-stone-600">/</span>
@@ -130,7 +130,7 @@
                                  style="--listing-transition-name: listing-image-{{ $listing->id }}; object-position: {{ $hero->objectPosition() }}"
                                  class="listing-cover-transition h-[260px] w-full object-cover sm:h-[352px]">
                             @if ($listing->images->count() > 1)
-                                <span class="absolute bottom-3 left-3 rounded-full bg-white/95 px-[11px] py-[7px] text-[11px] font-bold text-stone-800 dark:bg-stone-900/95 dark:text-stone-100">
+                                <span class="absolute bottom-3 left-3 rounded-full bg-white/95 px-[11px] py-[7px] text-2xs font-bold text-stone-800 dark:bg-stone-900/95 dark:text-stone-100">
                                     1 / {{ $listing->images->count() }}
                                 </span>
                             @endif
@@ -170,7 +170,7 @@
 
                 {{-- B. İçerik kartı --}}
                 <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-800 dark:bg-stone-900">
-                    <div class="flex flex-wrap items-center gap-2 text-[11px] font-bold">
+                    <div class="flex flex-wrap items-center gap-2 text-2xs font-bold">
                         @if ($listing->category)
                             <span class="rounded-full bg-emerald-50 px-2.5 py-1.5 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">{{ $listing->category->name }}</span>
                         @endif
@@ -201,10 +201,10 @@
                         @endif
                     </div>
 
-                    <h1 class="mt-3.5 text-2xl font-extrabold leading-[1.16] tracking-[-0.028em] text-stone-800 sm:text-[30px] dark:text-stone-50" style="text-wrap: pretty">{{ $listing->title }}</h1>
+                    <h1 class="mt-3.5 text-2xl font-extrabold leading-[1.16] tracking-[-0.028em] text-stone-800 sm:text-3xl dark:text-stone-50" style="text-wrap: pretty">{{ $listing->title }}</h1>
 
                     <div class="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-2">
-                        <span class="text-[26px] font-extrabold text-emerald-600 dark:text-emerald-400">
+                        <span class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
                             @if ($listing->price !== null)
                                 {{ number_format((float) $listing->price, 2) }} {{ $listing->currency }}
                             @else
@@ -212,15 +212,15 @@
                             @endif
                         </span>
                         @if ($listing->price !== null && $listing->price_unit->suffix())
-                            <span class="text-[12.5px] font-semibold text-stone-500 dark:text-stone-400">{{ $listing->price_unit->suffix() }}</span>
+                            <span class="text-xs font-semibold text-stone-500 dark:text-stone-400">{{ $listing->price_unit->suffix() }}</span>
                         @endif
                         <span class="hidden h-[22px] w-px bg-stone-200 sm:block dark:bg-stone-700" aria-hidden="true"></span>
-                        <span class="text-[12.5px] font-semibold text-stone-500 dark:text-stone-400">İlan no <b class="text-stone-800 dark:text-stone-200">NS-{{ $listing->id }}</b></span>
+                        <span class="text-xs font-semibold text-stone-500 dark:text-stone-400">İlan no <b class="text-stone-800 dark:text-stone-200">NS-{{ $listing->id }}</b></span>
                         <span class="hidden h-[22px] w-px bg-stone-200 sm:block dark:bg-stone-700" aria-hidden="true"></span>
-                        <span class="text-[12.5px] font-semibold text-stone-500 dark:text-stone-400">{{ $listing->updated_at->diffForHumans() }} güncellendi</span>
+                        <span class="text-xs font-semibold text-stone-500 dark:text-stone-400">{{ $listing->updated_at->diffForHumans() }} güncellendi</span>
                     </div>
 
-                    <div class="prose prose-stone mt-4 max-w-none text-[14.5px] font-medium leading-[1.7] text-stone-600 dark:prose-invert dark:text-stone-300">
+                    <div class="prose prose-stone mt-4 max-w-none text-sm font-medium leading-[1.7] text-stone-600 dark:prose-invert dark:text-stone-300">
                         {!! nl2br(e($listing->description)) !!}
                     </div>
                 </div>
@@ -229,7 +229,7 @@
                 @if ($listing->type->value === 'emlak' && $listing->propertyDetail)
                     @php $detail = $listing->propertyDetail; @endphp
                     <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-800 dark:bg-stone-900">
-                        <h2 class="text-[17px] font-extrabold tracking-[-0.018em] text-stone-800 dark:text-stone-100">🏡 Emlak Özellikleri</h2>
+                        <h2 class="text-lg font-extrabold tracking-[-0.018em] text-stone-800 dark:text-stone-100">🏡 Emlak Özellikleri</h2>
                         <dl class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                             @php
                                 $emlakAlanlari = collect([
@@ -245,7 +245,7 @@
                             @endphp
                             @foreach ($emlakAlanlari as [$etiket, $deger])
                                 <div class="rounded-[14px] border border-stone-200 p-3 dark:border-stone-700">
-                                    <dt class="text-[11.5px] font-semibold text-stone-400 dark:text-stone-500">{{ $etiket }}</dt>
+                                    <dt class="text-xs font-semibold text-stone-400 dark:text-stone-500">{{ $etiket }}</dt>
                                     <dd class="mt-1.5 text-sm font-bold leading-tight text-stone-800 dark:text-stone-100">{{ $deger }}</dd>
                                 </div>
                             @endforeach
@@ -264,7 +264,7 @@
                 @if ($listing->type->value === 'vasita' && $listing->vehicleDetail)
                     @php $vehicle = $listing->vehicleDetail; @endphp
                     <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-800 dark:bg-stone-900">
-                        <h2 class="text-[17px] font-extrabold tracking-[-0.018em] text-stone-800 dark:text-stone-100">🚗 Araç Özellikleri</h2>
+                        <h2 class="text-lg font-extrabold tracking-[-0.018em] text-stone-800 dark:text-stone-100">🚗 Araç Özellikleri</h2>
                         <dl class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                             @php
                                 $vasitaAlanlari = collect([
@@ -283,7 +283,7 @@
                             @endphp
                             @foreach ($vasitaAlanlari as [$etiket, $deger])
                                 <div class="rounded-[14px] border border-stone-200 p-3 dark:border-stone-700">
-                                    <dt class="text-[11.5px] font-semibold text-stone-400 dark:text-stone-500">{{ $etiket }}</dt>
+                                    <dt class="text-xs font-semibold text-stone-400 dark:text-stone-500">{{ $etiket }}</dt>
                                     <dd class="mt-1.5 text-sm font-bold leading-tight text-stone-800 dark:text-stone-100">{{ $deger }}</dd>
                                 </div>
                             @endforeach
@@ -330,11 +330,11 @@
                 @if ($recentReviews->isNotEmpty())
                     <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-800 dark:bg-stone-900">
                         <div class="flex flex-wrap items-center justify-between gap-3">
-                            <h2 class="text-[17px] font-extrabold tracking-[-0.018em] text-stone-800 dark:text-stone-100">Değerlendirmeler</h2>
+                            <h2 class="text-lg font-extrabold tracking-[-0.018em] text-stone-800 dark:text-stone-100">Değerlendirmeler</h2>
                             @if ($sellerRating['count'] > 0)
                                 <div class="flex items-baseline gap-2">
-                                    <span class="text-[17px] font-extrabold text-stone-800 dark:text-stone-100">★ {{ $sellerRating['avg'] }}</span>
-                                    <span class="text-[12.5px] font-semibold text-stone-500 dark:text-stone-400">{{ $sellerRating['count'] }} değerlendirme</span>
+                                    <span class="text-lg font-extrabold text-stone-800 dark:text-stone-100">★ {{ $sellerRating['avg'] }}</span>
+                                    <span class="text-xs font-semibold text-stone-500 dark:text-stone-400">{{ $sellerRating['count'] }} değerlendirme</span>
                                 </div>
                             @endif
                         </div>
@@ -345,16 +345,16 @@
                                     <x-avatar :user="$review->reviewer" size="h-10 w-10" text="text-sm" />
                                     <div class="min-w-0">
                                         <div class="flex flex-wrap items-baseline gap-2">
-                                            <span class="text-[13px] font-bold text-stone-800 dark:text-stone-100">{{ $review->reviewer->name }}</span>
-                                            <span class="text-[11.5px] font-semibold text-stone-400 dark:text-stone-500">
+                                            <span class="text-sm font-bold text-stone-800 dark:text-stone-100">{{ $review->reviewer->name }}</span>
+                                            <span class="text-xs font-semibold text-stone-400 dark:text-stone-500">
                                                 @if ($review->reviewer->city){{ $review->reviewer->city }} · @endif{{ $review->created_at->diffForHumans() }}
                                             </span>
                                         </div>
-                                        <div class="mt-0.5 text-[12px] font-bold text-amber-500 dark:text-amber-400" aria-label="{{ $review->rating }} yıldız">
+                                        <div class="mt-0.5 text-xs font-bold text-amber-500 dark:text-amber-400" aria-label="{{ $review->rating }} yıldız">
                                             {{ str_repeat('★', (int) $review->rating) }}<span class="text-stone-300 dark:text-stone-600">{{ str_repeat('★', 5 - (int) $review->rating) }}</span>
                                         </div>
                                         @if ($review->comment)
-                                            <p class="mt-1.5 text-[13px] font-medium leading-relaxed text-stone-600 dark:text-stone-300">{{ $review->comment }}</p>
+                                            <p class="mt-1.5 text-sm font-medium leading-relaxed text-stone-600 dark:text-stone-300">{{ $review->comment }}</p>
                                         @endif
                                     </div>
                                 </div>
@@ -418,7 +418,7 @@
                                 @csrf
                                 @if ($isShortTerm)
                                     <div class="rounded-xl bg-stone-100 p-3 dark:bg-stone-800/60">
-                                        <p class="text-[11.5px] font-semibold text-stone-500 dark:text-stone-400">📅 Tarih seç, talep mesajına eklensin <span class="font-normal">(ops.)</span></p>
+                                        <p class="text-xs font-semibold text-stone-500 dark:text-stone-400">📅 Tarih seç, talep mesajına eklensin <span class="font-normal">(ops.)</span></p>
                                         <div class="mt-2 grid grid-cols-2 gap-2">
                                             <input name="giris" type="date" value="{{ old('giris') }}" aria-label="Giriş tarihi"
                                                    class="w-full rounded-[9px] border-stone-300 px-2 py-1.5 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
@@ -434,7 +434,7 @@
                                 <textarea name="body" rows="3" required placeholder="{{ $listing->type->value === 'emlak' ? 'İlan sahibine bir mesaj yaz...' : 'Satıcıya bir mesaj yaz...' }}"
                                           class="w-full rounded-[13px] border-stone-300 px-3 py-2.5 text-sm text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">{{ old('body') }}</textarea>
                                 @error('body') <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-                                <button type="submit" class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[13px] bg-emerald-600 text-[14.5px] font-bold text-white shadow-[0_14px_26px_-14px_rgba(62,99,240,1)] transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none">
+                                <button type="submit" class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[13px] bg-emerald-600 text-sm font-bold text-white shadow-[0_14px_26px_-14px_rgba(62,99,240,1)] transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none">
                                     <x-heroicon-o-chat-bubble-left class="h-4 w-4" /> Mesaj Gönder
                                 </button>
                             </form>
@@ -459,7 +459,7 @@
                     </div>
 
                     <div class="mt-4 border-t border-stone-100 pt-3 dark:border-stone-800">
-                        <p class="mb-2 text-[11.5px] font-semibold text-stone-500 dark:text-stone-400">Bu ilanı paylaş</p>
+                        <p class="mb-2 text-xs font-semibold text-stone-500 dark:text-stone-400">Bu ilanı paylaş</p>
                         @include('partials.share-buttons', ['shareUrl' => route('listings.show', [$listing, $listing->slug]), 'shareText' => $listing->title])
                     </div>
                 </div>
@@ -467,7 +467,7 @@
                 {{-- Emlak/vasıta müsaitlik takvimi --}}
                 @if (in_array($listing->type->value, ['emlak', 'vasita'], true) && $listing->relationLoaded('unavailableRanges'))
                     <div class="rounded-2xl border border-stone-200/60 bg-white p-5 shadow-brand dark:border-stone-800 dark:bg-stone-900">
-                        <h2 class="text-[14.5px] font-extrabold tracking-[-0.015em] text-stone-800 dark:text-stone-100">📅 Müsaitlik</h2>
+                        <h2 class="text-sm font-extrabold tracking-[-0.015em] text-stone-800 dark:text-stone-100">📅 Müsaitlik</h2>
                         <div class="mt-3">
                             <x-availability-calendar :ranges="$listing->unavailableRanges" />
                         </div>
@@ -479,30 +479,30 @@
                     <div class="flex items-center gap-3">
                         <x-avatar :user="$listing->user" size="h-12 w-12" text="text-lg" />
                         <div class="min-w-0">
-                            <div class="flex flex-wrap items-center gap-1.5 text-[15px] font-extrabold leading-tight text-stone-800 dark:text-stone-100">
+                            <div class="flex flex-wrap items-center gap-1.5 text-base font-extrabold leading-tight text-stone-800 dark:text-stone-100">
                                 {{ $listing->user->name }}
                                 <x-trust-badge :user="$listing->user" />
                                 @if ($listing->user->is_verified)<x-verified-badge />@endif
                             </div>
-                            <div class="mt-1 text-[11.5px] font-semibold text-stone-500 dark:text-stone-400">Üyelik: {{ $listing->user->created_at->translatedFormat('F Y') }}</div>
+                            <div class="mt-1 text-xs font-semibold text-stone-500 dark:text-stone-400">Üyelik: {{ $listing->user->created_at->translatedFormat('F Y') }}</div>
                         </div>
                     </div>
 
                     {{-- KPI kutuları: yalnız GERÇEK veriden (puan + üyelik yılı) --}}
                     <div class="mt-4 grid grid-cols-2 gap-2.5">
                         <div class="rounded-xl bg-stone-100 p-3 dark:bg-stone-800">
-                            <div class="text-[10.5px] font-semibold text-stone-400 dark:text-stone-500">Puan</div>
-                            <div class="mt-1 text-[15px] font-extrabold text-stone-800 dark:text-stone-100">
+                            <div class="text-2xs font-semibold text-stone-400 dark:text-stone-500">Puan</div>
+                            <div class="mt-1 text-base font-extrabold text-stone-800 dark:text-stone-100">
                                 @if ($sellerRating['count'] > 0)
-                                    ★ {{ $sellerRating['avg'] }} <span class="text-[11px] font-semibold text-stone-400">({{ $sellerRating['count'] }} değerlendirme)</span>
+                                    ★ {{ $sellerRating['avg'] }} <span class="text-2xs font-semibold text-stone-400">({{ $sellerRating['count'] }} değerlendirme)</span>
                                 @else
-                                    <span class="text-[12.5px] font-semibold text-stone-400">Henüz yok</span>
+                                    <span class="text-xs font-semibold text-stone-400">Henüz yok</span>
                                 @endif
                             </div>
                         </div>
                         <div class="rounded-xl bg-stone-100 p-3 dark:bg-stone-800">
-                            <div class="text-[10.5px] font-semibold text-stone-400 dark:text-stone-500">Üyelik</div>
-                            <div class="mt-1 text-[15px] font-extrabold text-stone-800 dark:text-stone-100">{{ $listing->user->created_at->year }}</div>
+                            <div class="text-2xs font-semibold text-stone-400 dark:text-stone-500">Üyelik</div>
+                            <div class="mt-1 text-base font-extrabold text-stone-800 dark:text-stone-100">{{ $listing->user->created_at->year }}</div>
                         </div>
                     </div>
 
@@ -534,7 +534,7 @@
                      Veri yalnız vitrin aktifken yükleniyor; yoksa blok basılmaz. --}}
                 @if ($similarListings->isNotEmpty())
                     <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-[18px] shadow-brand dark:border-stone-800 dark:bg-stone-900">
-                        <h2 class="text-[14.5px] font-extrabold tracking-[-0.015em] text-stone-800 dark:text-stone-100">Benzer ilanlar</h2>
+                        <h2 class="text-sm font-extrabold tracking-[-0.015em] text-stone-800 dark:text-stone-100">Benzer ilanlar</h2>
                         <div class="mt-3.5 grid gap-3">
                             @foreach ($similarListings as $benzer)
                                 <a href="{{ route('listings.show', [$benzer, $benzer->slug]) }}" class="group flex items-center gap-3">
@@ -551,12 +551,12 @@
                                         @endif
                                     </div>
                                     <div class="min-w-0">
-                                        <div class="line-clamp-2 text-[12.5px] font-bold leading-[1.35] text-stone-800 group-hover:text-emerald-700 dark:text-stone-100 dark:group-hover:text-emerald-400" style="text-wrap: pretty">{{ $benzer->title }}</div>
+                                        <div class="line-clamp-2 text-xs font-bold leading-[1.35] text-stone-800 group-hover:text-emerald-700 dark:text-stone-100 dark:group-hover:text-emerald-400" style="text-wrap: pretty">{{ $benzer->title }}</div>
                                         <div class="mt-1 flex flex-wrap items-baseline gap-2">
                                             @if ($benzer->country)
-                                                <span class="text-[11px] font-semibold text-stone-500 dark:text-stone-400">{{ $benzer->country->emoji }} {{ $benzer->city ?: $benzer->country->name_tr }}</span>
+                                                <span class="text-2xs font-semibold text-stone-500 dark:text-stone-400">{{ $benzer->country->emoji }} {{ $benzer->city ?: $benzer->country->name_tr }}</span>
                                             @endif
-                                            <span class="text-[12px] font-extrabold text-emerald-600 dark:text-emerald-400">
+                                            <span class="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
                                                 @if ($benzer->price !== null)
                                                     {{ number_format((float) $benzer->price, 0) }} {{ $benzer->currency }}
                                                 @else

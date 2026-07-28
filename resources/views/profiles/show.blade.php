@@ -243,7 +243,7 @@
                             <span class="flex flex-wrap items-center gap-1.5 font-medium text-stone-800 dark:text-stone-100">
                                 {{ $review->reviewer->name }}
                                 @if ($review->deal_id)
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-900/40 dark:text-emerald-300" title="Bu değerlendirme, tamamlanmış bir anlaşmaya dayanıyor.">✓ Doğrulanmış işlem</span>
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-2xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-900/40 dark:text-emerald-300" title="Bu değerlendirme, tamamlanmış bir anlaşmaya dayanıyor.">✓ Doğrulanmış işlem</span>
                                 @endif
                             </span>
                             <span class="shrink-0 text-amber-500 dark:text-amber-400">{{ str_repeat('★', $review->rating) }}<span class="text-stone-300 dark:text-stone-600">{{ str_repeat('★', 5 - $review->rating) }}</span></span>
