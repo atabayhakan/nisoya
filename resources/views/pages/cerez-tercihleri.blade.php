@@ -1,9 +1,9 @@
 <x-layouts.app :title="'Çerez Tercihleri — Nisoya'">
     <article class="mx-auto max-w-2xl px-4 py-10">
-        <header class="mb-8 border-b border-stone-200 pb-6">
-            <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">Gizlilik</p>
-            <h1 class="mt-2 text-3xl font-bold text-stone-900">Çerez Tercihleri</h1>
-            <p class="mt-2 text-sm text-stone-500">
+        <header class="mb-8 border-b border-stone-200 pb-6 dark:border-stone-800">
+            <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Gizlilik</p>
+            <h1 class="mt-2 text-3xl font-bold text-stone-900 dark:text-stone-50">Çerez Tercihleri</h1>
+            <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">
                 Sitemizde kullanılan çerez kategorilerini buradan yönetebilirsin.
                 Tercihlerin tarayıcında saklanır.
             </p>
@@ -15,16 +15,16 @@
             class="space-y-5"
         >
             {{-- Zorunlu --}}
-            <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+            <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
                 <div class="flex items-start justify-between gap-4">
                     <div class="flex-1">
-                        <h2 class="text-base font-semibold text-stone-900">🔒 Zorunlu çerezler</h2>
-                        <p class="mt-1 text-sm text-stone-600">
+                        <h2 class="text-base font-semibold text-stone-900 dark:text-stone-50">🔒 Zorunlu çerezler</h2>
+                        <p class="mt-1 text-sm text-stone-600 dark:text-stone-400">
                             Oturum açma, dil tercihi, tema, güvenlik için gereklidir. Bu çerezler kapatılamaz.
                         </p>
                     </div>
                     <div class="flex items-center">
-                        <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                        <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
                             Her zaman açık
                         </span>
                     </div>
@@ -32,36 +32,36 @@
             </div>
 
             {{-- Analytics --}}
-            <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+            <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
                 <div class="flex items-start justify-between gap-4">
                     <div class="flex-1">
-                        <h2 class="text-base font-semibold text-stone-900">📊 Analitik çerezleri (Google Analytics 4)</h2>
-                        <p class="mt-1 text-sm text-stone-600">
+                        <h2 class="text-base font-semibold text-stone-900 dark:text-stone-50">📊 Analitik çerezleri (Google Analytics 4)</h2>
+                        <p class="mt-1 text-sm text-stone-600 dark:text-stone-400">
                             Sayfa görüntülemeleri, oturum süresi gibi anonim metrikler. IP anonimleştirmesi aktiftir.
                         </p>
                     </div>
                     <label class="relative inline-flex cursor-pointer items-center">
                         <input type="checkbox" x-model="prefs.analytics" class="peer sr-only">
-                        <div class="h-6 w-11 rounded-full bg-stone-200 transition peer-checked:bg-emerald-600 peer-focus:ring-2 peer-focus:ring-emerald-300"></div>
-                        <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></div>
+                        <div class="h-6 w-11 rounded-full bg-stone-200 transition peer-checked:bg-emerald-600 peer-focus:ring-2 peer-focus:ring-emerald-300 dark:bg-stone-700"></div>
+                        <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5 dark:bg-stone-900"></div>
                     </label>
                 </div>
             </div>
 
             {{-- Reklam --}}
-            <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+            <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
                 <div class="flex items-start justify-between gap-4">
                     <div class="flex-1">
-                        <h2 class="text-base font-semibold text-stone-900">📢 Reklam çerezleri (Google AdSense)</h2>
-                        <p class="mt-1 text-sm text-stone-600">
+                        <h2 class="text-base font-semibold text-stone-900 dark:text-stone-50">📢 Reklam çerezleri (Google AdSense)</h2>
+                        <p class="mt-1 text-sm text-stone-600 dark:text-stone-400">
                             Siteye gelir sağlayan reklamların gösterimi ve ölçümü. Kişiselleştirilmiş reklamlar için kullanılır.
                             Kapatırsan sitemiz yine ücretsiz kalır ancak daha az gelir elde ederiz.
                         </p>
                     </div>
                     <label class="relative inline-flex cursor-pointer items-center">
                         <input type="checkbox" x-model="prefs.ads" class="peer sr-only">
-                        <div class="h-6 w-11 rounded-full bg-stone-200 transition peer-checked:bg-emerald-600 peer-focus:ring-2 peer-focus:ring-emerald-300"></div>
-                        <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></div>
+                        <div class="h-6 w-11 rounded-full bg-stone-200 transition peer-checked:bg-emerald-600 peer-focus:ring-2 peer-focus:ring-emerald-300 dark:bg-stone-700"></div>
+                        <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5 dark:bg-stone-900"></div>
                     </label>
                 </div>
             </div>
@@ -70,21 +70,21 @@
                 <button
                     type="button"
                     @click="saveAll()"
-                    class="flex-1 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800"
+                    class="flex-1 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900"
                 >
                     Seçtiklerimi kaydet
                 </button>
                 <button
                     type="button"
                     @click="acceptAll()"
-                    class="rounded-xl border border-emerald-300 bg-white px-5 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50"
+                    class="rounded-xl border border-emerald-300 bg-white px-5 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-700 dark:bg-stone-900 dark:text-emerald-400"
                 >
                     Tümünü kabul et
                 </button>
                 <button
                     type="button"
                     @click="rejectAll()"
-                    class="rounded-xl border border-stone-300 bg-white px-5 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-50"
+                    class="rounded-xl border border-stone-300 bg-white px-5 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"
                 >
                     Sadece zorunlu
                 </button>
@@ -93,14 +93,14 @@
             <div
                 x-show="savedAt"
                 x-transition.opacity
-                class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+                class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"
                 role="status"
                 aria-live="polite"
             >
                 ✅ Tercihlerin kaydedildi.
             </div>
 
-            <p class="pt-2 text-center text-xs text-stone-600">
+            <p class="pt-2 text-center text-xs text-stone-600 dark:text-stone-400">
                 Detaylı bilgi için <a href="/gizlilik" class="underline hover:text-stone-600">Gizlilik Politikası</a>'nı inceleyebilirsin.
             </p>
         </div>

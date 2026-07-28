@@ -12,36 +12,36 @@
     x-cloak
     x-show="!accepted && decided === null"
     x-transition.opacity.duration.200ms
-    class="fixed inset-x-3 bottom-20 z-50 mx-auto max-w-2xl rounded-2xl border border-stone-200 bg-white p-4 shadow-2xl ring-1 ring-stone-200 sm:p-5 md:bottom-3"
+    class="fixed inset-x-3 bottom-20 z-50 mx-auto max-w-2xl rounded-2xl border border-stone-200 bg-white p-4 shadow-2xl ring-1 ring-stone-200 sm:p-5 md:bottom-3 dark:border-stone-800 dark:bg-stone-900 dark:ring-stone-800"
     role="dialog"
     aria-live="polite"
     aria-label="Çerez tercihleri"
 >
     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
         <span aria-hidden="true" class="text-2xl">🍪</span>
-        <div class="flex-1 text-sm text-stone-700">
-            <p class="font-semibold text-stone-900">Çerez ve gizlilik tercihleri</p>
+        <div class="flex-1 text-sm text-stone-700 dark:text-stone-300">
+            <p class="font-semibold text-stone-900 dark:text-stone-50">Çerez ve gizlilik tercihleri</p>
             <p class="mt-1 leading-relaxed">
                 Sitemizde hizmeti geliştirmek ve reklam göstermek için çerezler kullanıyoruz.
                 Google AdSense ve Analytics çerezleri, sitemizin ücretsiz kalmasını sağlayan
                 reklam gelirlerinin ölçülmesine yardımcı olur. Detaylar için
-                <a href="/gizlilik" class="font-medium text-emerald-700 underline-offset-2 hover:underline">Gizlilik Politikası</a>'nı
+                <a href="/gizlilik" class="font-medium text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400">Gizlilik Politikası</a>'nı
                 inceleyebilir veya
-                <a href="/cerez-tercihleri" class="font-medium text-emerald-700 underline-offset-2 hover:underline">tercihlerini yönetebilirsin</a>.
+                <a href="/cerez-tercihleri" class="font-medium text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400">tercihlerini yönetebilirsin</a>.
             </p>
         </div>
         <div class="flex flex-shrink-0 gap-2 sm:flex-col">
             <button
                 type="button"
                 @click="accept()"
-                class="inline-flex items-center justify-center rounded-lg bg-emerald-700 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800"
+                class="inline-flex items-center justify-center rounded-lg bg-emerald-700 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900"
             >
                 Kabul Et
             </button>
             <button
                 type="button"
                 @click="reject()"
-                class="inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+                class="inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"
             >
                 Reddet
             </button>

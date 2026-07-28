@@ -21,21 +21,21 @@
     ]" />
 
     <div class="mx-auto max-w-4xl px-4 py-12">
-        <h1 class="text-3xl font-bold text-stone-900">Nasıl çalışır?</h1>
-        <p class="mt-2 text-stone-600">Nisoya, yurt dışındaki Türkleri buluşturan bir ilan ve iletişim platformudur. Ödeme ve anlaşma her zaman taraflar arasındadır.</p>
+        <h1 class="text-3xl font-bold text-stone-900 dark:text-stone-50">Nasıl çalışır?</h1>
+        <p class="mt-2 text-stone-600 dark:text-stone-400">Nisoya, yurt dışındaki Türkleri buluşturan bir ilan ve iletişim platformudur. Ödeme ve anlaşma her zaman taraflar arasındadır.</p>
 
         <div class="mt-10 grid gap-8 md:grid-cols-2">
-            <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-bold text-emerald-700">🙋 Hizmet/ürün sunuyorsan</h2>
-                <ol class="mt-4 space-y-3 text-sm text-stone-600">
+            <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+                <h2 class="text-lg font-bold text-emerald-700 dark:text-emerald-400">🙋 Hizmet/ürün sunuyorsan</h2>
+                <ol class="mt-4 space-y-3 text-sm text-stone-600 dark:text-stone-400">
                     <li><strong>1.</strong> Ücretsiz kayıt ol, e-postanı doğrula.</li>
                     <li><strong>2.</strong> "İlan Ver" ile yeteneğini/hizmetini anlat; fiyat, konum ve görsel ekle.</li>
                     <li><strong>3.</strong> Gelen mesajlara cevap ver, müşterilerinle anlaş.</li>
                 </ol>
             </div>
-            <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-bold text-emerald-700">🔍 Hizmet/ürün arıyorsan</h2>
-                <ol class="mt-4 space-y-3 text-sm text-stone-600">
+            <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+                <h2 class="text-lg font-bold text-emerald-700 dark:text-emerald-400">🔍 Hizmet/ürün arıyorsan</h2>
+                <ol class="mt-4 space-y-3 text-sm text-stone-600 dark:text-stone-400">
                     <li><strong>1.</strong> İlanları ara, ülke/şehir ve kategoriye göre filtrele.</li>
                     <li><strong>2.</strong> Beğendiğin ilanı incele, satıcının değerlendirmelerine bak.</li>
                     <li><strong>3.</strong> Satıcıya mesaj gönder, güvenle anlaş.</li>
@@ -43,12 +43,12 @@
             </div>
         </div>
 
-        <div class="mt-10 rounded-2xl border border-amber-200 bg-amber-50 p-6">
-            <h2 class="text-lg font-bold text-amber-900">💳 Ödeme nasıl yapılır?</h2>
-            <p class="mt-2 text-sm text-amber-800">
+        <div class="mt-10 rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-950/30">
+            <h2 class="text-lg font-bold text-amber-900 dark:text-amber-200">💳 Ödeme nasıl yapılır?</h2>
+            <p class="mt-2 text-sm text-amber-800 dark:text-amber-300">
                 Nisoya bir ilan ve iletişim platformudur — ödemeyi biz almıyor, aracılık etmiyoruz. Anlaştığın kişiyle ödeme yöntemini kendin belirlersin. Üye profillerinde "Kabul ettiği ödeme yöntemleri" rozetlerini görebilirsin (IBAN/banka havalesi, Kaspi, Click, Payme, MBANK, Zelle, Venmo, PayPal, nakit gibi — bulunduğun ülkeye göre değişir).
             </p>
-            <ul class="mt-3 space-y-1.5 text-sm text-amber-800">
+            <ul class="mt-3 space-y-1.5 text-sm text-amber-800 dark:text-amber-300">
                 <li>• Hizmet tamamlanmadan tüm ücreti peşin ödemekten kaçın; mümkünse iş bitince veya kısım kısım öde.</li>
                 <li>• İlk defa çalıştığın biriyle büyük tutarlarda temkinli ol, önce küçük bir işle güven oluştur.</li>
                 <li>• Elden teslimde, mümkünse halka açık/güvenli bir yerde buluş.</li>
@@ -58,24 +58,24 @@
 
         {{-- Sıkça Sorulan Sorular (görünür + FAQPage JSON-LD ile aynı kaynak) --}}
         <div class="mt-10">
-            <h2 class="text-xl font-bold text-stone-900">Sıkça sorulan sorular</h2>
-            <div class="mt-4 divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
+            <h2 class="text-xl font-bold text-stone-900 dark:text-stone-50">Sıkça sorulan sorular</h2>
+            <div class="mt-4 divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white dark:divide-stone-800 dark:border-stone-800 dark:bg-stone-900">
                 @foreach ($faqs as [$soru, $cevap])
                     <details class="group">
-                        <summary class="flex cursor-pointer items-center justify-between gap-3 px-5 py-4 text-sm font-semibold text-stone-800 marker:content-none hover:bg-stone-50">
+                        <summary class="flex cursor-pointer items-center justify-between gap-3 px-5 py-4 text-sm font-semibold text-stone-800 marker:content-none hover:bg-stone-50 dark:text-stone-100">
                             {{ $soru }}
-                            <svg class="h-5 w-5 shrink-0 text-stone-600 transition group-open:rotate-180" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <svg class="h-5 w-5 shrink-0 text-stone-600 transition group-open:rotate-180 dark:text-stone-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </summary>
-                        <p class="px-5 pb-4 text-sm leading-relaxed text-stone-600">{{ $cevap }}</p>
+                        <p class="px-5 pb-4 text-sm leading-relaxed text-stone-600 dark:text-stone-400">{{ $cevap }}</p>
                     </details>
                 @endforeach
             </div>
         </div>
 
-        <div class="mt-8 rounded-2xl bg-emerald-50 p-6 text-center">
-            <h2 class="text-lg font-bold text-stone-900">Güven önce gelir</h2>
-            <p class="mt-2 text-sm text-stone-600">Profil doğrulaması, değerlendirme/puan ve şikayet sistemiyle topluluğu güvende tutuyoruz. Şüpheli bir ilan görürsen "şikayet et" ile bize bildir.</p>
-            <a href="{{ route('register') }}" class="mt-5 inline-block rounded-lg bg-emerald-700 px-6 py-2.5 font-semibold text-white hover:bg-emerald-800">Ücretsiz Başla</a>
+        <div class="mt-8 rounded-2xl bg-emerald-50 p-6 text-center dark:bg-emerald-950/30">
+            <h2 class="text-lg font-bold text-stone-900 dark:text-stone-50">Güven önce gelir</h2>
+            <p class="mt-2 text-sm text-stone-600 dark:text-stone-400">Profil doğrulaması, değerlendirme/puan ve şikayet sistemiyle topluluğu güvende tutuyoruz. Şüpheli bir ilan görürsen "şikayet et" ile bize bildir.</p>
+            <a href="{{ route('register') }}" class="mt-5 inline-block rounded-lg bg-emerald-700 px-6 py-2.5 font-semibold text-white hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900">Ücretsiz Başla</a>
         </div>
     </div>
 </x-layouts.app>
