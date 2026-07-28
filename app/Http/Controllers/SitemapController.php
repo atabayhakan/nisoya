@@ -45,7 +45,30 @@ class SitemapController extends Controller
             ];
         }
 
-        foreach (Category::query()->where('is_active', true)->get() as $category) {
+        // BOŞ KATEGORİ SAYFASI SİTEMAP'E GİRMEZ.
+        //
+        // 97 kategori sayfasının 93'ünde sıfır ilan vardı ve hepsi sitemap ile
+        // Google'a bildiriliyordu. Aynı meta description'ı taşıyan, içeriği
+        // olmayan yüzlerce URL klasik "thin content" desenidir: arama motoru
+        // bunları değersiz sayar ve bu değerlendirme SİTENİN TAMAMINA yansır —
+        // yani dolu olan birkaç sayfanın da sıralaması düşer. Trafik çekmeye
+        // başlamak bu sayfaların daha hızlı taranması demek olduğu için,
+        // temizlik yapılmadan yapılacak her SEO çalışması zararlıdır.
+        //
+        // withCount + having: ilanı olan kategori sayfası gerçek içeriktir ve
+        // bildirilir; boş olan kategori sayfası SİLİNMEZ (kullanıcı gezinirken
+        // ulaşabilmeli), yalnız arama motoruna ÖNERİLMEZ. İlan girildiği anda
+        // sayfa kendiliğinden sitemap'e geri döner.
+        $kategoriler = Category::query()
+            ->where('is_active', true)
+            ->withCount(['listings' => fn ($q) => $q->active()])
+            ->get();
+
+        foreach ($kategoriler as $category) {
+            if ($category->listings_count === 0) {
+                continue;
+            }
+
             $urls[] = ['loc' => route('listings.category', $category->slug), 'priority' => '0.7'];
         }
 

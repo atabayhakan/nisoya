@@ -10,7 +10,7 @@
          Görsel dil: vitrin-theme değişken yönlendirmesi + bu dosyadaki
          header/footer. Composer 'components.layouts.app' ADINA kayıtlı olduğu
          için $navLinks* değişkenleri buraya aynen akar. --}}
-    <x-layout-head-meta :title="$title ?? null" :description="$description ?? null" :og-image="$ogImage ?? null" />
+    <x-layout-head-meta :title="$title ?? null" :description="$description ?? null" :og-image="$ogImage ?? null" :noindex="$noindex ?? false" />
 
     {{-- Tema başlatma (FOUC önleme: head içinde inline çalışmalı) --}}
     <x-theme-init />

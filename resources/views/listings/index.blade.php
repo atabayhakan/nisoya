@@ -1,4 +1,4 @@
-<x-layouts.app :title="($activeCategory?->name ?? 'Tüm İlanlar').' — Nisoya'">
+<x-layouts.app :title="($activeCategory?->name ?? 'Tüm İlanlar').' — Nisoya'" :noindex="$noindex ?? false">
     <div class="mx-auto max-w-6xl px-4 py-8">
         @if (session('status'))
             <div class="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ session('status') }}</div>
