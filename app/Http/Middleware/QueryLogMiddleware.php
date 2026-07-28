@@ -17,7 +17,9 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class QueryLogMiddleware
 {
-    private float $requestStart;
+    // $requestStart kaldırıldı: yazılıyor ama hiçbir yerde okunmuyordu.
+    // İstek süresi zaten PerformanceMetricsMiddleware'de ölçülüyor (aşağıdaki
+    // nota bakın) — burada ikinci bir sayaç tutmak ölü koddu.
 
     private int $queryCount = 0;
 
@@ -32,12 +34,15 @@ class QueryLogMiddleware
         }
 
         $slowThreshold = (float) config('app.query_log_slow_ms', 200);
-        $this->requestStart = microtime(true);
         $this->queryCount = 0;
         $this->totalQueryTime = 0;
         $this->queries = [];
 
-        DB::listen(function ($query) use ($slowThreshold) {
+        // $request DA use'a girmeli: gövdedeki $request->path() olmadan
+        // closure'da tanımsız kalıyordu ve 200ms'yi aşan İLK sorguda
+        // "Call to a member function path() on null" ile ölümcül hata
+        // veriyordu. Yani teşhis aracını açan kişi siteyi kırıyordu.
+        DB::listen(function ($query) use ($slowThreshold, $request) {
             $timeMs = $query->time;
             $this->queryCount++;
             $this->totalQueryTime += $timeMs;

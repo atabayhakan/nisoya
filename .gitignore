@@ -31,3 +31,15 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Yerel ölçüm/keşif testleri (Zz* öneki) — depoya GİRMEZ.
+#
+# phpunit.xml.dist testleri DİZİN bazlı keşfediyor, yani tests/Feature/ altına
+# bırakılan her dosya commit'lendiği an CI'a dahil olur. Bu daha önce yaşandı:
+# `git add tests` ile kazara commit'lenen bir ölçüm dosyası (30 ilan + 30 görsel
+# üretip tüm SQL logunu STDERR'e döken, tek iddiası assertTrue(true) olan bir
+# dosya) 8335685 ile geri çıkarıldı — ama ignore kuralı eklenmediği için tuzak
+# kurulu kaldı. Kural burada; dosyaların kendisi geliştiricinin çalışma alanıdır
+# ve silinmez.
+/tests/Feature/Zz*Test.php
+/tests/Unit/Zz*Test.php

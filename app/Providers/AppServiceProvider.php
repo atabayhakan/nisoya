@@ -183,14 +183,25 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function mergeRuntimeConfig(): void
     {
-        // Yayıncı ID: DB > env
-        $adsensePublisher = Settings::get('reklam.adsense_publisher') ?: env('ADSENSE_PUBLISHER_ID');
-        $adsenseAutoAdsCode = Settings::get('reklam.adsense_auto_ads_kod') ?: env('ADSENSE_AUTO_ADS_CODE');
-        $analyticsId = Settings::get('reklam.analytics_measurement_id') ?: env('ANALYTICS_MEASUREMENT_ID');
+        // env() DEĞİL config(): deploy/deploy.sh:96 `config:cache` çalıştırıyor
+        // ve önbelleklenmiş config yüklendiğinde $_ENV doldurulmaz — config
+        // dosyalarının DIŞINDAKİ env() çağrıları canlıda sessizce null döner.
+        // Altı yedek değer (AdSense yayıncı ID'si, Auto Ads kodu, Analytics
+        // ölçüm ID'si, PayPal.me, IBAN, IBAN sahibi) bu yüzden üretimde hiç
+        // devreye girmiyordu: panelde bir kayıt yoksa bağış modalı ve reklam
+        // yuvaları boş kalıyordu, ama yerelde (config:cache'siz) çalıştığı
+        // için fark edilmiyordu.
+        //
+        // Anahtarların hepsi zaten config/services.php'de tanımlı; oradan
+        // okumak hem önbellekli hem önbelleksiz ortamda aynı sonucu verir.
+        // DB > config sırası korunuyor.
+        $adsensePublisher = Settings::get('reklam.adsense_publisher') ?: config('services.adsense.publisher_id');
+        $adsenseAutoAdsCode = Settings::get('reklam.adsense_auto_ads_kod') ?: config('services.adsense.auto_ads_code');
+        $analyticsId = Settings::get('reklam.analytics_measurement_id') ?: config('services.analytics.measurement_id');
         $analyticsCustomCode = Settings::get('reklam.analytics_ozel_kod');
-        $paypal = Settings::get('bagis.paypal_me') ?: env('DONATION_PAYPAL_ME');
-        $iban = Settings::get('bagis.iban') ?: env('DONATION_IBAN');
-        $ibanOwner = Settings::get('bagis.iban_sahibi') ?: env('DONATION_IBAN_OWNER');
+        $paypal = Settings::get('bagis.paypal_me') ?: config('services.donation.paypal_me');
+        $iban = Settings::get('bagis.iban') ?: config('services.donation.iban');
+        $ibanOwner = Settings::get('bagis.iban_sahibi') ?: config('services.donation.iban_owner');
         $headerCustomCode = Settings::get('header.ozel_kod');
         $footerCustomCode = Settings::get('footer.ozel_kod');
 
