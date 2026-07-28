@@ -19,22 +19,22 @@
     <div
         x-show="showThanks"
         x-transition.opacity
-        class="fixed bottom-40 right-4 z-40 max-w-sm rounded-2xl border border-emerald-200 bg-white p-4 shadow-2xl md:bottom-24"
+        class="fixed bottom-40 right-4 z-40 max-w-sm rounded-2xl border border-emerald-200 bg-white p-4 shadow-2xl md:bottom-24 dark:border-emerald-800 dark:bg-stone-900"
         role="status"
         aria-live="polite"
     >
         <div class="flex items-start gap-3">
             <span aria-hidden="true" class="text-3xl">💚</span>
             <div class="flex-1">
-                <p class="font-bold text-stone-900">Teşekkürler!</p>
-                <p class="mt-0.5 text-sm text-stone-600">
+                <p class="font-bold text-stone-900 dark:text-stone-50">Teşekkürler!</p>
+                <p class="mt-0.5 text-sm text-stone-600 dark:text-stone-400">
                     Bağışın Nisoya'nın ücretsiz kalmasına katkı sağladı.
                 </p>
             </div>
             <button
                 type="button"
                 @click="showThanks = false"
-                class="rounded-full p-1 text-stone-600 hover:bg-stone-100 hover:text-stone-700"
+                class="rounded-full p-1 text-stone-600 hover:bg-stone-100 hover:text-stone-700 dark:text-stone-400"
                 aria-label="Kapat"
             >×</button>
         </div>
@@ -80,17 +80,17 @@
         <div
             x-show="open"
             x-transition.duration.200ms
-            class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-stone-200"
+            class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-stone-200 dark:bg-stone-900 dark:ring-stone-800"
         >
-            <div class="flex items-start justify-between gap-4 border-b border-stone-100 bg-amber-50 px-5 py-4">
+            <div class="flex items-start justify-between gap-4 border-b border-stone-100 bg-amber-50 px-5 py-4 dark:border-stone-800 dark:bg-amber-950/30">
                 <div>
-                    <h2 id="donation-title" class="text-lg font-bold text-amber-900">{{ $title }}</h2>
-                    <p class="mt-1 text-sm leading-relaxed text-amber-800/80">{{ $text }}</p>
+                    <h2 id="donation-title" class="text-lg font-bold text-amber-900 dark:text-amber-200">{{ $title }}</h2>
+                    <p class="mt-1 text-sm leading-relaxed text-amber-800/80 dark:text-amber-200/90">{{ $text }}</p>
                 </div>
                 <button
                     type="button"
                     @click="open = false"
-                    class="rounded-full p-1.5 text-amber-700 transition hover:bg-amber-100"
+                    class="rounded-full p-1.5 text-amber-700 transition hover:bg-amber-100 dark:text-amber-300"
                     aria-label="Kapat"
                 >
                     <svg viewBox="0 0 20 20" class="h-5 w-5" fill="currentColor">
@@ -101,12 +101,12 @@
 
             <div class="space-y-4 px-5 py-5">
                 @if ($maliyetBaslik && count($maliyetKalemleri) > 0)
-                    <div class="rounded-xl border border-stone-200 bg-stone-50 p-4">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">{{ $maliyetBaslik }}</p>
-                        <ul class="mt-2 space-y-1.5 text-sm text-stone-700">
+                    <div class="rounded-xl border border-stone-200 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-800">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">{{ $maliyetBaslik }}</p>
+                        <ul class="mt-2 space-y-1.5 text-sm text-stone-700 dark:text-stone-300">
                             @foreach ($maliyetKalemleri as $kalem)
                                 <li class="flex items-start gap-2">
-                                    <x-heroicon-o-check-circle class="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+                                    <x-heroicon-o-check-circle class="mt-0.5 h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" />
                                     <span>{{ $kalem }}</span>
                                 </li>
                             @endforeach
@@ -119,41 +119,41 @@
                         href="{{ $paypalUrl }}"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="flex items-center justify-between gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 transition hover:bg-sky-100"
+                        class="flex items-center justify-between gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 transition hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/30"
                     >
                         <div class="flex items-center gap-3">
                             <span aria-hidden="true" class="grid h-10 w-10 place-items-center rounded-full bg-[#003087] text-base font-bold text-white">P</span>
                             <div>
-                                <p class="font-semibold text-stone-900">PayPal ile Bağış</p>
-                                <p class="text-xs text-stone-500">{{ $paypal }}</p>
+                                <p class="font-semibold text-stone-900 dark:text-stone-50">PayPal ile Bağış</p>
+                                <p class="text-xs text-stone-500 dark:text-stone-400">{{ $paypal }}</p>
                             </div>
                         </div>
-                        <span class="text-sky-600">→</span>
+                        <span class="text-sky-600 dark:text-sky-400">→</span>
                     </a>
                 @endif
 
                 @if ($iban)
                     <div
                         x-data="{ copied: false }"
-                        class="rounded-xl border border-emerald-200 bg-emerald-50 p-4"
+                        class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/30"
                     >
                         <div class="flex items-center gap-3">
-                            <span aria-hidden="true" class="grid h-10 w-10 place-items-center rounded-full bg-emerald-600 text-base">🏦</span>
+                            <span aria-hidden="true" class="grid h-10 w-10 place-items-center rounded-full bg-emerald-600 text-base dark:bg-emerald-500">🏦</span>
                             <div class="min-w-0 flex-1">
-                                <p class="font-semibold text-stone-900">Banka Havalesi (IBAN)</p>
+                                <p class="font-semibold text-stone-900 dark:text-stone-50">Banka Havalesi (IBAN)</p>
                                 @if ($ibanOwner)
-                                    <p class="text-xs text-stone-500">{{ $ibanOwner }}</p>
+                                    <p class="text-xs text-stone-500 dark:text-stone-400">{{ $ibanOwner }}</p>
                                 @endif
                             </div>
                         </div>
-                        <div class="mt-3 flex items-center gap-2 rounded-lg border border-emerald-300 bg-white p-2">
-                            <code class="flex-1 truncate font-mono text-sm text-stone-800" id="donation-iban">{{ $iban }}</code>
+                        <div class="mt-3 flex items-center gap-2 rounded-lg border border-emerald-300 bg-white p-2 dark:border-emerald-700 dark:bg-stone-900">
+                            <code class="flex-1 truncate font-mono text-sm text-stone-800 dark:text-stone-100" id="donation-iban">{{ $iban }}</code>
                             <button
                                 type="button"
                                 @click="copyIban($refs.iban, $refs.iban, copied = true)"
                                 x-ref="iban"
                                 :data-iban="'{{ $iban }}'"
-                                class="rounded-md bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-800"
+                                class="rounded-md bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900"
                             >
                                 <span x-show="!copied">Kopyala</span>
                                 <span x-show="copied" x-transition>✓ Kopyalandı</span>
@@ -163,7 +163,7 @@
                 @endif
 
                 @if (! $paypalUrl && ! $iban)
-                    <div class="rounded-xl border border-stone-200 bg-stone-50 p-4 text-center text-sm text-stone-600">
+                    <div class="rounded-xl border border-stone-200 bg-stone-50 p-4 text-center text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-800 dark:text-stone-400">
                         Bağış yöntemleri henüz eklenmedi.
                         Yönetici <code>/yonetim</code> panelinden
                         <strong>Site Yönetimi → İçerik (Metinler) → Bağış</strong>
@@ -172,7 +172,7 @@
                 @endif
             </div>
 
-            <div class="border-t border-stone-100 bg-stone-50 px-5 py-3 text-center text-xs text-stone-500">
+            <div class="border-t border-stone-100 bg-stone-50 px-5 py-3 text-center text-xs text-stone-500 dark:border-stone-800 dark:bg-stone-800 dark:text-stone-400">
                 Bağışlar gönüllüdür. Hizmet her zaman ücretsiz kalacaktır. 💚
             </div>
         </div>

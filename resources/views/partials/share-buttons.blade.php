@@ -7,7 +7,7 @@
     </a>
     <button type="button"
             onclick="navigator.clipboard.writeText('{{ $shareUrl }}').then(() => { const t = this.querySelector('span'); const o = t.textContent; t.textContent = '✓ Kopyalandı'; setTimeout(() => t.textContent = o, 2000); })"
-            class="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-50">
+            class="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-400">
         <span>Bağlantıyı kopyala</span>
     </button>
 </div>

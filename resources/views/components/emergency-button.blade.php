@@ -5,7 +5,7 @@
         <button
             type="button"
             @click="open = true"
-            class="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-2.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-700 hover:shadow-lg dark:bg-rose-500 dark:hover:bg-rose-400"
+            class="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-2.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-700 hover:shadow-lg dark:bg-rose-500 dark:text-stone-900 dark:hover:bg-rose-400"
             aria-label="Acil yardım — hızlı erişim"
             title="Acil yardım — hızlı erişim"
         >
