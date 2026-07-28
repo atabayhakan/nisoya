@@ -34,12 +34,12 @@
         @endif
 
         {{-- Zaman çipi (gerçek created_at) --}}
-        <span class="absolute left-2.5 top-2.5 rounded-full bg-white/95 px-2.5 py-1.5 text-[10px] font-bold text-stone-700 dark:bg-stone-900/95 dark:text-stone-200">
+        <span class="absolute left-2.5 top-2.5 rounded-full bg-white/95 px-2.5 py-1.5 text-2xs font-bold text-stone-700 dark:bg-stone-900/95 dark:text-stone-200">
             {{ $listing->created_at->diffForHumans(null, true) }} önce
         </span>
 
         @if ($listing->isCurrentlyFeatured())
-            <span class="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1.5 text-[10px] font-bold text-amber-700 dark:bg-amber-900/70 dark:text-amber-300">
+            <span class="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1.5 text-2xs font-bold text-amber-700 dark:bg-amber-900/70 dark:text-amber-300">
                 <x-heroicon-s-star class="h-3 w-3" /> Öne çıkan
             </span>
         @endif
@@ -47,7 +47,7 @@
 
     <div class="px-1.5 pb-1 pt-3">
         {{-- Meta satırı: şehir · kategori (+ emlak/vasıta koşullu bilgisi) --}}
-        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] font-semibold text-stone-500 dark:text-stone-400">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-stone-500 dark:text-stone-400">
             @if ($listing->country)
                 <span>{{ $listing->country->emoji }} {{ $listing->city ?: $listing->country->name_tr }}</span>
                 <span class="h-1 w-1 rounded-full bg-stone-300 dark:bg-stone-600" aria-hidden="true"></span>
@@ -65,22 +65,28 @@
             @endif
         </div>
 
-        <h3 class="mt-2 line-clamp-2 min-h-[2.6rem] text-[15px] font-bold leading-[1.35] tracking-[-0.008em] text-stone-800 group-hover:text-emerald-700 dark:text-stone-100 dark:group-hover:text-emerald-400" style="text-wrap: pretty">{{ $listing->title }}</h3>
+        {{-- min-h ARİTMETİKTİR, keyfi değil: iki satırlık başlığın tam
+             yüksekliğini rezerve eder ki ızgaradaki tüm kartlar eşit boyda
+             kalsın. 16px × 1.35 satır × 2 = 43.2px = 2.7rem.
+             (Eski hâli 15px'e göre 2.6rem'di; punto ölçeğe katlanınca bu
+             sayı da güncellenmek zorundaydı, yoksa iki satırlık başlıklar
+             tabanı aşıp kartları farklı boylara ayırırdı.) --}}
+        <h3 class="mt-2 line-clamp-2 min-h-[2.7rem] text-base font-bold leading-[1.35] tracking-[-0.008em] text-stone-800 group-hover:text-emerald-700 dark:text-stone-100 dark:group-hover:text-emerald-400" style="text-wrap: pretty">{{ $listing->title }}</h3>
 
         <div class="mt-3 flex items-center justify-between gap-2.5">
-            <span class="text-[17px] font-extrabold text-emerald-600 dark:text-emerald-400">
+            <span class="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
                 @if ($listing->price !== null)
-                    {{ number_format((float) $listing->price, 0) }} {{ $listing->currency }}<span class="text-[11px] font-semibold text-stone-400">{{ $listing->price_unit->suffix() }}</span>
+                    {{ number_format((float) $listing->price, 0) }} {{ $listing->currency }}<span class="text-2xs font-semibold text-stone-400">{{ $listing->price_unit->suffix() }}</span>
                 @else
                     Görüşülür
                 @endif
             </span>
             <span class="flex shrink-0 items-center gap-1.5">
                 @if ($listing->is_remote)
-                    <span class="rounded-full bg-[#e7f7f1] px-2.5 py-1.5 text-[10.5px] font-bold text-[#0f9d76] dark:bg-teal-950/60 dark:text-teal-300">Online</span>
+                    <span class="rounded-full bg-[#e7f7f1] px-2.5 py-1.5 text-2xs font-bold text-[#0f9d76] dark:bg-teal-950/60 dark:text-teal-300">Online</span>
                 @endif
                 @if ($listing->user->is_verified)
-                    <span class="inline-flex items-center gap-1 rounded-full bg-[#e7f7f1] px-2.5 py-1.5 text-[10.5px] font-bold text-[#0f9d76] dark:bg-teal-950/60 dark:text-teal-300" title="Doğrulanmış üye">
+                    <span class="inline-flex items-center gap-1 rounded-full bg-[#e7f7f1] px-2.5 py-1.5 text-2xs font-bold text-[#0f9d76] dark:bg-teal-950/60 dark:text-teal-300" title="Doğrulanmış üye">
                         <x-heroicon-s-check class="h-2.5 w-2.5" /> Doğrulandı
                     </span>
                 @endif

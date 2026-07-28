@@ -10,7 +10,7 @@
         <div class="flex min-w-0 flex-1 items-center gap-2 px-3">
             <x-heroicon-o-magnifying-glass class="h-4 w-4 shrink-0 text-stone-400" />
             <input type="text" name="q" placeholder="{{ setting('home.arama_placeholder') }}"
-                   class="h-12 w-full min-w-0 border-0 bg-transparent p-0 text-[15px] font-medium text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-0 dark:text-stone-100 dark:placeholder-stone-500">
+                   class="h-12 w-full min-w-0 border-0 bg-transparent p-0 text-base font-medium text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-0 dark:text-stone-100 dark:placeholder-stone-500">
         </div>
         {{-- w-full sm:w-40 + shrink-0 ŞART: select'in doğal genişliği en uzun
              seçenekten gelir ("🇺🇸 Amerika Birleşik Devletleri") ve sol sütun
@@ -64,7 +64,7 @@
             <div class="flex" aria-hidden="true">
                 @foreach ($latestListings->take(4) as $ilan)
                     <span class="{{ $loop->first ? '' : '-ml-2.5' }} inline-block rounded-full border-2 border-stone-50 dark:border-stone-950">
-                        <x-avatar :user="$ilan->user" size="h-8 w-8" text="text-[10px]" />
+                        <x-avatar :user="$ilan->user" size="h-8 w-8" text="text-2xs" />
                     </span>
                 @endforeach
             </div>

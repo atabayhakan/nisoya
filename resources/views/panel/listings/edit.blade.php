@@ -28,10 +28,10 @@
                                          class="h-full w-full object-cover" :style="{ objectPosition: objectPosition }">
                                 </div>
                                 @if ($image->is_cover)
-                                    <span class="pointer-events-none absolute left-1 top-1 rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-semibold text-white dark:bg-emerald-500 dark:text-stone-900">Kapak</span>
+                                    <span class="pointer-events-none absolute left-1 top-1 rounded bg-emerald-600 px-1.5 py-0.5 text-2xs font-semibold text-white dark:bg-emerald-500 dark:text-stone-900">Kapak</span>
                                 @endif
-                                <span class="pointer-events-none absolute right-1 top-1 rounded bg-stone-900/70 px-1.5 py-0.5 text-[10px] font-medium text-white opacity-0 transition group-hover:opacity-100" x-show="!saved">Sürükle</span>
-                                <span class="pointer-events-none absolute right-1 top-1 rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-medium text-white" x-show="saved">Kaydedildi ✓</span>
+                                <span class="pointer-events-none absolute right-1 top-1 rounded bg-stone-900/70 px-1.5 py-0.5 text-2xs font-medium text-white opacity-0 transition group-hover:opacity-100" x-show="!saved">Sürükle</span>
+                                <span class="pointer-events-none absolute right-1 top-1 rounded bg-emerald-600 px-1.5 py-0.5 text-2xs font-medium text-white" x-show="saved">Kaydedildi ✓</span>
                                 <label class="absolute inset-x-0 bottom-0 flex cursor-pointer items-center gap-1 bg-white/90 px-2 py-1 text-xs text-red-600 dark:bg-stone-900/90 dark:text-red-400">
                                     <input type="checkbox" name="delete_images[]" value="{{ $image->id }}" class="rounded border-stone-300 text-red-600 focus:ring-red-500 dark:border-stone-600 dark:bg-stone-800">
                                     Sil

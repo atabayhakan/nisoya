@@ -138,7 +138,7 @@
              hedefi, aynı gerçek veri. Veri yoksa hiç basılmaz. --}}
         @if (! $sahne && $ulkeHareketi->isNotEmpty())
             <a href="{{ url('/ilanlar') }}?ulke={{ $ulkeHareketi->first()['code'] }}"
-               class="mt-6 flex min-h-11 items-center gap-2 rounded-2xl border border-stone-200/70 bg-white px-3 py-2 text-[13px] shadow-brand lg:hidden dark:border-stone-800 dark:bg-stone-900">
+               class="mt-6 flex min-h-11 items-center gap-2 rounded-2xl border border-stone-200/70 bg-white px-3 py-2 text-sm shadow-brand lg:hidden dark:border-stone-800 dark:bg-stone-900">
                 <span aria-hidden="true">{{ $ulkeHareketi->first()['emoji'] }}</span>
                 <span class="min-w-0 flex-1 truncate font-semibold text-stone-700 dark:text-stone-200">{{ $ulkeHareketi->first()['name'] }}</span>
                 <span class="shrink-0 font-extrabold text-emerald-600 dark:text-emerald-400">{{ $ulkeHareketi->first()['count'] }}</span>
@@ -177,7 +177,7 @@
                                         <a href="{{ url('/ilanlar') }}?ulke={{ $ulke['code'] }}"
                                            class="flex min-h-11 items-center gap-3 rounded-xl px-2 transition hover:bg-stone-50 dark:hover:bg-stone-800">
                                             <span class="text-base" aria-hidden="true">{{ $ulke['emoji'] }}</span>
-                                            <span class="min-w-0 flex-1 truncate text-[13px] font-semibold text-stone-700 dark:text-stone-200">{{ $ulke['name'] }}</span>
+                                            <span class="min-w-0 flex-1 truncate text-sm font-semibold text-stone-700 dark:text-stone-200">{{ $ulke['name'] }}</span>
                                             <span class="h-1.5 w-20 shrink-0 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800" aria-hidden="true">
                                                 <span class="block h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600"
                                                       style="width: {{ $enYuksek > 0 ? max(8, (int) round($ulke['count'] / $enYuksek * 100)) : 0 }}%"></span>
@@ -206,7 +206,7 @@
                          yalnız o zaman yanar. --}}
                     @if (\App\Support\HomeSections::visible('canli_akis') && $activityFeed->isNotEmpty())
                         <div class="col-span-2 rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
-                            <div class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+                            <div class="flex items-center gap-1.5 text-2xs font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
                                 @if ($akisTaze)
                                     <span class="relative inline-flex h-1.5 w-1.5" aria-hidden="true"><span class="vitrin-pulse absolute inset-0 rounded-full bg-emerald-500"></span><span class="absolute inset-0 rounded-full bg-emerald-500"></span></span>
                                     Canlı akış
@@ -218,8 +218,8 @@
                                 @foreach ($activityFeed->take(3) as $item)
                                     <li>
                                         <a href="{{ $item['href'] }}" class="flex min-h-11 flex-col justify-center rounded-xl px-2 transition hover:bg-stone-50 dark:hover:bg-stone-800">
-                                            <span class="line-clamp-1 text-[13px] font-bold text-stone-800 dark:text-stone-100">{{ $item['categoryName'] }}</span>
-                                            <span class="line-clamp-1 text-[11.5px] font-medium text-stone-500 dark:text-stone-400">
+                                            <span class="line-clamp-1 text-sm font-bold text-stone-800 dark:text-stone-100">{{ $item['categoryName'] }}</span>
+                                            <span class="line-clamp-1 text-xs font-medium text-stone-500 dark:text-stone-400">
                                                 {{ $item['firstName'] }} @if ($item['place'])· {{ $item['flag'] }} {{ $item['place'] }}@endif · {{ $item['timeAgo'] }}
                                             </span>
                                         </a>
@@ -247,16 +247,16 @@
                                     </div>
                                 @endif
                                 @if ($oneCikanIlan->category)
-                                    <span class="absolute left-2 top-2 rounded-full bg-white/95 px-2 py-1 text-[10px] font-bold text-emerald-600 dark:bg-stone-900/95 dark:text-emerald-400">{{ $oneCikanIlan->category->name }}</span>
+                                    <span class="absolute left-2 top-2 rounded-full bg-white/95 px-2 py-1 text-2xs font-bold text-emerald-600 dark:bg-stone-900/95 dark:text-emerald-400">{{ $oneCikanIlan->category->name }}</span>
                                 @endif
                             </div>
-                            <div class="mt-2.5 line-clamp-1 text-[13px] font-bold text-stone-800 dark:text-stone-100">{{ $oneCikanIlan->title }}</div>
-                            <div class="mt-0.5 text-[11.5px] font-medium text-stone-500 dark:text-stone-400">
+                            <div class="mt-2.5 line-clamp-1 text-sm font-bold text-stone-800 dark:text-stone-100">{{ $oneCikanIlan->title }}</div>
+                            <div class="mt-0.5 text-xs font-medium text-stone-500 dark:text-stone-400">
                                 @if ($oneCikanIlan->country){{ $oneCikanIlan->country->emoji }} {{ $oneCikanIlan->city ?: $oneCikanIlan->country->name_tr }}@endif
                             </div>
                             <div class="mt-1.5 text-base font-extrabold text-emerald-600 dark:text-emerald-400">
                                 @if ($oneCikanIlan->price !== null)
-                                    {{ number_format((float) $oneCikanIlan->price, 0) }} {{ $oneCikanIlan->currency }}<span class="text-[11px] font-semibold text-stone-400">{{ $oneCikanIlan->price_unit->suffix() }}</span>
+                                    {{ number_format((float) $oneCikanIlan->price, 0) }} {{ $oneCikanIlan->currency }}<span class="text-2xs font-semibold text-stone-400">{{ $oneCikanIlan->price_unit->suffix() }}</span>
                                 @else
                                     Görüşülür
                                 @endif

@@ -33,7 +33,7 @@
         title="Ara (Cmd/Ctrl+K)"
     >
         <x-heroicon-o-magnifying-glass class="h-5 w-5" />
-        <kbd class="hidden rounded border border-stone-300 px-1.5 py-0.5 text-[10px] font-semibold text-stone-400 md:inline dark:border-stone-700 dark:text-stone-500">⌘K</kbd>
+        <kbd class="hidden rounded border border-stone-300 px-1.5 py-0.5 text-2xs font-semibold text-stone-400 md:inline dark:border-stone-700 dark:text-stone-500">⌘K</kbd>
     </button>
 
     <template x-teleport="body">
@@ -71,7 +71,7 @@
                         aria-expanded="true"
                         aria-controls="command-palette-listbox"
                     >
-                    <kbd class="hidden shrink-0 rounded border border-stone-300 px-1.5 py-0.5 text-[10px] font-semibold text-stone-400 sm:inline dark:border-stone-700 dark:text-stone-500">Esc</kbd>
+                    <kbd class="hidden shrink-0 rounded border border-stone-300 px-1.5 py-0.5 text-2xs font-semibold text-stone-400 sm:inline dark:border-stone-700 dark:text-stone-500">Esc</kbd>
                 </div>
 
                 <div id="command-palette-listbox" role="listbox" class="max-h-96 overflow-y-auto p-2">
@@ -97,7 +97,7 @@
                                 <span class="truncate font-medium text-stone-800 dark:text-stone-100" x-text="item.title"></span>
                                 <span class="truncate text-xs text-stone-400 dark:text-stone-500" x-show="item.subtitle" x-text="item.subtitle"></span>
                             </span>
-                            <span class="shrink-0 rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-semibold text-stone-500 dark:bg-stone-800 dark:text-stone-400" x-text="item.category"></span>
+                            <span class="shrink-0 rounded-full bg-stone-100 px-2 py-0.5 text-2xs font-semibold text-stone-500 dark:bg-stone-800 dark:text-stone-400" x-text="item.category"></span>
                         </a>
                     </template>
                 </div>

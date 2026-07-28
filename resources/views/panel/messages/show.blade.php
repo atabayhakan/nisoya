@@ -104,7 +104,7 @@
 
             function metaEl(m) {
                 const meta = document.createElement('p');
-                meta.className = 'meta mt-1 flex items-center justify-end gap-1.5 text-[10px] ' + (m.mine ? 'text-emerald-100' : 'text-stone-400 dark:text-stone-500');
+                meta.className = 'meta mt-1 flex items-center justify-end gap-1.5 text-2xs ' + (m.mine ? 'text-emerald-100' : 'text-stone-400 dark:text-stone-500');
                 const t = document.createElement('span');
                 t.textContent = m.time;
                 meta.append(t);

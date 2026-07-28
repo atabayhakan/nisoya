@@ -1,5 +1,11 @@
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
 
+/* Tipografi token'ları TEK KAYNAK (ana siteyle aynı dosya). Admin ayrı bir
+   Vite girişi olduğu için app.css'i görmüyor; bu import olmadan
+   resources/views/filament/ altındaki `text-2xs` gibi kullanımlar
+   derlenmez ve sessizce miras boyuta düşerdi. */
+@import '../../tipografi.css';
+
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
 

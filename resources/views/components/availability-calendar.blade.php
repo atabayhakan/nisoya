@@ -31,7 +31,7 @@
             <div class="text-center text-sm font-semibold text-stone-700 dark:text-stone-300">
                 {{ $monthStart->translatedFormat('F Y') }}
             </div>
-            <div class="mt-2 grid grid-cols-7 gap-y-1 text-center text-[11px] text-stone-400 dark:text-stone-500">
+            <div class="mt-2 grid grid-cols-7 gap-y-1 text-center text-2xs text-stone-400 dark:text-stone-500">
                 @foreach ($dayNames as $dayName)
                     <span>{{ $dayName }}</span>
                 @endforeach
@@ -60,7 +60,7 @@
     @endfor
 </div>
 
-<div class="mt-3 flex items-center gap-4 text-[11px] text-stone-400 dark:text-stone-500">
+<div class="mt-3 flex items-center gap-4 text-2xs text-stone-400 dark:text-stone-500">
     <span class="inline-flex items-center gap-1"><span class="inline-block h-2.5 w-2.5 rounded bg-emerald-200 dark:bg-emerald-900"></span> Müsait</span>
     <span class="inline-flex items-center gap-1"><span class="inline-block h-2.5 w-2.5 rounded bg-stone-200 dark:bg-stone-800"></span> Dolu</span>
 </div>

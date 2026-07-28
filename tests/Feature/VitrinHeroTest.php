@@ -193,8 +193,12 @@ class VitrinHeroTest extends TestCase
 
         $yanit = $this->get('/')->assertOk();
         $yanit->assertSee('şehir');
-        // 3 değil 1 şehir olmalı — sayının kendisi kanıt satırında geçiyor.
-        $this->assertStringNotContainsString('>3</span>
-            <span class="text-xs font-medium text-stone-500 dark:text-stone-400">şehir', $yanit->getContent());
+
+        // İddia SINIF ADLARINDAN BAĞIMSIZ olmalı: bu test şehir sayımının
+        // doğruluğunu mühürlüyor, hangi Tailwind sınıfının kullanıldığını
+        // değil. Sınıfa bağlı hâli, tipografi ölçeği değişince kırılıyordu.
+        preg_match('/>\s*(\d+)\s*<[^>]*>\s*<[^>]*>\s*şehir/su', $yanit->getContent(), $m);
+        $this->assertNotEmpty($m, 'Kanıt satırındaki şehir sayısı okunamadı.');
+        $this->assertSame('1', $m[1], 'Berlin/berlin/BERLIN tek şehir sayılmalı');
     }
 }

@@ -148,7 +148,7 @@
                 <h3 class="text-sm font-semibold text-stone-800 dark:text-stone-100">
                     İnce ayarlar
                     <template x-if="klasikKilitli">
-                        <span class="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">Klasik temada çalışır</span>
+                        <span class="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-2xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">Klasik temada çalışır</span>
                     </template>
                 </h3>
                 <template x-if="klasikKilitli">

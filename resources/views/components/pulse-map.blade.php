@@ -16,7 +16,7 @@
     >
         <canvas x-ref="canvas" class="absolute inset-0 h-full w-full" role="img" aria-label="Nisoya'nın {{ count($countries) }} ülkedeki topluluğunu gösteren canlı nabız görselleştirmesi"></canvas>
     </div>
-    <p class="border-t border-stone-100 px-6 py-3 font-mono text-[11px] text-stone-400 dark:border-stone-800 dark:text-stone-500">
+    <p class="border-t border-stone-100 px-6 py-3 font-mono text-2xs text-stone-400 dark:border-stone-800 dark:text-stone-500">
         Nokta boyutu, o ülkedeki aktif ilan sayısını yansıtır — temsili değil, gerçek veri.
     </p>
 </div>

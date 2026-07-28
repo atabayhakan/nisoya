@@ -254,14 +254,14 @@
                                     @else
                                         <div class="flex flex-col items-center justify-center p-2 text-center">
                                             <x-filament::icon icon="heroicon-o-document-text" class="h-10 w-10 text-gray-400" />
-                                            <span class="mt-1 uppercase text-[10px] font-bold text-gray-500">
+                                            <span class="mt-1 uppercase text-2xs font-bold text-gray-500">
                                                 {{ pathinfo($item['path'], PATHINFO_EXTENSION) }}
                                             </span>
                                         </div>
                                     @endif
 
                                     {{-- Üst Rozet (Tür) --}}
-                                    <span class="absolute left-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur">
+                                    <span class="absolute left-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-2xs font-medium text-white backdrop-blur">
                                         @if ($item['is_image']) Görsel @elseif ($item['is_video']) Video @else Doküman @endif
                                     </span>
                                 </div>
@@ -272,7 +272,7 @@
                                         <div class="truncate text-xs font-semibold text-gray-800 dark:text-gray-200" title="{{ $item['path'] }}">
                                             {{ basename($item['path']) }}
                                         </div>
-                                        <div class="mt-0.5 text-[10px] text-gray-400">
+                                        <div class="mt-0.5 text-2xs text-gray-400">
                                             {{ $human($item['size']) }} · {{ $item['mtime']->format('d.m.Y') }}
                                         </div>
                                     </div>
@@ -286,7 +286,7 @@
                                                 copied = true;
                                                 setTimeout(() => copied = false, 2000);
                                             "
-                                            class="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/40 transition"
+                                            class="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-2xs font-medium text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/40 transition"
                                         >
                                             <template x-if="!copied">
                                                 <span class="flex items-center gap-1">🔗 Link Kopyala</span>

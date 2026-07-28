@@ -17,7 +17,7 @@
                     <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
                         <x-heroicon-o-shield-check class="h-5 w-5" />
                     </span>
-                    <div class="mt-3 text-[15px] font-extrabold tracking-tight text-stone-800 dark:text-stone-100">{{ setting('home.deger2_baslik') }}</div>
+                    <div class="mt-3 text-base font-extrabold tracking-tight text-stone-800 dark:text-stone-100">{{ setting('home.deger2_baslik') }}</div>
                     <p class="mt-1 text-sm font-medium text-stone-500 dark:text-stone-400">{{ setting('home.deger2_metin') }}</p>
                 </div>
 
@@ -32,7 +32,7 @@
                     <span class="grid h-9 w-9 place-items-center rounded-xl bg-[#e7f7f1] text-[#0f9d76] dark:bg-teal-950/60 dark:text-teal-300">
                         <x-heroicon-o-globe-alt class="h-5 w-5" />
                     </span>
-                    <div class="mt-3 text-[15px] font-extrabold tracking-tight text-stone-800 dark:text-stone-100">{{ $stats['countries'] }} ülke · {{ $stats['cities'] }} şehir</div>
+                    <div class="mt-3 text-base font-extrabold tracking-tight text-stone-800 dark:text-stone-100">{{ $stats['countries'] }} ülke · {{ $stats['cities'] }} şehir</div>
                     <p class="mt-1 text-sm font-medium text-stone-500 dark:text-stone-400">{{ $stats['categories'] }} kategoride hizmet ve ürün.</p>
                 </div>
             </div>

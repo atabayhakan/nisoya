@@ -21,7 +21,7 @@
                             </span>
                             <x-heroicon-o-arrow-right class="h-4 w-4 text-stone-300 transition group-hover:translate-x-0.5 group-hover:text-emerald-600 dark:text-stone-600 dark:group-hover:text-emerald-400" />
                         </div>
-                        <div class="mt-3 text-[15px] font-extrabold tracking-tight text-stone-800 dark:text-stone-100">{{ $category->name }}</div>
+                        <div class="mt-3 text-base font-extrabold tracking-tight text-stone-800 dark:text-stone-100">{{ $category->name }}</div>
                     </a>
                 @endforeach
             </div>

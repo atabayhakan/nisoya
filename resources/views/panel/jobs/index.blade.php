@@ -61,7 +61,7 @@
                             </div>
                             <div class="flex flex-wrap items-center gap-2">
                                 <a href="{{ route('panel.jobs.applicants', $job) }}" class="rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700">
-                                    Başvurular <span class="ml-0.5 rounded-full bg-emerald-600 px-1.5 text-[10px] text-white">{{ $job->applications_count }}</span>
+                                    Başvurular <span class="ml-0.5 rounded-full bg-emerald-600 px-1.5 text-2xs text-white">{{ $job->applications_count }}</span>
                                 </a>
                                 <a href="{{ route('panel.jobs.edit', $job) }}" class="rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700">Düzenle</a>
                                 <form method="POST" action="{{ route('panel.jobs.status', $job) }}" class="inline">

@@ -23,7 +23,7 @@
                     </svg>
                     <div class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
                         <span class="text-lg font-bold leading-none text-gray-950 dark:text-white">{{ $veri['toplam'] }}</span>
-                        <span class="mt-0.5 text-[10px] font-medium text-gray-500 dark:text-gray-400">ilan</span>
+                        <span class="mt-0.5 text-2xs font-medium text-gray-500 dark:text-gray-400">ilan</span>
                     </div>
                 </div>
 
