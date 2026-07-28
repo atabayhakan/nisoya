@@ -68,26 +68,9 @@
                             @endforeach
                         </div>
                     @endif
-                    @if ($user->paymentLinks->isNotEmpty())
-                        <div class="mt-2 flex flex-wrap items-center gap-1.5">
-                            <span class="text-xs text-stone-600 dark:text-stone-400">Kabul ettiği ödeme yöntemleri:</span>
-                            @foreach ($user->paymentLinks as $link)
-                                @if ($link->detailIsLink())
-                                    <a href="{{ $link->detail }}" target="_blank" rel="noopener nofollow" class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600 hover:bg-emerald-100 hover:text-emerald-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-emerald-900/40 dark:hover:text-emerald-300" title="{{ $link->method->getLabel() }} — kendi ödeme sayfasına git">
-                                        <span aria-hidden="true">{{ $link->method->icon() }}</span>{{ $link->method->getLabel() }} ↗
-                                    </a>
-                                @elseif ($link->qr_path)
-                                    <a href="{{ Storage::url($link->qr_path) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600 hover:bg-emerald-100 hover:text-emerald-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-emerald-900/40 dark:hover:text-emerald-300" title="{{ $link->method->getLabel() }} — QR kodu gör">
-                                        <span aria-hidden="true">{{ $link->method->icon() }}</span>{{ $link->method->getLabel() }} 🔳
-                                    </a>
-                                @else
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600 dark:bg-stone-800 dark:text-stone-300">
-                                        <span aria-hidden="true">{{ $link->method->icon() }}</span>{{ $link->method->getLabel() }}@if ($link->detail) — {{ $link->detail }}@endif
-                                    </span>
-                                @endif
-                            @endforeach
-                        </div>
-                    @endif
+                    {{-- ÖDEME KANALLARI BURADAN TAŞINDI (2026-07-29).
+                         Aşağıda, mesaj kutusundan SONRA ve güvenlik uyarısının
+                         hemen ÜSTÜNDE duruyorlar. Gerekçe orada yazılı. --}}
                 </div>
                 <div class="text-center">
                     <div class="text-2xl font-bold text-stone-900 dark:text-stone-50">{{ $listings->total() }}</div>
@@ -134,7 +117,44 @@
                 </div>
             @endauth
 
+            {{-- ÖDEME KANALLARI — MESAJDAN SONRA, UYARIDAN HEMEN ÖNCE.
+
+                 Önceden bu blok profil başlığının içindeydi: tıklanabilir
+                 PayPal linki, IBAN ve QR sayfanın en üstünde duruyor, uyardığı
+                 güvenlik kartı ise 66 satır AŞAĞIDA geliyordu. Ziyaretçi
+                 "PayPal'da Mal ve Hizmetler seç" uyarısını hiç görmeden
+                 satıcının ödeme sayfasına çıkabiliyordu — ön ödeme
+                 dolandırıcılığının istediği tam akış, ve K-A/K-D güven
+                 yatırımı tek bir sıralama hatasıyla atlatılıyordu.
+
+                 Bu sıra projenin KENDİ deseni; profil tek istisnaydı:
+                   listings/show.blade.php        mesaj → ödeme → uyarı
+                   vitrin/listings/show.blade.php mesaj → ödeme → uyarı
+                 Artık profil de aynı. Vitrin'in profil override'ı yok, yani
+                 tek dosya iki temayı birden düzeltiyor.
+
+                 DOM sırası = görsel sıra: bu bölümde `order-*` sınıfı yok,
+                 dolayısıyla kaynak sırası ekrandaki sırayı belirler. --}}
             @if ($user->paymentLinks->isNotEmpty())
+                <div class="mt-4 flex flex-wrap items-center gap-1.5">
+                    <span class="text-xs text-stone-600 dark:text-stone-400">Kabul ettiği ödeme yöntemleri:</span>
+                    @foreach ($user->paymentLinks as $link)
+                        @if ($link->detailIsLink())
+                            <a href="{{ $link->detail }}" target="_blank" rel="noopener nofollow" class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600 hover:bg-emerald-100 hover:text-emerald-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-emerald-900/40 dark:hover:text-emerald-300" title="{{ $link->method->getLabel() }} — kendi ödeme sayfasına git">
+                                <span aria-hidden="true">{{ $link->method->icon() }}</span>{{ $link->method->getLabel() }} ↗
+                            </a>
+                        @elseif ($link->qr_path)
+                            <a href="{{ Storage::url($link->qr_path) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600 hover:bg-emerald-100 hover:text-emerald-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-emerald-900/40 dark:hover:text-emerald-300" title="{{ $link->method->getLabel() }} — QR kodu gör">
+                                <span aria-hidden="true">{{ $link->method->icon() }}</span>{{ $link->method->getLabel() }} 🔳
+                            </a>
+                        @else
+                            <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600 dark:bg-stone-800 dark:text-stone-300">
+                                <span aria-hidden="true">{{ $link->method->icon() }}</span>{{ $link->method->getLabel() }}@if ($link->detail) — {{ $link->detail }}@endif
+                            </span>
+                        @endif
+                    @endforeach
+                </div>
+
                 @include('partials.payment-safety-card', ['seller' => $user])
             @endif
 
@@ -254,6 +274,13 @@
                 @empty
                     <p class="text-sm text-stone-500 dark:text-stone-400">Henüz değerlendirme yok. İlk değerlendiren sen ol!</p>
                 @endforelse
+
+                {{-- `yorum` adlı paginator: ilanlar varsayılan `page`
+                     parametresini kullanıyor, ikisi aynı adı paylaşsaydı yorum
+                     sayfasını çevirmek ilan listesini de kaydırırdı. --}}
+                @if ($reviews->hasPages())
+                    <div class="mt-2">{{ $reviews->onEachSide(1)->links() }}</div>
+                @endif
             </div>
         </div>
     </div>
