@@ -48,7 +48,7 @@
                         <x-heroicon-o-exclamation-circle class="h-5 w-5 {{ $stil['ikon'] }}" />
                     </span>
                     <span class="min-w-0 flex-1 text-sm font-semibold text-stone-800 dark:text-stone-100">{{ $metin }}</span>
-                    <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-stone-400" />
+                    <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-stone-600" />
                 </a>
             </li>
         @endforeach
@@ -67,7 +67,7 @@
                     <span class="min-w-0 flex-1 text-sm font-semibold text-stone-800 dark:text-stone-100">
                         {{ $s->okunmamisMesaj }} okunmamış mesaj
                     </span>
-                    <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-stone-400" />
+                    <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-stone-600" />
                 </a>
             </li>
         @endif
@@ -82,7 +82,7 @@
                     <span class="min-w-0 flex-1 text-sm font-semibold text-stone-800 dark:text-stone-100">
                         {{ $s->gelenYeniBasvuru }} yeni başvuru geldi
                     </span>
-                    <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-stone-400" />
+                    <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-stone-600" />
                 </a>
             </li>
         @endif
@@ -97,7 +97,7 @@
                     <span class="min-w-0 flex-1 text-sm font-semibold text-stone-800 dark:text-stone-100">
                         {{ $s->okunmamisBildirim }} okunmamış bildirim
                     </span>
-                    <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-stone-400" />
+                    <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-stone-600" />
                 </a>
             </li>
         @endif
@@ -114,7 +114,7 @@
                     <span class="min-w-0 flex-1 text-sm font-semibold text-stone-800 dark:text-stone-100">
                         {{ $s->oneCikarmaBitiyor }} ilanının öne çıkarması bitmek üzere — yenileme talebi gönderebilirsin
                     </span>
-                    <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-stone-400" />
+                    <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-stone-600" />
                 </a>
             </li>
         @endif

@@ -26,7 +26,7 @@
         <div class="mb-4 flex items-center gap-1 rounded-full bg-white/70 px-2 py-1 text-xs shadow-sm ring-1 ring-stone-200 dark:bg-stone-900/70 dark:ring-stone-700">
             @foreach ($locales as $lang)
                 <a href="{{ route('davet.show', array_filter(['token' => $event->token, 'dil' => $lang === 'tr' ? null : $lang])) }}"
-                   class="rounded-full px-2.5 py-1 font-medium uppercase transition {{ $locale === $lang ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900' : 'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200' }}">{{ $lang }}</a>
+                   class="rounded-full px-2.5 py-1 font-medium uppercase transition {{ $locale === $lang ? 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-stone-900' : 'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200' }}">{{ $lang }}</a>
             @endforeach
         </div>
 
@@ -101,7 +101,7 @@
                                 <label class="cursor-pointer">
                                     <input type="radio" name="status" value="{{ $status->value }}" required class="peer sr-only"
                                            @checked(old('status', $myGuest?->status?->value) === $status->value)>
-                                    <span class="block rounded-xl border border-stone-300 px-2 py-2.5 text-center text-sm font-medium transition peer-checked:border-emerald-500 peer-checked:bg-emerald-600 peer-checked:text-white dark:border-stone-600 dark:peer-checked:bg-emerald-500 dark:peer-checked:text-stone-900">
+                                    <span class="block rounded-xl border border-stone-300 px-2 py-2.5 text-center text-sm font-medium transition peer-checked:border-emerald-500 peer-checked:bg-emerald-700 peer-checked:text-white dark:border-stone-600 dark:peer-checked:bg-emerald-500 dark:peer-checked:text-stone-900">
                                         {{ __('davet.'.match ($status->value) { 'geliyor' => 'geliyorum', 'belki' => 'belki', default => 'gelemiyorum' }) }}
                                     </span>
                                 </label>
@@ -211,8 +211,8 @@
         @endif
 
         {{-- Büyüme döngüsü: davetiyeyi gören herkes Nisoya'yı görür --}}
-        <a href="{{ url('/panel/etkinlikler') }}" class="mt-6 text-center text-xs text-stone-400 underline-offset-2 hover:underline dark:text-stone-500">
-            {{ __('davet.nisoya_footer_prefix') }} <span class="font-semibold text-emerald-600 dark:text-emerald-400">Nisoya</span> {{ __('davet.nisoya_footer_suffix') }}
+        <a href="{{ url('/panel/etkinlikler') }}" class="mt-6 text-center text-xs text-stone-600 underline-offset-2 hover:underline dark:text-stone-400">
+            {{ __('davet.nisoya_footer_prefix') }} <span class="font-semibold text-emerald-700 dark:text-emerald-400">Nisoya</span> {{ __('davet.nisoya_footer_suffix') }}
         </a>
     </div>
 </body>

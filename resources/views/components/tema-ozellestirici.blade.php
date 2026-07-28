@@ -74,7 +74,7 @@
 
         {{-- Küçültülmüş şerit: bir tasarım aracında sayfanın tamamını görebilmek şart. --}}
         <button type="button" x-show="acik && kucuk" @click="kucuk = false"
-                class="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-4 z-50 rounded-full bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg md:bottom-6 md:left-6 dark:bg-emerald-500 dark:text-stone-900">
+                class="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-4 z-50 rounded-full bg-emerald-700 px-4 py-3 text-sm font-semibold text-white shadow-lg md:bottom-6 md:left-6 dark:bg-emerald-500 dark:text-stone-900">
             🎨 Görünüm panelini aç <span x-show="kirli" class="ml-1">•</span>
         </button>
 
@@ -95,8 +95,8 @@
                 {{-- min-w/h-11: mobilde bunlar parmakla basılan gerçek kontroller;
                      masaüstünde fareyle kompakt kalırlar. --}}
                 <div class="flex shrink-0 gap-1">
-                    <button type="button" @click="kucuk = true" class="min-h-11 min-w-11 rounded-lg px-2 text-xs font-medium text-stone-500 hover:bg-stone-100 md:min-h-0 md:min-w-0 md:py-1 dark:hover:bg-stone-800" title="Küçült (sayfayı tam gör)">▁</button>
-                    <button type="button" @click="acik = false" class="min-h-11 min-w-11 rounded-lg px-2 text-xs font-medium text-stone-500 hover:bg-stone-100 md:min-h-0 md:min-w-0 md:py-1 dark:hover:bg-stone-800" aria-label="Kapat">✕</button>
+                    <button type="button" @click="kucuk = true" class="min-h-11 min-w-11 rounded-lg px-2 text-xs font-medium text-stone-600 hover:bg-stone-100 md:min-h-0 md:min-w-0 md:py-1 dark:hover:bg-stone-800" title="Küçült (sayfayı tam gör)">▁</button>
+                    <button type="button" @click="acik = false" class="min-h-11 min-w-11 rounded-lg px-2 text-xs font-medium text-stone-600 hover:bg-stone-100 md:min-h-0 md:min-w-0 md:py-1 dark:hover:bg-stone-800" aria-label="Kapat">✕</button>
                 </div>
             </div>
 
@@ -176,12 +176,12 @@
 
                 <label class="mt-3 flex items-center gap-2 text-sm text-stone-700 dark:text-stone-200">
                     <input type="checkbox" x-model="glassmorphism" @change="degisti()" :disabled="klasikKilitli"
-                           class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600">
+                           class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-500 dark:border-stone-600">
                     Cam efekti
                 </label>
                 <label class="mt-2 flex items-center gap-2 text-sm text-stone-700 dark:text-stone-200">
                     <input type="checkbox" x-model="smooth_animations" @change="degisti()" :disabled="klasikKilitli"
-                           class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600">
+                           class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-500 dark:border-stone-600">
                     Akıcı animasyonlar
                 </label>
             </div>
@@ -192,7 +192,7 @@
 
             <div class="mt-4 flex flex-wrap gap-2 border-t border-stone-200 pt-4 dark:border-stone-800">
                 <button type="button" @click="kaydet()" :disabled="calisiyor || !kirli"
-                        class="min-h-11 flex-1 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 md:min-h-0 md:py-2 dark:bg-emerald-500 dark:text-stone-900">
+                        class="min-h-11 flex-1 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50 md:min-h-0 md:py-2 dark:bg-emerald-500 dark:text-stone-900">
                     <span x-text="kirli ? 'Kaydet' : 'Kaydedildi'"></span>
                 </button>
                 <button type="button" @click="vazgec()" :disabled="calisiyor"
@@ -200,7 +200,7 @@
                     Vazgeç
                 </button>
                 <button type="button" @click="if (confirm('Görünüm fabrika ayarlarına dönecek. Emin misin?')) sifirla()" :disabled="calisiyor"
-                        class="min-h-11 rounded-lg px-3 text-xs font-medium text-stone-500 hover:bg-stone-100 md:min-h-0 md:py-2 dark:text-stone-400 dark:hover:bg-stone-800">
+                        class="min-h-11 rounded-lg px-3 text-xs font-medium text-stone-600 hover:bg-stone-100 md:min-h-0 md:py-2 dark:text-stone-400 dark:hover:bg-stone-800">
                     Varsayılana dön
                 </button>
             </div>

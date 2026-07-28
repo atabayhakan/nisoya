@@ -292,7 +292,7 @@
                                                 <span class="flex items-center gap-1">🔗 Link Kopyala</span>
                                             </template>
                                             <template x-if="copied">
-                                                <span class="flex items-center gap-1 text-emerald-600 font-bold">✓ Kopyalandı!</span>
+                                                <span class="flex items-center gap-1 text-emerald-700 font-bold">✓ Kopyalandı!</span>
                                             </template>
                                         </button>
 

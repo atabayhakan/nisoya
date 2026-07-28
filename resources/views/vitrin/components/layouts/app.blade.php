@@ -106,17 +106,17 @@
                         <span class="hidden max-w-[110px] truncate text-sm font-medium md:inline">{{ auth()->user()->name }}</span>
                     </a>
                     <a href="{{ route('dashboard') }}" class="hidden rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Panelim</a>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-[0_10px_20px_-10px_rgba(62,99,240,.9)] transition hover:-translate-y-0.5 hover:bg-emerald-700 md:inline-flex dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900 dark:shadow-none">
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-bold text-white shadow-[0_10px_20px_-10px_rgba(62,99,240,.9)] transition hover:-translate-y-0.5 hover:bg-emerald-800 md:inline-flex dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900 dark:shadow-none">
                         <x-heroicon-o-plus class="h-4 w-4" />İlan Ver
                     </a>
                     <form method="POST" action="{{ route('logout') }}" class="hidden md:block">
                         @csrf
-                        <button type="submit" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Çıkış</button>
+                        <button type="submit" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Çıkış</button>
                     </form>
                 @else
                     <a href="{{ route('login') }}" class="hidden rounded-lg px-3 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Giriş</a>
                     <a href="{{ route('register') }}" class="hidden rounded-lg px-3 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Kayıt</a>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-[0_10px_20px_-10px_rgba(62,99,240,.9)] transition hover:-translate-y-0.5 hover:bg-emerald-700 md:inline-flex dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900 dark:shadow-none">
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-bold text-white shadow-[0_10px_20px_-10px_rgba(62,99,240,.9)] transition hover:-translate-y-0.5 hover:bg-emerald-800 md:inline-flex dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900 dark:shadow-none">
                         <x-heroicon-o-plus class="h-4 w-4" />İlan Ver
                     </a>
                 @endauth
@@ -148,7 +148,7 @@
                 </div>
                 <p class="mt-3 text-sm leading-relaxed text-stone-500 dark:text-stone-400">{{ setting('footer.aciklama') }}</p>
                 @if (setting('footer.sosyal_instagram') || setting('footer.sosyal_facebook') || setting('footer.sosyal_whatsapp'))
-                    <div class="mt-4 flex items-center gap-3 text-stone-400 dark:text-stone-500">
+                    <div class="mt-4 flex items-center gap-3 text-stone-600 dark:text-stone-400">
                         @if (setting('footer.sosyal_instagram'))
                             <a href="{{ setting('footer.sosyal_instagram') }}" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-700 dark:hover:text-emerald-400" aria-label="Instagram">📷</a>
                         @endif
@@ -193,9 +193,9 @@
             </div>
         </div>
         <div class="border-t border-stone-100 py-4 dark:border-stone-800">
-            <p class="mx-auto max-w-6xl px-4 text-center text-xs font-medium text-stone-400 dark:text-stone-500">
+            <p class="mx-auto max-w-6xl px-4 text-center text-xs font-medium text-stone-600 dark:text-stone-400">
                 © {{ date('Y') }} {{ setting('footer.telif_metni') }}
-                <span class="mx-2 text-stone-300 dark:text-stone-600">·</span>
+                <span class="mx-2 text-stone-300 dark:text-stone-400" aria-hidden="true">·</span>
                 Hizmet ücretsizdir. 💙
             </p>
         </div>

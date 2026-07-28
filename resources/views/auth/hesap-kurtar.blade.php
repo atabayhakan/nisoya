@@ -22,7 +22,7 @@
                    inputmode="text" placeholder="ÖRN: A3F9K-2M7BQ"
                    class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 font-mono uppercase tracking-wider shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
             @error('code') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            <p class="mt-1 text-xs text-stone-400">Her kod yalnızca bir kez kullanılabilir.</p>
+            <p class="mt-1 text-xs text-stone-600">Her kod yalnızca bir kez kullanılabilir.</p>
         </div>
 
         <div>
@@ -38,7 +38,7 @@
                    class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 pr-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" />
         </div>
 
-        <button type="submit" class="w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-700">
+        <button type="submit" class="w-full rounded-lg bg-emerald-700 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-800">
             Parolayı sıfırla
         </button>
     </form>

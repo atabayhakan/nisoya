@@ -17,7 +17,7 @@
                             @if (! empty($d['body']))
                                 <div class="truncate text-sm text-stone-500 dark:text-stone-400">{{ $d['body'] }}</div>
                             @endif
-                            <div class="mt-0.5 text-xs text-stone-400 dark:text-stone-500">{{ $n->created_at->diffForHumans() }}</div>
+                            <div class="mt-0.5 text-xs text-stone-600 dark:text-stone-400">{{ $n->created_at->diffForHumans() }}</div>
                         </div>
                         @if (is_null($n->read_at))<span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500 dark:bg-emerald-400"></span>@endif
                     </a>

@@ -81,7 +81,7 @@
             @if ($hero::rozet())
                 <span class="inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-semibold shadow-sm {{ $koyu
                     ? 'border-white/25 bg-white/10 text-white'
-                    : 'border-stone-200 bg-white text-emerald-600 dark:border-stone-800 dark:bg-stone-900 dark:text-emerald-400' }}">
+                    : 'border-stone-200 bg-white text-emerald-700 dark:border-stone-800 dark:bg-stone-900 dark:text-emerald-400' }}">
                     <span class="relative inline-flex h-2 w-2" aria-hidden="true">
                         <span class="vitrin-pulse absolute inset-0 rounded-full bg-[#16a97f]"></span>
                         <span class="absolute inset-0 rounded-full bg-[#16a97f]"></span>
@@ -93,7 +93,7 @@
             <h1 class="mt-5 text-4xl font-extrabold tracking-[-0.032em] sm:text-5xl {{ $koyu ? 'text-white' : 'text-stone-800 dark:text-stone-50' }}" style="text-wrap: pretty">
                 {{ $hero::baslik() }}
                 @if ($hero::vurgu())
-                    <br><span class="{{ $koyu ? 'text-emerald-300' : 'text-emerald-600 dark:text-emerald-400' }}">{{ $hero::vurgu() }}</span>
+                    <br><span class="{{ $koyu ? 'text-emerald-300' : 'text-emerald-700 dark:text-emerald-400' }}">{{ $hero::vurgu() }}</span>
                 @endif
             </h1>
 
@@ -117,7 +117,7 @@
             @if ($cta1 || $cta2)
                 <div class="mt-6 flex flex-wrap gap-3 {{ $sahne ? 'justify-center' : '' }}">
                     @if ($cta1)
-                        <a href="{{ $cta1['url'] }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-[0_12px_22px_-12px_rgba(62,99,240,1)] transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none">
+                        <a href="{{ $cta1['url'] }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-[0_12px_22px_-12px_rgba(62,99,240,1)] transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none">
                             {{ $cta1['etiket'] }}
                         </a>
                     @endif
@@ -141,8 +141,8 @@
                class="mt-6 flex min-h-11 items-center gap-2 rounded-2xl border border-stone-200/70 bg-white px-3 py-2 text-sm shadow-brand lg:hidden dark:border-stone-800 dark:bg-stone-900">
                 <span aria-hidden="true">{{ $ulkeHareketi->first()['emoji'] }}</span>
                 <span class="min-w-0 flex-1 truncate font-semibold text-stone-700 dark:text-stone-200">{{ $ulkeHareketi->first()['name'] }}</span>
-                <span class="shrink-0 font-extrabold text-emerald-600 dark:text-emerald-400">{{ $ulkeHareketi->first()['count'] }}</span>
-                <span class="shrink-0 text-stone-400 dark:text-stone-500">aktif ilan</span>
+                <span class="shrink-0 font-extrabold text-emerald-700 dark:text-emerald-400">{{ $ulkeHareketi->first()['count'] }}</span>
+                <span class="shrink-0 text-stone-600 dark:text-stone-400">aktif ilan</span>
             </a>
         @endif
 
@@ -206,7 +206,7 @@
                          yalnız o zaman yanar. --}}
                     @if (\App\Support\HomeSections::visible('canli_akis') && $activityFeed->isNotEmpty())
                         <div class="col-span-2 rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
-                            <div class="flex items-center gap-1.5 text-2xs font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+                            <div class="flex items-center gap-1.5 text-2xs font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
                                 @if ($akisTaze)
                                     <span class="relative inline-flex h-1.5 w-1.5" aria-hidden="true"><span class="vitrin-pulse absolute inset-0 rounded-full bg-emerald-500"></span><span class="absolute inset-0 rounded-full bg-emerald-500"></span></span>
                                     Canlı akış
@@ -242,21 +242,21 @@
                                          alt="{{ $oneCikanIlan->title }}" loading="lazy" decoding="async"
                                          class="h-full w-full object-cover" style="object-position: {{ $oneCikanIlan->coverImage->objectPosition() }}">
                                 @else
-                                    <div class="flex h-full items-center justify-center text-stone-300 dark:text-stone-600">
+                                    <div class="flex h-full items-center justify-center text-stone-300 dark:text-stone-400">
                                         <x-dynamic-component :component="'heroicon-o-'.\App\Support\CategoryIcon::heroicon($oneCikanIlan->category?->parent?->icon ?? $oneCikanIlan->category?->icon)" class="h-8 w-8" />
                                     </div>
                                 @endif
                                 @if ($oneCikanIlan->category)
-                                    <span class="absolute left-2 top-2 rounded-full bg-white/95 px-2 py-1 text-2xs font-bold text-emerald-600 dark:bg-stone-900/95 dark:text-emerald-400">{{ $oneCikanIlan->category->name }}</span>
+                                    <span class="absolute left-2 top-2 rounded-full bg-white/95 px-2 py-1 text-2xs font-bold text-emerald-700 dark:bg-stone-900/95 dark:text-emerald-400">{{ $oneCikanIlan->category->name }}</span>
                                 @endif
                             </div>
                             <div class="mt-2.5 line-clamp-1 text-sm font-bold text-stone-800 dark:text-stone-100">{{ $oneCikanIlan->title }}</div>
                             <div class="mt-0.5 text-xs font-medium text-stone-500 dark:text-stone-400">
                                 @if ($oneCikanIlan->country){{ $oneCikanIlan->country->emoji }} {{ $oneCikanIlan->city ?: $oneCikanIlan->country->name_tr }}@endif
                             </div>
-                            <div class="mt-1.5 text-base font-extrabold text-emerald-600 dark:text-emerald-400">
+                            <div class="mt-1.5 text-base font-extrabold text-emerald-700 dark:text-emerald-400">
                                 @if ($oneCikanIlan->price !== null)
-                                    {{ number_format((float) $oneCikanIlan->price, 0) }} {{ $oneCikanIlan->currency }}<span class="text-2xs font-semibold text-stone-400">{{ $oneCikanIlan->price_unit->suffix() }}</span>
+                                    {{ number_format((float) $oneCikanIlan->price, 0) }} {{ $oneCikanIlan->currency }}<span class="text-2xs font-semibold text-stone-600">{{ $oneCikanIlan->price_unit->suffix() }}</span>
                                 @else
                                     Görüşülür
                                 @endif

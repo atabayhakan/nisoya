@@ -70,7 +70,7 @@
                 <button
                     type="button"
                     @click="saveAll()"
-                    class="flex-1 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+                    class="flex-1 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800"
                 >
                     Seçtiklerimi kaydet
                 </button>
@@ -100,7 +100,7 @@
                 ✅ Tercihlerin kaydedildi.
             </div>
 
-            <p class="pt-2 text-center text-xs text-stone-400">
+            <p class="pt-2 text-center text-xs text-stone-600">
                 Detaylı bilgi için <a href="/gizlilik" class="underline hover:text-stone-600">Gizlilik Politikası</a>'nı inceleyebilirsin.
             </p>
         </div>

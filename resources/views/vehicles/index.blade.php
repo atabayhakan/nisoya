@@ -11,7 +11,7 @@
                 <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">{{ $listings->total() }} ilan · kendi insanından araba al, sat, kirala</p>
             </div>
             <a href="{{ route('panel.listings.create', ['tip' => 'vasita']) }}"
-               class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">
+               class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">
                 <x-heroicon-o-plus class="h-4 w-4" /> Vasıta İlanı Ver
             </a>
         </div>
@@ -19,12 +19,12 @@
         {{-- Kategori sekmeleri --}}
         <div class="mt-5 flex flex-wrap gap-2">
             <a href="{{ route('vehicles.index') }}"
-               class="rounded-full px-4 py-1.5 text-sm font-medium transition {{ ! $activeCategory ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900' : 'border border-stone-300 text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800' }}">
+               class="rounded-full px-4 py-1.5 text-sm font-medium transition {{ ! $activeCategory ? 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-stone-900' : 'border border-stone-300 text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800' }}">
                 Tümü
             </a>
             @foreach ($categories as $cat)
                 <a href="{{ route('vehicles.index', array_filter(array_merge($filters, ['kategori' => $cat->slug]))) }}"
-                   class="rounded-full px-4 py-1.5 text-sm font-medium transition {{ $activeCategory?->slug === $cat->slug ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900' : 'border border-stone-300 text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800' }}">
+                   class="rounded-full px-4 py-1.5 text-sm font-medium transition {{ $activeCategory?->slug === $cat->slug ? 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-stone-900' : 'border border-stone-300 text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800' }}">
                     {{ $cat->icon }} {{ $cat->name }}
                 </a>
             @endforeach
@@ -103,7 +103,7 @@
                         <span class="block text-sm font-medium text-stone-700 dark:text-stone-300">Fiyat aralığı</span>
                         <div class="mt-1 flex items-center gap-2">
                             <input name="min" type="number" min="0" value="{{ $filters['min'] }}" placeholder="En az" class="w-full rounded-lg border-stone-300 px-2 py-2 text-sm text-stone-800 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">
-                            <span class="text-stone-400 dark:text-stone-500">—</span>
+                            <span class="text-stone-600 dark:text-stone-400">—</span>
                             <input name="max" type="number" min="0" value="{{ $filters['max'] }}" placeholder="En çok" class="w-full rounded-lg border-stone-300 px-2 py-2 text-sm text-stone-800 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">
                         </div>
                     </div>
@@ -116,7 +116,7 @@
                             <input name="cikis" type="date" value="{{ $filters['cikis'] }}" aria-label="Bırakış tarihi"
                                    class="w-full rounded-lg border-stone-300 px-2 py-2 text-sm text-stone-800 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                         </div>
-                        <p class="mt-2 text-xs text-stone-400 dark:text-stone-500">Seçilen tarihlerde müsait araçlar gösterilir.</p>
+                        <p class="mt-2 text-xs text-stone-600 dark:text-stone-400">Seçilen tarihlerde müsait araçlar gösterilir.</p>
                     </div>
 
                     <div>
@@ -129,8 +129,8 @@
                     </div>
 
                     <div class="flex items-center gap-2 pt-1">
-                        <button type="submit" class="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Filtrele</button>
-                        <a href="{{ route('vehicles.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Temizle</a>
+                        <button type="submit" class="flex-1 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Filtrele</button>
+                        <a href="{{ route('vehicles.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Temizle</a>
                     </div>
                 </form>
             </aside>
@@ -151,12 +151,12 @@
                     <div class="mt-8">{{ $listings->links() }}</div>
                 @else
                     <div class="rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center dark:border-stone-700 dark:bg-stone-900">
-                        <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-stone-100 text-stone-400 dark:bg-stone-800 dark:text-stone-500">
+                        <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400">
                             <x-heroicon-o-truck class="h-6 w-6" />
                         </span>
                         <h2 class="mt-3 text-lg font-semibold text-stone-800 dark:text-stone-100">Henüz ilan yok</h2>
                         <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Bu filtrelerle sonuç bulunamadı — ilk vasıta ilanını sen ver, binlerce kişiye ulaşsın.</p>
-                        <a href="{{ route('panel.listings.create', ['tip' => 'vasita']) }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Vasıta İlanı Ver</a>
+                        <a href="{{ route('panel.listings.create', ['tip' => 'vasita']) }}" class="mt-5 inline-block rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-brand dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Vasıta İlanı Ver</a>
                     </div>
                 @endif
             </main>

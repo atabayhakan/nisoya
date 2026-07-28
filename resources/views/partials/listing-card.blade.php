@@ -20,7 +20,7 @@
                  class="listing-cover-transition h-full w-full object-cover transition duration-300 group-hover:scale-105">
         @else
             @php($fallbackIcon = \App\Support\CategoryIcon::heroicon($listing->category?->parent?->icon ?? $listing->category?->icon))
-            <div style="--listing-transition-name: listing-image-{{ $listing->id }}" class="listing-cover-transition flex h-full w-full items-center justify-center text-stone-300 dark:text-stone-600">
+            <div style="--listing-transition-name: listing-image-{{ $listing->id }}" class="listing-cover-transition flex h-full w-full items-center justify-center text-stone-300 dark:text-stone-400">
                 <x-dynamic-component :component="'heroicon-o-'.$fallbackIcon" class="h-12 w-12" />
             </div>
         @endif
@@ -33,18 +33,18 @@
                 </span>
             @endif
             @if ($listing->category)
-                <span class="rounded-full bg-stone-100 px-2 py-0.5 text-stone-500 dark:bg-stone-800 dark:text-stone-400">{{ $listing->category->name }}</span>
+                <span class="rounded-full bg-stone-100 px-2 py-0.5 text-stone-600 dark:bg-stone-800 dark:text-stone-400">{{ $listing->category->name }}</span>
             @endif
             @if ($listing->is_remote)
                 <span class="rounded-full bg-emerald-100 px-2 py-0.5 font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">Online</span>
             @endif
             @if ($listing->relationLoaded('propertyDetail') && $listing->propertyDetail && ($listing->propertyDetail->rooms || $listing->propertyDetail->area_m2))
-                <span class="rounded-full bg-stone-100 px-2 py-0.5 text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+                <span class="rounded-full bg-stone-100 px-2 py-0.5 text-stone-600 dark:bg-stone-800 dark:text-stone-400">
                     {{ collect([$listing->propertyDetail->rooms, $listing->propertyDetail->area_m2 ? $listing->propertyDetail->area_m2.' m²' : null])->filter()->implode(' · ') }}
                 </span>
             @endif
             @if ($listing->relationLoaded('vehicleDetail') && $listing->vehicleDetail && ($listing->vehicleDetail->year || $listing->vehicleDetail->mileage_km !== null))
-                <span class="rounded-full bg-stone-100 px-2 py-0.5 text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+                <span class="rounded-full bg-stone-100 px-2 py-0.5 text-stone-600 dark:bg-stone-800 dark:text-stone-400">
                     {{ collect([$listing->vehicleDetail->year, $listing->vehicleDetail->mileage_km !== null ? number_format($listing->vehicleDetail->mileage_km, 0, ',', '.').' km' : null])->filter()->implode(' · ') }}
                 </span>
             @endif
@@ -54,13 +54,13 @@
 
         <div class="mt-2 font-bold text-stone-900 dark:text-stone-50">
             @if ($listing->price !== null)
-                {{ number_format((float) $listing->price, 0) }} {{ $listing->currency }}<span class="text-xs font-normal text-stone-400 dark:text-stone-500">{{ $listing->price_unit->suffix() }}</span>
+                {{ number_format((float) $listing->price, 0) }} {{ $listing->currency }}<span class="text-xs font-normal text-stone-600 dark:text-stone-400">{{ $listing->price_unit->suffix() }}</span>
             @else
                 <span class="text-emerald-700 dark:text-emerald-400">Görüşülür</span>
             @endif
         </div>
 
-        <div class="mt-2 flex items-center gap-1 truncate text-xs text-stone-400 dark:text-stone-500">
+        <div class="mt-2 flex items-center gap-1 truncate text-xs text-stone-600 dark:text-stone-400">
             @if ($listing->country){{ $listing->country->emoji }} @if ($listing->city){{ $listing->city }}@else{{ $listing->country->name_tr }}@endif · @endif
             {{ $listing->user->name }}
         </div>

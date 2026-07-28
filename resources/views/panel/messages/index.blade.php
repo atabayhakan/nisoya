@@ -24,7 +24,7 @@
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center justify-between gap-2">
                                 <span class="truncate font-semibold text-stone-800 dark:text-stone-100">{{ $other?->name ?? 'Kullanıcı' }}</span>
-                                <span class="shrink-0 text-xs text-stone-400 dark:text-stone-500">{{ $conversation->last_message_at?->diffForHumans() }}</span>
+                                <span class="shrink-0 text-xs text-stone-600 dark:text-stone-400">{{ $conversation->last_message_at?->diffForHumans() }}</span>
                             </div>
                             @if ($conversation->listing)
                                 <div class="truncate text-xs text-emerald-700 dark:text-emerald-400">{{ $conversation->listing->title }}</div>

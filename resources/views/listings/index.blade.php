@@ -81,13 +81,13 @@
                         <span class="block text-sm font-medium text-stone-700 dark:text-stone-300">Fiyat aralığı</span>
                         <div class="mt-1 flex items-center gap-2">
                             <input name="min" type="number" min="0" value="{{ $filters['min'] }}" placeholder="En az" class="w-full rounded-lg border-stone-300 px-2 py-2 text-sm text-stone-800 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">
-                            <span class="text-stone-400 dark:text-stone-500">—</span>
+                            <span class="text-stone-600 dark:text-stone-400">—</span>
                             <input name="max" type="number" min="0" value="{{ $filters['max'] }}" placeholder="En çok" class="w-full rounded-lg border-stone-300 px-2 py-2 text-sm text-stone-800 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">
                         </div>
                     </div>
 
                     <label class="flex items-center gap-2 text-sm text-stone-700 dark:text-stone-300">
-                        <input type="checkbox" name="uzaktan" value="1" @checked($filters['uzaktan']) class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
+                        <input type="checkbox" name="uzaktan" value="1" @checked($filters['uzaktan']) class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
                         Sadece uzaktan / online
                     </label>
 
@@ -102,8 +102,8 @@
                     </div>
 
                     <div class="flex items-center gap-2 pt-1">
-                        <button type="submit" class="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Filtrele</button>
-                        <a href="{{ route('listings.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Temizle</a>
+                        <button type="submit" class="flex-1 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Filtrele</button>
+                        <a href="{{ route('listings.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Temizle</a>
                     </div>
                 </form>
             </aside>

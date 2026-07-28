@@ -50,7 +50,7 @@
         <p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400">Ürünün ~170 cm'lik bir yetişkinle ölçekli kıyası.</p>
 
         <div class="mt-3 overflow-x-auto">
-            <svg viewBox="0 0 {{ round($totalW) }} {{ round($totalH) }}" class="h-auto max-w-full text-stone-400 dark:text-stone-500" style="min-width: {{ round(min($totalW, 520)) }}px" role="img" aria-label="{{ $dimLabel }} ürün, 170 cm insan ile karşılaştırma">
+            <svg viewBox="0 0 {{ round($totalW) }} {{ round($totalH) }}" class="h-auto max-w-full text-stone-600 dark:text-stone-400" style="min-width: {{ round(min($totalW, 520)) }}px" role="img" aria-label="{{ $dimLabel }} ürün, 170 cm insan ile karşılaştırma">
                 {{-- Zemin çizgisi --}}
                 <line x1="{{ round($pad - 6) }}" y1="{{ round($groundY) }}" x2="{{ round($totalW - $pad + 6) }}" y2="{{ round($groundY) }}" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.5" />
 

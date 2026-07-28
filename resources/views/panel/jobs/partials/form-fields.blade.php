@@ -89,7 +89,7 @@
 
 <div class="grid grid-cols-2 gap-4">
     <label class="flex items-center gap-2 text-sm text-stone-700 dark:text-stone-200">
-        <input type="checkbox" name="is_remote" value="1" @checked($v('is_remote')) class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
+        <input type="checkbox" name="is_remote" value="1" @checked($v('is_remote')) class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
         Uzaktan çalışmaya uygun
     </label>
     <div>

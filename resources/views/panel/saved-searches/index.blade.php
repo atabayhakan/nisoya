@@ -13,8 +13,8 @@
                 @foreach ($searches as $s)
                     <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
                         <div class="min-w-0">
-                            <div class="flex items-center gap-1.5 truncate font-medium text-stone-800 dark:text-stone-100"><x-heroicon-o-bookmark class="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" /> {{ $s->label }}</div>
-                            <div class="text-xs text-stone-400 dark:text-stone-500">{{ $s->created_at->diffForHumans() }} kaydedildi</div>
+                            <div class="flex items-center gap-1.5 truncate font-medium text-stone-800 dark:text-stone-100"><x-heroicon-o-bookmark class="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" /> {{ $s->label }}</div>
+                            <div class="text-xs text-stone-600 dark:text-stone-400">{{ $s->created_at->diffForHumans() }} kaydedildi</div>
                         </div>
                         <div class="flex shrink-0 items-center gap-2">
                             <a href="{{ route('listings.index', $s->toQueryParams()) }}" class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">Ara</a>

@@ -135,7 +135,7 @@
                     @endif
                 @else
                     @php($fallbackIcon = \App\Support\CategoryIcon::heroicon($listing->category?->parent?->icon ?? $listing->category?->icon))
-                    <div style="--listing-transition-name: listing-image-{{ $listing->id }}" class="listing-cover-transition flex h-56 items-center justify-center rounded-2xl bg-stone-100 text-stone-300 dark:bg-stone-800 dark:text-stone-600">
+                    <div style="--listing-transition-name: listing-image-{{ $listing->id }}" class="listing-cover-transition flex h-56 items-center justify-center rounded-2xl bg-stone-100 text-stone-300 dark:bg-stone-800 dark:text-stone-400">
                         <x-dynamic-component :component="'heroicon-o-'.$fallbackIcon" class="h-16 w-16" />
                     </div>
                 @endif
@@ -172,26 +172,26 @@
                         <h2 class="text-sm font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">🏡 Emlak Özellikleri</h2>
                         <dl class="mt-3 grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
                             @if ($detail->rooms)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Oda sayısı</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $detail->rooms }}</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Oda sayısı</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $detail->rooms }}</dd></div>
                             @endif
                             @if ($detail->area_m2)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Brüt alan</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $detail->area_m2 }} m²</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Brüt alan</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $detail->area_m2 }} m²</dd></div>
                             @endif
                             @if ($detail->floor !== null)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Bulunduğu kat</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $detail->floor }}</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Bulunduğu kat</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $detail->floor }}</dd></div>
                             @endif
-                            <div><dt class="text-stone-400 dark:text-stone-500">Eşyalı</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $detail->furnished ? 'Evet' : 'Hayır' }}</dd></div>
+                            <div><dt class="text-stone-600 dark:text-stone-400">Eşyalı</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $detail->furnished ? 'Evet' : 'Hayır' }}</dd></div>
                             @if ($detail->deposit !== null)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Depozito</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ number_format((float) $detail->deposit, 0) }} {{ $listing->currency }}</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Depozito</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ number_format((float) $detail->deposit, 0) }} {{ $listing->currency }}</dd></div>
                             @endif
                             @if ($detail->available_from)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Müsait tarih</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $detail->available_from->format('d.m.Y') }}</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Müsait tarih</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $detail->available_from->format('d.m.Y') }}</dd></div>
                             @endif
                             @if ($detail->max_guests)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Konuk kapasitesi</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $detail->max_guests }} kişi</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Konuk kapasitesi</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $detail->max_guests }} kişi</dd></div>
                             @endif
                             @if ($detail->min_stay_nights)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Min. konaklama</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $detail->min_stay_nights }} gece</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Min. konaklama</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $detail->min_stay_nights }} gece</dd></div>
                             @endif
                         </dl>
                         @if ($detail->badgeLabels())
@@ -211,37 +211,37 @@
                         <h2 class="text-sm font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">🚗 Araç Özellikleri</h2>
                         <dl class="mt-3 grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
                             @if ($vehicle->brand)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Marka</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->brand }}</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Marka</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->brand }}</dd></div>
                             @endif
                             @if ($vehicle->model)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Model</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->model }}</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Model</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->model }}</dd></div>
                             @endif
                             @if ($vehicle->year)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Model yılı</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->year }}</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Model yılı</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->year }}</dd></div>
                             @endif
                             @if ($vehicle->mileage_km !== null)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Kilometre</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ number_format($vehicle->mileage_km, 0, ',', '.') }} km</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Kilometre</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ number_format($vehicle->mileage_km, 0, ',', '.') }} km</dd></div>
                             @endif
                             @if ($vehicle->fuelLabel())
-                                <div><dt class="text-stone-400 dark:text-stone-500">Yakıt</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->fuelLabel() }}</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Yakıt</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->fuelLabel() }}</dd></div>
                             @endif
                             @if ($vehicle->transmissionLabel())
-                                <div><dt class="text-stone-400 dark:text-stone-500">Vites</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->transmissionLabel() }}</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Vites</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->transmissionLabel() }}</dd></div>
                             @endif
                             @if ($vehicle->bodyTypeLabel())
-                                <div><dt class="text-stone-400 dark:text-stone-500">Kasa tipi</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->bodyTypeLabel() }}</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Kasa tipi</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->bodyTypeLabel() }}</dd></div>
                             @endif
                             @if ($vehicle->color)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Renk</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->color }}</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Renk</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->color }}</dd></div>
                             @endif
                             @if ($vehicle->min_rental_days)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Min. kiralama</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->min_rental_days }} gün</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Min. kiralama</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ $vehicle->min_rental_days }} gün</dd></div>
                             @endif
                             @if ($vehicle->deposit !== null)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Depozito</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ number_format((float) $vehicle->deposit, 0) }} {{ $listing->currency }}</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Depozito</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ number_format((float) $vehicle->deposit, 0) }} {{ $listing->currency }}</dd></div>
                             @endif
                             @if ($vehicle->km_limit_per_day)
-                                <div><dt class="text-stone-400 dark:text-stone-500">Günlük km sınırı</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ number_format($vehicle->km_limit_per_day, 0, ',', '.') }} km</dd></div>
+                                <div><dt class="text-stone-600 dark:text-stone-400">Günlük km sınırı</dt><dd class="font-semibold text-stone-800 dark:text-stone-100">{{ number_format($vehicle->km_limit_per_day, 0, ',', '.') }} km</dd></div>
                             @endif
                         </dl>
                         @if ($vehicle->badgeLabels())
@@ -287,7 +287,7 @@
                 @auth
                     @unless ($isOwner)
                         <details class="mt-8 text-sm">
-                            <summary class="inline-flex cursor-pointer items-center gap-1 text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300">
+                            <summary class="inline-flex cursor-pointer items-center gap-1 text-stone-600 hover:text-stone-600 dark:text-stone-400 dark:hover:text-stone-300">
                                 <x-heroicon-o-flag class="h-4 w-4" /> Bu ilanı şikayet et
                             </summary>
                             <form method="POST" action="{{ route('reports.store', $listing) }}" class="mt-3 max-w-md space-y-2 rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
@@ -315,7 +315,7 @@
                         <div class="text-2xl font-bold text-stone-900 dark:text-stone-50">
                             @if ($listing->price !== null)
                                 {{ number_format((float) $listing->price, 2) }} {{ $listing->currency }}
-                                <span class="text-base font-normal text-stone-400 dark:text-stone-500">{{ $listing->price_unit->suffix() }}</span>
+                                <span class="text-base font-normal text-stone-600 dark:text-stone-400">{{ $listing->price_unit->suffix() }}</span>
                             @else
                                 <span class="text-emerald-700 dark:text-emerald-400">Görüşülür</span>
                             @endif
@@ -347,10 +347,10 @@
                                     <textarea name="body" rows="3" required placeholder="{{ $listing->type->value === 'emlak' ? 'İlan sahibine bir mesaj yaz...' : 'Satıcıya bir mesaj yaz...' }}"
                                               class="w-full rounded-lg border-stone-300 px-3 py-2 text-sm text-stone-800 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">{{ old('body') }}</textarea>
                                     @error('body') <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-                                    <button type="submit" class="w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Mesaj Gönder</button>
+                                    <button type="submit" class="w-full rounded-lg bg-emerald-700 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Mesaj Gönder</button>
                                 </form>
                             @else
-                                <a href="{{ route('login') }}" class="block w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-center font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Mesaj göndermek için giriş yap</a>
+                                <a href="{{ route('login') }}" class="block w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-center font-semibold text-white hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Mesaj göndermek için giriş yap</a>
                             @endif
 
                             @auth
@@ -396,7 +396,7 @@
                                 </div>
                                 <div class="text-xs text-stone-500 dark:text-stone-400">Üyelik: {{ $listing->user->created_at->translatedFormat('F Y') }}</div>
                                 @if ($sellerRating['count'] > 0)
-                                    <div class="text-xs font-medium text-amber-500 dark:text-amber-400">★ {{ $sellerRating['avg'] }} <span class="text-stone-400 dark:text-stone-500">({{ $sellerRating['count'] }} değerlendirme)</span></div>
+                                    <div class="text-xs font-medium text-amber-500 dark:text-amber-400">★ {{ $sellerRating['avg'] }} <span class="text-stone-600 dark:text-stone-400">({{ $sellerRating['count'] }} değerlendirme)</span></div>
                                 @endif
                             </div>
                         </div>

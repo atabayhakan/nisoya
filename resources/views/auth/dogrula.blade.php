@@ -14,7 +14,7 @@
     <div class="mt-6 flex items-center justify-between gap-3">
         <form method="POST" action="{{ route('verification.send') }}">
             @csrf
-            <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-700">
+            <button type="submit" class="rounded-lg bg-emerald-700 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-800">
                 Doğrulama e-postasını tekrar gönder
             </button>
         </form>

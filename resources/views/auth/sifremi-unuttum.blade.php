@@ -19,7 +19,7 @@
             @error('email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
-        <button type="submit" class="w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-700">
+        <button type="submit" class="w-full rounded-lg bg-emerald-700 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-800">
             Sıfırlama bağlantısı gönder
         </button>
     </form>
@@ -28,7 +28,7 @@
         <a href="{{ route('login') }}" class="font-medium text-emerald-700 hover:underline">← Girişe dön</a>
     </p>
 
-    <p class="mt-2 text-center text-xs text-stone-400">
+    <p class="mt-2 text-center text-xs text-stone-600">
         E-postana erişemiyor musun?
         <a href="{{ route('account-recovery.request') }}" class="font-medium text-emerald-700 hover:underline">Kurtarma koduyla gir</a>
     </p>

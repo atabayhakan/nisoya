@@ -8,7 +8,7 @@
     $canStartNew = $deal === null || in_array($status, ['iptal', 'sorunlu', 'tamamlandi'], true);
     $defaultCurrency = $conversation->listing?->currency ?? auth()->user()->preferred_currency;
     $btn = 'rounded-lg px-3 py-1.5 text-xs font-semibold transition';
-    $btnPrimary = $btn.' bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900';
+    $btnPrimary = $btn.' bg-emerald-700 text-white hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900';
     $btnGhost = $btn.' border border-stone-300 text-stone-600 hover:bg-stone-50 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-800';
     $btnDanger = $btn.' text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30';
 @endphp
@@ -64,7 +64,7 @@
     @elseif ($deal && $status === 'sorunlu')
         <p class="mt-2 text-xs text-red-600 dark:text-red-400">⚠️ Bu anlaşmada sorun bildirildi; ekibimiz inceliyor.</p>
     @elseif ($deal && $status === 'iptal')
-        <p class="mt-2 text-xs text-stone-400 dark:text-stone-500">Önceki anlaşma iptal edildi.</p>
+        <p class="mt-2 text-xs text-stone-600 dark:text-stone-400">Önceki anlaşma iptal edildi.</p>
     @endif
 
     {{-- Yeni anlaşma başlat --}}

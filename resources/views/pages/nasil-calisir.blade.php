@@ -64,7 +64,7 @@
                     <details class="group">
                         <summary class="flex cursor-pointer items-center justify-between gap-3 px-5 py-4 text-sm font-semibold text-stone-800 marker:content-none hover:bg-stone-50">
                             {{ $soru }}
-                            <svg class="h-5 w-5 shrink-0 text-stone-400 transition group-open:rotate-180" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <svg class="h-5 w-5 shrink-0 text-stone-600 transition group-open:rotate-180" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </summary>
                         <p class="px-5 pb-4 text-sm leading-relaxed text-stone-600">{{ $cevap }}</p>
                     </details>
@@ -75,7 +75,7 @@
         <div class="mt-8 rounded-2xl bg-emerald-50 p-6 text-center">
             <h2 class="text-lg font-bold text-stone-900">Güven önce gelir</h2>
             <p class="mt-2 text-sm text-stone-600">Profil doğrulaması, değerlendirme/puan ve şikayet sistemiyle topluluğu güvende tutuyoruz. Şüpheli bir ilan görürsen "şikayet et" ile bize bildir.</p>
-            <a href="{{ route('register') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-6 py-2.5 font-semibold text-white hover:bg-emerald-700">Ücretsiz Başla</a>
+            <a href="{{ route('register') }}" class="mt-5 inline-block rounded-lg bg-emerald-700 px-6 py-2.5 font-semibold text-white hover:bg-emerald-800">Ücretsiz Başla</a>
         </div>
     </div>
 </x-layouts.app>

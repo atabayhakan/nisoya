@@ -38,7 +38,7 @@
                 <button
                     type="button"
                     onclick="window.toggleTheme && window.toggleTheme()"
-                    class="ml-2 inline-flex rounded-lg p-2 text-stone-500 transition hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
+                    class="ml-2 inline-flex rounded-lg p-2 text-stone-600 transition hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
                     title="Temayı değiştir"
                     aria-label="Karanlık/aydınlık tema değiştir"
                 >
@@ -52,7 +52,7 @@
             {{ $slot }}
         </div>
 
-        <p class="mt-6 text-xs font-medium text-stone-400 dark:text-stone-500">© {{ date('Y') }} Nisoya — Ne İş Olursa Yaparım</p>
+        <p class="mt-6 text-xs font-medium text-stone-600 dark:text-stone-400">© {{ date('Y') }} Nisoya — Ne İş Olursa Yaparım</p>
     </div>
 
     <script>

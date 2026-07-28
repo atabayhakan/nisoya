@@ -90,7 +90,7 @@
                 </div>
 
                 <div class="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm lg:col-span-2 dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
-                    <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
+                    <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                         <x-heroicon-o-shield-check class="h-5 w-5" />
                     </span>
                     <h3 class="mt-4 font-semibold text-stone-900 dark:text-stone-100">{{ setting('home.deger2_baslik') }}</h3>
@@ -154,7 +154,7 @@
                             @else
                                 <div class="p-6">
                                     @if ($highlight->icon)
-                                        <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
+                                        <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                                             <x-dynamic-component :component="'heroicon-o-'.$highlight->heroicon()" class="h-5 w-5" />
                                         </span>
                                     @endif
@@ -169,7 +169,7 @@
                         </div>
                     @empty
                         <div class="p-6">
-                            <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
+                            <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                                 <x-heroicon-o-sparkles class="h-5 w-5" />
                             </span>
                             <h3 class="mt-4 font-semibold text-stone-900 dark:text-stone-100">Ücretsiz ilan</h3>
@@ -179,7 +179,7 @@
                 </div>
 
                 <div class="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
-                    <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
+                    <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                         <x-heroicon-o-globe-alt class="h-5 w-5" />
                     </span>
                     <h3 class="mt-4 font-semibold text-stone-900 dark:text-stone-100">{{ $stats['countries'] }} ülke · {{ $stats['cities'] }} şehir</h3>

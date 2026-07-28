@@ -93,7 +93,7 @@
         <nav class="flex items-center gap-2 text-xs font-semibold text-stone-500 dark:text-stone-400">
             <a href="{{ url('/ilanlar') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İlanlar</a>
             @if ($listing->category)
-                <span class="text-stone-300 dark:text-stone-600">/</span>
+                <span class="text-stone-300 dark:text-stone-400">/</span>
                 <a href="{{ url('/ilanlar/kategori/'.$listing->category->slug) }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">{{ $listing->category->name }}</a>
             @endif
         </nav>
@@ -163,7 +163,7 @@
                     </div>
                 @else
                     @php $fallbackIcon = \App\Support\CategoryIcon::heroicon($listing->category?->parent?->icon ?? $listing->category?->icon); @endphp
-                    <div style="--listing-transition-name: listing-image-{{ $listing->id }}" class="listing-cover-transition flex h-56 items-center justify-center rounded-2xl bg-stone-100 text-stone-300 dark:bg-stone-800 dark:text-stone-600">
+                    <div style="--listing-transition-name: listing-image-{{ $listing->id }}" class="listing-cover-transition flex h-56 items-center justify-center rounded-2xl bg-stone-100 text-stone-300 dark:bg-stone-800 dark:text-stone-400">
                         <x-dynamic-component :component="'heroicon-o-'.$fallbackIcon" class="h-16 w-16" />
                     </div>
                 @endif
@@ -172,7 +172,7 @@
                 <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-800 dark:bg-stone-900">
                     <div class="flex flex-wrap items-center gap-2 text-2xs font-bold">
                         @if ($listing->category)
-                            <span class="rounded-full bg-emerald-50 px-2.5 py-1.5 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">{{ $listing->category->name }}</span>
+                            <span class="rounded-full bg-emerald-50 px-2.5 py-1.5 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">{{ $listing->category->name }}</span>
                         @endif
                         @if ($listing->isCurrentlyFeatured())
                             <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1.5 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
@@ -204,7 +204,7 @@
                     <h1 class="mt-3.5 text-2xl font-extrabold leading-[1.16] tracking-[-0.028em] text-stone-800 sm:text-3xl dark:text-stone-50" style="text-wrap: pretty">{{ $listing->title }}</h1>
 
                     <div class="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-2">
-                        <span class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
+                        <span class="text-2xl font-extrabold text-emerald-700 dark:text-emerald-400">
                             @if ($listing->price !== null)
                                 {{ number_format((float) $listing->price, 2) }} {{ $listing->currency }}
                             @else
@@ -245,7 +245,7 @@
                             @endphp
                             @foreach ($emlakAlanlari as [$etiket, $deger])
                                 <div class="rounded-[14px] border border-stone-200 p-3 dark:border-stone-700">
-                                    <dt class="text-xs font-semibold text-stone-400 dark:text-stone-500">{{ $etiket }}</dt>
+                                    <dt class="text-xs font-semibold text-stone-600 dark:text-stone-400">{{ $etiket }}</dt>
                                     <dd class="mt-1.5 text-sm font-bold leading-tight text-stone-800 dark:text-stone-100">{{ $deger }}</dd>
                                 </div>
                             @endforeach
@@ -253,7 +253,7 @@
                         @if ($detail->badgeLabels())
                             <div class="mt-4 flex flex-wrap gap-1.5 border-t border-stone-100 pt-3 dark:border-stone-800">
                                 @foreach ($detail->badgeLabels() as $badge)
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">✓ {{ $badge }}</span>
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">✓ {{ $badge }}</span>
                                 @endforeach
                             </div>
                         @endif
@@ -283,7 +283,7 @@
                             @endphp
                             @foreach ($vasitaAlanlari as [$etiket, $deger])
                                 <div class="rounded-[14px] border border-stone-200 p-3 dark:border-stone-700">
-                                    <dt class="text-xs font-semibold text-stone-400 dark:text-stone-500">{{ $etiket }}</dt>
+                                    <dt class="text-xs font-semibold text-stone-600 dark:text-stone-400">{{ $etiket }}</dt>
                                     <dd class="mt-1.5 text-sm font-bold leading-tight text-stone-800 dark:text-stone-100">{{ $deger }}</dd>
                                 </div>
                             @endforeach
@@ -291,7 +291,7 @@
                         @if ($vehicle->badgeLabels())
                             <div class="mt-4 flex flex-wrap gap-1.5 border-t border-stone-100 pt-3 dark:border-stone-800">
                                 @foreach ($vehicle->badgeLabels() as $badge)
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">✓ {{ $badge }}</span>
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">✓ {{ $badge }}</span>
                                 @endforeach
                             </div>
                         @endif
@@ -346,12 +346,12 @@
                                     <div class="min-w-0">
                                         <div class="flex flex-wrap items-baseline gap-2">
                                             <span class="text-sm font-bold text-stone-800 dark:text-stone-100">{{ $review->reviewer->name }}</span>
-                                            <span class="text-xs font-semibold text-stone-400 dark:text-stone-500">
+                                            <span class="text-xs font-semibold text-stone-600 dark:text-stone-400">
                                                 @if ($review->reviewer->city){{ $review->reviewer->city }} · @endif{{ $review->created_at->diffForHumans() }}
                                             </span>
                                         </div>
                                         <div class="mt-0.5 text-xs font-bold text-amber-500 dark:text-amber-400" aria-label="{{ $review->rating }} yıldız">
-                                            {{ str_repeat('★', (int) $review->rating) }}<span class="text-stone-300 dark:text-stone-600">{{ str_repeat('★', 5 - (int) $review->rating) }}</span>
+                                            {{ str_repeat('★', (int) $review->rating) }}<span class="text-stone-300 dark:text-stone-400">{{ str_repeat('★', 5 - (int) $review->rating) }}</span>
                                         </div>
                                         @if ($review->comment)
                                             <p class="mt-1.5 text-sm font-medium leading-relaxed text-stone-600 dark:text-stone-300">{{ $review->comment }}</p>
@@ -362,7 +362,7 @@
                         </div>
 
                         @if ($sellerRating['count'] > $recentReviews->count())
-                            <a href="{{ route('profiles.show', $listing->user->username) }}" class="mt-3 inline-block text-sm font-bold text-emerald-600 hover:underline dark:text-emerald-400">
+                            <a href="{{ route('profiles.show', $listing->user->username) }}" class="mt-3 inline-block text-sm font-bold text-emerald-700 hover:underline dark:text-emerald-400">
                                 Tüm değerlendirmeleri gör →
                             </a>
                         @endif
@@ -372,7 +372,7 @@
                 @auth
                     @unless ($isOwner)
                         <details class="text-sm">
-                            <summary class="inline-flex cursor-pointer items-center gap-1 font-semibold text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300">
+                            <summary class="inline-flex cursor-pointer items-center gap-1 font-semibold text-stone-600 hover:text-stone-600 dark:text-stone-400 dark:hover:text-stone-300">
                                 <x-heroicon-o-flag class="h-4 w-4" /> Bu ilanı şikayet et
                             </summary>
                             <form method="POST" action="{{ route('reports.store', $listing) }}" class="mt-3 max-w-md space-y-2 rounded-2xl border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
@@ -400,9 +400,9 @@
                     <div class="text-2xl font-extrabold text-stone-800 dark:text-stone-50">
                         @if ($listing->price !== null)
                             {{ number_format((float) $listing->price, 2) }} {{ $listing->currency }}
-                            <span class="text-sm font-semibold text-stone-400 dark:text-stone-500">{{ $listing->price_unit->suffix() }}</span>
+                            <span class="text-sm font-semibold text-stone-600 dark:text-stone-400">{{ $listing->price_unit->suffix() }}</span>
                         @else
-                            <span class="text-emerald-600 dark:text-emerald-400">Görüşülür</span>
+                            <span class="text-emerald-700 dark:text-emerald-400">Görüşülür</span>
                         @endif
                     </div>
 
@@ -434,12 +434,12 @@
                                 <textarea name="body" rows="3" required placeholder="{{ $listing->type->value === 'emlak' ? 'İlan sahibine bir mesaj yaz...' : 'Satıcıya bir mesaj yaz...' }}"
                                           class="w-full rounded-[13px] border-stone-300 px-3 py-2.5 text-sm text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">{{ old('body') }}</textarea>
                                 @error('body') <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-                                <button type="submit" class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[13px] bg-emerald-600 text-sm font-bold text-white shadow-[0_14px_26px_-14px_rgba(62,99,240,1)] transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none">
+                                <button type="submit" class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[13px] bg-emerald-700 text-sm font-bold text-white shadow-[0_14px_26px_-14px_rgba(62,99,240,1)] transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none">
                                     <x-heroicon-o-chat-bubble-left class="h-4 w-4" /> Mesaj Gönder
                                 </button>
                             </form>
                         @else
-                            <a href="{{ route('login') }}" class="block w-full rounded-[13px] bg-emerald-600 px-4 py-3 text-center text-sm font-bold text-white shadow-[0_14px_26px_-14px_rgba(62,99,240,1)] transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none">Mesaj göndermek için giriş yap</a>
+                            <a href="{{ route('login') }}" class="block w-full rounded-[13px] bg-emerald-700 px-4 py-3 text-center text-sm font-bold text-white shadow-[0_14px_26px_-14px_rgba(62,99,240,1)] transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none">Mesaj göndermek için giriş yap</a>
                         @endif
 
                         @auth
@@ -491,17 +491,17 @@
                     {{-- KPI kutuları: yalnız GERÇEK veriden (puan + üyelik yılı) --}}
                     <div class="mt-4 grid grid-cols-2 gap-2.5">
                         <div class="rounded-xl bg-stone-100 p-3 dark:bg-stone-800">
-                            <div class="text-2xs font-semibold text-stone-400 dark:text-stone-500">Puan</div>
+                            <div class="text-2xs font-semibold text-stone-600 dark:text-stone-400">Puan</div>
                             <div class="mt-1 text-base font-extrabold text-stone-800 dark:text-stone-100">
                                 @if ($sellerRating['count'] > 0)
-                                    ★ {{ $sellerRating['avg'] }} <span class="text-2xs font-semibold text-stone-400">({{ $sellerRating['count'] }} değerlendirme)</span>
+                                    ★ {{ $sellerRating['avg'] }} <span class="text-2xs font-semibold text-stone-600">({{ $sellerRating['count'] }} değerlendirme)</span>
                                 @else
-                                    <span class="text-xs font-semibold text-stone-400">Henüz yok</span>
+                                    <span class="text-xs font-semibold text-stone-600">Henüz yok</span>
                                 @endif
                             </div>
                         </div>
                         <div class="rounded-xl bg-stone-100 p-3 dark:bg-stone-800">
-                            <div class="text-2xs font-semibold text-stone-400 dark:text-stone-500">Üyelik</div>
+                            <div class="text-2xs font-semibold text-stone-600 dark:text-stone-400">Üyelik</div>
                             <div class="mt-1 text-base font-extrabold text-stone-800 dark:text-stone-100">{{ $listing->user->created_at->year }}</div>
                         </div>
                     </div>
@@ -526,7 +526,7 @@
                         </div>
                     @endif
 
-                    <a href="{{ route('profiles.show', $listing->user->username) }}" class="mt-3 block text-sm font-bold text-emerald-600 hover:underline dark:text-emerald-400">Profili ve değerlendirmeleri gör →</a>
+                    <a href="{{ route('profiles.show', $listing->user->username) }}" class="mt-3 block text-sm font-bold text-emerald-700 hover:underline dark:text-emerald-400">Profili ve değerlendirmeleri gör →</a>
                     @include('partials.payment-safety-card', ['seller' => $listing->user])
                 </div>
 
@@ -545,7 +545,7 @@
                                                  class="h-full w-full object-cover"
                                                  style="object-position: {{ $benzer->coverImage->objectPosition() }}">
                                         @else
-                                            <div class="flex h-full w-full items-center justify-center text-stone-300 dark:text-stone-600">
+                                            <div class="flex h-full w-full items-center justify-center text-stone-300 dark:text-stone-400">
                                                 <x-heroicon-o-photo class="h-4 w-4" />
                                             </div>
                                         @endif
@@ -556,7 +556,7 @@
                                             @if ($benzer->country)
                                                 <span class="text-2xs font-semibold text-stone-500 dark:text-stone-400">{{ $benzer->country->emoji }} {{ $benzer->city ?: $benzer->country->name_tr }}</span>
                                             @endif
-                                            <span class="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
+                                            <span class="text-xs font-extrabold text-emerald-700 dark:text-emerald-400">
                                                 @if ($benzer->price !== null)
                                                     {{ number_format((float) $benzer->price, 0) }} {{ $benzer->currency }}
                                                 @else

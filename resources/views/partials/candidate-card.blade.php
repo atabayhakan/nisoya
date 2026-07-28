@@ -12,9 +12,9 @@
                 @if ($candidate->is_verified)<x-verified-badge size="xs" />@endif
             </h3>
 
-            <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-400 dark:text-stone-500">
+            <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-600 dark:text-stone-400">
                 @if ($candidate->jobCategory)
-                    <span class="rounded-full bg-stone-100 px-2 py-0.5 text-stone-500 dark:bg-stone-800 dark:text-stone-400">{{ $candidate->jobCategory->name }}</span>
+                    <span class="rounded-full bg-stone-100 px-2 py-0.5 text-stone-600 dark:bg-stone-800 dark:text-stone-400">{{ $candidate->jobCategory->name }}</span>
                 @endif
                 @if ($candidate->city || $candidate->country_code)
                     <span>@if ($candidate->city){{ $candidate->city }} · @endif{{ $candidate->country_code }}</span>

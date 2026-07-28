@@ -25,7 +25,7 @@
                      elle üstüne yazmak o reçeteyi geçersiz kılıyordu. --}}
                 <h1 class="mt-5 text-4xl text-stone-900 sm:text-5xl md:text-6xl dark:text-stone-50 {{ \App\Support\Tema::tasarimModu() === 'yeni' ? 'font-serif italic font-normal' : 'font-bold' }}">
                     {{ setting('home.hero_satir1') }}<br>
-                    <span class="text-emerald-600 dark:text-emerald-400">{{ setting('home.hero_vurgu') }}</span> {{ setting('home.hero_satir2') }}
+                    <span class="text-emerald-700 dark:text-emerald-400">{{ setting('home.hero_vurgu') }}</span> {{ setting('home.hero_satir2') }}
                 </h1>
                 <p class="mx-auto mt-5 max-w-2xl text-lg text-stone-600 dark:text-stone-300">
                     {{ setting('home.hero_aciklama') }}
@@ -41,11 +41,11 @@
                             <option value="{{ $country->code }}">{{ $country->emoji }} {{ $country->name_tr }}</option>
                         @endforeach
                     </select>
-                    <button type="submit" class="rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
+                    <button type="submit" class="rounded-xl bg-emerald-700 px-6 py-3 font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
                         Ara
                     </button>
                 </form>
-                <p class="mt-3 text-sm text-stone-400 dark:text-stone-500">{{ setting('home.populer_metin') }}</p>
+                <p class="mt-3 text-sm text-stone-600 dark:text-stone-400">{{ setting('home.populer_metin') }}</p>
             </div>
         </div>
     </section>

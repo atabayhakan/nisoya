@@ -39,7 +39,7 @@
          (Tailwind focus-varyant cascade belirsizliğine bağımlı olmamak için). --}}
     <style>
         .nisoya-skip-link { position: fixed; left: 1rem; top: 1rem; z-index: 100;
-            transform: translateY(-150%); background: var(--color-emerald-600, #059669);
+            transform: translateY(-150%); background: var(--color-emerald-700, #047857);
             color: #fff; padding: .5rem 1rem; border-radius: .5rem; font-weight: 600;
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / .2); transition: transform .15s ease; }
         .nisoya-skip-link:focus { transform: translateY(0); outline: 2px solid #fff; outline-offset: 2px; }
@@ -68,7 +68,7 @@
                 @if ($logoPath = setting('gorunum.logo_path'))
                     <img src="{{ Storage::disk('public')->url($logoPath) }}" alt="{{ setting('genel.site_adi') }}" class="h-9 w-9 rounded-xl object-cover">
                 @else
-                    <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-600 text-white transition group-hover:bg-emerald-700 dark:bg-emerald-500 dark:group-hover:bg-emerald-400 dark:text-stone-900">
+                    <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-700 text-white transition group-hover:bg-emerald-800 dark:bg-emerald-500 dark:group-hover:bg-emerald-400 dark:text-stone-900">
                         <x-logo-mark class="h-5 w-5" />
                     </span>
                 @endif
@@ -125,15 +125,15 @@
                         <span class="hidden max-w-[110px] truncate text-sm font-medium md:inline">{{ auth()->user()->name }}</span>
                     </a>
                     <a href="{{ route('dashboard') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Panelim</a>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand md:inline-block dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-brand md:inline-block dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
                     <form method="POST" action="{{ route('logout') }}" class="hidden md:block">
                         @csrf
-                        <button type="submit" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Çıkış</button>
+                        <button type="submit" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Çıkış</button>
                     </form>
                 @else
                     <a href="{{ route('login') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Giriş</a>
                     <a href="{{ route('register') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Kayıt</a>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand md:inline-block dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-brand md:inline-block dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
                 @endauth
             </div>
         </div>
@@ -156,7 +156,7 @@
                     @if ($logoPath)
                         <img src="{{ Storage::disk('public')->url($logoPath) }}" alt="{{ setting('genel.site_adi') }}" class="h-8 w-8 rounded-lg object-cover">
                     @else
-                        <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900">
+                        <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-700 text-white dark:bg-emerald-500 dark:text-stone-900">
                             <x-logo-mark class="h-4 w-4" />
                         </span>
                     @endif
@@ -164,7 +164,7 @@
                 </div>
                 <p class="mt-3 text-sm text-stone-500 dark:text-stone-400">{{ setting('footer.aciklama') }}</p>
                 @if (setting('footer.sosyal_instagram') || setting('footer.sosyal_facebook') || setting('footer.sosyal_whatsapp'))
-                    <div class="mt-4 flex items-center gap-3 text-stone-400 dark:text-stone-500">
+                    <div class="mt-4 flex items-center gap-3 text-stone-600 dark:text-stone-400">
                         @if (setting('footer.sosyal_instagram'))
                             <a href="{{ setting('footer.sosyal_instagram') }}" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-700 dark:hover:text-emerald-400" aria-label="Instagram">📷</a>
                         @endif
@@ -209,9 +209,9 @@
             </div>
         </div>
         <div class="border-t border-stone-100 py-4 dark:border-stone-800">
-            <p class="mx-auto max-w-6xl px-4 text-center text-xs text-stone-400 dark:text-stone-500">
+            <p class="mx-auto max-w-6xl px-4 text-center text-xs text-stone-600 dark:text-stone-400">
                 © {{ date('Y') }} {{ setting('footer.telif_metni') }}
-                <span class="mx-2 text-stone-300 dark:text-stone-600">·</span>
+                <span class="mx-2 text-stone-300 dark:text-stone-400" aria-hidden="true">·</span>
                 Hizmet ücretsizdir. 💛
             </p>
         </div>

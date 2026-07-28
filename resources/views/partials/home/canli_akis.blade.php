@@ -5,7 +5,7 @@
             class="border-y border-stone-200 bg-white/80 backdrop-blur dark:border-stone-800 dark:bg-stone-900/80"
         >
             <div class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2.5">
-                <span class="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                <span class="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                     <span class="relative flex h-2 w-2">
                         <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                         <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>

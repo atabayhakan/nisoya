@@ -43,19 +43,19 @@
     @foreach ($genel as $b)
         <a href="{{ url($b['url']) }}"
            class="flex min-h-11 items-center gap-2.5 rounded-xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-700 transition hover:border-emerald-300 hover:text-emerald-700 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-200 dark:hover:border-emerald-700 dark:hover:text-emerald-400">
-            <x-dynamic-component :component="'heroicon-o-'.$b['ikon']" class="h-4 w-4 shrink-0 text-stone-400" />
+            <x-dynamic-component :component="'heroicon-o-'.$b['ikon']" class="h-4 w-4 shrink-0 text-stone-600" />
             <span class="min-w-0 truncate">{{ $b['ad'] }}</span>
         </a>
     @endforeach
 </div>
 
 @if ($s->isModulu)
-    <h3 class="mt-6 text-xs font-bold uppercase tracking-wide text-stone-400 dark:text-stone-500">İş</h3>
+    <h3 class="mt-6 text-xs font-bold uppercase tracking-wide text-stone-600 dark:text-stone-400">İş</h3>
     <div class="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
         @foreach ($is as $b)
             <a href="{{ url($b['url']) }}"
                class="flex min-h-11 items-center gap-2.5 rounded-xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-700 transition hover:border-emerald-300 hover:text-emerald-700 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-200 dark:hover:border-emerald-700 dark:hover:text-emerald-400">
-                <x-dynamic-component :component="'heroicon-o-'.$b['ikon']" class="h-4 w-4 shrink-0 text-stone-400" />
+                <x-dynamic-component :component="'heroicon-o-'.$b['ikon']" class="h-4 w-4 shrink-0 text-stone-600" />
                 <span class="min-w-0 truncate">{{ $b['ad'] }}</span>
             </a>
         @endforeach
@@ -69,11 +69,11 @@
         <a href="{{ url('/panel/sirket') }}"
            class="flex min-h-11 flex-col justify-center gap-0.5 rounded-xl border border-stone-200 bg-white px-3 py-2 transition hover:border-emerald-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-emerald-700">
             <span class="flex items-center gap-2.5 text-sm font-medium text-stone-700 dark:text-stone-200">
-                <x-heroicon-o-building-office-2 class="h-4 w-4 shrink-0 text-stone-400" />
+                <x-heroicon-o-building-office-2 class="h-4 w-4 shrink-0 text-stone-600" />
                 <span class="min-w-0 truncate">{{ $s->sirketVar ? 'Şirket Profili' : 'Şirket profili oluştur' }}</span>
             </span>
             @unless ($s->sirketVar)
-                <span class="pl-6.5 text-2xs leading-tight text-stone-400 dark:text-stone-500">hesabın kurumsala geçer, Yetenek Havuzu'nda görünmezsin</span>
+                <span class="pl-6.5 text-2xs leading-tight text-stone-600 dark:text-stone-400">hesabın kurumsala geçer, Yetenek Havuzu'nda görünmezsin</span>
             @endunless
         </a>
     </div>
@@ -85,7 +85,7 @@
     <a href="{{ url('/panel/profil') }}"
        class="mt-4 flex min-h-11 items-center gap-2 rounded-xl bg-stone-50 px-3 text-xs text-stone-600 transition hover:bg-stone-100 dark:bg-stone-900/60 dark:text-stone-300 dark:hover:bg-stone-800">
         <span class="min-w-0 flex-1">Yetenek Havuzu'nda görünmüyorsun — profilinden açabilirsin</span>
-        <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-stone-400" />
+        <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-stone-600" />
     </a>
 @endif
 

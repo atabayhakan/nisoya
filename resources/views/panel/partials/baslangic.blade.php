@@ -21,7 +21,7 @@
             Bir şey arıyorum
         </a>
         <a href="{{ url('/panel/ilan/yeni') }}"
-           class="flex min-h-11 items-center justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">
+           class="flex min-h-11 items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">
             Bir şey sunuyorum
         </a>
     </div>

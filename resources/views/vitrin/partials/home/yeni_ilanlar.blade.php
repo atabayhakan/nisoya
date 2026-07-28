@@ -6,13 +6,13 @@
                     <h2 class="text-2xl font-extrabold text-stone-800 sm:text-3xl dark:text-stone-50">Öne çıkan ilanlar</h2>
                     <p class="mt-1.5 text-sm font-medium text-stone-500 dark:text-stone-400">Şehrindeki Türk esnaf ve satıcılardan en yeniler.</p>
                 </div>
-                <a href="{{ url('/ilanlar') }}" class="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400">Tümünü gör <x-heroicon-o-arrow-right class="h-4 w-4" /></a>
+                <a href="{{ url('/ilanlar') }}" class="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-700 hover:text-emerald-700 dark:text-emerald-400">Tümünü gör <x-heroicon-o-arrow-right class="h-4 w-4" /></a>
             </div>
 
             @if ($latestListings->isEmpty())
                 <div class="mt-6 rounded-[22px] border border-stone-200/60 bg-white p-10 text-center shadow-brand dark:border-stone-800 dark:bg-stone-900">
                     <p class="font-semibold text-stone-600 dark:text-stone-300">Henüz ilan yok — ilk ilanı sen ver!</p>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:text-stone-900">
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900">
                         <x-heroicon-o-plus class="h-4 w-4" />{{ setting('home.cta_buton') }}
                     </a>
                 </div>
@@ -35,7 +35,7 @@
                                  class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                                  style="object-position: {{ $vitrinOne->coverImage->objectPosition() }}">
                         @else
-                            <div class="flex h-full w-full items-center justify-center text-stone-300 dark:text-stone-600">
+                            <div class="flex h-full w-full items-center justify-center text-stone-300 dark:text-stone-400">
                                 <x-dynamic-component :component="'heroicon-o-'.\App\Support\CategoryIcon::heroicon($vitrinOne->category?->parent?->icon ?? $vitrinOne->category?->icon)" class="h-14 w-14" />
                             </div>
                         @endif
@@ -48,7 +48,7 @@
                     <div class="flex flex-col p-2 md:p-3">
                         <div class="flex flex-wrap items-center gap-1.5 text-xs">
                             @if ($vitrinOne->category)
-                                <span class="rounded-full bg-emerald-50 px-2.5 py-1 font-bold text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">{{ $vitrinOne->category->name }}</span>
+                                <span class="rounded-full bg-emerald-50 px-2.5 py-1 font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">{{ $vitrinOne->category->name }}</span>
                             @endif
                             @if ($vitrinOne->is_remote)
                                 <span class="rounded-full bg-[#e7f7f1] px-2.5 py-1 font-bold text-[#0f9d76] dark:bg-teal-950/60 dark:text-teal-300">Online</span>
@@ -61,9 +61,9 @@
                         <div class="mt-auto flex flex-wrap items-center justify-between gap-3 pt-4">
                             <div class="text-lg font-extrabold text-stone-800 dark:text-stone-50">
                                 @if ($vitrinOne->price !== null)
-                                    {{ number_format((float) $vitrinOne->price, 0) }} {{ $vitrinOne->currency }}<span class="text-xs font-semibold text-stone-400">{{ $vitrinOne->price_unit->suffix() }}</span>
+                                    {{ number_format((float) $vitrinOne->price, 0) }} {{ $vitrinOne->currency }}<span class="text-xs font-semibold text-stone-600">{{ $vitrinOne->price_unit->suffix() }}</span>
                                 @else
-                                    <span class="text-emerald-600 dark:text-emerald-400">Görüşülür</span>
+                                    <span class="text-emerald-700 dark:text-emerald-400">Görüşülür</span>
                                 @endif
                             </div>
                             <div class="flex items-center gap-2 text-xs font-medium text-stone-500 dark:text-stone-400">
