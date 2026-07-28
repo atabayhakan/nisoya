@@ -9,7 +9,7 @@
                 <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">💌 Davetiyelerim</h1>
                 <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Düğün, sünnet, iftar, doğum günü... davetiye oluştur, WhatsApp'ta paylaş, LCV'leri takip et.</p>
             </div>
-            <a href="{{ route('panel.events.create') }}" class="rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
+            <a href="{{ route('panel.events.create') }}" class="rounded-lg bg-emerald-700 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
                 + Yeni Davetiye
             </a>
         </div>
@@ -31,7 +31,7 @@
                         </div>
                         <div class="shrink-0 text-right">
                             <div class="text-lg font-bold text-emerald-700 dark:text-emerald-400">{{ $event->guests_count }}</div>
-                            <div class="text-xs text-stone-400 dark:text-stone-500">LCV</div>
+                            <div class="text-xs text-stone-600 dark:text-stone-400">LCV</div>
                         </div>
                     </a>
                 @endforeach
@@ -45,7 +45,7 @@
                     Tür ve temayı seç, tarihi gir — sana özel bir davet linki verelim.
                     WhatsApp'ta paylaş, misafirlerin üye olmadan tek dokunuşla "geliyorum" desin.
                 </p>
-                <a href="{{ route('panel.events.create') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Davetiye Oluştur</a>
+                <a href="{{ route('panel.events.create') }}" class="mt-5 inline-block rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Davetiye Oluştur</a>
             </div>
         @endif
     </div>

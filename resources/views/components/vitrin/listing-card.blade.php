@@ -28,7 +28,7 @@
                  class="listing-cover-transition h-full w-full object-cover transition duration-300 group-hover:scale-105">
         @else
             @php $fallbackIcon = \App\Support\CategoryIcon::heroicon($listing->category?->parent?->icon ?? $listing->category?->icon); @endphp
-            <div style="--listing-transition-name: listing-image-{{ $listing->id }}" class="listing-cover-transition flex h-full w-full items-center justify-center text-stone-300 dark:text-stone-600">
+            <div style="--listing-transition-name: listing-image-{{ $listing->id }}" class="listing-cover-transition flex h-full w-full items-center justify-center text-stone-300 dark:text-stone-400">
                 <x-dynamic-component :component="'heroicon-o-'.$fallbackIcon" class="h-12 w-12" />
             </div>
         @endif
@@ -74,9 +74,9 @@
         <h3 class="mt-2 line-clamp-2 min-h-[2.7rem] text-base font-bold leading-[1.35] tracking-[-0.008em] text-stone-800 group-hover:text-emerald-700 dark:text-stone-100 dark:group-hover:text-emerald-400" style="text-wrap: pretty">{{ $listing->title }}</h3>
 
         <div class="mt-3 flex items-center justify-between gap-2.5">
-            <span class="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
+            <span class="text-lg font-extrabold text-emerald-700 dark:text-emerald-400">
                 @if ($listing->price !== null)
-                    {{ number_format((float) $listing->price, 0) }} {{ $listing->currency }}<span class="text-2xs font-semibold text-stone-400">{{ $listing->price_unit->suffix() }}</span>
+                    {{ number_format((float) $listing->price, 0) }} {{ $listing->currency }}<span class="text-2xs font-semibold text-stone-600">{{ $listing->price_unit->suffix() }}</span>
                 @else
                     Görüşülür
                 @endif

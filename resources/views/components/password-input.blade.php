@@ -9,7 +9,7 @@
         tabindex="-1"
         @click="show = !show"
         :aria-label="show ? 'Şifreyi gizle' : 'Şifreyi göster'"
-        class="absolute inset-y-0 right-2 flex items-center text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300"
+        class="absolute inset-y-0 right-2 flex items-center text-stone-600 hover:text-stone-600 dark:text-stone-400 dark:hover:text-stone-300"
     >
         <x-heroicon-o-eye x-show="!show" class="h-4 w-4" />
         <x-heroicon-o-eye-slash x-show="show" x-cloak class="h-4 w-4" />

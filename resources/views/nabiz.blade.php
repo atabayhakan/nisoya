@@ -64,7 +64,7 @@
                     @foreach ($stories as $story)
                         <div class="rounded-2xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
                             <p class="text-sm leading-relaxed text-stone-700 dark:text-stone-200">{{ $story->body }}</p>
-                            <p class="mt-2 text-xs text-stone-400 dark:text-stone-500">Anonim · {{ $story->created_at->diffForHumans() }}</p>
+                            <p class="mt-2 text-xs text-stone-600 dark:text-stone-400">Anonim · {{ $story->created_at->diffForHumans() }}</p>
                         </div>
                     @endforeach
                 </div>
@@ -95,7 +95,7 @@
                             <textarea name="body" rows="3" maxlength="600" minlength="20" required
                                 placeholder="Örn: İlk yıl çok zorlandım ama Nisoya'da bulduğum bir tamirci sayesinde..."
                                 class="w-full rounded-xl border border-stone-300 bg-white p-3 text-sm text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100">{{ old('body') }}</textarea>
-                            <button type="submit" class="mt-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">
+                            <button type="submit" class="mt-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800">
                                 Paylaş
                             </button>
                         </form>

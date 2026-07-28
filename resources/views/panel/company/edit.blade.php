@@ -20,7 +20,7 @@
             @method('PUT')
 
             <div class="flex items-center gap-4">
-                <div class="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-stone-100 text-xl font-bold text-stone-400 dark:bg-stone-800">
+                <div class="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-stone-100 text-xl font-bold text-stone-600 dark:bg-stone-800">
                     @if ($company?->logoUrl())<img src="{{ $company->logoUrl() }}" alt="" class="h-full w-full object-cover">@else 🏢 @endif
                 </div>
                 <div class="flex-1">
@@ -98,7 +98,7 @@
             </div>
 
             <div class="flex items-center gap-3 pt-2">
-                <button type="submit" class="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Kaydet</button>
+                <button type="submit" class="rounded-lg bg-emerald-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Kaydet</button>
                 @if ($company)
                     <a href="{{ route('companies.show', $company) }}" class="text-sm text-stone-500 hover:underline dark:text-stone-400">Herkese açık sayfayı gör →</a>
                 @endif

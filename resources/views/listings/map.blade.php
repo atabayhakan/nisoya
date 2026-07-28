@@ -9,10 +9,10 @@
                 <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">{{ $points->count() }} ilan haritada</p>
             </div>
             <div class="flex items-center gap-2 text-sm">
-                <a href="{{ route('listings.map') }}" class="rounded-lg px-3 py-1.5 font-medium {{ $tip === '' ? 'bg-emerald-600 text-white' : 'text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800' }}">Tümü</a>
-                <a href="{{ route('listings.map', ['tip' => 'hizmet']) }}" class="rounded-lg px-3 py-1.5 font-medium {{ $tip === 'hizmet' ? 'bg-emerald-600 text-white' : 'text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800' }}">🧰 Hizmet</a>
-                <a href="{{ route('listings.map', ['tip' => 'urun']) }}" class="rounded-lg px-3 py-1.5 font-medium {{ $tip === 'urun' ? 'bg-emerald-600 text-white' : 'text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800' }}">📦 Ürün</a>
-                <a href="{{ route('listings.map', ['tip' => 'is']) }}" class="rounded-lg px-3 py-1.5 font-medium {{ $tip === 'is' ? 'bg-emerald-600 text-white' : 'text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800' }}">💼 İş İlanları</a>
+                <a href="{{ route('listings.map') }}" class="rounded-lg px-3 py-1.5 font-medium {{ $tip === '' ? 'bg-emerald-700 text-white' : 'text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800' }}">Tümü</a>
+                <a href="{{ route('listings.map', ['tip' => 'hizmet']) }}" class="rounded-lg px-3 py-1.5 font-medium {{ $tip === 'hizmet' ? 'bg-emerald-700 text-white' : 'text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800' }}">🧰 Hizmet</a>
+                <a href="{{ route('listings.map', ['tip' => 'urun']) }}" class="rounded-lg px-3 py-1.5 font-medium {{ $tip === 'urun' ? 'bg-emerald-700 text-white' : 'text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800' }}">📦 Ürün</a>
+                <a href="{{ route('listings.map', ['tip' => 'is']) }}" class="rounded-lg px-3 py-1.5 font-medium {{ $tip === 'is' ? 'bg-emerald-700 text-white' : 'text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800' }}">💼 İş İlanları</a>
                 <a href="{{ $tip === 'is' ? route('jobs.index') : route('listings.index', $tip ? ['tip' => $tip] : []) }}" class="rounded-lg border border-stone-300 px-3 py-1.5 font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">Liste →</a>
             </div>
         </div>

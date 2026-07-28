@@ -32,7 +32,7 @@
         @break
 
     @case('cta')
-        <div class="rounded-3xl bg-emerald-600 px-6 py-10 text-center text-white sm:px-12">
+        <div class="rounded-3xl bg-emerald-700 px-6 py-10 text-center text-white sm:px-12">
             <h2 class="text-2xl font-bold sm:text-3xl">{{ $data['title'] ?? '' }}</h2>
             @if (! empty($data['button_text']))
                 <a href="{{ $data['button_url'] ?? '#' }}" class="mt-5 inline-block rounded-xl bg-white px-6 py-3 font-semibold text-emerald-700 transition hover:bg-emerald-50">{{ $data['button_text'] }}</a>

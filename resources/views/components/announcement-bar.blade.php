@@ -19,7 +19,7 @@
         $duyuruSiniflar = match ($duyuruRenk) {
             'uyari' => 'bg-amber-500 text-stone-950',
             'onemli' => 'bg-rose-600 text-white',
-            default => 'bg-emerald-600 text-white',
+            default => 'bg-emerald-700 text-white',
         };
 
         // Mesaj/bağlantı/renk değişince kapatanlara tekrar göster.

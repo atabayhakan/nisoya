@@ -10,7 +10,7 @@
     x-reveal
     class="mt-10 rounded-2xl border border-dashed border-stone-300 bg-white p-10 text-center dark:border-stone-700 dark:bg-stone-900"
 >
-    <div class="mx-auto flex h-16 w-28 items-center justify-center text-emerald-600 dark:text-emerald-400">
+    <div class="mx-auto flex h-16 w-28 items-center justify-center text-emerald-700 dark:text-emerald-400">
         <svg viewBox="0 0 120 90" class="h-16 w-28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             @switch($illustration)
                 @case('search')
@@ -56,6 +56,6 @@
     <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">{{ $description }}</p>
 
     @if ($ctaText && $ctaHref)
-        <a href="{{ $ctaHref }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-brand dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">{{ $ctaText }}</a>
+        <a href="{{ $ctaHref }}" class="mt-5 inline-block rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-brand dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">{{ $ctaText }}</a>
     @endif
 </div>

@@ -17,7 +17,7 @@
         class="fixed inset-x-0 bottom-0 z-30 flex items-stretch justify-around border-t border-stone-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden dark:border-stone-800 dark:bg-stone-900/95"
         aria-label="Alt gezinme"
     >
-        <a href="{{ url('/') }}" class="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-2xs font-medium {{ request()->routeIs('home') ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-500 dark:text-stone-400' }}">
+        <a href="{{ url('/') }}" class="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-2xs font-medium {{ request()->routeIs('home') ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-500 dark:text-stone-400' }}">
             <x-heroicon-o-home class="h-5 w-5" />
             Ana Sayfa
         </a>
@@ -34,13 +34,13 @@
         </button>
 
         <a href="{{ url('/panel/ilan/yeni') }}" class="flex flex-1 flex-col items-center justify-center gap-0.5 py-1 text-2xs font-medium text-stone-500 dark:text-stone-400">
-            <span class="-mt-5 grid h-11 w-11 place-items-center rounded-full bg-emerald-600 text-white shadow-lg ring-4 ring-white dark:bg-emerald-500 dark:ring-stone-900">
+            <span class="-mt-5 grid h-11 w-11 place-items-center rounded-full bg-emerald-700 text-white shadow-lg ring-4 ring-white dark:bg-emerald-500 dark:ring-stone-900">
                 <x-heroicon-o-plus class="h-6 w-6" />
             </span>
             İlan Ver
         </a>
 
-        <a href="{{ route('panel.messages.index') }}" class="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-2xs font-medium {{ request()->routeIs('panel.messages.*') ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-500 dark:text-stone-400' }}">
+        <a href="{{ route('panel.messages.index') }}" class="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-2xs font-medium {{ request()->routeIs('panel.messages.*') ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-500 dark:text-stone-400' }}">
             <span class="relative">
                 <x-heroicon-o-chat-bubble-left-right class="h-5 w-5" />
                 @if ($unreadMessages)
@@ -50,7 +50,7 @@
             Mesajlar
         </a>
 
-        <a href="{{ route('dashboard') }}" class="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-2xs font-medium {{ request()->routeIs('dashboard') ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-500 dark:text-stone-400' }}">
+        <a href="{{ route('dashboard') }}" class="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-2xs font-medium {{ request()->routeIs('dashboard') ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-500 dark:text-stone-400' }}">
             <x-heroicon-o-user-circle class="h-5 w-5" />
             Panelim
         </a>
@@ -109,7 +109,7 @@
                 <template x-if="$store.pwa.visible">
                     <div class="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3 dark:border-emerald-900 dark:bg-emerald-900/20">
                         <div class="flex items-center gap-3">
-                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white dark:bg-emerald-500">
+                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-700 text-white dark:bg-emerald-500">
                                 <x-heroicon-o-device-phone-mobile class="h-5 w-5" />
                             </span>
                             <div class="min-w-0 flex-1">
@@ -124,16 +124,16 @@
                                 <button
                                     type="button"
                                     @click="$store.pwa.install()"
-                                    class="shrink-0 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600"
+                                    class="shrink-0 rounded-full bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-800"
                                 >Yükle</button>
                             </template>
-                            <button type="button" @click="$store.pwa.dismiss()" class="shrink-0 p-1 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200" aria-label="Kapat">
+                            <button type="button" @click="$store.pwa.dismiss()" class="shrink-0 p-1 text-stone-600 hover:text-stone-600 dark:hover:text-stone-200" aria-label="Kapat">
                                 <x-heroicon-o-x-mark class="h-4 w-4" />
                             </button>
                         </div>
                         <template x-if="$store.pwa.isIos && !$store.pwa.installEvent">
                             <div class="mt-2 flex items-start gap-1.5 rounded-lg bg-white/70 px-2.5 py-2 text-xs leading-relaxed text-stone-700 dark:bg-stone-900/40 dark:text-stone-300">
-                                <x-heroicon-o-arrow-up-on-square class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                <x-heroicon-o-arrow-up-on-square class="mt-0.5 h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" />
                                 <span>Safari'de alttaki <strong>Paylaş</strong> düğmesine dokun, sonra <strong>"Ana Ekrana Ekle"</strong>yi seç.</span>
                             </div>
                         </template>

@@ -10,7 +10,7 @@
                         <div class="min-w-0">
                             @if ($app->jobListing)
                                 <a href="{{ route('jobs.show', [$app->jobListing, $app->jobListing->slug]) }}" class="font-semibold text-stone-800 hover:text-emerald-700 dark:text-stone-100 dark:hover:text-emerald-400">{{ $app->jobListing->title }}</a>
-                                <div class="text-xs text-stone-400 dark:text-stone-500">{{ $app->jobListing->company?->name }} · {{ $app->created_at->diffForHumans() }}</div>
+                                <div class="text-xs text-stone-600 dark:text-stone-400">{{ $app->jobListing->company?->name }} · {{ $app->created_at->diffForHumans() }}</div>
                             @else
                                 <span class="text-stone-500 dark:text-stone-400">İlan kaldırılmış</span>
                             @endif

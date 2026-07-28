@@ -51,7 +51,7 @@
                     Çıkış Yap
                 </button>
             </form>
-            <a href="{{ url('/panel/profil') }}" class="min-h-11 text-sm text-stone-400 hover:text-stone-700 md:min-h-0 dark:text-stone-500 dark:hover:text-stone-200">
+            <a href="{{ url('/panel/profil') }}" class="min-h-11 text-sm text-stone-600 hover:text-stone-700 md:min-h-0 dark:text-stone-400 dark:hover:text-stone-200">
                 Profil ayarları
             </a>
         </div>

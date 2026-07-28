@@ -81,7 +81,7 @@
                                     </span>
                                     <span class="font-semibold text-stone-800 dark:text-stone-100">{{ $cat->name }}</span>
                                 </span>
-                                <x-heroicon-o-arrow-right class="h-4 w-4 text-stone-400" />
+                                <x-heroicon-o-arrow-right class="h-4 w-4 text-stone-600" />
                             </a>
                         @endforeach
                     </div>

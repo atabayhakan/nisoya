@@ -13,15 +13,15 @@
             {{-- Filtre bar --}}
             <div class="flex flex-wrap items-center gap-3 rounded-lg bg-stone-50 p-3 dark:bg-stone-800">
                 <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" id="sensitive-only" class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500">
+                    <input type="checkbox" id="sensitive-only" class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-500">
                     <span>Sadece hassas EXIF</span>
                 </label>
                 <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" id="cluster-mode" checked class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500">
+                    <input type="checkbox" id="cluster-mode" checked class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-500">
                     <span>Cluster göster</span>
                 </label>
                 <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" id="heatmap-mode" class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500">
+                    <input type="checkbox" id="heatmap-mode" class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-500">
                     <span>Heatmap modu</span>
                 </label>
                 <div class="ms-auto text-xs text-stone-500" id="map-stats">
@@ -94,7 +94,7 @@
                 const img = m.thumb ? `<img src="${m.thumb}" alt="" class="mb-2 h-24 w-full rounded object-cover">` : '';
                 const sensitive = m.sensitive ? '<span class="badge bg-red-500">Hassas</span>' : '<span class="badge bg-green-500">Temiz</span>';
                 const camera = (m.camera || m.model) ? `<div class="text-xs text-stone-500">${(m.camera || '') + ' ' + (m.model || '')}</div>` : '';
-                const listing = m.listing ? `<a href="${m.listing.url}" target="_blank" class="text-sm font-medium text-emerald-600 hover:underline">${m.listing.title}</a>` : '';
+                const listing = m.listing ? `<a href="${m.listing.url}" target="_blank" class="text-sm font-medium text-emerald-700 hover:underline">${m.listing.title}</a>` : '';
                 const user = m.user ? `<div class="text-xs text-stone-500">👤 ${m.user.name}</div>` : '';
                 const date = m.uploaded_at ? new Date(m.uploaded_at).toLocaleDateString('tr-TR') : '';
 
@@ -105,8 +105,8 @@
                         <div class="mt-1 font-semibold text-stone-900">${listing}</div>
                         ${user}
                         ${camera}
-                        <div class="mt-1 text-xs text-stone-400">${date}</div>
-                        <div class="mt-1 text-2xs text-stone-400">${m.lat.toFixed(4)}, ${m.lng.toFixed(4)}</div>
+                        <div class="mt-1 text-xs text-stone-600">${date}</div>
+                        <div class="mt-1 text-2xs text-stone-600">${m.lat.toFixed(4)}, ${m.lng.toFixed(4)}</div>
                     </div>
                 `;
             }

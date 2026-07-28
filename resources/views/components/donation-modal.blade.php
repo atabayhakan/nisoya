@@ -34,7 +34,7 @@
             <button
                 type="button"
                 @click="showThanks = false"
-                class="rounded-full p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+                class="rounded-full p-1 text-stone-600 hover:bg-stone-100 hover:text-stone-700"
                 aria-label="Kapat"
             >×</button>
         </div>
@@ -61,7 +61,7 @@
         <button
             type="button"
             @click="dismiss()"
-            class="grid h-5 w-5 place-items-center rounded-full bg-stone-900/40 text-xs text-white shadow transition hover:bg-stone-900/70"
+            class="grid h-5 w-5 place-items-center rounded-full bg-stone-900/75 text-xs text-white shadow transition hover:bg-stone-900/70"
             aria-label="Bu butonu kalıcı olarak gizle"
             title="Kalıcı olarak gizle"
         >×</button>
@@ -106,7 +106,7 @@
                         <ul class="mt-2 space-y-1.5 text-sm text-stone-700">
                             @foreach ($maliyetKalemleri as $kalem)
                                 <li class="flex items-start gap-2">
-                                    <x-heroicon-o-check-circle class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                                    <x-heroicon-o-check-circle class="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
                                     <span>{{ $kalem }}</span>
                                 </li>
                             @endforeach
@@ -153,7 +153,7 @@
                                 @click="copyIban($refs.iban, $refs.iban, copied = true)"
                                 x-ref="iban"
                                 :data-iban="'{{ $iban }}'"
-                                class="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                                class="rounded-md bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-800"
                             >
                                 <span x-show="!copied">Kopyala</span>
                                 <span x-show="copied" x-transition>✓ Kopyalandı</span>

@@ -14,7 +14,7 @@
                 />
 
                 <div class="rounded-[22px] border border-stone-200/60 bg-white p-5 shadow-brand lg:col-span-2 dark:border-stone-800 dark:bg-stone-900">
-                    <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+                    <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
                         <x-heroicon-o-shield-check class="h-5 w-5" />
                     </span>
                     <div class="mt-3 text-base font-extrabold text-stone-800 dark:text-stone-100">{{ setting('home.deger2_baslik') }}</div>

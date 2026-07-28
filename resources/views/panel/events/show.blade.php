@@ -29,7 +29,7 @@
                 <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('invite-url').textContent.trim()).then(() => { this.textContent = 'Kopyalandı ✓'; setTimeout(() => this.textContent = 'Kopyala', 2000); })"
                         class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-900 dark:bg-stone-700 dark:hover:bg-stone-600">Kopyala</button>
                 <a href="https://wa.me/?text={{ urlencode($event->title.' davetiyesi 💌 '.$event->inviteUrl()) }}" target="_blank" rel="noopener"
-                   class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">WhatsApp'ta Paylaş</a>
+                   class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">WhatsApp'ta Paylaş</a>
                 <a href="{{ route('panel.events.qr', $event) }}" target="_blank"
                    class="rounded-lg border border-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 dark:hover:bg-emerald-900/40">🔳 QR Masa Kartı</a>
             </div>
@@ -47,7 +47,7 @@
                 <div class="mt-1 text-xs text-stone-500 dark:text-stone-400">Belki ({{ $summary['belki']['entries'] }} yanıt)</div>
             </div>
             <div class="rounded-2xl border border-stone-200 bg-white p-4 text-center dark:border-stone-800 dark:bg-stone-900">
-                <div class="text-2xl font-bold text-stone-400 dark:text-stone-500">{{ $summary['gelmiyor']['entries'] }}</div>
+                <div class="text-2xl font-bold text-stone-600 dark:text-stone-400">{{ $summary['gelmiyor']['entries'] }}</div>
                 <div class="mt-1 text-xs text-stone-500 dark:text-stone-400">Gelemiyor</div>
             </div>
             <div class="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-center dark:border-emerald-800 dark:bg-emerald-950/30">
@@ -60,11 +60,11 @@
         <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900">
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="font-semibold text-stone-800 dark:text-stone-100">📸 Anı Akışı</h2>
-                <span class="text-xs text-stone-400 dark:text-stone-500">
+                <span class="text-xs text-stone-600 dark:text-stone-400">
                     {{ $mediaCount }} paylaşım · {{ number_format($mediaBytes / 1048576, 1) }} MB / {{ number_format(\App\Models\EventMedia::MAX_TOTAL_BYTES_PER_EVENT / 1073741824, 0) }} GB
                 </span>
             </div>
-            <p class="mt-1 text-xs text-stone-400 dark:text-stone-500">
+            <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">
                 {{ $event->allow_uploads ? ($event->require_approval ? 'Paylaşımlar önce senin onayına düşüyor.' : 'Paylaşımlar doğrudan yayınlanıyor.') : 'Anı akışı kapalı.' }}
                 Akış etkinlik gününden itibaren davet sayfasında görünür — <a href="{{ $event->inviteUrl() }}" target="_blank" class="text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400">akışı gör</a>.
             </p>
@@ -106,7 +106,7 @@
         <div class="mt-6 rounded-2xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
             <div class="border-b border-stone-100 px-5 py-4 dark:border-stone-800">
                 <h2 class="font-semibold text-stone-800 dark:text-stone-100">Davetli Listesi</h2>
-                <p class="mt-0.5 text-xs text-stone-400 dark:text-stone-500">Bu liste yalnızca sana görünür (KVKK) — davetiye sayfasında misafir isimleri gösterilmez.</p>
+                <p class="mt-0.5 text-xs text-stone-600 dark:text-stone-400">Bu liste yalnızca sana görünür (KVKK) — davetiye sayfasında misafir isimleri gösterilmez.</p>
             </div>
             @if ($guests->isNotEmpty())
                 <ul class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -115,10 +115,10 @@
                             <div class="min-w-0">
                                 <span class="font-medium text-stone-800 dark:text-stone-100">{{ $guest->name }}</span>
                                 @if ($guest->party_size > 1)
-                                    <span class="text-stone-400 dark:text-stone-500">+{{ $guest->party_size - 1 }} kişi</span>
+                                    <span class="text-stone-600 dark:text-stone-400">+{{ $guest->party_size - 1 }} kişi</span>
                                 @endif
                                 @if ($guest->note)
-                                    <div class="truncate text-xs text-stone-400 dark:text-stone-500">"{{ $guest->note }}"</div>
+                                    <div class="truncate text-xs text-stone-600 dark:text-stone-400">"{{ $guest->note }}"</div>
                                 @endif
                             </div>
                             <div class="flex shrink-0 items-center gap-2">
@@ -129,7 +129,7 @@
                                     'rounded-full px-2.5 py-0.5 text-xs font-medium',
                                     'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' => $guest->status->value === 'geliyor',
                                     'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' => $guest->status->value === 'belki',
-                                    'bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400' => $guest->status->value === 'gelmiyor',
+                                    'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400' => $guest->status->value === 'gelmiyor',
                                 ])>{{ $guest->status->getLabel() }}</span>
                                 <form method="POST" action="{{ route('panel.events.guests.block', [$event, $guest]) }}"
                                       @unless ($guest->is_blocked) onsubmit="return confirm('{{ $guest->name }} engellensin mi? Tüm paylaşımları ({{ $guest->media_count }}) silinir.');" @endunless>
@@ -144,7 +144,7 @@
                 </ul>
                 <div class="px-5 py-3">{{ $guests->links() }}</div>
             @else
-                <p class="px-5 py-8 text-center text-sm text-stone-400 dark:text-stone-500">Henüz LCV gelmedi — linki paylaştın mı? 😊</p>
+                <p class="px-5 py-8 text-center text-sm text-stone-600 dark:text-stone-400">Henüz LCV gelmedi — linki paylaştın mı? 😊</p>
             @endif
         </div>
 

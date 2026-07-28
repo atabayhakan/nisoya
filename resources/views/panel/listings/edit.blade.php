@@ -11,7 +11,7 @@
             @if ($listing->images->isNotEmpty())
                 <div>
                     <span class="block text-sm font-medium text-stone-700 dark:text-stone-300">Mevcut görseller</span>
-                    <p class="text-xs text-stone-400 dark:text-stone-500">Sürükleyerek hizala, silmek istediklerini işaretle.</p>
+                    <p class="text-xs text-stone-600 dark:text-stone-400">Sürükleyerek hizala, silmek istediklerini işaretle.</p>
                     <div class="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-4">
                         @foreach ($listing->images as $image)
                             <div
@@ -28,10 +28,10 @@
                                          class="h-full w-full object-cover" :style="{ objectPosition: objectPosition }">
                                 </div>
                                 @if ($image->is_cover)
-                                    <span class="pointer-events-none absolute left-1 top-1 rounded bg-emerald-600 px-1.5 py-0.5 text-2xs font-semibold text-white dark:bg-emerald-500 dark:text-stone-900">Kapak</span>
+                                    <span class="pointer-events-none absolute left-1 top-1 rounded bg-emerald-700 px-1.5 py-0.5 text-2xs font-semibold text-white dark:bg-emerald-500 dark:text-stone-900">Kapak</span>
                                 @endif
                                 <span class="pointer-events-none absolute right-1 top-1 rounded bg-stone-900/70 px-1.5 py-0.5 text-2xs font-medium text-white opacity-0 transition group-hover:opacity-100" x-show="!saved">Sürükle</span>
-                                <span class="pointer-events-none absolute right-1 top-1 rounded bg-emerald-600 px-1.5 py-0.5 text-2xs font-medium text-white" x-show="saved">Kaydedildi ✓</span>
+                                <span class="pointer-events-none absolute right-1 top-1 rounded bg-emerald-700 px-1.5 py-0.5 text-2xs font-medium text-white" x-show="saved">Kaydedildi ✓</span>
                                 <label class="absolute inset-x-0 bottom-0 flex cursor-pointer items-center gap-1 bg-white/90 px-2 py-1 text-xs text-red-600 dark:bg-stone-900/90 dark:text-red-400">
                                     <input type="checkbox" name="delete_images[]" value="{{ $image->id }}" class="rounded border-stone-300 text-red-600 focus:ring-red-500 dark:border-stone-600 dark:bg-stone-800">
                                     Sil
@@ -43,7 +43,7 @@
             @endif
 
             <div>
-                <label for="images" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Yeni görsel ekle <span class="text-stone-400">(ops.)</span></label>
+                <label for="images" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Yeni görsel ekle <span class="text-stone-600">(ops.)</span></label>
                 <input id="images" name="images[]" type="file" accept="image/*" multiple
                        class="mt-1 block w-full text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
                 @error('images.*') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
@@ -51,7 +51,7 @@
 
             <div class="flex items-center justify-between pt-2">
                 <div class="flex items-center gap-3">
-                    <button type="submit" class="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
+                    <button type="submit" class="rounded-lg bg-emerald-700 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
                         Değişiklikleri Kaydet
                     </button>
                     <a href="{{ route('listings.show', [$listing, $listing->slug]) }}" class="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">İlanı gör →</a>
@@ -83,7 +83,7 @@
                                class="mt-1 rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                     </div>
                     <div class="min-w-[10rem] flex-1">
-                        <label for="note" class="block text-xs font-medium text-stone-600 dark:text-stone-400">Not <span class="text-stone-400">(ops., sadece sen görürsün)</span></label>
+                        <label for="note" class="block text-xs font-medium text-stone-600 dark:text-stone-400">Not <span class="text-stone-600">(ops., sadece sen görürsün)</span></label>
                         <input id="note" name="note" type="text" maxlength="255" value="{{ old('note') }}" placeholder="ör. aile geliyor"
                                class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">
                     </div>
@@ -98,7 +98,7 @@
                             <li class="flex items-center justify-between gap-3 py-2 text-sm">
                                 <span class="text-stone-700 dark:text-stone-300">
                                     {{ $range->starts_on->format('d.m.Y') }} — {{ $range->ends_on->format('d.m.Y') }}
-                                    @if ($range->note)<span class="ml-1 text-stone-400 dark:text-stone-500">({{ $range->note }})</span>@endif
+                                    @if ($range->note)<span class="ml-1 text-stone-600 dark:text-stone-400">({{ $range->note }})</span>@endif
                                 </span>
                                 <form method="POST" action="{{ route('panel.listings.availability.destroy', [$listing, $range]) }}">
                                     @csrf
@@ -109,7 +109,7 @@
                         @endforeach
                     </ul>
                 @else
-                    <p class="mt-4 text-sm text-stone-400 dark:text-stone-500">Henüz dolu tarih işaretlemedin — takvimin tamamen müsait görünüyor.</p>
+                    <p class="mt-4 text-sm text-stone-600 dark:text-stone-400">Henüz dolu tarih işaretlemedin — takvimin tamamen müsait görünüyor.</p>
                 @endif
             </div>
         @endif

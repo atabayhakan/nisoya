@@ -74,7 +74,7 @@
                             >
                                 <div class="flex items-center justify-between gap-4 border-b border-stone-100 px-5 py-4 dark:border-stone-800">
                                     <h2 id="avatar-align-title" class="font-semibold text-stone-800 dark:text-stone-100">Profil fotoğrafını hizala</h2>
-                                    <button type="button" @click="cancel()" class="rounded-full p-1.5 text-stone-400 transition hover:bg-stone-100 dark:hover:bg-stone-800" aria-label="Kapat">
+                                    <button type="button" @click="cancel()" class="rounded-full p-1.5 text-stone-600 transition hover:bg-stone-100 dark:hover:bg-stone-800" aria-label="Kapat">
                                         <x-heroicon-o-x-mark class="h-5 w-5" />
                                     </button>
                                 </div>
@@ -106,7 +106,7 @@
                                             x-show="ready"
                                         >
                                     </div>
-                                    <label class="flex w-full max-w-64 items-center gap-2 text-stone-400 dark:text-stone-500">
+                                    <label class="flex w-full max-w-64 items-center gap-2 text-stone-600 dark:text-stone-400">
                                         <x-heroicon-o-magnifying-glass-minus class="h-4 w-4 shrink-0" />
                                         <input
                                             type="range"
@@ -120,12 +120,12 @@
                                         >
                                         <x-heroicon-o-magnifying-glass-plus class="h-4 w-4 shrink-0" />
                                     </label>
-                                    <p class="text-center text-xs text-stone-400 dark:text-stone-500">Sürükleyerek kaydır; iki parmakla sıkıştırarak veya kaydırıcıyla yakınlaştır.</p>
+                                    <p class="text-center text-xs text-stone-600 dark:text-stone-400">Sürükleyerek kaydır; iki parmakla sıkıştırarak veya kaydırıcıyla yakınlaştır.</p>
                                     <p x-show="error" x-text="error" class="text-center text-xs font-medium text-red-600 dark:text-red-400"></p>
                                 </div>
                                 <div class="flex items-center justify-end gap-2 border-t border-stone-100 px-5 py-3 dark:border-stone-800">
                                     <button type="button" @click="cancel()" class="rounded-lg px-4 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">İptal</button>
-                                    <button type="button" @click="save()" :disabled="saving" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
+                                    <button type="button" @click="save()" :disabled="saving" class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
                                         <span x-show="!saving">Kaydet</span>
                                         <span x-show="saving">Kaydediliyor...</span>
                                     </button>
@@ -164,15 +164,15 @@
             </div>
 
             <div>
-                <label for="bio" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Hakkında <span class="text-stone-400">(ops.)</span></label>
+                <label for="bio" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Hakkında <span class="text-stone-600">(ops.)</span></label>
                 <textarea id="bio" name="bio" rows="3" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">{{ old('bio', $user->bio) }}</textarea>
                 @error('bio') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div>
-                <label for="skills" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Yetenekler <span class="text-stone-400">(ops.)</span></label>
+                <label for="skills" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Yetenekler <span class="text-stone-600">(ops.)</span></label>
                 <input id="skills" name="skills" type="text" value="{{ old('skills', $user->skills ? implode(', ', $user->skills) : '') }}" placeholder="ör. İngilizce, Web Tasarım, Photoshop" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
-                <p class="mt-1 text-xs text-stone-400 dark:text-stone-500">Virgülle ayırarak yaz, profilinde rozet olarak görünür.</p>
+                <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">Virgülle ayırarak yaz, profilinde rozet olarak görünür.</p>
                 @error('skills') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
@@ -203,13 +203,13 @@
             <div class="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-800 dark:bg-emerald-950/20">
                 <label class="flex items-start gap-3">
                     <input type="hidden" name="is_searchable" value="0">
-                    <input type="checkbox" id="is_searchable" name="is_searchable" value="1" @checked(old('is_searchable', $user->is_searchable)) class="mt-0.5 rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
+                    <input type="checkbox" id="is_searchable" name="is_searchable" value="1" @checked(old('is_searchable', $user->is_searchable)) class="mt-0.5 rounded border-stone-300 text-emerald-700 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
                     <span class="text-sm text-stone-700 dark:text-stone-300">
                         <span class="font-medium">💼 Yetenek Havuzu'nda görün</span> — işverenler seni <a href="{{ route('candidates.index') }}" class="text-emerald-700 underline dark:text-emerald-400">Yetenek Havuzu</a>'nda arayıp bulabilsin (isim, bio, yetenekler ve şehir/ülke bilgin görünür).
                     </span>
                 </label>
                 <div class="mt-3">
-                    <label for="job_category_id" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Uzmanlık alanı <span class="text-stone-400">(ops.)</span></label>
+                    <label for="job_category_id" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Uzmanlık alanı <span class="text-stone-600">(ops.)</span></label>
                     <select id="job_category_id" name="job_category_id" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                         <option value="">Seçiniz</option>
                         @foreach ($jobCategories as $jobCategory)
@@ -219,7 +219,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Profili Kaydet</button>
+            <button type="submit" class="rounded-lg bg-emerald-700 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Profili Kaydet</button>
         </form>
 
         {{-- Ödeme yöntemleri --}}
@@ -270,13 +270,13 @@
                             @error('method') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label for="pl_detail" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Bağlantı veya bilgi <span class="text-stone-400">(ops.)</span></label>
+                            <label for="pl_detail" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Bağlantı veya bilgi <span class="text-stone-600">(ops.)</span></label>
                             <input id="pl_detail" name="detail" type="text" value="{{ old('detail') }}" placeholder="ör. paypal.me/kullaniciadi veya IBAN" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                             @error('detail') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                     </div>
                     <div>
-                        <label for="pl_qr" class="block text-sm font-medium text-stone-700 dark:text-stone-300">QR kod görseli <span class="text-stone-400">(ops.)</span></label>
+                        <label for="pl_qr" class="block text-sm font-medium text-stone-700 dark:text-stone-300">QR kod görseli <span class="text-stone-600">(ops.)</span></label>
                         <input id="pl_qr" name="qr" type="file" accept="image/*" class="mt-1 text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
                         @error('qr') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -325,7 +325,7 @@
                             <input id="pf_image" name="image" type="file" accept="image/*" class="mt-1 text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
                         </div>
                         <div>
-                            <label for="pf_caption" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Açıklama <span class="text-stone-400">(ops.)</span></label>
+                            <label for="pf_caption" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Açıklama <span class="text-stone-600">(ops.)</span></label>
                             <input id="pf_caption" name="caption" type="text" value="{{ old('caption') }}" placeholder="ör. Mutfak tadilatı, 2026" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                         </div>
                     </div>

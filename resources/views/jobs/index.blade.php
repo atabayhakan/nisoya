@@ -50,10 +50,10 @@
                 @endforeach
             </select>
             <label class="flex items-center gap-2 text-sm text-stone-600 dark:text-stone-300">
-                <input type="checkbox" name="uzaktan" value="1" @checked(! empty($filters['uzaktan'])) class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
+                <input type="checkbox" name="uzaktan" value="1" @checked(! empty($filters['uzaktan'])) class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800">
                 Sadece uzaktan
             </label>
-            <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900 lg:col-span-1">Filtrele</button>
+            <button type="submit" class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900 lg:col-span-1">Filtrele</button>
         </form>
 
         {{-- Alan: liste üstü (reklam/duyuru) --}}

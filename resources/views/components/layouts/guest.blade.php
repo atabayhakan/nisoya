@@ -22,7 +22,7 @@
     <div class="flex min-h-screen flex-col items-center justify-center px-4 py-10">
         <div class="mb-6 flex items-center gap-3">
             <a href="{{ url('/') }}" class="flex items-center gap-2">
-                <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900">
+                <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-700 text-white dark:bg-emerald-500 dark:text-stone-900">
                     <x-logo-mark class="h-5 w-5" />
                 </span>
                 <span class="text-2xl font-bold text-stone-900 dark:text-stone-50">Nisoya</span>
@@ -31,7 +31,7 @@
                 <button
                     type="button"
                     onclick="window.toggleTheme && window.toggleTheme()"
-                    class="ml-2 inline-flex rounded-lg p-2 text-stone-500 transition hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
+                    class="ml-2 inline-flex rounded-lg p-2 text-stone-600 transition hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
                     title="Temayı değiştir"
                     aria-label="Karanlık/aydınlık tema değiştir"
                 >
@@ -45,7 +45,7 @@
             {{ $slot }}
         </div>
 
-        <p class="mt-6 text-xs text-stone-400 dark:text-stone-500">© {{ date('Y') }} Nisoya — Ne İş Olursa Yaparım</p>
+        <p class="mt-6 text-xs text-stone-600 dark:text-stone-400">© {{ date('Y') }} Nisoya — Ne İş Olursa Yaparım</p>
     </div>
 
     <script>

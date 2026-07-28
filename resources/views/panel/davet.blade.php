@@ -33,7 +33,7 @@
                 @include('partials.share-buttons', ['shareUrl' => $user->referralUrl(), 'shareText' => $shareText])
             </div>
 
-            <p class="mt-4 text-xs text-stone-400 dark:text-stone-500">
+            <p class="mt-4 text-xs text-stone-600 dark:text-stone-400">
                 Davet kodun: <span class="font-mono font-semibold text-stone-600 dark:text-stone-300">{{ $user->referral_code }}</span>
             </p>
         </div>
@@ -46,7 +46,7 @@
                     <p class="text-sm text-stone-500 dark:text-stone-400">Bağlantınla kaydolan üyeler burada görünür.</p>
                 </div>
                 <div class="text-center">
-                    <div class="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{{ $invitedCount }}</div>
+                    <div class="text-3xl font-bold text-emerald-700 dark:text-emerald-400">{{ $invitedCount }}</div>
                     <div class="text-xs text-stone-500 dark:text-stone-400">kişi</div>
                 </div>
             </div>
@@ -61,7 +61,7 @@
                                 </span>
                                 <span class="text-sm font-medium text-stone-800 dark:text-stone-100">{{ $member->name }}</span>
                             </div>
-                            <span class="text-xs text-stone-400 dark:text-stone-500">{{ $member->created_at->translatedFormat('j F Y') }}</span>
+                            <span class="text-xs text-stone-600 dark:text-stone-400">{{ $member->created_at->translatedFormat('j F Y') }}</span>
                         </li>
                     @endforeach
                 </ul>

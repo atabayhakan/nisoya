@@ -21,7 +21,7 @@
                     </a>
                 @endif
             </div>
-            <span class="flex shrink-0 items-center gap-1 text-xs text-stone-400 dark:text-stone-500"><span class="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span> canlı</span>
+            <span class="flex shrink-0 items-center gap-1 text-xs text-stone-600 dark:text-stone-400"><span class="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span> canlı</span>
         </div>
 
         {{-- Durum mesajı (anlaşma aksiyonları buraya döner) --}}
@@ -41,14 +41,14 @@
             @forelse ($conversation->messages->sortBy('created_at') as $message)
                 @include('panel.messages.partials.bubble', ['message' => $message, 'mine' => $message->sender_id === $me])
             @empty
-                <div id="thread-empty" class="flex h-full items-center justify-center text-center text-sm text-stone-400 dark:text-stone-500">
+                <div id="thread-empty" class="flex h-full items-center justify-center text-center text-sm text-stone-600 dark:text-stone-400">
                     Henüz mesaj yok — ilk mesajı sen yaz.
                 </div>
             @endforelse
         </div>
 
         {{-- "Yazıyor..." göstergesi (Faz M4) --}}
-        <div id="typing-indicator" class="mt-2 hidden px-2 text-xs text-stone-400 dark:text-stone-500">
+        <div id="typing-indicator" class="mt-2 hidden px-2 text-xs text-stone-600 dark:text-stone-400">
             <span class="italic">{{ $other?->name ?? 'Kullanıcı' }} yazıyor…</span>
         </div>
 
@@ -72,7 +72,7 @@
 
             <textarea name="body" rows="2" maxlength="2000" placeholder="Mesaj yaz... (Enter ile gönder, Shift+Enter ile alt satır)"
                       class="flex-1 resize-none rounded-xl border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"></textarea>
-            <button type="submit" class="shrink-0 rounded-xl bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Gönder</button>
+            <button type="submit" class="shrink-0 rounded-xl bg-emerald-700 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Gönder</button>
         </form>
     </div>
 
@@ -89,7 +89,7 @@
             let busy = false;
             let lastTypingPing = 0;
 
-            const MINE = 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-stone-900';
+            const MINE = 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-stone-900';
             const THEIRS = 'bg-white text-stone-800 ring-1 ring-stone-200 dark:bg-stone-800 dark:text-stone-100 dark:ring-stone-700';
 
             const scrollBottom = () => { thread.scrollTop = thread.scrollHeight; };
@@ -97,14 +97,14 @@
 
             function recalledBubble() {
                 const b = document.createElement('div');
-                b.className = 'max-w-[75%] rounded-2xl px-4 py-2 text-sm italic text-stone-400 ring-1 ring-stone-200 dark:text-stone-500 dark:ring-stone-700';
+                b.className = 'max-w-[75%] rounded-2xl px-4 py-2 text-sm italic text-stone-600 ring-1 ring-stone-200 dark:text-stone-400 dark:ring-stone-700';
                 b.innerHTML = '<span class="select-none">🚫</span> Bu mesaj geri alındı';
                 return b;
             }
 
             function metaEl(m) {
                 const meta = document.createElement('p');
-                meta.className = 'meta mt-1 flex items-center justify-end gap-1.5 text-2xs ' + (m.mine ? 'text-emerald-100' : 'text-stone-400 dark:text-stone-500');
+                meta.className = 'meta mt-1 flex items-center justify-end gap-1.5 text-2xs ' + (m.mine ? 'text-emerald-100' : 'text-stone-600 dark:text-stone-400');
                 const t = document.createElement('span');
                 t.textContent = m.time;
                 meta.append(t);

@@ -29,7 +29,7 @@
         {{-- Şirket başlığı --}}
         <div class="mt-3 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
             <div class="flex items-start gap-4">
-                <div class="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-stone-100 text-xl font-bold text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+                <div class="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-stone-100 text-xl font-bold text-stone-600 dark:bg-stone-800 dark:text-stone-400">
                     @if ($company->logoUrl())
                         <img src="{{ $company->logoUrl() }}" alt="{{ $company->name }}" class="h-full w-full object-cover">
                     @else
@@ -49,14 +49,14 @@
                         @endif
                     </div>
                     @if ($company->tagline)<p class="mt-0.5 text-sm text-stone-500 dark:text-stone-400">{{ $company->tagline }}</p>@endif
-                    <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-400 dark:text-stone-500">
+                    <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-600 dark:text-stone-400">
                         @if ($company->sector)<span>🏢 {{ $company->sector }}</span>@endif
                         @if ($company->company_size)<span>👥 {{ $company->company_size }} çalışan</span>@endif
                         @if ($company->founded_year)<span>📅 {{ $company->founded_year }}</span>@endif
                         @if ($company->country)<span>{{ $company->country->emoji }} {{ $company->city ?: $company->country->name_tr }}</span>@endif
                     </div>
                     @if ($company->address)
-                        <p class="mt-1 text-xs text-stone-400 dark:text-stone-500">📍 {{ $company->address }}</p>
+                        <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">📍 {{ $company->address }}</p>
                     @endif
                     <div class="mt-2 flex flex-wrap gap-3 text-xs">
                         @if ($company->website)<a href="{{ $company->website }}" target="_blank" rel="noopener nofollow" class="text-emerald-700 hover:underline dark:text-emerald-400">🌐 Web sitesi</a>@endif
@@ -111,7 +111,7 @@
         <div class="mt-12">
             <h2 class="text-lg font-bold text-stone-900 dark:text-stone-50">
                 Değerlendirmeler
-                @if ($rating['count'] > 0)<span class="text-amber-500 dark:text-amber-400">★ {{ $rating['avg'] }}</span> <span class="text-sm font-normal text-stone-400 dark:text-stone-500">({{ $rating['count'] }})</span>@endif
+                @if ($rating['count'] > 0)<span class="text-amber-500 dark:text-amber-400">★ {{ $rating['avg'] }}</span> <span class="text-sm font-normal text-stone-600 dark:text-stone-400">({{ $rating['count'] }})</span>@endif
             </h2>
 
             @if (session('status'))
@@ -135,7 +135,7 @@
                         </div>
                         <textarea name="comment" rows="3" placeholder="Deneyimini paylaş (ops.)" class="mt-2 w-full rounded-lg border-stone-300 px-3 py-2 text-sm text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">{{ $myReview?->comment }}</textarea>
                         @error('rating') <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-                        <button type="submit" class="mt-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">{{ $myReview ? 'Güncelle' : 'Gönder' }}</button>
+                        <button type="submit" class="mt-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">{{ $myReview ? 'Güncelle' : 'Gönder' }}</button>
                     </form>
                 @elseif (auth()->id() !== $company->user_id)
                     <div class="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-5 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300">
@@ -152,10 +152,10 @@
                     <div class="rounded-2xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
                         <div class="flex items-center justify-between">
                             <span class="font-medium text-stone-800 dark:text-stone-100">{{ $review->reviewer->name }}</span>
-                            <span class="text-amber-500 dark:text-amber-400">{{ str_repeat('★', $review->rating) }}<span class="text-stone-300 dark:text-stone-600">{{ str_repeat('★', 5 - $review->rating) }}</span></span>
+                            <span class="text-amber-500 dark:text-amber-400">{{ str_repeat('★', $review->rating) }}<span class="text-stone-300 dark:text-stone-400">{{ str_repeat('★', 5 - $review->rating) }}</span></span>
                         </div>
                         @if ($review->comment)<p class="mt-1 text-sm text-stone-600 dark:text-stone-300">{{ $review->comment }}</p>@endif
-                        <p class="mt-1 text-xs text-stone-400 dark:text-stone-500">{{ $review->created_at->translatedFormat('j F Y') }}</p>
+                        <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">{{ $review->created_at->translatedFormat('j F Y') }}</p>
                     </div>
                 @empty
                     <p class="text-sm text-stone-500 dark:text-stone-400">Henüz değerlendirme yok. İlk değerlendiren sen ol!</p>

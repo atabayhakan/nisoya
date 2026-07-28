@@ -70,7 +70,7 @@
                 </div>
 
                 <button type="submit" form="vitrin-filtreler"
-                        class="h-[46px] shrink-0 rounded-[13px] bg-emerald-600 px-4 text-sm font-bold text-white transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900">
+                        class="h-[46px] shrink-0 rounded-[13px] bg-emerald-700 px-4 text-sm font-bold text-white transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900">
                     Ara
                 </button>
 
@@ -79,7 +79,7 @@
                     <x-heroicon-o-funnel class="h-3.5 w-3.5" />
                     Filtreler
                     @if ($aktifFiltreler->isNotEmpty())
-                        <span class="rounded-full bg-emerald-600 px-1.5 py-[3px] text-2xs font-bold text-white dark:bg-emerald-500 dark:text-stone-900">{{ $aktifFiltreler->count() }}</span>
+                        <span class="rounded-full bg-emerald-700 px-1.5 py-[3px] text-2xs font-bold text-white dark:bg-emerald-500 dark:text-stone-900">{{ $aktifFiltreler->count() }}</span>
                     @endif
                 </button>
             </div>
@@ -95,7 +95,7 @@
                 <aside :class="filtreAcik ? 'grid' : 'hidden lg:grid'" class="hidden content-start gap-3.5 lg:grid">
                     <div class="flex items-center justify-between">
                         <h2 class="text-base font-extrabold text-stone-800 dark:text-stone-100">Filtreler</h2>
-                        <a href="{{ route('listings.index') }}" class="text-xs font-bold text-emerald-600 hover:underline dark:text-emerald-400">Temizle</a>
+                        <a href="{{ route('listings.index') }}" class="text-xs font-bold text-emerald-700 hover:underline dark:text-emerald-400">Temizle</a>
                     </div>
 
                     <form method="GET" action="{{ route('listings.index') }}" id="vitrin-filtreler" class="grid content-start gap-3.5">
@@ -106,7 +106,7 @@
                                 @foreach ([['', 'Tümü'], ['hizmet', '🧰 Hizmetler'], ['urun', '📦 Ürünler'], ['emlak', '🏡 Emlak'], ['vasita', '🚗 Vasıta']] as [$deger, $etiket])
                                     <label class="cursor-pointer">
                                         <input type="radio" name="tip" value="{{ $deger }}" @checked($filters['tip'] === $deger) class="peer sr-only">
-                                        <span class="inline-flex rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-xs font-semibold text-stone-700 transition peer-checked:border-emerald-600 peer-checked:bg-emerald-600 peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-emerald-600 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:peer-checked:text-stone-900">{{ $etiket }}</span>
+                                        <span class="inline-flex rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-xs font-semibold text-stone-700 transition peer-checked:border-emerald-600 peer-checked:bg-emerald-700 peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-emerald-600 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:peer-checked:text-stone-900">{{ $etiket }}</span>
                                     </label>
                                 @endforeach
                             </div>
@@ -119,14 +119,14 @@
                                 @foreach (collect([(object) ['slug' => '', 'name' => 'Tüm kategoriler', 'icon' => null]])->concat($categories) as $cat)
                                     <label class="flex cursor-pointer items-center gap-2.5 text-xs font-semibold text-stone-700 transition hover:text-stone-800 dark:text-stone-300 dark:hover:text-stone-100">
                                         <input type="radio" name="kategori" value="{{ $cat->slug }}" @checked($filters['kategori'] === $cat->slug) class="peer sr-only">
-                                        <span class="grid h-4 w-4 shrink-0 place-items-center rounded-[5px] border-[1.6px] border-stone-300 text-white transition peer-checked:border-emerald-600 peer-checked:bg-emerald-600 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-emerald-600 dark:border-stone-600">
+                                        <span class="grid h-4 w-4 shrink-0 place-items-center rounded-[5px] border-[1.6px] border-stone-300 text-white transition peer-checked:border-emerald-600 peer-checked:bg-emerald-700 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-emerald-600 dark:border-stone-600">
                                             <x-heroicon-s-check class="h-2.5 w-2.5" />
                                         </span>
                                         <span class="truncate">@if ($cat->icon){{ $cat->icon }} @endif{{ $cat->name }}</span>
                                         {{-- Sayaç (Faz P4): mevcut diğer filtrelerle bu kategoride kaç
                                              ilan olduğu. Kök kategori için alt kategoriler de toplanır. --}}
                                         @if ($cat->slug !== '' && ($catAdet = $kategoriAdedi($cat)) > 0)
-                                            <span class="ml-auto shrink-0 text-xs font-semibold text-stone-400 dark:text-stone-500">{{ $catAdet }}</span>
+                                            <span class="ml-auto shrink-0 text-xs font-semibold text-stone-600 dark:text-stone-400">{{ $catAdet }}</span>
                                         @endif
                                     </label>
                                 @endforeach
@@ -136,14 +136,14 @@
                         {{-- Konum --}}
                         <div class="rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
                             <h3 class="text-sm font-bold text-stone-800 dark:text-stone-100">Konum</h3>
-                            <label for="ulke" class="mt-3 block text-xs font-semibold text-stone-400">Ülke</label>
+                            <label for="ulke" class="mt-3 block text-xs font-semibold text-stone-600">Ülke</label>
                             <select name="ulke" id="ulke" class="mt-1 w-full rounded-[9px] border border-stone-300 bg-white px-2.5 py-2 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                                 <option value="">Tüm ülkeler</option>
                                 @foreach ($countries as $country)
                                     <option value="{{ $country->code }}" @selected($filters['ulke'] === $country->code)>{{ $country->emoji }} {{ $country->name_tr }}</option>
                                 @endforeach
                             </select>
-                            <label for="sehir" class="mt-3 block text-xs font-semibold text-stone-400">Şehir</label>
+                            <label for="sehir" class="mt-3 block text-xs font-semibold text-stone-600">Şehir</label>
                             <input type="text" name="sehir" id="sehir" value="{{ $filters['sehir'] }}"
                                    class="mt-1 w-full rounded-[9px] border border-stone-300 bg-white px-2.5 py-2 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                         </div>
@@ -188,7 +188,7 @@
                             <div class="mt-3.5 flex items-center gap-2">
                                 <input type="number" name="min" min="0" value="{{ $filters['min'] }}" placeholder="En az" aria-label="En az fiyat"
                                        class="h-[34px] w-full rounded-[9px] border border-stone-300 bg-white px-2.5 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
-                                <span class="text-stone-400">—</span>
+                                <span class="text-stone-600">—</span>
                                 <input type="number" name="max" min="0" value="{{ $filters['max'] }}" placeholder="En çok" aria-label="En çok fiyat"
                                        class="h-[34px] w-full rounded-[9px] border border-stone-300 bg-white px-2.5 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                             </div>
@@ -229,7 +229,7 @@
                             <nav class="text-xs font-semibold text-stone-500 dark:text-stone-400">
                                 <a href="{{ url('/ilanlar') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İlanlar</a>
                                 @if ($activeCategory)
-                                    <span class="mx-1 text-stone-300 dark:text-stone-600">/</span>
+                                    <span class="mx-1 text-stone-300 dark:text-stone-400">/</span>
                                     <span class="text-stone-800 dark:text-stone-200">{{ $activeCategory->name }}</span>
                                 @endif
                             </nav>
@@ -274,7 +274,7 @@
                                 <a href="{{ $filtresizUrl($anahtar) }}"
                                    class="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-800 transition hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:hover:bg-stone-800">
                                     {{ $etiket }}
-                                    <span class="text-stone-400" aria-hidden="true">×</span>
+                                    <span class="text-stone-600" aria-hidden="true">×</span>
                                     <span class="sr-only">filtresini kaldır</span>
                                 </a>
                             @endforeach

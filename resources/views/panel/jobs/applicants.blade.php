@@ -115,13 +115,13 @@
                         @endif
 
                         @if ($kartlar->isEmpty())
-                            <p class="rounded-lg border border-dashed border-stone-300 px-2 py-6 text-center text-xs text-stone-400 dark:border-stone-700 dark:text-stone-500">Boş</p>
+                            <p class="rounded-lg border border-dashed border-stone-300 px-2 py-6 text-center text-xs text-stone-600 dark:border-stone-700 dark:text-stone-400">Boş</p>
                         @endif
                     </section>
                 @endforeach
             </div>
 
-            <p class="mt-4 text-xs text-stone-400 dark:text-stone-500">
+            <p class="mt-4 text-xs text-stone-600 dark:text-stone-400">
                 Fareyle kartları sütunlar arasında sürükleyebilirsin (sürüklerken <kbd class="rounded border border-stone-300 px-1 dark:border-stone-600">Esc</kbd> iptal eder).
                 Klavye ve telefonda karttaki durum menüsünü kullan — ikisi de aynı işi yapar.
             </p>

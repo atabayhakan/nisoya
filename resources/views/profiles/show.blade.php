@@ -36,7 +36,7 @@
                     <div class="mt-1 flex flex-wrap items-center gap-2">
                         <x-trust-badge :user="$user" />
                         @if ($user->is_verified)
-                            <span class="inline-flex items-center gap-1 text-base text-emerald-600 dark:text-emerald-400">
+                            <span class="inline-flex items-center gap-1 text-base text-emerald-700 dark:text-emerald-400">
                                 <x-verified-badge size="base" /> Doğrulanmış
                             </span>
                         @endif
@@ -53,10 +53,10 @@
                     </div>
                     <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
                         @if ($user->city){{ $user->city }} · @endif{{ $user->country_code }} · Üyelik: {{ $user->created_at->translatedFormat('F Y') }}
-                        @if ($user->jobCategory) · <span class="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-500 dark:bg-stone-800 dark:text-stone-400">{{ $user->jobCategory->name }}</span>@endif
+                        @if ($user->jobCategory) · <span class="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600 dark:bg-stone-800 dark:text-stone-400">{{ $user->jobCategory->name }}</span>@endif
                     </p>
                     @if ($rating['count'] > 0)
-                        <p class="mt-1 text-sm font-medium text-amber-500 dark:text-amber-400">★ {{ $rating['avg'] }} <span class="text-stone-400 dark:text-stone-500">({{ $rating['count'] }} değerlendirme)</span></p>
+                        <p class="mt-1 text-sm font-medium text-amber-500 dark:text-amber-400">★ {{ $rating['avg'] }} <span class="text-stone-600 dark:text-stone-400">({{ $rating['count'] }} değerlendirme)</span></p>
                     @endif
                     @if ($user->bio)
                         <p class="mt-2 text-sm text-stone-600 dark:text-stone-300">{{ $user->bio }}</p>
@@ -70,7 +70,7 @@
                     @endif
                     @if ($user->paymentLinks->isNotEmpty())
                         <div class="mt-2 flex flex-wrap items-center gap-1.5">
-                            <span class="text-xs text-stone-400 dark:text-stone-500">Kabul ettiği ödeme yöntemleri:</span>
+                            <span class="text-xs text-stone-600 dark:text-stone-400">Kabul ettiği ödeme yöntemleri:</span>
                             @foreach ($user->paymentLinks as $link)
                                 @if ($link->detailIsLink())
                                     <a href="{{ $link->detail }}" target="_blank" rel="noopener nofollow" class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600 hover:bg-emerald-100 hover:text-emerald-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-emerald-900/40 dark:hover:text-emerald-300" title="{{ $link->method->getLabel() }} — kendi ödeme sayfasına git">
@@ -122,7 +122,7 @@
                             <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
                         <button type="submit"
-                                class="mt-2 inline-flex min-h-11 items-center rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white hover:bg-emerald-700 md:min-h-0 md:py-2.5 dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">
+                                class="mt-2 inline-flex min-h-11 items-center rounded-lg bg-emerald-700 px-5 text-sm font-semibold text-white hover:bg-emerald-800 md:min-h-0 md:py-2.5 dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">
                             Mesaj gönder
                         </button>
                     </form>
@@ -145,7 +145,7 @@
             @auth
                 @if (auth()->id() !== $user->id)
                     <details class="mt-3 border-t border-stone-100 pt-3 dark:border-stone-800" @if ($errors->has('note')) open @endif>
-                        <summary class="cursor-pointer list-none text-xs text-stone-400 hover:text-red-600 dark:text-stone-500 dark:hover:text-red-400">
+                        <summary class="cursor-pointer list-none text-xs text-stone-600 hover:text-red-600 dark:text-stone-400 dark:hover:text-red-400">
                             🚩 Bu kullanıcıyı dolandırıcılık için bildir
                         </summary>
                         <form method="POST" action="{{ route('users.report-fraud', $user->username) }}" class="mt-2 max-w-md">
@@ -156,7 +156,7 @@
                                 placeholder="Ne oldu? Ödeme detayı, mesaj, tarih... (en az 10 karakter)"
                                 class="w-full rounded-lg border-stone-300 text-sm shadow-sm focus:border-red-500 focus:ring-red-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">{{ old('note') }}</textarea>
                             @error('note')<p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>@enderror
-                            <p class="mt-1 text-xs text-stone-400 dark:text-stone-500">Bildirimin gizli tutulur; ekibimiz inceler. Asılsız ihbar kötüye kullanımdır.</p>
+                            <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">Bildirimin gizli tutulur; ekibimiz inceler. Asılsız ihbar kötüye kullanımdır.</p>
                             <button type="submit" class="mt-2 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700">Bildir</button>
                         </form>
                     </details>
@@ -199,7 +199,7 @@
         <div class="mt-12 scroll-mt-20" id="degerlendir">
             <h2 class="text-lg font-bold text-stone-900 dark:text-stone-50">
                 Değerlendirmeler
-                @if ($rating['count'] > 0)<span class="text-amber-500 dark:text-amber-400">★ {{ $rating['avg'] }}</span> <span class="text-sm font-normal text-stone-400 dark:text-stone-500">({{ $rating['count'] }})</span>@endif
+                @if ($rating['count'] > 0)<span class="text-amber-500 dark:text-amber-400">★ {{ $rating['avg'] }}</span> <span class="text-sm font-normal text-stone-600 dark:text-stone-400">({{ $rating['count'] }})</span>@endif
             </h2>
 
             @if (session('status'))
@@ -223,7 +223,7 @@
                         </div>
                         <textarea name="comment" rows="3" placeholder="Deneyimini paylaş (ops.)" class="mt-2 w-full rounded-lg border-stone-300 px-3 py-2 text-sm text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">{{ $myReview?->comment }}</textarea>
                         @error('rating') <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-                        <button type="submit" class="mt-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">{{ $myReview ? 'Güncelle' : 'Gönder' }}</button>
+                        <button type="submit" class="mt-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">{{ $myReview ? 'Güncelle' : 'Gönder' }}</button>
                     </form>
                 @elseif (auth()->id() !== $user->id)
                     <div class="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-5 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300">
@@ -246,10 +246,10 @@
                                     <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-2xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-900/40 dark:text-emerald-300" title="Bu değerlendirme, tamamlanmış bir anlaşmaya dayanıyor.">✓ Doğrulanmış işlem</span>
                                 @endif
                             </span>
-                            <span class="shrink-0 text-amber-500 dark:text-amber-400">{{ str_repeat('★', $review->rating) }}<span class="text-stone-300 dark:text-stone-600">{{ str_repeat('★', 5 - $review->rating) }}</span></span>
+                            <span class="shrink-0 text-amber-500 dark:text-amber-400">{{ str_repeat('★', $review->rating) }}<span class="text-stone-300 dark:text-stone-400">{{ str_repeat('★', 5 - $review->rating) }}</span></span>
                         </div>
                         @if ($review->comment)<p class="mt-1 text-sm text-stone-600 dark:text-stone-300">{{ $review->comment }}</p>@endif
-                        <p class="mt-1 text-xs text-stone-400 dark:text-stone-500">{{ $review->created_at->translatedFormat('j F Y') }}</p>
+                        <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">{{ $review->created_at->translatedFormat('j F Y') }}</p>
                     </div>
                 @empty
                     <p class="text-sm text-stone-500 dark:text-stone-400">Henüz değerlendirme yok. İlk değerlendiren sen ol!</p>

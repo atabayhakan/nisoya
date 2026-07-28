@@ -8,7 +8,7 @@
             <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
             @include('panel.jobs.partials.form-fields', ['job' => null])
             <div class="pt-2">
-                <button type="submit" class="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlanı yayınla</button>
+                <button type="submit" class="rounded-lg bg-emerald-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlanı yayınla</button>
             </div>
         </form>
     </div>

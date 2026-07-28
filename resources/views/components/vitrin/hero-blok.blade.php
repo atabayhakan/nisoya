@@ -8,7 +8,7 @@
     {{-- Arama paneli — klasikle aynı form sözleşmesi (GET /ilanlar, q + ulke) --}}
     <form action="{{ url('/ilanlar') }}" method="GET" class="mt-7 flex flex-col gap-1.5 rounded-2xl border border-stone-200/70 bg-white p-2 shadow-brand sm:flex-row sm:items-center dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
         <div class="flex min-w-0 flex-1 items-center gap-2 px-3">
-            <x-heroicon-o-magnifying-glass class="h-4 w-4 shrink-0 text-stone-400" />
+            <x-heroicon-o-magnifying-glass class="h-4 w-4 shrink-0 text-stone-600" />
             <input type="text" name="q" placeholder="{{ setting('home.arama_placeholder') }}"
                    class="h-12 w-full min-w-0 border-0 bg-transparent p-0 text-base font-medium text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-0 dark:text-stone-100 dark:placeholder-stone-500">
         </div>
@@ -24,7 +24,7 @@
                 <option value="{{ $country->code }}">{{ $country->emoji }} {{ $country->name_tr }}</option>
             @endforeach
         </select>
-        <button type="submit" class="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 text-sm font-bold text-white shadow-[0_12px_22px_-12px_rgba(62,99,240,1)] transition hover:bg-emerald-700 dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none dark:hover:bg-emerald-400">
+        <button type="submit" class="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-6 text-sm font-bold text-white shadow-[0_12px_22px_-12px_rgba(62,99,240,1)] transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none dark:hover:bg-emerald-400">
             Ara
             <x-heroicon-o-arrow-right class="h-4 w-4" />
         </button>
@@ -42,12 +42,12 @@
      $heroCips yoksa (klasik tema / eski çağrı) blok hiç basılmaz. --}}
 @if ($anahtar === 'populer_etiketler' && $heroCips !== null && $heroCips->isNotEmpty())
     <div class="mt-4 flex flex-wrap items-center gap-2 {{ $koyu ? 'justify-center' : '' }}">
-        <span class="text-xs font-semibold text-stone-400 dark:text-stone-500">Popüler:</span>
+        <span class="text-xs font-semibold text-stone-600 dark:text-stone-400">Popüler:</span>
         @foreach ($heroCips as $kategori)
             <a href="{{ url('/ilanlar') }}?kategori={{ $kategori->slug }}"
                class="inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition sm:min-h-0 sm:py-1.5 {{ $koyu
                    ? 'border-white/25 bg-white/10 text-white hover:bg-white/20'
-                   : 'border-stone-200 bg-white hover:border-emerald-300 hover:text-emerald-700 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-emerald-700 dark:hover:text-emerald-400 '.($loop->first ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-600 dark:text-stone-300') }}">
+                   : 'border-stone-200 bg-white hover:border-emerald-300 hover:text-emerald-700 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-emerald-700 dark:hover:text-emerald-400 '.($loop->first ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-600 dark:text-stone-300') }}">
                 @if ($loop->first && ! $koyu)
                     <x-heroicon-o-arrow-trending-up class="h-3.5 w-3.5 text-[#16a97f]" />
                 @endif

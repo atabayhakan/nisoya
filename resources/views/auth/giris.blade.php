@@ -29,11 +29,11 @@
         </div>
 
         <label class="flex items-center gap-2 text-sm text-stone-600">
-            <input type="checkbox" name="remember" class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500">
+            <input type="checkbox" name="remember" class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-500">
             Beni hatırla
         </label>
 
-        <button type="submit" class="w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-700">
+        <button type="submit" class="w-full rounded-lg bg-emerald-700 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-800">
             Giriş Yap
         </button>
     </form>
@@ -46,7 +46,7 @@
         x-show="supported"
         x-cloak
     >
-        <div class="my-4 flex items-center gap-3 text-xs text-stone-400">
+        <div class="my-4 flex items-center gap-3 text-xs text-stone-600">
             <span class="h-px flex-1 bg-stone-200 dark:bg-stone-700"></span>
             veya
             <span class="h-px flex-1 bg-stone-200 dark:bg-stone-700"></span>
@@ -58,7 +58,7 @@
             :disabled="busy"
             class="flex w-full items-center justify-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2.5 font-semibold text-stone-700 transition hover:bg-stone-50 disabled:opacity-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
         >
-            <x-heroicon-o-finger-print class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <x-heroicon-o-finger-print class="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
             <span x-text="busy ? 'Doğrulanıyor...' : 'Parmak izi / Yüz tanıma ile gir'"></span>
         </button>
         <p x-show="error" x-text="error" class="mt-2 text-sm text-red-600" x-cloak></p>

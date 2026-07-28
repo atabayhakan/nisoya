@@ -21,5 +21,5 @@
         <x-heroicon-s-check class="text-white" style="height: {{ round($px * 0.6) }}px; width: {{ round($px * 0.6) }}px;" />
     </span>
 @else
-    <span title="Doğrulanmış üye" class="text-emerald-600 dark:text-emerald-400">✓</span>
+    <span title="Doğrulanmış üye" class="text-emerald-700 dark:text-emerald-400">✓</span>
 @endif

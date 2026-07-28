@@ -6,7 +6,7 @@
             @if ($company)
                 <div class="flex items-center gap-2">
                     <a href="{{ route('candidates.index') }}" class="rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">💼 Yetenek Havuzu</a>
-                    <a href="{{ route('panel.jobs.create') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">+ Yeni ilan</a>
+                    <a href="{{ route('panel.jobs.create') }}" class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">+ Yeni ilan</a>
                 </div>
             @endif
         </div>
@@ -20,7 +20,7 @@
                 <div class="text-4xl">🏢</div>
                 <h2 class="mt-3 text-lg font-semibold text-stone-800 dark:text-stone-100">Önce şirket profilini oluştur</h2>
                 <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">İş ilanı verebilmek için bir şirket profiline ihtiyacın var.</p>
-                <a href="{{ route('panel.company.edit') }}" class="mt-5 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Şirket profili oluştur</a>
+                <a href="{{ route('panel.company.edit') }}" class="mt-5 inline-block rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Şirket profili oluştur</a>
             </div>
         @elseif ($jobs->isNotEmpty())
             <div class="mt-6 space-y-3">
@@ -33,18 +33,18 @@
                                     <span @class([
                                         'rounded-full px-2 py-0.5 text-xs font-medium',
                                         'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' => $job->status->value === 'aktif',
-                                        'bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400' => $job->status->value === 'kapali',
+                                        'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400' => $job->status->value === 'kapali',
                                         'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300' => $job->status->value === 'dolu',
                                     ])>{{ $job->status->getLabel() }}</span>
                                 </div>
-                                <div class="mt-1 text-xs text-stone-400 dark:text-stone-500">{{ $job->employment_type->getLabel() }} · {{ $job->created_at->diffForHumans() }}</div>
+                                <div class="mt-1 text-xs text-stone-600 dark:text-stone-400">{{ $job->employment_type->getLabel() }} · {{ $job->created_at->diffForHumans() }}</div>
                                 <div class="mt-2">
                                     @if ($job->isCurrentlyFeatured())
                                         <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
                                             <x-heroicon-s-star class="h-3.5 w-3.5" /> Öne çıkan
                                         </span>
                                     @elseif ($job->has_pending_feature)
-                                        <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600 dark:bg-stone-800 dark:text-stone-400">
                                             <x-heroicon-o-clock class="h-3.5 w-3.5" /> İncelemede
                                         </span>
                                     @elseif ($job->status->value === 'aktif')
@@ -61,7 +61,7 @@
                             </div>
                             <div class="flex flex-wrap items-center gap-2">
                                 <a href="{{ route('panel.jobs.applicants', $job) }}" class="rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700">
-                                    Başvurular <span class="ml-0.5 rounded-full bg-emerald-600 px-1.5 text-2xs text-white">{{ $job->applications_count }}</span>
+                                    Başvurular <span class="ml-0.5 rounded-full bg-emerald-700 px-1.5 text-2xs text-white">{{ $job->applications_count }}</span>
                                 </a>
                                 <a href="{{ route('panel.jobs.edit', $job) }}" class="rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700">Düzenle</a>
                                 <form method="POST" action="{{ route('panel.jobs.status', $job) }}" class="inline">
