@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "kahya-yerel": {
+      "command": "php",
+      "args": ["artisan", "mcp:start", "kahya"]
+    },
+    "kahya-canli": {
+      "command": "ssh",
+      "args": [
+        "-T",
+        "-o",
+        "BatchMode=yes",
+        "nisoya-canli",
+        "cd /var/www/nisoya && sudo -n -u www-data php artisan mcp:start kahya"
+      ]
+    }
+  }
+}

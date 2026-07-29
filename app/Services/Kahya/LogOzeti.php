@@ -36,13 +36,17 @@ class LogOzeti
     private const SEVIYELER = ['ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY'];
 
     /**
+     * @param  ?int  $saat  null ise `config('kahya.log_penceresi_saat')`
      * @param  ?string  $dizin  Varsayılan storage/logs. Testler kendi geçici
      *                          dizinlerini verir — yoksa ortamdaki gerçek
      *                          loglar iddiaları boğar ve test kırılgan olur.
+     *                          BU PARAMETRE MCP YÜZEYİNE AÇILMAZ: keyfi dizin
+     *                          okutmak yol geçişi (path traversal) demektir.
      * @return array{taranan_dosya: int, toplam: int, imzalar: list<array{seviye: string, sinif: string, yer: string, adet: int}>, uyari: ?string}
      */
-    public function ozetle(int $saat = 24, ?string $dizin = null): array
+    public function ozetle(?int $saat = null, ?string $dizin = null): array
     {
+        $saat = max(1, $saat ?? (int) config('kahya.log_penceresi_saat', 24));
         $dizin ??= storage_path('logs');
 
         if (! is_dir($dizin)) {

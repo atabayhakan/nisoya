@@ -38,6 +38,13 @@ class KahyaTeshisi
     ) {}
 
     /**
+     * MALİYET: ~26 SQL sorgusu + 2000'e kadar `Storage::exists()` çağrısı +
+     * storage/logs altındaki TÜM .log dosyalarının baştan sona okunması.
+     * GÜNDE BİR KEZ çalışmak üzere tasarlandı; etkileşimli çağrılarda (panel,
+     * MCP) parametreleri küçültmek gerekebilir.
+     *
+     * @param  ?int  $medyaLimit  null ise `config('kahya.medya_tarama_limiti')`
+     * @param  ?int  $logSaat  null ise `config('kahya.log_penceresi_saat')`
      * @return array{
      *   uretildi: string,
      *   envanter: array{ilan: int, satici: int, uyari: ?string},
@@ -46,15 +53,15 @@ class KahyaTeshisi
      *   eksik: array<string, mixed>
      * }
      */
-    public function topla(): array
+    public function topla(?int $medyaLimit = null, ?int $logSaat = null): array
     {
         return [
             'uretildi' => now()->toAtomString(),
             'envanter' => $this->gercekEnvanter(),
             'bekleyen' => $this->bekleyen->topla(),
             'bozuk' => [
-                'medya' => $this->medya->dogrula(),
-                'log' => $this->log->ozetle(),
+                'medya' => $this->medya->dogrula($medyaLimit),
+                'log' => $this->log->ozetle($logSaat),
             ],
             'eksik' => $this->eksik->tara(),
         ];
