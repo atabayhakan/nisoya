@@ -235,6 +235,9 @@ class KahyaSohbeti
 
         ## Sahibin şu anki mesajı
         {$mesaj}
+
+        ## Yanıt biçimi
+        Yanıtını SADECE JSON olarak ver: {"cevap": "...", "eylem": "...", "parametreler": {...}}
         METIN;
     }
 
