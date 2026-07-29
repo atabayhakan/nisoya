@@ -322,7 +322,34 @@ class ListingImage extends Model
     }
 
     /**
-     * Belirli bir varyant için URL döndür (fallback: orijinal path).
+     * Elde olan EN İYİ URL — tercih edilen varyanttan başlar, yoksa aşağı iner.
+     *
+     * NEDEN VAR: blade'ler yıllarca `$srcset['thumb'] ?? Storage::url($img->path)`
+     * yazıyordu. `path` kolonu 2026_07_02_100700 migration'ında DÜŞÜRÜLDÜ; o
+     * ifade artık `Storage::url(null)` çağırıyor ve `/storage` üretiyor —
+     * yani her varyantsız görsel için 404. Canlıda 2026-07-29'da bir ilanın
+     * kapak görseli tam bu yüzden dört ayrı yüzeyde kırık çıktı.
+     *
+     * Geri dönüş zincirini blade'de kurmak yerine burada kurmak, aynı hatanın
+     * yeni bir blade'de tekrar yazılmasını engeller. Hiç varyant yoksa `null`
+     * döner ve çağıran taraf "görsel yok" dalına düşer — uydurma bir URL değil.
+     */
+    public function enIyiUrl(string $tercih = 'medium'): ?string
+    {
+        foreach ([$tercih, 'large', 'medium', 'thumb'] as $varyant) {
+            if ($url = $this->url($varyant)) {
+                return $url;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Belirli bir varyant için URL döndür; varyant yoksa null.
+     *
+     * (Eski docblock "fallback: orijinal path" diyordu — o kolon artık yok,
+     * bkz. enIyiUrl().)
      */
     public function url(string $variant = 'medium'): ?string
     {

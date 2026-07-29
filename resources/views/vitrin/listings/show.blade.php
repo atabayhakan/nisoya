@@ -1,4 +1,4 @@
-<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null">
+<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage?->enIyiUrl('large')">
     {{-- VİTRİN İLAN DETAYI (P2) — klasik listings/show'un aynı-ad override'ı.
          Korunan sözleşmeler: TÜM JSON-LD blokları birebir (BreadcrumbList +
          tipe göre RealEstateListing/Product/Service), hero görselinde
@@ -22,7 +22,7 @@
         <x-json-ld type="RealEstateListing" :data="[
             'name' => $listing->title,
             'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
-            'image' => $listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null,
+            'image' => $listing->coverImage?->enIyiUrl('large'),
             'url' => url()->current(),
             'datePosted' => $listing->created_at->toDateString(),
             'address' => array_filter([
@@ -40,7 +40,7 @@
         <x-json-ld type="Product" :data="[
             'name' => $listing->title,
             'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
-            'image' => $listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null,
+            'image' => $listing->coverImage?->enIyiUrl('large'),
             'brand' => $listing->vehicleDetail?->brand ? ['@type' => 'Brand', 'name' => $listing->vehicleDetail->brand] : null,
             'offers' => $listing->price ? [
                 '@type' => 'Offer',
@@ -52,7 +52,7 @@
         <x-json-ld type="Product" :data="array_filter([
             'name' => $listing->title,
             'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
-            'image' => $listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null,
+            'image' => $listing->coverImage?->enIyiUrl('large'),
             'itemCondition' => 'https://schema.org/UsedCondition',
             'width' => $listing->width_cm ? ['@type' => 'QuantitativeValue', 'value' => $listing->width_cm, 'unitCode' => 'CMT'] : null,
             'height' => $listing->height_cm ? ['@type' => 'QuantitativeValue', 'value' => $listing->height_cm, 'unitCode' => 'CMT'] : null,
@@ -67,7 +67,7 @@
         <x-json-ld type="Service" :data="[
             'name' => $listing->title,
             'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
-            'image' => $listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null,
+            'image' => $listing->coverImage?->enIyiUrl('large'),
             'provider' => [
                 '@type' => 'Person',
                 'name' => $listing->user->name,
@@ -112,8 +112,8 @@
                     @php
                         $hero = $listing->coverImage ?? $listing->images->first();
                         $heroSrcset = $hero->srcset();
-                        $heroLarge = $heroSrcset['large'] ?? Storage::url($hero->path);
-                        $heroMedium = $heroSrcset['medium'] ?? Storage::url($hero->path);
+                        $heroLarge = $hero->enIyiUrl('large');
+                        $heroMedium = $hero->enIyiUrl('medium');
                         // Yan sütun: hero dışındaki ilk 3 görsel (kalanı "+N foto" örtüsünde sayılır)
                         $yanGorseller = $listing->images->reject(fn ($img) => $img->is($hero))->take(3);
                         $kalanFoto = $listing->images->count() - 1 - $yanGorseller->count();
@@ -139,10 +139,10 @@
                         @if ($yanGorseller->isNotEmpty())
                             <div class="grid grid-cols-3 gap-3 sm:grid-cols-1 sm:grid-rows-3">
                                 @foreach ($yanGorseller as $image)
-                                    @php $thumb = $image->url('thumb') ?? Storage::url($image->path); @endphp
+                                    @php $thumb = $image->enIyiUrl('thumb'); @endphp
                                     <div class="relative overflow-hidden rounded-[16px] bg-stone-100 dark:bg-stone-800">
                                         <img src="{{ $thumb }}"
-                                             srcset="{{ $thumb }} 300w, {{ ($image->url('medium') ?? Storage::url($image->path)) }} 800w"
+                                             srcset="{{ $thumb }} 300w, {{ ($image->enIyiUrl('medium')) }} 800w"
                                              sizes="176px"
                                              alt=""
                                              width="176"
@@ -540,7 +540,7 @@
                                 <a href="{{ route('listings.show', [$benzer, $benzer->slug]) }}" class="group flex items-center gap-3">
                                     <div class="h-11 w-14 shrink-0 overflow-hidden rounded-[10px] bg-stone-100 dark:bg-stone-800">
                                         @if ($benzer->coverImage)
-                                            <img src="{{ $benzer->coverImage->url('thumb') ?? Storage::url($benzer->coverImage->path) }}"
+                                            <img src="{{ $benzer->coverImage->enIyiUrl('thumb') }}"
                                                  alt="" width="56" height="44" loading="lazy" decoding="async"
                                                  class="h-full w-full object-cover"
                                                  style="object-position: {{ $benzer->coverImage->objectPosition() }}">

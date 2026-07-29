@@ -238,7 +238,7 @@
                         <a href="{{ route('listings.show', [$oneCikanIlan, $oneCikanIlan->slug]) }}" class="vitrin-float col-span-2 block rounded-[18px] border border-stone-200/60 bg-white p-3 shadow-brand-lg transition hover:border-emerald-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-emerald-700">
                             <div class="relative h-24 overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800">
                                 @if ($oneCikanIlan->coverImage)
-                                    <img src="{{ $oneCikanIlan->coverImage->srcset()['thumb'] ?? Storage::url($oneCikanIlan->coverImage->path) }}"
+                                    <img src="{{ $oneCikanIlan->coverImage->enIyiUrl('thumb') }}"
                                          alt="{{ $oneCikanIlan->title }}" loading="lazy" decoding="async"
                                          class="h-full w-full object-cover" style="object-position: {{ $oneCikanIlan->coverImage->objectPosition() }}">
                                 @else
