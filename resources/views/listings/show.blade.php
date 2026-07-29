@@ -140,6 +140,7 @@
                     </div>
                 @endif
 
+                <x-ornek-isareti :listing="$listing" bicim="bant" />
                 <h1 class="mt-6 text-2xl font-bold text-stone-900 dark:text-stone-50">{{ $listing->title }}</h1>
 
                 <div class="mt-2 flex flex-wrap items-center gap-2 text-sm">

@@ -49,6 +49,7 @@
             @endif
         </div>
 
+        <x-ornek-isareti :listing="$listing" class="mt-2" />
         <h3 class="mt-2 line-clamp-2 min-h-[2.5rem] font-semibold text-stone-800 group-hover:text-emerald-700 dark:text-stone-100 dark:group-hover:text-emerald-400">{{ $listing->title }}</h3>
 
         <div class="mt-2 font-bold text-stone-900 dark:text-stone-50">

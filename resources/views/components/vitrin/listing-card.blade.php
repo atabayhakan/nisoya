@@ -70,6 +70,7 @@
              (Eski hâli 15px'e göre 2.6rem'di; punto ölçeğe katlanınca bu
              sayı da güncellenmek zorundaydı, yoksa iki satırlık başlıklar
              tabanı aşıp kartları farklı boylara ayırırdı.) --}}
+        <x-ornek-isareti :listing="$listing" class="mt-2" />
         <h3 class="mt-2 line-clamp-2 min-h-[2.7rem] text-base font-bold leading-[1.35] tracking-[-0.008em] text-stone-800 group-hover:text-emerald-700 dark:text-stone-100 dark:group-hover:text-emerald-400" style="text-wrap: pretty">{{ $listing->title }}</h3>
 
         <div class="mt-3 flex items-center justify-between gap-2.5">

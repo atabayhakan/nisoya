@@ -252,6 +252,20 @@ class MessageController extends Controller
             return back()->with('status', 'Kendi ilanına mesaj gönderemezsin.');
         }
 
+        /*
+         * ÖRNEK İLANA MESAJ GÖNDERİLEMEZ.
+         *
+         * Demo ilanlar görünür kipe alındığında sitede "ÖRNEK" rozetiyle
+         * çıkar. Rozet uyarır ama engellemez; rozeti okumayan biri sahte bir
+         * satıcıya yazar ve hiçbir zaman yanıt alamaz. Cevapsız kalan bir
+         * mesaj, boş bir pazaryerinden daha kötüdür — güveni bozar.
+         *
+         * Bu yüzden uyarı yetmez, kapı kapalıdır.
+         */
+        if ($listing->is_demo) {
+            return back()->with('status', 'Bu bir ÖRNEK ilandır — Nisoya demo verisidir, gerçek bir satıcıya ait değildir. Mesaj gönderilemez.');
+        }
+
         $data = $request->validate([
             'body' => ['required', 'string', 'max:2000'],
             // Emlak (kısa dönem) müsaitlik talebi — hepsi isteğe bağlı

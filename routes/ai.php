@@ -1,5 +1,6 @@
 <?php
 
+use App\Mcp\Sunucular\DemoSunucusu;
 use App\Mcp\Sunucular\KahyaSunucusu;
 use Laravel\Mcp\Facades\Mcp;
 
@@ -24,3 +25,12 @@ use Laravel\Mcp\Facades\Mcp;
 */
 
 Mcp::local('kahya', KahyaSunucusu::class);
+
+/*
+ * Örnek (demo) veri sunucusu — AYRI, ve bu ayrılık bilinçli.
+ *
+ * Kâhya veritabanı katmanında yazamaz ve bunu testler kanıtlıyor. Yazma
+ * araçlarını oraya eklemek o kanıtı çöpe atardı. Buradaki araçlar da
+ * `demo.mcp_acik` ayarı açık değilse hiç kaydedilmez.
+ */
+Mcp::local('demo', DemoSunucusu::class);

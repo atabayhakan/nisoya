@@ -60,6 +60,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
         'role',
         'is_verified',
         'status',
+        'is_demo',
         'last_seen_at',
         'referral_code',
         'referred_by',
@@ -84,6 +85,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
             'is_searchable' => 'boolean',
             'role' => UserRole::class,
             'status' => UserStatus::class,
+            'is_demo' => 'boolean',
             'account_type' => AccountType::class,
             // 2FA sırları veritabanında şifreli saklanır (DB sızıntısı TOTP
             // secret'ını/yedek kodları ifşa etmesin). recovery_codes JSON

@@ -4,6 +4,10 @@
       "command": "php",
       "args": ["artisan", "mcp:start", "kahya"]
     },
+    "demo-yerel": {
+      "command": "php",
+      "args": ["artisan", "mcp:start", "demo"]
+    },
     "kahya-canli": {
       "command": "ssh",
       "args": [
