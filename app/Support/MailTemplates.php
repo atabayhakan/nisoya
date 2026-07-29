@@ -62,6 +62,21 @@ class MailTemplates
                 'outro' => 'Bu uyarıyı panelindeki "Aramalarım" bölümünden kapatabilirsin.',
             ],
         ],
+        'gunluk_rapor' => [
+            'label' => 'Günlük Kâhya raporu (yöneticiye)',
+            'placeholders' => [
+                '{tarih}' => 'raporun tarihi',
+            ],
+            // BEŞ PARÇANIN HEPSİ TANIMLI OLMAK ZORUNDA: panel formu
+            // PART_LABELS üzerinden dönüyor ve eksik parça 500 veriyor.
+            'parts' => [
+                'subject' => 'Nisoya günlük rapor — {tarih}',
+                'greeting' => 'Günaydın,',
+                'intro' => 'Dünden bugüne Nisoya\'da olanlar:',
+                'action' => 'Yönetim paneline git',
+                'outro' => 'Bu raporu Kâhya her sabah otomatik hazırlar. Rapor gelmediği bir gün olursa komut çalışmamış demektir.',
+            ],
+        ],
     ];
 
     /** Düzenlenebilir parça adları (sıra = admin formundaki sıra). */

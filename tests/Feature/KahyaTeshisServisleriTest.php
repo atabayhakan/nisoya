@@ -51,6 +51,30 @@ class KahyaTeshisServisleriTest extends TestCase
         ]);
     }
 
+    /**
+     * Testler için İZOLE log dizini.
+     *
+     * storage/logs'a yazmak kırılgan: ortamda yüzlerce gerçek kayıt var ve
+     * imza listesi ilk 5'i döndürüyor — tek satırlık test kaydı listeye
+     * hiç giremiyor. İlk denemede tam olarak böyle kırıldı.
+     */
+    private function geciciLogDizini(string $icerik): string
+    {
+        $dizin = sys_get_temp_dir().'/kahya-log-'.uniqid();
+        mkdir($dizin);
+        file_put_contents($dizin.'/laravel.log', $icerik);
+
+        return $dizin;
+    }
+
+    private function dizinSil(string $dizin): void
+    {
+        foreach (glob($dizin.'/*') ?: [] as $f) {
+            @unlink($f);
+        }
+        @rmdir($dizin);
+    }
+
     // ----------------------------------------------------------- BekleyenIsler
 
     public function test_bekleyen_is_yoksa_bos_liste_doner(): void
@@ -290,62 +314,105 @@ class KahyaTeshisServisleriTest extends TestCase
      */
     public function test_log_mesaji_ozete_sizmaz(): void
     {
-        $dosya = storage_path('logs/kahya-sizinti-denemesi.log');
         $gizli = 'gizli-kullanici@ornek.com';
-
-        file_put_contents($dosya, sprintf(
+        $dizin = $this->geciciLogDizini(sprintf(
             "[%s] production.ERROR: SQLSTATE[HY000]: QueryException select * from users where email = '%s' at /app/Http/Controllers/X.php:42\n",
             now()->format('Y-m-d H:i:s'),
             $gizli
         ));
 
         try {
-            $ozet = app(LogOzeti::class)->ozetle();
+            $ozet = app(LogOzeti::class)->ozetle(24, $dizin);
             $kodlanmis = json_encode($ozet, JSON_UNESCAPED_UNICODE);
 
             $this->assertStringNotContainsString($gizli, (string) $kodlanmis, 'Log mesajındaki kullanıcı verisi özete sızdı.');
             $this->assertStringNotContainsString('select * from users', (string) $kodlanmis, 'Ham SQL özete sızdı.');
-            $this->assertGreaterThanOrEqual(1, $ozet['toplam'], 'Hata yine de SAYILMALI — gizlemek görmezden gelmek değil.');
+            $this->assertSame(1, $ozet['toplam'], 'Hata yine de SAYILMALI — gizlemek görmezden gelmek değil.');
         } finally {
-            @unlink($dosya);
+            $this->dizinSil($dizin);
+        }
+    }
+
+    /**
+     * İstisna sınıfı olmayan satırlarda mesaj imza olarak kullanılır.
+     *
+     * "bilinmeyen × 96" eyleme dönüştürülemez bir sinyaldir; yerelde tam
+     * olarak böyle gruplanıyordu. Bu kod tabanında log mesajları geliştirici
+     * tarafından yazılmış SABİT metinlerdir, veri context JSON'undadır.
+     */
+    public function test_istisnasiz_satirda_mesaj_imza_olur(): void
+    {
+        $dizin = $this->geciciLogDizini(sprintf(
+            "[%s] production.ERROR: Görsel işleme başarısız oldu {\"dir\":\"listings\",\"user\":\"ali@ornek.com\"}\n",
+            now()->format('Y-m-d H:i:s')
+        ));
+
+        try {
+            $ozet = app(LogOzeti::class)->ozetle(24, $dizin);
+            $imzalar = array_column($ozet['imzalar'], 'sinif');
+            $kodlanmis = json_encode($ozet, JSON_UNESCAPED_UNICODE) ?: '';
+
+            $this->assertContains('Görsel işleme başarısız oldu', $imzalar, 'Sabit mesaj imza olarak kullanılmalı.');
+            $this->assertStringNotContainsString('ali@ornek.com', $kodlanmis, 'Context içindeki kullanıcı verisi sızdı.');
+            $this->assertStringNotContainsString('"dir"', $kodlanmis, 'Context JSON\'u özete girmemeli.');
+        } finally {
+            $this->dizinSil($dizin);
+        }
+    }
+
+    /**
+     * GÜVENLİK AĞI: "mesajlar sabittir" varsayımı bir gün bozulursa
+     * (biri mesaja değişken gömerse) veri yine de maskelenmeli.
+     */
+    public function test_mesaja_gomulmus_veri_maskelenir(): void
+    {
+        $dizin = $this->geciciLogDizini(sprintf(
+            "[%s] production.ERROR: Kullanici dogrulanamadi kurban@ornek.com id 987654\n",
+            now()->format('Y-m-d H:i:s')
+        ));
+
+        try {
+            $kodlanmis = json_encode(app(LogOzeti::class)->ozetle(24, $dizin), JSON_UNESCAPED_UNICODE) ?: '';
+
+            $this->assertStringNotContainsString('kurban@ornek.com', $kodlanmis, 'Mesaja gömülü e-posta maskelenmeli.');
+            $this->assertStringNotContainsString('987654', $kodlanmis, 'Mesaja gömülü uzun sayı maskelenmeli.');
+            $this->assertStringContainsString('[e-posta]', $kodlanmis);
+        } finally {
+            $this->dizinSil($dizin);
         }
     }
 
     public function test_test_loglari_elenir(): void
     {
-        $dosya = storage_path('logs/laravel-test-99.log');
-        file_put_contents($dosya, sprintf("[%s] testing.ERROR: KahyaBenzersizTestException at /app/Y.php:7\n", now()->format('Y-m-d H:i:s')));
+        $dizin = sys_get_temp_dir().'/kahya-log-'.uniqid();
+        mkdir($dizin);
+        file_put_contents($dizin.'/laravel-test-99.log', sprintf("[%s] testing.ERROR: KahyaBenzersizTestException at /app/Y.php:7\n", now()->format('Y-m-d H:i:s')));
 
         try {
-            $ozet = app(LogOzeti::class)->ozetle();
+            $ozet = app(LogOzeti::class)->ozetle(24, $dizin);
 
             $this->assertStringNotContainsString(
                 'KahyaBenzersizTestException',
                 json_encode($ozet, JSON_UNESCAPED_UNICODE) ?: '',
                 'Test koşusu logları üretim hatası sayılmamalı.'
             );
+            $this->assertSame(0, $ozet['toplam']);
         } finally {
-            @unlink($dosya);
+            $this->dizinSil($dizin);
         }
     }
 
     public function test_eski_kayitlar_pencere_disinda_sayilmaz(): void
     {
-        // MUTLAK sayı ölçülemez: storage/logs'ta başka dosyalar da var ve
-        // içlerinde taze kayıtlar olabilir. Ölçülen şey FARK — eski kayıt
-        // eklenince toplam DEĞİŞMEMELİ.
-        $oncesi = app(LogOzeti::class)->ozetle(24)['toplam'];
-        $dosya = storage_path('logs/kahya-eski-deneme.log');
-
-        file_put_contents($dosya, sprintf(
+        $dizin = $this->geciciLogDizini(sprintf(
             "[%s] production.ERROR: EskiException at /app/X.php:1\n",
             now()->subDays(5)->format('Y-m-d H:i:s')
         ));
 
         try {
-            $this->assertSame($oncesi, app(LogOzeti::class)->ozetle(24)['toplam'], 'Pencere dışı kayıt sayıma girdi.');
+            $this->assertSame(0, app(LogOzeti::class)->ozetle(24, $dizin)['toplam'], 'Pencere dışı kayıt sayıma girdi.');
         } finally {
-            @unlink($dosya);
+            $this->dizinSil($dizin);
         }
     }
 }
