@@ -179,6 +179,29 @@ class KahyaSohbetTest extends TestCase
         $this->assertStringContainsString('Aktif ilan: 0', $this->sahte->sonYonerge);
     }
 
+    /**
+     * BU TEST BİR CANLI HATANIN MEZAR TAŞI.
+     *
+     * `response_format: json_object` kullanan OpenAI-uyumlu uçlar (OpenAI,
+     * OpenRouter üzerinden geçen OpenAI-uyumlu modeller dâhil) mesaj
+     * içeriğinde "json" kelimesi GEÇMİYORSA 400 hatası döner — bu, sahte
+     * sağlayıcının maskeleyemeyeceği bir HTTP kısıtı, model karar mantığı
+     * değil. Yönerge tamamen Türkçe yazıldığı için ilk sürümde hiçbir yerde
+     * "json" geçmiyordu; canlıda ilk gerçek çağrı bu yüzden düştü
+     * (doğrulandı: 2026-07-29, üretimde `HTTP 400: Provider returned error`).
+     *
+     * Sahte sağlayıcı bu HTTP katmanını atladığı için diğer testler bunu
+     * YAKALAYAMAZ — bu yüzden yönergenin kelimesi ayrıca sınanıyor.
+     */
+    public function test_yonerge_json_kelimesini_icerir(): void
+    {
+        $this->sahte->yanit = ['cevap' => 'Tamam.', 'eylem' => ''];
+
+        $this->sohbet()->sor('merhaba', $this->admin());
+
+        $this->assertStringContainsStringIgnoringCase('json', (string) $this->sahte->sonYonerge);
+    }
+
     // ------------------------------------------------------------- Arayüz
 
     public function test_moderator_sohbet_sayfasina_erisemez(): void
