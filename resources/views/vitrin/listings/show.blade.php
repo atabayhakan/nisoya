@@ -201,6 +201,7 @@
                         @endif
                     </div>
 
+                    <x-ornek-isareti :listing="$listing" bicim="bant" />
                     <h1 class="mt-3.5 text-2xl font-extrabold leading-[1.16] tracking-[-0.028em] text-stone-800 sm:text-3xl dark:text-stone-50" style="text-wrap: pretty">{{ $listing->title }}</h1>
 
                     <div class="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-2">

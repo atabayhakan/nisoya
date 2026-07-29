@@ -70,14 +70,23 @@ class KahyaTeshisi
     /**
      * Pazaryerinin GERÇEK doluluğu.
      *
+     * DEMO KAYITLAR HER ZAMAN DIŞLANIR — bu bir seçenek değil.
+     *
+     * Bu satırın var olma sebebi sahibin kendi kendini kandırmasını
+     * engellemek. Örnek veri makinesi (Faz A/B) sayıyı istendiği kadar
+     * şişirebilir; o sayı buraya karışsaydı Kâhya'nın en değerli ölçüsü
+     * bozulur ve "pazaryeri dolu görünüyor" yanılsaması tam olarak ölçmek
+     * için yazılmış araç tarafından üretilirdi.
+     *
      * @return array{ilan: int, satici: int, uyari: ?string}
      */
     public function gercekEnvanter(): array
     {
-        $ilan = Listing::query()->where('status', ListingStatus::Aktif)->count();
+        $ilan = Listing::query()->where('status', ListingStatus::Aktif)->where('is_demo', false)->count();
 
         $satici = Listing::query()
             ->where('status', ListingStatus::Aktif)
+            ->where('is_demo', false)
             ->distinct()
             ->count('user_id');
 
@@ -101,9 +110,11 @@ class KahyaTeshisi
     {
         $esik = now()->subDay();
 
+        // Demo kayıtlar burada da sayılmaz: "son 24 saatte 8 yeni ilan geldi"
+        // cümlesi, sekizini de kendin ürettiysen bilgi değil gürültüdür.
         return [
-            'yeni_uye' => User::query()->where('created_at', '>=', $esik)->count(),
-            'yeni_ilan' => Listing::query()->where('created_at', '>=', $esik)->count(),
+            'yeni_uye' => User::query()->where('created_at', '>=', $esik)->where('is_demo', false)->count(),
+            'yeni_ilan' => Listing::query()->where('created_at', '>=', $esik)->where('is_demo', false)->count(),
         ];
     }
 }
