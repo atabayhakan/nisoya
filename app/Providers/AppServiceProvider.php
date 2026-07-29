@@ -227,6 +227,7 @@ class AppServiceProvider extends ServiceProvider
         $this->mergeAiConfig();
         $this->mergeMailConfig();
         $this->mergeGrowthConfig();
+        $this->mergeKahyaConfig();
     }
 
     /**
@@ -300,6 +301,25 @@ class AppServiceProvider extends ServiceProvider
      * runtime'da yaz. Öncelik: DB > env > kod varsayılanı. config:cache
      * gerektirmez — admin panelden anahtar girilince özellik ANINDA aktifleşir.
      */
+    /**
+     * Kâhya ayarlarını (rapor saati) runtime'da config'e bindir.
+     *
+     * Rapor saati zamanlayıcı tarafından okunuyor (routes/console.php), yani
+     * panelden değiştirilince bir sonraki gün geçerli olur — cron tanımına
+     * dokunmak ya da config:cache çalıştırmak gerekmez.
+     */
+    protected function mergeKahyaConfig(): void
+    {
+        $saat = Settings::get('kahya.rapor_saati');
+
+        // Biçim DOĞRULANIR: dailyAt() geçersiz bir değerde sessizce çalışmaz,
+        // ve zamanlayıcı hatası da sessiz bir hatadır. Bu sistemin bütün amacı
+        // sessiz hataları görünür kılmak; kendisi sessizce ölmemeli.
+        if ($saat && preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $saat)) {
+            Config::set('kahya.rapor_saati', $saat);
+        }
+    }
+
     protected function mergeAiConfig(): void
     {
         $provider = Settings::get('ai.saglayici');
