@@ -28,7 +28,7 @@
                     <div class="relative aspect-[4/3] overflow-hidden rounded-2xl bg-stone-100 md:aspect-auto md:min-h-[250px] dark:bg-stone-800">
                         @if ($vitrinOne->coverImage)
                             @php $vSrc = $vitrinOne->coverImage->srcset(); @endphp
-                            <img src="{{ $vSrc['medium'] ?? Storage::url($vitrinOne->coverImage->path) }}"
+                            <img src="{{ $vitrinOne->coverImage->enIyiUrl('medium') }}"
                                  srcset="{{ $vSrc['medium'] ?? '' }} 800w, {{ $vSrc['large'] ?? '' }} 1600w"
                                  sizes="(min-width: 768px) 420px, 100vw"
                                  alt="{{ $vitrinOne->title }}" loading="lazy" decoding="async"

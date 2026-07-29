@@ -11,10 +11,9 @@
     <div class="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] bg-stone-100 dark:bg-stone-800">
         @if ($listing->coverImage)
             @php
-                $srcset = $listing->coverImage->srcset();
-                $thumbUrl = $srcset['thumb'] ?? Storage::url($listing->coverImage->path);
-                $mediumUrl = $srcset['medium'] ?? Storage::url($listing->coverImage->path);
-                $largeUrl = $srcset['large'] ?? Storage::url($listing->coverImage->path);
+                $thumbUrl = $listing->coverImage->enIyiUrl('thumb');
+                $mediumUrl = $listing->coverImage->enIyiUrl('medium');
+                $largeUrl = $listing->coverImage->enIyiUrl('large');
             @endphp
             <img src="{{ $thumbUrl }}"
                  srcset="{{ $thumbUrl }} 300w, {{ $mediumUrl }} 800w, {{ $largeUrl }} 1600w"

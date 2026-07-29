@@ -1,4 +1,4 @@
-<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null">
+<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage?->enIyiUrl('large')">
     {{-- JSON-LD: BreadcrumbList --}}
     <x-json-ld type="BreadcrumbList" :data="[
         'itemListElement' => [
@@ -13,7 +13,7 @@
         <x-json-ld type="RealEstateListing" :data="[
             'name' => $listing->title,
             'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
-            'image' => $listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null,
+            'image' => $listing->coverImage?->enIyiUrl('large'),
             'url' => url()->current(),
             'datePosted' => $listing->created_at->toDateString(),
             'address' => array_filter([
@@ -31,7 +31,7 @@
         <x-json-ld type="Product" :data="[
             'name' => $listing->title,
             'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
-            'image' => $listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null,
+            'image' => $listing->coverImage?->enIyiUrl('large'),
             'brand' => $listing->vehicleDetail?->brand ? ['@type' => 'Brand', 'name' => $listing->vehicleDetail->brand] : null,
             'offers' => $listing->price ? [
                 '@type' => 'Offer',
@@ -43,7 +43,7 @@
         <x-json-ld type="Product" :data="array_filter([
             'name' => $listing->title,
             'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
-            'image' => $listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null,
+            'image' => $listing->coverImage?->enIyiUrl('large'),
             'itemCondition' => 'https://schema.org/UsedCondition',
             'width' => $listing->width_cm ? ['@type' => 'QuantitativeValue', 'value' => $listing->width_cm, 'unitCode' => 'CMT'] : null,
             'height' => $listing->height_cm ? ['@type' => 'QuantitativeValue', 'value' => $listing->height_cm, 'unitCode' => 'CMT'] : null,
@@ -58,7 +58,7 @@
         <x-json-ld type="Service" :data="[
             'name' => $listing->title,
             'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
-            'image' => $listing->coverImage ? \Illuminate\Support\Facades\Storage::url($listing->coverImage->path) : null,
+            'image' => $listing->coverImage?->enIyiUrl('large'),
             'provider' => [
                 '@type' => 'Person',
                 'name' => $listing->user->name,
@@ -103,8 +103,8 @@
                         @php
                             $hero = $listing->coverImage ?? $listing->images->first();
                             $heroSrcset = $hero->srcset();
-                            $heroLarge = $heroSrcset['large'] ?? Storage::url($hero->path);
-                            $heroMedium = $heroSrcset['medium'] ?? Storage::url($hero->path);
+                            $heroLarge = $hero->enIyiUrl('large');
+                            $heroMedium = $hero->enIyiUrl('medium');
                         @endphp
                         <img src="{{ $heroLarge }}"
                              srcset="{{ $heroMedium }} 800w, {{ $heroLarge }} 1600w"
@@ -119,9 +119,9 @@
                     @if ($listing->images->count() > 1)
                         <div class="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-5">
                             @foreach ($listing->images as $image)
-                                @php $thumb = $image->url('thumb') ?? Storage::url($image->path); @endphp
+                                @php $thumb = $image->enIyiUrl('thumb'); @endphp
                                 <img src="{{ $thumb }}"
-                                     srcset="{{ ($image->url('thumb') ?? Storage::url($image->path)) }} 300w, {{ ($image->url('medium') ?? Storage::url($image->path)) }} 800w"
+                                     srcset="{{ ($image->enIyiUrl('thumb')) }} 300w, {{ ($image->enIyiUrl('medium')) }} 800w"
                                      sizes="120px"
                                      alt=""
                                      width="120"

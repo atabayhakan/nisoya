@@ -122,7 +122,16 @@ class ImageService
                 }
 
                 $path = $dir.'/'.$variant.'/'.$uuid.'.webp';
-                Storage::disk('public')->put($path, (string) $clone->encode(new WebpEncoder(quality: $quality, strip: true)));
+
+                // Donus KONTROL EDILIR (bkz. cropSquare icindeki ayni desen ve
+                // gerekcesi): public disk 'throw' => false ile yapilandirili,
+                // disk dolu/izin hatasinda put() sessizce false doner. Kontrol
+                // edilmezse DB hic yazilmamis bir dosyaya isaret eder ve gorsel
+                // canlida 404 verir — 2026-07-29 uretimde tam bu yasandi.
+                if (! Storage::disk('public')->put($path, (string) $clone->encode(new WebpEncoder(quality: $quality, strip: true)))) {
+                    throw new RuntimeException("Gorsel varyanti diske yazilamadi: {$variant}");
+                }
+
                 $paths[$variant] = $path;
             }
 
@@ -284,7 +293,11 @@ class ImageService
                 $clone->scaleDown(width: $width);
             }
             $path = $dir.'/'.$variant.'/'.$uuid.'.webp';
-            Storage::disk('public')->put($path, (string) $clone->encode(new WebpEncoder(quality: self::DEFAULT_QUALITY, strip: true)));
+
+            if (! Storage::disk('public')->put($path, (string) $clone->encode(new WebpEncoder(quality: self::DEFAULT_QUALITY, strip: true)))) {
+                throw new RuntimeException("Gorsel varyanti diske yazilamadi: {$variant}");
+            }
+
             $paths[$variant] = $path;
         }
 
@@ -308,7 +321,10 @@ class ImageService
         }
 
         $path = $dir.'/'.Str::uuid()->toString().'.webp';
-        Storage::disk('public')->put($path, (string) $image->encode(new WebpEncoder(quality: $quality, strip: true)));
+
+        if (! Storage::disk('public')->put($path, (string) $image->encode(new WebpEncoder(quality: $quality, strip: true)))) {
+            throw new RuntimeException('Gorsel diske yazilamadi.');
+        }
 
         return $path;
     }
@@ -412,9 +428,12 @@ class ImageService
         try {
             $image = $manager->decode(Storage::disk('public')->path($sourcePath));
             $encoded = $image->encode(new AvifEncoder(quality: $quality, strip: true));
-            Storage::disk('public')->put($outputPath, (string) $encoded);
 
-            return true;
+            // Bu metot zaten bool döndürüyor — put()'un sonucunu YUTUP `true`
+            // demek, çağıranı "AVIF hazır" diye yanıltır. Sonuç doğrudan
+            // döndürülür; diğer üç yazma noktasındaki throw deseninin bu
+            // imzaya uyarlanmış hâli.
+            return (bool) Storage::disk('public')->put($outputPath, (string) $encoded);
         } catch (\Throwable) {
             return false;
         }
