@@ -32,6 +32,18 @@ Schedule::command('backup:run')->dailyAt(config('backup.daily_time', '04:00'))->
 // (sayfanın kendisi zaten otomatik görünür — bkz. Faz 4 zamanlanmış yayın).
 Schedule::command('content:publish-due')->everyFifteenMinutes()->withoutOverlapping();
 
+// Günlük Kâhya raporu — yöneticiye "bugün şunlar oldu" e-postası.
+//
+// SAAT 07:30 SEÇİMİ RASTGELE DEĞİL: 03:30'daki medya temizliğinden ve
+// 04:00'taki yedekten SONRA çalışır ki rapor "son yedek" durumunu doğru
+// göstersin. Saat panelden değiştirilebilsin diye config'ten okunuyor
+// (backup.daily_time ile aynı desen).
+//
+// withoutOverlapping: rapor uzun sürerse ertesi günkü koşu üst üste binmesin.
+Schedule::command('kahya:gunluk-rapor')
+    ->dailyAt(config('kahya.rapor_saati', '07:30'))
+    ->withoutOverlapping();
+
 // Büyüme Ajanı keşif işlerini (RunDiscoveryJob, 'database' kuyruğu) her dakika
 // işle. Ayrı bir queue worker/supervisor gerektirmez — scheduler kuyruğu
 // boşaltır. --stop-when-empty: iş yoksa hemen çıkar; --max-time: dakikayı aşma;
