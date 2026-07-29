@@ -57,6 +57,7 @@ class KahyaAyarlari extends Page
         $this->form->fill([
             'alici' => Settings::get('kahya.alici') ?: '',
             'rapor_saati' => Settings::get('kahya.rapor_saati') ?: config('kahya.rapor_saati', '07:30'),
+            'sohbet_modeli' => Settings::get('kahya.sohbet_modeli') ?: '',
         ]);
     }
 
@@ -90,6 +91,22 @@ class KahyaAyarlari extends Page
                             ->helperText('04:00\'ten önce seçenek yok: yedekleme 04:00\'te koşuyor ve rapor "son yedek" durumunu doğru göstermeli.')
                             ->columnSpanFull(),
                     ]),
+
+                Section::make('Sohbet')
+                    ->description('Kâhya ile Konuş sayfasında eylem seçimini yapan model. '
+                        .'Boş bırakılırsa Yapay Zekâ Ayarları\'ndaki varsayılan model kullanılır.')
+                    ->schema([
+                        TextInput::make('sohbet_modeli')
+                            ->label('Sohbet modeli (isteğe bağlı)')
+                            ->placeholder('örn. anthropic/claude-sonnet-4.5')
+                            // Doğru işi seçmek yanlış işi seçmekten çok daha
+                            // ucuz: hata bedeli canlıda ödenir. Bu yüzden buraya
+                            // varsayılandan güçlü bir model yazmak mantıklı.
+                            ->helperText('Sağlayıcı Yapay Zekâ Ayarları\'ndaki sağlayıcıdır; burası yalnız model adını değiştirir. '
+                                .'Eylem seçimi için varsayılandan güçlü bir model önerilir.')
+                            ->maxLength(120)
+                            ->columnSpanFull(),
+                    ]),
             ])
             ->statePath('data');
     }
@@ -101,6 +118,7 @@ class KahyaAyarlari extends Page
         Settings::setMany([
             'kahya.alici' => trim((string) ($state['alici'] ?? '')),
             'kahya.rapor_saati' => $state['rapor_saati'] ?? '07:30',
+            'kahya.sohbet_modeli' => trim((string) ($state['sohbet_modeli'] ?? '')),
         ]);
 
         Notification::make()
