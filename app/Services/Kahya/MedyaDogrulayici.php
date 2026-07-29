@@ -26,16 +26,25 @@ use Illuminate\Support\Facades\Storage;
  * `$limit` ile sınırlanır çünkü rapor günlük çalışır ve tam tarama büyük
  * kütüphanede yavaşlar; en yeni kayıtlar önceliklidir (yeni yüklenen görselin
  * kırık olması, iki yıllık bir kaydınkinden daha acildir).
+ *
+ * `chunkByIdDesc` KULLANILIYOR, `chunkById` DEĞİL: `chunkById` sıralamayı
+ * `removeExistingOrdersFor()` ile SİLİP `id ASC` koyar, yani öndeki
+ * `latest('id')` etkisiz kalır ve "en yeniler öncelikli" sözü sessizce
+ * bozulurdu — 500 kayıt taranır ama EN ESKİ 500'ü. (2026-07-29'da bu
+ * durumdaydı; kod en eskileri tarıyor, docblock en yenileri diyordu.)
  */
 class MedyaDogrulayici
 {
     public const VARSAYILAN_LIMIT = 500;
 
     /**
+     * @param  int|null  $limit  null ise `config('kahya.medya_tarama_limiti')`
      * @return array{taranan: int, kayip: int, ornekler: list<array{tur: string, id: int, eksik: list<string>, sahip: string}>}
      */
-    public function dogrula(int $limit = self::VARSAYILAN_LIMIT): array
+    public function dogrula(?int $limit = null): array
     {
+        $limit = max(1, $limit ?? (int) config('kahya.medya_tarama_limiti', self::VARSAYILAN_LIMIT));
+
         $disk = Storage::disk('public');
         $taranan = 0;
         $kayip = 0;
@@ -45,7 +54,7 @@ class MedyaDogrulayici
             ->with('listing:id,title,user_id')
             ->latest('id')
             ->limit($limit)
-            ->chunkById(100, function ($gorseller) use ($disk, &$taranan, &$kayip, &$ornekler) {
+            ->chunkByIdDesc(100, function ($gorseller) use ($disk, &$taranan, &$kayip, &$ornekler) {
                 foreach ($gorseller as $gorsel) {
                     $taranan++;
                     $eksik = [];
@@ -84,7 +93,7 @@ class MedyaDogrulayici
             ->whereNotNull('avatar_path')
             ->latest('id')
             ->limit($limit)
-            ->chunkById(100, function ($kullanicilar) use ($disk, &$taranan, &$kayip, &$ornekler) {
+            ->chunkByIdDesc(100, function ($kullanicilar) use ($disk, &$taranan, &$kayip, &$ornekler) {
                 foreach ($kullanicilar as $kullanici) {
                     $taranan++;
 
