@@ -83,6 +83,9 @@ class KahyaAjani implements Agent, Conversational, HasTools
         ## Site kimliği (SEO ve metin yazarken buradan beslen)
         {$this->siteKimligi()}
 
+        ## Hatırladıkların (kalıcı hafızan — kurallara UY, gerçeklere GÜVEN)
+        {$this->hafizaMetni()}
+
         ## Panel haritası (yol tarifi için)
         Sahip bir ekranın ya da özelliğin NEREDE olduğunu sorarsa buradan cevapla:
         sol menüdeki grup adını, ekran adını ve adresini söyle. Haritada olmayan bir
@@ -101,6 +104,9 @@ class KahyaAjani implements Agent, Conversational, HasTools
            "ONAY BEKLİYOR" gördüysen sahibin onay kartını beklediğini söyle.
         6. Emin değilsen sor. Yanlış iş yapmak, sormaktan pahalıdır.
         7. Son cevabın kısa ve Türkçe olsun: ne yaptın / ne buldun / sahipten ne bekliyorsun.
+        8. Sahip "hatırla/unutma/bundan sonra hep..." derse `hatirla` aracını, "unut/artık
+           geçersiz" derse `unut` aracını kullan. Hatırladıkların bölümüne sığmayan eski
+           kayıtları tablo-sorgula ile kahya_hafiza tablosunda arayabilirsin.
         METIN;
     }
 
@@ -126,6 +132,26 @@ class KahyaAjani implements Agent, Conversational, HasTools
         }
 
         return $araclar;
+    }
+
+    /**
+     * Kalıcı hafızanın yönergedeki hâli (F1 — tasarım §2.3).
+     *
+     * Her satır id taşır: sahip "12'yi unut" diyebilsin, model `unut` için
+     * id aramak zorunda kalmasın. Tavan {@see KahyaHafizasi::yonergeIcin}'de —
+     * kural/gerçek önce, taşan ders/not tablo-sorgula ile aranır.
+     */
+    private function hafizaMetni(): string
+    {
+        $kayitlar = \App\Models\KahyaHafizasi::yonergeIcin();
+
+        if ($kayitlar->isEmpty()) {
+            return '(Hafızan henüz boş. Sahip kalıcı bir şey söylerse `hatirla` ile yaz.)';
+        }
+
+        return $kayitlar
+            ->map(fn (\App\Models\KahyaHafizasi $k): string => "- [{$k->id}·{$k->tur->etiket()}] {$k->metin}")
+            ->implode("\n");
     }
 
     /**

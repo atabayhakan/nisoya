@@ -4,6 +4,7 @@ namespace App\Services\Kahya\Eylem;
 
 use App\Services\Kahya\Eylem\Eylemler\AyarDoldur;
 use App\Services\Kahya\Eylem\Eylemler\EtiketEkle;
+use App\Services\Kahya\Eylem\Eylemler\Hatirla;
 use App\Services\Kahya\Eylem\Eylemler\IlanlariEtiketle;
 use App\Services\Kahya\Eylem\Eylemler\KategoriEkle;
 use App\Services\Kahya\Eylem\Eylemler\ParaBirimiEkle;
@@ -12,6 +13,7 @@ use App\Services\Kahya\Eylem\Eylemler\SeoDoldur;
 use App\Services\Kahya\Eylem\Eylemler\SiraDegistir;
 use App\Services\Kahya\Eylem\Eylemler\UlkeDurumDegistir;
 use App\Services\Kahya\Eylem\Eylemler\UlkeEkle;
+use App\Services\Kahya\Eylem\Eylemler\Unut;
 use RuntimeException;
 
 /**
@@ -50,6 +52,10 @@ class EylemKatalogu
         // Otomasyon — "bu bölümü Kâhya kendi yapsın" işleri (2026-07-30)
         IlanlariEtiketle::class,
         SeoDoldur::class,
+
+        // Kalıcı hafıza (F1, 2026-07-30) — sohbet penceresi unutur, bunlar unutmaz.
+        Hatirla::class,
+        Unut::class,
     ];
 
     /** @var array<string, Eylem>|null */
