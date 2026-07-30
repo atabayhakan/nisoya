@@ -9,7 +9,23 @@
     @if ($m->rol === \App\Models\KahyaMesaji::ROL_SAHIP)
         <div class="flex flex-col items-end gap-1">
             <div class="min-w-0 max-w-[85%] rounded-2xl rounded-tr-md bg-primary-600 px-4 py-3 shadow-sm">
-                <p class="whitespace-pre-line text-sm leading-relaxed text-white">{{ $m->metin }}</p>
+                @if ($m->ekVarMi())
+                    @if ($m->ekResimMi())
+                        <a href="{{ $m->ekUrl() }}" target="_blank" rel="noopener" class="mb-2 block">
+                            <img src="{{ $m->ekUrl() }}" alt="{{ $m->ek_ad }}" class="max-h-48 w-full rounded-lg object-cover" />
+                        </a>
+                    @else
+                        <a href="{{ $m->ekUrl() }}" target="_blank" rel="noopener"
+                            class="mb-2 flex items-center gap-2 rounded-lg bg-white/10 px-2.5 py-2 text-xs text-white hover:bg-white/20">
+                            <x-filament::icon icon="heroicon-m-paper-clip" class="h-4 w-4 shrink-0" />
+                            <span class="truncate">{{ $m->ek_ad }}</span>
+                        </a>
+                    @endif
+                @endif
+
+                @if (trim((string) $m->metin) !== '')
+                    <p class="whitespace-pre-line text-sm leading-relaxed text-white">{{ $m->metin }}</p>
+                @endif
             </div>
             <span class="pr-1 text-[11px] text-gray-400 dark:text-gray-500">{{ $m->created_at->format('H:i') }}</span>
         </div>

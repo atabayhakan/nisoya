@@ -7,7 +7,9 @@ use App\Models\KahyaMesaji;
 use App\Services\Kahya\Eylem\EylemCalistirici;
 use App\Services\Kahya\Sohbet\KahyaSohbeti;
 use Filament\Notifications\Notification;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Livewire\WithFileUploads;
 use Throwable;
 
 /**
@@ -25,10 +27,26 @@ use Throwable;
  */
 trait KahyaSohbetiYurutur
 {
+    use WithFileUploads;
+
     public string $mesaj = '';
 
     /** Gönderim sırasında arayüzü kilitlemek için. */
     public bool $dusunuyor = false;
+
+    /** Gönderilmeyi bekleyen ek — seçilir seçilmez YÜKLENMEZ, sadece "gonder"da. */
+    public ?UploadedFile $ekDosya = null;
+
+    /** Ekleme kutusundan seçim yapılınca anında doğrula — kötü dosya "Gönder"e kadar sessiz kalmasın. */
+    public function updatedEkDosya(): void
+    {
+        $this->validateOnly('ekDosya', ['ekDosya' => ['file', 'max:10240']]);
+    }
+
+    public function ekKaldir(): void
+    {
+        $this->ekDosya = null;
+    }
 
     /** @return Collection<int, KahyaMesaji> */
     public function getMesajlar(): Collection
@@ -67,15 +85,27 @@ trait KahyaSohbetiYurutur
 
         $metin = trim($this->mesaj);
 
-        if ($metin === '') {
+        if ($metin === '' && $this->ekDosya === null) {
             return;
         }
 
+        $ek = null;
+        if ($this->ekDosya !== null) {
+            $this->validateOnly('ekDosya', ['ekDosya' => ['file', 'max:10240']]);
+
+            $ek = [
+                'yol' => $this->ekDosya->store('kahya-ekler', 'public'),
+                'ad' => $this->ekDosya->getClientOriginalName(),
+                'tipi' => $this->ekDosya->getMimeType(),
+            ];
+        }
+
         $this->mesaj = '';
+        $this->ekDosya = null;
         $this->dusunuyor = true;
 
         try {
-            app(KahyaSohbeti::class)->sor($metin, auth()->user());
+            app(KahyaSohbeti::class)->sor($metin, auth()->user(), $ek);
         } catch (Throwable $e) {
             report($e);
 

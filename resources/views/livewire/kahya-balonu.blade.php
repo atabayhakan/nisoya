@@ -75,7 +75,14 @@
             </div>
 
             {{-- Yazma alanı --}}
-            <form wire:submit="gonder" class="flex items-end gap-2 border-t border-gray-200 px-3 py-3 dark:border-white/10">
+            <form wire:submit="gonder" class="flex flex-col gap-2 border-t border-gray-200 px-3 py-3 dark:border-white/10">
+                @include('kahya.ek-onizleme')
+
+                <div class="flex items-end gap-2">
+                <label class="cursor-pointer rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/5 dark:hover:text-gray-300" title="Dosya/resim ekle">
+                    <input type="file" wire:model="ekDosya" class="hidden" />
+                    <x-filament::icon icon="heroicon-m-paper-clip" class="h-5 w-5" />
+                </label>
                 <div class="min-w-0 flex-1">
                     <textarea
                         wire:model="mesaj"
@@ -97,6 +104,7 @@
 
                 <x-filament::icon-button type="submit" icon="heroicon-m-paper-airplane"
                     label="Gönder" size="lg" wire:loading.attr="disabled" wire:target="gonder" />
+                </div>
             </form>
         </div>
     @endif

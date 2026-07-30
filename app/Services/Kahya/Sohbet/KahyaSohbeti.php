@@ -96,12 +96,17 @@ class KahyaSohbeti
 
     /**
      * Sahibin mesajını işler: ajan döngüsünü koşturur, yanıt döndürür.
+     *
+     * @param  array{yol: string, ad: string, tipi: ?string}|null  $ek  Sohbete
+     *         eklenen dosya (varsa). Yalnızca SAKLANIR/GÖSTERİLİR — model
+     *         metin tabanlı çalıştığı için içeriğini GÖREMEZ, promptta yalnız
+     *         bir dosyanın eklendiği bilgisi geçer (bkz. aşağıdaki $promptMetni).
      */
-    public function sor(string $mesaj, User $sahip): SohbetYaniti
+    public function sor(string $mesaj, User $sahip, ?array $ek = null): SohbetYaniti
     {
         $mesaj = trim($mesaj);
 
-        if ($mesaj === '') {
+        if ($mesaj === '' && $ek === null) {
             return new SohbetYaniti('Bir şey yazmadın.');
         }
 
@@ -117,7 +122,14 @@ class KahyaSohbeti
             ->reverse()
             ->values();
 
-        KahyaMesaji::create(['rol' => KahyaMesaji::ROL_SAHIP, 'metin' => $mesaj, 'user_id' => $sahip->id]);
+        KahyaMesaji::create([
+            'rol' => KahyaMesaji::ROL_SAHIP,
+            'metin' => $mesaj,
+            'user_id' => $sahip->id,
+            'ek_yolu' => $ek['yol'] ?? null,
+            'ek_ad' => $ek['ad'] ?? null,
+            'ek_tipi' => $ek['tipi'] ?? null,
+        ]);
 
         // Uzun ömürlü süreçlerde (kuyruk işçisi) önceki turun kayıtları sızmasın.
         $this->toplayici->sifirla();
@@ -125,9 +137,16 @@ class KahyaSohbeti
         $saglayici = $this->saglayiciAdi();
         $model = $this->modelAdi($saglayici);
 
+        // Model metin tabanlı — eki GÖREMEZ. Görmediği bir şeyi görmüş gibi
+        // yapmasındansa ("harika bir görsel!") ekin varlığını bilip sahibe
+        // sorması daha dürüst: bkz. bu sınıfın F1 ilkesi (üstteki yorum).
+        $promptMetni = $mesaj.($ek !== null
+            ? "\n\n[Sahip bir dosya ekledi: {$ek['ad']}. İçeriğini göremiyorsun — gerekirse ne olduğunu sor.]"
+            : '');
+
         try {
             $yanit = $this->ajan($gecmis, $sahip)->prompt(
-                $mesaj,
+                $promptMetni,
                 provider: $saglayici,
                 model: $model,
                 // Araç döngüsü tek çağrıdan uzun sürer; sağlayıcı varsayılanı

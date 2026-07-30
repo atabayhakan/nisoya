@@ -21,7 +21,9 @@ use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Ai\Ai;
 use Laravel\Ai\Responses\Data\ToolCall;
 use Livewire\Livewire;
@@ -309,6 +311,46 @@ class KahyaSohbetTest extends TestCase
             ->assertSuccessful()
             ->assertSee('bekleyen iş var mı?')
             ->assertSee('Şu an bekleyen iş yok.');
+    }
+
+    /**
+     * Ek metin tabanlı model çağrısına GÖRSEL olarak girmez — bu test tam da
+     * bunu sınar: ajan bir ToolCall/görsel argüman değil, düz metin alır.
+     */
+    public function test_admin_ekli_mesaj_gonderir_ve_gosterilir(): void
+    {
+        Storage::fake('public');
+        $this->sahteAjan(['Aldım, bakıyorum.']);
+
+        Livewire::actingAs($this->admin())
+            ->test(KahyaSohbet::class)
+            ->set('ekDosya', UploadedFile::fake()->image('ekran-goruntusu.png', 10, 10))
+            ->set('mesaj', 'bak bu hatayı alıyorum')
+            ->call('gonder')
+            ->assertSuccessful()
+            ->assertSee('ekran-goruntusu.png')
+            ->assertSee('bak bu hatayı alıyorum');
+
+        $kayit = KahyaMesaji::query()->where('rol', KahyaMesaji::ROL_SAHIP)->firstOrFail();
+        $this->assertSame('ekran-goruntusu.png', $kayit->ek_ad);
+        $this->assertNotNull($kayit->ek_yolu);
+        Storage::disk('public')->assertExists($kayit->ek_yolu);
+    }
+
+    /** Yalnız ek gönderilip metin boş bırakılabilmeli — çoğu sohbet uygulamasının kabul ettiği durum. */
+    public function test_bos_metinle_sadece_ek_gonderilebilir(): void
+    {
+        Storage::fake('public');
+        $this->sahteAjan(['Ne olduğunu göremiyorum, açıklar mısın?']);
+
+        Livewire::actingAs($this->admin())
+            ->test(KahyaSohbet::class)
+            ->set('ekDosya', UploadedFile::fake()->create('rapor.pdf', 100))
+            ->set('mesaj', '')
+            ->call('gonder')
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('kahya_mesajlari', ['ek_ad' => 'rapor.pdf']);
     }
 
     public function test_panelden_onaylanan_eylem_uygulanir(): void
