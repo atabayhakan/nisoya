@@ -54,6 +54,7 @@ class GunlukKahyaRaporu extends Notification implements ShouldQueue
 
         $this->envanterSatiri($mail);
         $this->neOldu($mail);
+        $this->gorevlerdeNeDurumda($mail);
         $this->neBekliyor($mail);
         $this->neBozuk($mail);
         $this->neEksik($mail);
@@ -93,6 +94,46 @@ class GunlukKahyaRaporu extends Notification implements ShouldQueue
             if (($this->sonGun[$anahtar] ?? 0) > 0) {
                 $mail->line(sprintf('• %d %s', $this->sonGun[$anahtar], $etiket));
             }
+        }
+    }
+
+    /**
+     * Görev defteri durumu (F2): misyonlar sessizce ölmesin.
+     *
+     * Anahtar yokluğuna dayanıklı: panel, DEFTERDEKİ eski raporları da
+     * yeniden çizer ve F2 öncesi kayıtlarda `gorevler` yoktur.
+     */
+    private function gorevlerdeNeDurumda(MailMessage $mail): void
+    {
+        $gorevler = $this->teshis['gorevler'] ?? null;
+
+        if ($gorevler === null || ($gorevler['acik'] === [] && $gorevler['bekleyen_hamle'] === 0)) {
+            return;
+        }
+
+        $mail->line('**Görevlerde durum**');
+
+        foreach ($gorevler['acik'] as $g) {
+            $satir = sprintf('• #%d %s — %d/%d adım', $g['id'], $g['baslik'], $g['yapildi'], $g['toplam']);
+
+            if ($g['siradaki'] !== null) {
+                $satir .= sprintf(', sıradaki: %s', $g['siradaki']);
+            }
+
+            // Üç günden uzun hareketsizlik raporda açıkça söylenir — görev
+            // defterinin bütün amacı unutulan misyonu görünür kılmak.
+            if (($g['hareketsiz_gun'] ?? 0) >= 3) {
+                $satir .= sprintf(' ⚠️ %d gündür hareketsiz', $g['hareketsiz_gun']);
+            }
+
+            $mail->line($satir);
+        }
+
+        if ($gorevler['bekleyen_hamle'] > 0) {
+            $mail->line(sprintf(
+                '• **%d hamle kartı kararını bekliyor** — Kâhya & Yapay Zekâ → Bekleyen Hamleler.',
+                $gorevler['bekleyen_hamle']
+            ));
         }
     }
 
