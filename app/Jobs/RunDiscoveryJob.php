@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Services\Growth\DiscoveryRunner;
+use App\Support\Growth\KesifIlerlemesi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -33,10 +34,20 @@ class RunDiscoveryJob implements ShouldQueue
         public string $city,
         public array $trade,
         public bool $useLlm = false,
+        // Panelin canlı ilerleme göstergesi bu partiye ait "tamamlanan" sayacını
+        // artırır (bkz. KesifIlerlemeWidget). Elle kuyruklanan/zamanlanmış
+        // çağrılarda boş kalır — o zaman gösterge zaten devrede olmaz.
+        public ?string $lot = null,
     ) {}
 
     public function handle(DiscoveryRunner $runner): void
     {
-        $runner->runForCityTrade($this->country, $this->city, $this->trade, 20, $this->useLlm);
+        try {
+            $runner->runForCityTrade($this->country, $this->city, $this->trade, 20, $this->useLlm);
+        } finally {
+            if ($this->lot !== null) {
+                KesifIlerlemesi::tamamlaniyor($this->lot);
+            }
+        }
     }
 }
