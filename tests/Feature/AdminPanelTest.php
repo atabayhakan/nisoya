@@ -74,18 +74,24 @@ class AdminPanelTest extends TestCase
     }
 
     /**
-     * Denetim #7: her Resource/Page yalnızca 6 kanonik SaaS grubundan birini
+     * Denetim #7: her Resource/Page yalnızca 8 kanonik gruptan birini
      * kullanmalı; eski/yazım-hatalı grup adları sidebar'da yinelenen kopuk
      * gruplar yaratır ve panel provider'ın sabitlediği sırayı bozar.
+     *
+     * 2026-07-30: "Pazarlama & Büyüme" ve "Kâhya & Yapay Zekâ" grupları
+     * açıldı, "Topluluk & Etkinlikler" → "Topluluk & İletişim" oldu.
+     * Liste AdminPanelProvider::navigationGroups() ile birebir aynı olmalı.
      */
     public function test_every_admin_navigation_group_is_canonical(): void
     {
         $canonical = [
             'Pazaryeri & Ticaret',
             'İş & Kariyer Portalı',
-            'Topluluk & Etkinlikler',
+            'Topluluk & İletişim',
             'Kullanıcılar & Güvenlik',
             'İçerik & Tasarım (CMS)',
+            'Pazarlama & Büyüme',
+            'Kâhya & Yapay Zekâ',
             'Sistem & Araçlar',
         ];
 

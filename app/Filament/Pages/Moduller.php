@@ -32,7 +32,7 @@ class Moduller extends Page
 
     protected static ?string $navigationLabel = 'Modüller';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 6;
 
     protected string $view = 'filament.pages.moduller';
 

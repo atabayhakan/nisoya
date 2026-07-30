@@ -4,9 +4,11 @@ namespace App\Services\Kahya\Eylem;
 
 use App\Services\Kahya\Eylem\Eylemler\AyarDoldur;
 use App\Services\Kahya\Eylem\Eylemler\EtiketEkle;
+use App\Services\Kahya\Eylem\Eylemler\IlanlariEtiketle;
 use App\Services\Kahya\Eylem\Eylemler\KategoriEkle;
 use App\Services\Kahya\Eylem\Eylemler\ParaBirimiEkle;
 use App\Services\Kahya\Eylem\Eylemler\SehirEkle;
+use App\Services\Kahya\Eylem\Eylemler\SeoDoldur;
 use App\Services\Kahya\Eylem\Eylemler\SiraDegistir;
 use App\Services\Kahya\Eylem\Eylemler\UlkeDurumDegistir;
 use App\Services\Kahya\Eylem\Eylemler\UlkeEkle;
@@ -44,6 +46,10 @@ class EylemKatalogu
 
         // Ayar ve içerik
         AyarDoldur::class,
+
+        // Otomasyon — "bu bölümü Kâhya kendi yapsın" işleri (2026-07-30)
+        IlanlariEtiketle::class,
+        SeoDoldur::class,
     ];
 
     /** @var array<string, Eylem>|null */

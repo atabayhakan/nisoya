@@ -31,7 +31,7 @@ class KahyaAyarlari extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Sistem & Araçlar';
+    protected static string|UnitEnum|null $navigationGroup = 'Kâhya & Yapay Zekâ';
 
     protected static ?string $navigationLabel = 'Kâhya Ayarları';
 

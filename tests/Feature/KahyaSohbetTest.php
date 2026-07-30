@@ -180,6 +180,24 @@ class KahyaSohbetTest extends TestCase
     }
 
     /**
+     * "X nerede?" cevabının kaynağı: yönerge panel haritasını ve site
+     * kimliğini taşımalı — model panel ekranlarını ezberden bilemez.
+     */
+    public function test_yonerge_panel_haritasini_ve_site_kimligini_tasir(): void
+    {
+        $this->sahte->yanit = ['cevap' => 'Tamam.', 'eylem' => ''];
+
+        $this->sohbet()->sor('etiketler nerede?', $this->admin());
+
+        $yonerge = (string) $this->sahte->sonYonerge;
+
+        $this->assertStringContainsString('## Panel haritası', $yonerge);
+        $this->assertStringContainsString('/yonetim/tags', $yonerge);
+        $this->assertStringContainsString('## Site kimliği', $yonerge);
+        $this->assertStringContainsString('Site adı: Nisoya', $yonerge);
+    }
+
+    /**
      * BU TEST BİR CANLI HATANIN MEZAR TAŞI.
      *
      * `response_format: json_object` kullanan OpenAI-uyumlu uçlar (OpenAI,

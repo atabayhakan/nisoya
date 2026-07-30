@@ -24,11 +24,11 @@ class BuyumeAyarlari extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGlobeAlt;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Sistem & Araçlar';
+    protected static string|UnitEnum|null $navigationGroup = 'Pazarlama & Büyüme';
 
     protected static ?string $navigationLabel = 'Büyüme Ajanı';
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 3;
 
     protected string $view = 'filament.pages.buyume-ayarlari';
 

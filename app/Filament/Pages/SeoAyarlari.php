@@ -28,11 +28,11 @@ class SeoAyarlari extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMagnifyingGlass;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Sistem & Araçlar';
+    protected static string|UnitEnum|null $navigationGroup = 'Pazarlama & Büyüme';
 
     protected static ?string $navigationLabel = 'SEO';
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 1;
 
     protected string $view = 'filament.pages.seo-ayarlari';
 
