@@ -42,7 +42,13 @@ class IlanlariEtiketleTest extends TestCase
         return app(EylemCalistirici::class);
     }
 
-    public function test_onay_bekler_onaylaninca_etiketler_baglanir(): void
+    /**
+     * F0 KARARI (2026-07-30, tasarım §2.2): iç yazma için onay kapısı kalktı —
+     * eylem artık DOĞRUDAN uygulanır; korkuluk denetim izi + geri-al +
+     * günlük yedek. Eski "önce beklemede, onayla, sonra uygula" sözleşmesinin
+     * testi bu değişiklikle birlikte yeni sözleşmeye geçti.
+     */
+    public function test_dogrudan_uygulanir_ve_etiketler_baglanir(): void
     {
         $ilan = Listing::factory()->create(['title' => 'Ev yapımı mantı']);
         Tag::create(['name' => 'El Yapımı', 'slug' => 'el-yapimi']);
@@ -55,20 +61,14 @@ class IlanlariEtiketleTest extends TestCase
 
         $kayit = $this->calistirici()->calistir('ilanlari-etiketle', []);
 
-        // Yüksek risk: onay gelmeden hiçbir bağ kurulmaz, yapay zekâ ÇAĞRILMAZ.
-        $this->assertSame(KahyaEylemKaydi::DURUM_BEKLEMEDE, $kayit->durum);
-        $this->assertStringContainsString('1 aktif ilandan', $kayit->onizleme);
-        $this->assertSame(0, $ilan->tags()->count());
-        $this->assertNull($this->sahte->sonYonerge);
-
-        $kayit = $this->calistirici()->onayla($kayit);
-
         $this->assertSame(KahyaEylemKaydi::DURUM_UYGULANDI, $kayit->durum);
         // Mevcut etikete bağlandı, olmayan için yenisi açıldı.
         $this->assertSame(2, $ilan->tags()->count());
         $this->assertDatabaseHas('tags', ['slug' => 'ev-yemegi', 'name' => 'Ev Yemeği']);
         $this->assertSame(1, Tag::query()->where('slug', 'el-yapimi')->count(), 'Mevcut etiket kopyalanmamalı.');
         $this->assertStringContainsString('1 ilana toplam 2 etiket', (string) $kayit->sonuc);
+        // Geri alınabilirlik onay kapısının yerine geçen güvence — izi olmalı.
+        $this->assertTrue($kayit->geriAlinabilirMi());
     }
 
     public function test_geri_alma_baglari_cozer_ve_oksuz_yeni_etiketi_siler(): void
@@ -80,7 +80,7 @@ class IlanlariEtiketleTest extends TestCase
             'ilanlar' => [['id' => $ilan->id, 'etiketler' => ['Acil', 'Ev Yemeği']]],
         ];
 
-        $kayit = $this->calistirici()->onayla($this->calistirici()->calistir('ilanlari-etiketle', []));
+        $kayit = $this->calistirici()->calistir('ilanlari-etiketle', []);
         $this->assertSame(2, $ilan->tags()->count());
 
         $kayit = $this->calistirici()->geriAl($kayit);
@@ -101,7 +101,7 @@ class IlanlariEtiketleTest extends TestCase
             'ilanlar' => [['id' => 999999, 'etiketler' => ['Hayalet']]],
         ];
 
-        $kayit = $this->calistirici()->onayla($this->calistirici()->calistir('ilanlari-etiketle', []));
+        $kayit = $this->calistirici()->calistir('ilanlari-etiketle', []);
 
         $this->assertSame(KahyaEylemKaydi::DURUM_UYGULANDI, $kayit->durum);
         $this->assertStringContainsString('0 ilana toplam 0 etiket', (string) $kayit->sonuc);
@@ -113,9 +113,6 @@ class IlanlariEtiketleTest extends TestCase
         $kayit = $this->calistirici()->calistir('ilanlari-etiketle', []);
 
         $this->assertStringContainsString('Etiketi olmayan aktif ilan yok', $kayit->onizleme);
-
-        $kayit = $this->calistirici()->onayla($kayit);
-
         $this->assertSame(KahyaEylemKaydi::DURUM_UYGULANDI, $kayit->durum);
         $this->assertStringContainsString('hiçbir şey değişmedi', (string) $kayit->sonuc);
     }
@@ -126,7 +123,7 @@ class IlanlariEtiketleTest extends TestCase
         $this->sahte->yanit = null;
         $this->sahte->sonHata = 'bağlantı zaman aşımı';
 
-        $kayit = $this->calistirici()->onayla($this->calistirici()->calistir('ilanlari-etiketle', []));
+        $kayit = $this->calistirici()->calistir('ilanlari-etiketle', []);
 
         // Sessiz başarısızlık yok: defterde hata, veritabanında değişiklik yok.
         $this->assertSame(KahyaEylemKaydi::DURUM_HATA, $kayit->durum);
@@ -144,7 +141,7 @@ class IlanlariEtiketleTest extends TestCase
         $ilan = Listing::factory()->create(['title' => 'Ev yapımı mantı']);
         $this->sahte->yanit = ['ilanlar' => []];
 
-        $this->calistirici()->onayla($this->calistirici()->calistir('ilanlari-etiketle', []));
+        $this->calistirici()->calistir('ilanlari-etiketle', []);
 
         $this->assertStringContainsStringIgnoringCase('json', (string) $this->sahte->sonYonerge);
         $this->assertStringContainsString('Ev yapımı mantı', (string) $this->sahte->sonYonerge);

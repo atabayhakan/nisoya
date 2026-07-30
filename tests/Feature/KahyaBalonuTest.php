@@ -2,20 +2,20 @@
 
 namespace Tests\Feature;
 
+use App\Ai\Kahya\KahyaAjani;
 use App\Enums\UserRole;
 use App\Filament\Pages\KahyaSohbet;
 use App\Livewire\KahyaBalonu;
 use App\Models\KahyaEylemKaydi;
 use App\Models\User;
-use App\Services\Ai\AiManager;
 use App\Services\Kahya\Sohbet\KahyaSohbeti;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Ai\Ai;
+use Laravel\Ai\Responses\Data\ToolCall;
 use Livewire\Livewire;
-use Tests\Support\SahteAiSaglayici;
-use Tests\Support\SahteAiYonetici;
 use Tests\TestCase;
 
 /**
@@ -24,20 +24,16 @@ use Tests\TestCase;
  * Balon, sayfayla AYNI davranış trait'ini kullanır (KahyaSohbetiYurutur);
  * burada sınanan şey o ortaklığın iki ucu: balondan gönderilen mesaj aynı
  * boru hattından geçiyor mu, ve balon yalnız admin'e mi görünüyor.
+ * (F0'dan beri boru hattı laravel/ai ajan döngüsü — sahte gateway ile sınanır.)
  */
 class KahyaBalonuTest extends TestCase
 {
     use RefreshDatabase;
 
-    private SahteAiSaglayici $sahte;
-
     protected function setUp(): void
     {
         parent::setUp();
         $this->seed([CurrencySeeder::class, CountrySeeder::class, CategorySeeder::class]);
-
-        $this->sahte = new SahteAiSaglayici;
-        $this->app->instance(AiManager::class, new SahteAiYonetici($this->sahte));
     }
 
     private function admin(): User
@@ -84,7 +80,7 @@ class KahyaBalonuTest extends TestCase
 
     public function test_balondan_mesaj_gonderilir(): void
     {
-        $this->sahte->yanit = ['cevap' => 'Şu an bekleyen iş yok.', 'eylem' => ''];
+        Ai::fakeAgent(KahyaAjani::class, ['Şu an bekleyen iş yok.']);
 
         Livewire::actingAs($this->admin())
             ->test(KahyaBalonu::class)
@@ -99,11 +95,10 @@ class KahyaBalonuTest extends TestCase
     /** Balondan onaylanan eylem, sayfadan onaylanmış gibi uygulanmalı. */
     public function test_balondan_onay_eylemi_uygular(): void
     {
-        $this->sahte->yanit = [
-            'cevap' => 'Onayına sunuyorum.',
-            'eylem' => 'ulke-durum-degistir',
-            'parametreler' => ['kod' => 'DE', 'aktif' => false],
-        ];
+        Ai::fakeAgent(KahyaAjani::class, [
+            new ToolCall('t1', 'ulke-durum-degistir', ['kod' => 'DE', 'aktif' => false]),
+            'Onayına sundum.',
+        ]);
 
         $admin = $this->admin();
         app(KahyaSohbeti::class)->sor('Almanya\'yı kapat', $admin);
@@ -119,10 +114,14 @@ class KahyaBalonuTest extends TestCase
         $this->assertDatabaseHas('countries', ['code' => 'DE', 'is_active' => false]);
     }
 
-    /** Balon "X nerede?" penceresi: yönergeye panel haritası gitmeli. */
+    /**
+     * Balon "X nerede?" penceresi: ajan yönergesi panel haritasını taşımalı.
+     * (F0'da yönerge KahyaAjani::instructions()'a taşındı; balon da sayfa da
+     * aynı ajanı kurar — harita oradan akar.)
+     */
     public function test_balondan_sorulan_soru_panel_haritasini_gorur(): void
     {
-        $this->sahte->yanit = ['cevap' => 'Etiketler, Pazaryeri & Ticaret grubunda.', 'eylem' => ''];
+        Ai::fakeAgent(KahyaAjani::class, ['Etiketler, Pazaryeri & Ticaret grubunda.']);
 
         Livewire::actingAs($this->admin())
             ->test(KahyaBalonu::class)
@@ -131,7 +130,14 @@ class KahyaBalonuTest extends TestCase
             ->call('gonder')
             ->assertSuccessful();
 
-        $this->assertStringContainsString('Panel haritası', (string) $this->sahte->sonYonerge);
-        $this->assertStringContainsString('Etiketler', (string) $this->sahte->sonYonerge);
+        Ai::assertAgentWasPrompted(
+            KahyaAjani::class,
+            function (object $prompt): bool {
+                $yonerge = (string) $prompt->agent->instructions();
+
+                return str_contains($yonerge, 'Panel haritası')
+                    && str_contains($yonerge, 'Etiketler');
+            },
+        );
     }
 }

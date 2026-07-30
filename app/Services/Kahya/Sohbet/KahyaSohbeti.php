@@ -2,54 +2,44 @@
 
 namespace App\Services\Kahya\Sohbet;
 
-use App\Contracts\AiProvider;
-use App\Models\Category;
+use App\Ai\Kahya\EylemToplayici;
+use App\Ai\Kahya\KahyaAjani;
 use App\Models\KahyaEylemKaydi;
+use App\Models\KahyaHarcamasi;
 use App\Models\KahyaMesaji;
 use App\Models\User;
-use App\Services\Ai\AiManager;
 use App\Services\Kahya\BekleyenIsler;
 use App\Services\Kahya\Eylem\EylemCalistirici;
 use App\Services\Kahya\Eylem\EylemKatalogu;
 use App\Services\Kahya\KahyaTeshisi;
 use App\Services\Kahya\PanelHaritasi;
 use App\Support\Settings;
-use RuntimeException;
+use Illuminate\Support\Collection;
+use Laravel\Ai\Responses\AgentResponse;
 use Throwable;
 
 /**
- * Sahibin Kâhya ile konuştuğu yer.
+ * Sahibin Kâhya ile konuştuğu yer — F0 "beyin nakli" sonrası hâli.
  *
  * ---------------------------------------------------------------------------
- * YAPAY ZEKÂ NE YAPAR, NE YAPMAZ
+ * ESKİ MODEL (F1) → YENİ MODEL (F0/Kâhya 2.0)
  *
- * YAPAR: sahibin Türkçe cümlesini okur, katalogdan bir eylem adı seçer,
- * parametrelerini doldurur, bir de cevap cümlesi yazar.
+ * F1: tek AI çağrısı, JSON çıktı ({cevap, eylem, parametreler}), tek eylem.
+ * Model bilmediği bir id gerektiğinde "sisteme bakamıyorum" derdi.
  *
- * YAPMAZ: veritabanına dokunmaz, SQL yazmaz, kayıt kaydetmez. Çıktısı yalnızca
- * bir addır ve o ad katalogda yoksa hiçbir şey olmaz. Güvenlik sınırı modelin
- * doğru anlamasına değil, {@see EylemKatalogu}'nun kapsamına dayanır.
- *
- * ---------------------------------------------------------------------------
- * MODELİN CÜMLESİ İLE OLAN BİTEN AYRI TUTULUR
- *
- * Modelin "ekledim" demesi bir şeyin eklendiği anlamına gelmez. Bu yüzden
- * yanıt iki parçadır: modelin cümlesi + eylem kaydının GERÇEK sonucu. İkincisi
- * `EylemCalistirici`'den gelir ve modelin ne dediğinden bağımsızdır.
- *
- * Bu ayrım bu sistemdeki en tehlikeli hata sınıfını kapatır: sahip işin
- * yapıldığını sanır, oysa yapılmamıştır.
+ * Şimdi: {@see KahyaAjani} bir araç döngüsünde koşar — önce bakar
+ * (tablo-sorgula), sonra yapar (eylem araçları), sonucu görür, cevabını yazar.
+ * JSON sözleşmesi ve onun "json kelimesi"/"geçersiz JSON" hata sınıfı öldü;
+ * araçlar sağlayıcının native tool-calling API'siyle akar.
  *
  * ---------------------------------------------------------------------------
- * İKİ KATMANLI MODEL
+ * MODELİN CÜMLESİ İLE OLAN BİTEN HÂLÂ AYRI TUTULUR
  *
- * Karşılama ve özet gibi ucuz işler yapılandırılmış varsayılan modelle;
- * soru yanıtlama ve EYLEM SEÇİMİ güçlü modelle yapılır. Gerekçesi maliyet
- * değil hata bedeli: yanlış eylem seçmenin bedeli canlıda ödenir, birkaç
- * kuruşluk model farkından çok daha pahalıdır.
- *
- * Güçlü model ayarı boşsa varsayılana düşülür — yanlış bir model adı yüzünden
- * Kâhya'nın hiç cevap verememesindense, ucuz modelle cevap vermesi yeğdir.
+ * F1 ilkesi ("modelin 'ekledim' demesi bir şeyin eklendiği anlamına gelmez")
+ * biçim değiştirdi ama ölmedi: araçlar modele yalnız GERÇEK durumu döndürür
+ * ("BAŞARILI: ..." / "ONAY BEKLİYOR: ..." / "HATA: ...") ve arayüzdeki
+ * geri-al/onay düğmeleri modelin metnine değil {@see EylemToplayici}'daki
+ * kayıtların durumuna bağlanır.
  */
 class KahyaSohbeti
 {
@@ -57,12 +47,12 @@ class KahyaSohbeti
     private const GECMIS_SINIRI = 12;
 
     public function __construct(
-        private readonly AiManager $ai,
         private readonly EylemKatalogu $katalog,
         private readonly EylemCalistirici $calistirici,
         private readonly KahyaTeshisi $teshis,
         private readonly BekleyenIsler $bekleyen,
         private readonly PanelHaritasi $harita,
+        private readonly EylemToplayici $toplayici,
     ) {}
 
     /**
@@ -70,7 +60,7 @@ class KahyaSohbeti
      *
      * SAHİP BİRDEN ÇOK PROJEYLE ÇALIŞIYOR. Buraya girdiğinde ihtiyacı olan şey
      * gösterge tablosu değil, "bugün senden ne bekleniyor" cümlesidir. Bu
-     * yüzden karşılama KISA ve EYLEM ODAKLI: en fazla üç madde.
+     * yüzden karşılama KISA ve EYLEM ODAKLI: en fazla üç madde. AI ÇAĞRILMAZ.
      */
     public function karsila(User $sahip): string
     {
@@ -105,7 +95,7 @@ class KahyaSohbeti
     }
 
     /**
-     * Sahibin mesajını işler: gerekiyorsa eylem çalıştırır, yanıt döndürür.
+     * Sahibin mesajını işler: ajan döngüsünü koşturur, yanıt döndürür.
      */
     public function sor(string $mesaj, User $sahip): SohbetYaniti
     {
@@ -115,10 +105,35 @@ class KahyaSohbeti
             return new SohbetYaniti('Bir şey yazmadın.');
         }
 
+        /*
+         * Geçmiş, şu anki mesaj KAYDEDİLMEDEN önce çekilir: prompt zaten bu
+         * mesajı taşıyor; geçmişte de görünürse model aynı cümleyi iki kez
+         * okur ve "az önce sordun" diye şaşırır.
+         */
+        $gecmis = KahyaMesaji::query()
+            ->latest('id')
+            ->limit(self::GECMIS_SINIRI)
+            ->get()
+            ->reverse()
+            ->values();
+
         KahyaMesaji::create(['rol' => KahyaMesaji::ROL_SAHIP, 'metin' => $mesaj, 'user_id' => $sahip->id]);
 
+        // Uzun ömürlü süreçlerde (kuyruk işçisi) önceki turun kayıtları sızmasın.
+        $this->toplayici->sifirla();
+
+        $saglayici = $this->saglayiciAdi();
+        $model = $this->modelAdi($saglayici);
+
         try {
-            $karar = $this->karariAl($mesaj);
+            $yanit = $this->ajan($gecmis, $sahip)->prompt(
+                $mesaj,
+                provider: $saglayici,
+                model: $model,
+                // Araç döngüsü tek çağrıdan uzun sürer; sağlayıcı varsayılanı
+                // (30-60s) çok turlu bir işte yarıda kesebilir.
+                timeout: 120,
+            );
         } catch (Throwable $e) {
             report($e);
 
@@ -129,29 +144,22 @@ class KahyaSohbeti
             );
         }
 
-        $cevap = trim((string) ($karar['cevap'] ?? ''));
-        $eylemAdi = trim((string) ($karar['eylem'] ?? ''));
+        $this->harcamaYaz($yanit, $saglayici, $model);
 
-        if ($eylemAdi === '') {
-            return $this->yanitla($cevap !== '' ? $cevap : 'Bunu anlayamadım, başka türlü sorar mısın?', $sahip);
+        $kayit = $this->toplayici->son();
+        $metin = trim($yanit->text);
+
+        /*
+         * Model konuşmadan işi yapıp susarsa (nadir ama olur) gerçek durumu
+         * defterden anlat — sessiz başarı, sahibin gözünde başarısızlıktır.
+         */
+        if ($metin === '') {
+            $metin = $kayit !== null
+                ? $this->eylemMetni('', $kayit)
+                : 'Bunu anlayamadım, başka türlü sorar mısın?';
         }
 
-        try {
-            $kayit = $this->calistirici->calistir(
-                $eylemAdi,
-                is_array($karar['parametreler'] ?? null) ? $karar['parametreler'] : [],
-                $sahip,
-            );
-        } catch (RuntimeException $e) {
-            // Katalog dışı bir ad: güvenlik sınırının çalıştığı an. Sahibe
-            // dürüstçe söylenir, model "yaptım" demiş olsa bile.
-            return $this->yanitla(
-                'Bunu yapamıyorum: '.$e->getMessage().' Yapabildiğim işleri sorabilirsin.',
-                $sahip,
-            );
-        }
-
-        return $this->yanitla($this->eylemMetni($cevap, $kayit), $sahip, $kayit);
+        return $this->yanitla($metin, $sahip, $kayit);
     }
 
     /** Bekleyen bir eylemi onaylar ve sonucu sohbete yazar. */
@@ -172,129 +180,44 @@ class KahyaSohbeti
 
     // ------------------------------------------------------------- İçeriden
 
-    /**
-     * Yapay zekâdan kararı alır.
-     *
-     * @return array<string, mixed>
-     */
-    private function karariAl(string $mesaj): array
+    /** @param  Collection<int, KahyaMesaji>  $gecmis */
+    protected function ajan($gecmis, User $sahip): KahyaAjani
     {
-        $saglayici = $this->gucluSaglayici();
-
-        $sonuc = $saglayici->analyzeText($this->yonerge($mesaj), [
-            'type' => 'object',
-            'properties' => [
-                'cevap' => ['type' => 'string', 'description' => 'Sahibe Türkçe, kısa cevap.'],
-                'eylem' => ['type' => 'string', 'description' => 'Katalogdaki eylem adı; iş istenmiyorsa boş bırak.'],
-                'parametreler' => ['type' => 'object', 'description' => 'Eylemin parametreleri.'],
-            ],
-            'required' => ['cevap'],
-        ], 60);
-
-        if ($sonuc === null) {
-            throw new RuntimeException('Yapay zekâ yanıt vermedi: '.($saglayici->lastError() ?? 'sebep bilinmiyor'));
-        }
-
-        return $sonuc;
+        return new KahyaAjani(
+            $this->teshis,
+            $this->bekleyen,
+            $this->harita,
+            $this->katalog,
+            $this->calistirici,
+            $this->toplayici,
+            $gecmis,
+            $sahip,
+        );
     }
 
-    private function yonerge(string $mesaj): string
+    private function saglayiciAdi(): string
     {
-        $teshis = $this->teshis->gercekEnvanter();
-        $kuyruklar = $this->bekleyen->topla();
-        $gecmis = $this->gecmisMetni();
-
-        $kuyrukMetni = $kuyruklar === []
-            ? 'Bekleyen iş yok.'
-            : implode("\n", array_map(fn (array $k): string => "- {$k['etiket']}: {$k['adet']}", $kuyruklar));
-
-        return <<<METIN
-        Sen "Kâhya"sın: Nisoya'nın (yurtdışındaki Türkler için ücretsiz Türkçe pazaryeri)
-        yönetim asistanısın. Sahibiyle Türkçe, kısa ve doğrudan konuşursun. Yağcılık yapmaz,
-        gereksiz özet çıkarmazsın.
-
-        ## Sitenin şu anki durumu
-        Aktif ilan: {$teshis['ilan']} · Benzersiz satıcı: {$teshis['satici']}
-        Bekleyen işler:
-        {$kuyrukMetni}
-
-        ## Site kimliği (SEO ve metin yazarken buradan beslen)
-        {$this->siteKimligi()}
-
-        ## Yapabildiğin işler
-        Aşağıdaki listede OLMAYAN hiçbir işi yapamazsın. Sana veritabanı erişimi verilmedi;
-        yalnızca bu adlardan birini seçip parametrelerini doldurabilirsin.
-
-        {$this->katalog->yapayZekaIcin()}
-
-        ## Panel haritası (yol tarifi için)
-        Sahip bir ekranın ya da özelliğin NEREDE olduğunu sorarsa buradan cevapla:
-        sol menüdeki grup adını, ekran adını ve adresini söyle. Haritada olmayan bir
-        yeri tarif etme.
-
-        {$this->harita->metin()}
-
-        ## Kurallar
-        1. Sahip bir İŞ istiyorsa `eylem` alanına katalogdaki adı yaz ve `parametreler`i doldur.
-        2. Sadece soru soruyorsa `eylem` alanını BOŞ bırak, `cevap`ta yanıtla.
-        3. İstenen iş katalogda yoksa uydurma — `eylem`i boş bırak ve yapamadığını söyle;
-           iş panelde elle yapılabiliyorsa panel haritasından yerini tarif et.
-        4. Parametre için gereken bilgi eksikse iş SEÇME; önce eksik bilgiyi sor.
-        5. `cevap` kısa olsun. Bir işi seçtiysen ne yapacağını tek cümlede söyle;
-           yaptığını İDDİA ETME — sonucu sistem söyleyecek.
-        6. Emin değilsen sor. Yanlış iş yapmak, sormaktan pahalıdır.
-
-        ## Son konuşmalar
-        {$gecmis}
-
-        ## Sahibin şu anki mesajı
-        {$mesaj}
-
-        ## Yanıt biçimi
-        Yanıtını SADECE JSON olarak ver: {"cevap": "...", "eylem": "...", "parametreler": {...}}
-        METIN;
+        return trim((string) Settings::get('ai.saglayici', '')) ?: (string) config('ai.default');
     }
 
     /**
-     * Sitenin kimlik kartı: ad, mevcut SEO metinleri, ana kategoriler.
-     *
-     * `seo-doldur` gibi metin ÜRETEN eylemler için modelin tek malzeme
-     * kaynağı burası — site hakkında bilmediği şeyi uydurmak zorunda
-     * kalmasın diye kısa ve olgusal tutulur.
+     * Model önceliği: Kâhya'ya özel model > genel AI modeli > sağlayıcı
+     * varsayılanı. Ayrı ayar var çünkü eylem seçiminin hata bedeli canlıda
+     * ödenir — sahip isterse sohbete daha güçlü bir model atar.
      */
-    private function siteKimligi(): string
+    private function modelAdi(string $saglayici): string
     {
-        $ad = (string) Settings::get('genel.site_adi', 'Nisoya');
-        $baslik = (string) Settings::get('seo.default_title', '');
-        $aciklama = (string) Settings::get('seo.default_description', '');
-
-        $kategoriler = Category::query()
-            ->whereNull('parent_id')
-            ->orderBy('name')
-            ->pluck('name')
-            ->implode(', ');
-
-        return "Site adı: {$ad}\n"
-            ."Mevcut SEO başlığı: \"{$baslik}\"\n"
-            ."Mevcut SEO açıklaması: \"{$aciklama}\"\n"
-            .'Ana kategoriler: '.($kategoriler !== '' ? $kategoriler : '(henüz yok)');
+        return trim((string) Settings::get('kahya.sohbet_modeli', ''))
+            ?: (trim((string) Settings::get('ai.model', ''))
+            ?: (string) config("ai.providers.{$saglayici}.model"));
     }
 
-    private function gecmisMetni(): string
+    /**
+     * Harcamayı deftere işle — defter yazımı sohbeti asla KIRMAZ.
+     */
+    private function harcamaYaz(AgentResponse $yanit, string $saglayici, string $model): void
     {
-        $mesajlar = KahyaMesaji::query()
-            ->latest('id')
-            ->limit(self::GECMIS_SINIRI)
-            ->get()
-            ->reverse();
-
-        if ($mesajlar->isEmpty()) {
-            return '(Henüz konuşmadınız.)';
-        }
-
-        return $mesajlar
-            ->map(fn (KahyaMesaji $m): string => ($m->rol === KahyaMesaji::ROL_SAHIP ? 'Sahip: ' : 'Kâhya: ').$m->metin)
-            ->implode("\n");
+        rescue(fn () => KahyaHarcamasi::kaydet('sohbet', $saglayici, $model, $yanit->usage), report: true);
     }
 
     /**
@@ -355,26 +278,5 @@ class KahyaSohbeti
             $kayit,
             $kayit?->durum === KahyaEylemKaydi::DURUM_BEKLEMEDE,
         );
-    }
-
-    /**
-     * Eylem seçimi için güçlü sağlayıcı.
-     *
-     * Ayar boşsa varsayılana düşülür: yanlış yazılmış bir model adı yüzünden
-     * Kâhya'nın hiç konuşamaması, ucuz modelle konuşmasından kötüdür.
-     */
-    private function gucluSaglayici(): AiProvider
-    {
-        $model = trim((string) Settings::get('kahya.sohbet_modeli', ''));
-        $saglayiciAdi = trim((string) Settings::get('ai.saglayici', '')) ?: (string) config('ai.default');
-
-        if ($model === '') {
-            return $this->ai->provider();
-        }
-
-        $yapilandirma = config("ai.providers.{$saglayiciAdi}", []);
-        $yapilandirma['model'] = $model;
-
-        return $this->ai->make($saglayiciAdi, $yapilandirma);
     }
 }

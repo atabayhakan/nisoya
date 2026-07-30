@@ -27,12 +27,28 @@ return [
         'image_moderation' => (bool) env('AI_IMAGE_MODERATION', true),
     ],
 
+    /*
+    | ÇİFT ŞEMA UYARISI (2026-07-30, Kâhya F0): Bu dosyayı iki tüketici okur.
+    | (1) Bizim AI katmanımız (App\Services\Ai\*) → `api_key`/`model`/`base_url`.
+    | (2) laravel/ai paketi (Kâhya'nın ajan çekirdeği) → `driver`/`key`/`url`.
+    | Paket kendi config/ai.php'sini mergeConfigFrom ile SIĞ birleştirir: bizim
+    | üst-düzey `providers` anahtarımız paketinkini TAMAMEN gölgeler — bu yüzden
+    | paketin beklediği anahtarlar her girdide AYRICA taşınmalı. Bir sağlayıcının
+    | anahtarını değiştirirken İKİ anahtarı da (api_key + key) güncel tut;
+    | çalışma zamanında admin paneli ayarları ikisini birden ezer
+    | (bkz. AppServiceProvider::applyAiSettings).
+    */
+
     'providers' => [
 
         'anthropic' => [
             'api_key' => env('ANTHROPIC_API_KEY'),
             // Görüntü destekli, en düşük maliyetli Claude modeli.
             'model' => env('ANTHROPIC_MODEL', 'claude-haiku-4-5'),
+            // laravel/ai anahtarları:
+            'driver' => 'anthropic',
+            'key' => env('ANTHROPIC_API_KEY'),
+            'url' => env('ANTHROPIC_URL', 'https://api.anthropic.com/v1'),
         ],
 
         'openai' => [
@@ -40,6 +56,10 @@ return [
             'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
             // OpenAI-uyumlu (Azure/yerel) uçlar için değiştirilebilir.
             'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
+            // laravel/ai anahtarları:
+            'driver' => 'openai',
+            'key' => env('OPENAI_API_KEY'),
+            'url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
         ],
 
         // OpenRouter — OpenAI-uyumlu tek uçtan yüzlerce model. Model adı
@@ -50,11 +70,18 @@ return [
             'base_url' => env('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1'),
             'referer' => env('APP_URL', 'https://nisoya.com'),
             'title' => 'Nisoya',
+            // laravel/ai anahtarları:
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
         ],
 
         'gemini' => [
             'api_key' => env('GEMINI_API_KEY'),
             'model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),
+            // laravel/ai anahtarları:
+            'driver' => 'gemini',
+            'key' => env('GEMINI_API_KEY'),
+            'url' => env('GEMINI_URL', 'https://generativelanguage.googleapis.com/v1beta/'),
         ],
 
     ],
