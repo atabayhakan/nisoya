@@ -43,6 +43,9 @@ class TabloSorgula implements Tool
         'currencies' => ['code', 'name', 'symbol', 'is_active', 'sort_order'],
         'listings' => ['id', 'user_id', 'category_id', 'type', 'title', 'slug', 'price', 'currency', 'price_unit', 'country_code', 'city', 'status', 'is_featured', 'views_count', 'is_demo', 'created_at'],
         'users' => ['id', 'name', 'username', 'country_code', 'city', 'role', 'is_verified', 'status', 'account_type', 'is_demo', 'created_at'],
+        // Kâhya'nın kendi kalıcı hafızası (F1) — yönergeye sığmayan kayıtlar
+        // buradan aranır; `unut` için id de buradan bulunur.
+        'kahya_hafiza' => ['id', 'tur', 'metin', 'kaynak', 'aktif', 'created_at'],
     ];
 
     /** Araç adı — katalogdaki eylem adlarıyla aynı biçimde (kebab-case). */
@@ -97,7 +100,8 @@ class TabloSorgula implements Tool
         if ($ara !== '') {
             $adKolonu = in_array('name', $kolonlar, true) ? 'name'
                 : (in_array('name_tr', $kolonlar, true) ? 'name_tr'
-                : (in_array('title', $kolonlar, true) ? 'title' : null));
+                : (in_array('title', $kolonlar, true) ? 'title'
+                : (in_array('metin', $kolonlar, true) ? 'metin' : null)));
 
             if ($adKolonu === null) {
                 return "HATA: {$tablo} tablosunda ad araması yapılamaz.";
@@ -115,6 +119,19 @@ class TabloSorgula implements Tool
 
         if ($satirlar->isEmpty()) {
             return '(Sonuç yok.)';
+        }
+
+        /*
+         * Kullanım sayacı yalnız ARANIP BULUNAN hafıza kayıtlarında artar
+         * (yönergeye gömülenler sayılmaz): hangi bilginin gerçekten işe
+         * yaradığını bu ayrım gösterir — F5 ders-cikar'ın hammaddesi.
+         * Salt-okunur halkada tek istisna bu sayaçtır ve bilinçli: veri
+         * değil, verinin KULLANIM ölçümü yazılıyor.
+         */
+        if ($tablo === 'kahya_hafiza') {
+            DB::table('kahya_hafiza')
+                ->whereIn('id', $satirlar->pluck('id'))
+                ->increment('kullanim_sayisi');
         }
 
         return $satirlar->toJson(JSON_UNESCAPED_UNICODE);
