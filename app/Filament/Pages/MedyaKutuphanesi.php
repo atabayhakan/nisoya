@@ -23,11 +23,11 @@ class MedyaKutuphanesi extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Sistem & Araçlar';
+    protected static string|UnitEnum|null $navigationGroup = 'İçerik & Tasarım (CMS)';
 
     protected static ?string $navigationLabel = 'Medya Kütüphanesi';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 7;
 
     protected string $view = 'filament.pages.medya-kutuphanesi';
 

@@ -23,6 +23,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Icons\Heroicon;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -30,6 +31,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -51,15 +53,25 @@ class AdminPanelProvider extends PanelProvider
             ->defaultThemeMode(ThemeMode::System)
             // Grup sırası kullanım sıklığına göre sabitlenir (Resource'ların
             // kendi navigationSort'larından bağımsız). Bu adlar, tüm
-            // Resource/Page'lerin bildirdiği KANONİK 6 grup adıyla birebir
+            // Resource/Page'lerin bildirdiği KANONİK 8 grup adıyla birebir
             // eşleşmelidir — aksi hâlde eşleşmeyen grup sidebar'ın en sonuna
-            // düşer (bkz. 2026-07-22 denetimi #7).
+            // düşer (bkz. 2026-07-22 denetimi #7 ve AdminPanelTest'teki
+            // kanonik grup testi).
+            //
+            // 2026-07-30 yeniden gruplama: "Sistem & Araçlar" 17 kaleme şişmişti
+            // ve içindeki SEO/Büyüme/Kâhya kalemleri "sistem işi" değildi. İki
+            // yeni başlık açıldı: "Pazarlama & Büyüme" (siteyi büyüten işler)
+            // ve "Kâhya & Yapay Zekâ" (asistan + YZ ayarları). "Topluluk &
+            // Etkinlikler" da "Topluluk & İletişim" oldu — panelde etkinlik
+            // diye bir şey yok, iletişim kutusu var.
             ->navigationGroups([
                 NavigationGroup::make('Pazaryeri & Ticaret'),
                 NavigationGroup::make('İş & Kariyer Portalı'),
-                NavigationGroup::make('Topluluk & Etkinlikler'),
+                NavigationGroup::make('Topluluk & İletişim'),
                 NavigationGroup::make('Kullanıcılar & Güvenlik'),
                 NavigationGroup::make('İçerik & Tasarım (CMS)'),
+                NavigationGroup::make('Pazarlama & Büyüme'),
+                NavigationGroup::make('Kâhya & Yapay Zekâ'),
                 NavigationGroup::make('Sistem & Araçlar'),
             ])
             ->userMenuItems([
@@ -106,7 +118,31 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            /*
+             * Kâhya balonu — panelin HER sayfasında sağ altta duran sohbet
+             * düğmesi. Sahip "etiketler nerede?" diye sormak için Kâhya
+             * sayfasına gitmek zorunda kalmasın; olduğu ekrandan sorsun.
+             *
+             * Yalnız admin görür (sohbetten EYLEM tetiklenir — moderatöre
+             * açmak yetki yükseltmesi olurdu; bkz. KahyaSohbet::canAccess) ve
+             * Kâhya ile Konuş sayfasında gizlenir: aynı sohbetin iki kopyası
+             * aynı ekranda kafa karıştırır.
+             */
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                function (): string {
+                    if (! (auth()->user()?->isAdmin() ?? false)) {
+                        return '';
+                    }
+
+                    if (request()->routeIs('filament.admin.pages.kahya-sohbet')) {
+                        return '';
+                    }
+
+                    return Blade::render("@livewire('kahya-balonu')");
+                },
+            );
     }
 
     public function boot(): void

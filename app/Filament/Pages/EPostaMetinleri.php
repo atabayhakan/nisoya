@@ -31,7 +31,7 @@ class EPostaMetinleri extends Page
 
     protected static ?string $navigationLabel = 'E-posta Metinleri';
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 5;
 
     protected string $view = 'filament.pages.e-posta-metinleri';
 

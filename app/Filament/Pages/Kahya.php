@@ -35,7 +35,7 @@ class Kahya extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentCheck;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Sistem & Araçlar';
+    protected static string|UnitEnum|null $navigationGroup = 'Kâhya & Yapay Zekâ';
 
     protected static ?string $navigationLabel = 'Kâhya';
 

@@ -37,11 +37,11 @@ class ZoneResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Sistem & Araçlar';
+    protected static string|UnitEnum|null $navigationGroup = 'Pazarlama & Büyüme';
 
     protected static ?string $navigationLabel = 'Alanlar (Reklam/İçerik)';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 2;
 
     public static function getModelLabel(): string
     {
