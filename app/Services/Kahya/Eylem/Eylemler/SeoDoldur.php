@@ -71,9 +71,13 @@ class SeoDoldur extends Eylem
 
     public function risk(): EylemRiski
     {
-        // Geri alması ucuz ama sitenin arama motorlarındaki YÜZÜ değişiyor ve
-        // metin sahibin değil modelin kaleminden çıkıyor — önce okutulur.
-        return EylemRiski::Yuksek;
+        /*
+         * F0'da Yüksek→Düşük indirildi (sahibin kararı, 2026-07-30 Kâhya 2.0
+         * tasarımı §2.2): iç yazma için onay kapısı kalktı. Metin yine modelin
+         * kaleminden çıkıyor ama geri alması tek tık (eski değer izde) ve
+         * sonuç sohbette anında görünüyor — beğenmezsen "geri al" de.
+         */
+        return EylemRiski::Dusuk;
     }
 
     public function onizleme(array $p): string

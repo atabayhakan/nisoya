@@ -28,21 +28,25 @@ class SeoDoldurTest extends TestCase
         return app(EylemCalistirici::class);
     }
 
-    public function test_onay_bekler_ve_onizleme_yeni_metni_gosterir(): void
+    /**
+     * F0 KARARI (2026-07-30, tasarım §2.2): iç yazma için onay kapısı kalktı —
+     * seo-doldur doğrudan uygulanır; önizleme metni yine kayıtta durur (sahip
+     * sohbette görür, beğenmezse tek tıkla geri alır).
+     */
+    public function test_dogrudan_uygulanir_ve_onizleme_yeni_metni_gosterir(): void
     {
         $kayit = $this->calistirici()->calistir('seo-doldur', [
             'baslik' => self::BASLIK,
             'aciklama' => self::ACIKLAMA,
         ]);
 
-        // Model metni yazdı ama sahip okumadan yayına girmedi.
-        $this->assertSame(KahyaEylemKaydi::DURUM_BEKLEMEDE, $kayit->durum);
+        $this->assertSame(KahyaEylemKaydi::DURUM_UYGULANDI, $kayit->durum);
         $this->assertStringContainsString(self::BASLIK, $kayit->onizleme);
         $this->assertStringContainsString(self::ACIKLAMA, $kayit->onizleme);
-        $this->assertDatabaseMissing('site_settings', ['key' => 'seo.default_title']);
+        $this->assertTrue($kayit->geriAlinabilirMi());
     }
 
-    public function test_onaylaninca_yazilir_geri_alinca_eski_hal_doner(): void
+    public function test_uygulanir_geri_alinca_eski_hal_doner(): void
     {
         $varsayilanBaslik = Settings::get('seo.default_title');
 
@@ -50,8 +54,6 @@ class SeoDoldurTest extends TestCase
             'baslik' => self::BASLIK,
             'aciklama' => self::ACIKLAMA,
         ]);
-
-        $kayit = $this->calistirici()->onayla($kayit);
 
         $this->assertSame(KahyaEylemKaydi::DURUM_UYGULANDI, $kayit->durum);
         $this->assertSame(self::BASLIK, Settings::get('seo.default_title'));

@@ -85,8 +85,14 @@ class IlanlariEtiketle extends Eylem
 
     public function risk(): EylemRiski
     {
-        // Toplu iş + ilan sayfalarında herkese görünen değişiklik: önce onay.
-        return EylemRiski::Yuksek;
+        /*
+         * F0'da Yüksek→Düşük indirildi (sahibin kararı, 2026-07-30 Kâhya 2.0
+         * tasarımı §2.2): iç yazma için onay kapısı kalktı — korkuluk artık
+         * işlem + denetim izi + geri-al + günlük yedek dörtlüsü. Bu eylemin
+         * geri alması zaten tam (bağları çözer, öksüz etiketleri siler) ve
+         * sınırlar kodda (ilan başı 3, koşu başı 10 yeni etiket, max 30 ilan).
+         */
+        return EylemRiski::Dusuk;
     }
 
     public function onizleme(array $p): string

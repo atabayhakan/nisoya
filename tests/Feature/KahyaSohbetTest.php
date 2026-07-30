@@ -2,43 +2,54 @@
 
 namespace Tests\Feature;
 
+use App\Ai\Kahya\EylemToplayici;
+use App\Ai\Kahya\KahyaAjani;
 use App\Enums\UserRole;
 use App\Filament\Pages\KahyaSohbet;
+use App\Models\Category;
 use App\Models\ContactMessage;
 use App\Models\KahyaEylemKaydi;
 use App\Models\KahyaMesaji;
 use App\Models\User;
-use App\Services\Ai\AiManager;
+use App\Services\Kahya\BekleyenIsler;
+use App\Services\Kahya\Eylem\EylemCalistirici;
+use App\Services\Kahya\Eylem\EylemKatalogu;
+use App\Services\Kahya\KahyaTeshisi;
+use App\Services\Kahya\PanelHaritasi;
 use App\Services\Kahya\Sohbet\KahyaSohbeti;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Laravel\Ai\Ai;
+use Laravel\Ai\Responses\Data\ToolCall;
 use Livewire\Livewire;
-use Tests\Support\SahteAiSaglayici;
-use Tests\Support\SahteAiYonetici;
 use Tests\TestCase;
 
 /**
- * Kâhya sohbeti — sahibin Türkçe cümlesi ile eylem arasındaki boru hattı.
+ * Kâhya sohbeti — F0 "beyin nakli" sonrası: laravel/ai ajan döngüsü.
  *
  * Testler modelin ZEKÂSINI sınamaz (model sahte, kararı test yazar); kararın
- * ETRAFINI sınar: katalog sınırı çalışıyor mu, "modelin cümlesi ≠ olan biten"
- * ayrımı duruyor mu, hafıza yazılıyor mu, arayüz doğru eylemi onaylıyor mu.
+ * ETRAFINI sınar. Sahte gateway'in güzelliği: `ToolCall` yanıtı verildiğinde
+ * ajan döngüsü GERÇEK aracı çalıştırır — eski düzenden farklı olarak
+ * doğrulama, denetim defteri ve geri-alma izi testte de gerçek yoldan akar.
+ *
+ * NOT — "json kelimesi" mezar taşı testi buradan KALKTI (2026-07-30):
+ * o test `response_format:json_object` hilesinin HTTP kısıtını korurdu;
+ * F0'da Kâhya native tool-calling'e geçti ve o hile bu yoldan tamamen
+ * çıktı. Aynı tehlike ImageModerationService'te sürüyor ve oradaki test
+ * yerinde duruyor. Kâhya tarafındaki gerçek-sağlayıcı güvencesi artık
+ * deploy öncesi yerel smoke testidir (tasarım belgesi §5).
  */
 class KahyaSohbetTest extends TestCase
 {
     use RefreshDatabase;
 
-    private SahteAiSaglayici $sahte;
-
     protected function setUp(): void
     {
         parent::setUp();
         $this->seed([CurrencySeeder::class, CountrySeeder::class, CategorySeeder::class]);
-
-        $this->sahte = new SahteAiSaglayici;
-        $this->app->instance(AiManager::class, new SahteAiYonetici($this->sahte));
     }
 
     private function admin(): User
@@ -49,6 +60,12 @@ class KahyaSohbetTest extends TestCase
     private function sohbet(): KahyaSohbeti
     {
         return app(KahyaSohbeti::class);
+    }
+
+    /** @param  list<ToolCall|string>  $yanitlar */
+    private function sahteAjan(array $yanitlar): void
+    {
+        Ai::fakeAgent(KahyaAjani::class, $yanitlar);
     }
 
     // ----------------------------------------------------------- Karşılama
@@ -93,11 +110,12 @@ class KahyaSohbetTest extends TestCase
 
     public function test_soru_eylem_tetiklemez(): void
     {
-        $this->sahte->yanit = ['cevap' => 'Şu an 0 aktif ilan var.', 'eylem' => ''];
+        $this->sahteAjan(['Şu an 0 aktif ilan var.']);
 
         $yanit = $this->sohbet()->sor('kaç ilan var?', $this->admin());
 
         $this->assertNull($yanit->eylem);
+        $this->assertSame('Şu an 0 aktif ilan var.', $yanit->metin);
         $this->assertSame(0, KahyaEylemKaydi::query()->count());
         // İki mesaj da hafızaya yazıldı: soru + cevap.
         $this->assertSame(2, KahyaMesaji::query()->count());
@@ -105,11 +123,10 @@ class KahyaSohbetTest extends TestCase
 
     public function test_japonya_ekle_ucta_uca(): void
     {
-        $this->sahte->yanit = [
-            'cevap' => 'Japonya\'yı ekliyorum.',
-            'eylem' => 'ulke-ekle',
-            'parametreler' => ['kod' => 'JP', 'ad' => 'Japonya', 'emoji' => '🇯🇵'],
-        ];
+        $this->sahteAjan([
+            new ToolCall('t1', 'ulke-ekle', ['kod' => 'JP', 'ad' => 'Japonya', 'emoji' => '🇯🇵']),
+            'Japonya\'yı ekledim.',
+        ]);
 
         $yanit = $this->sohbet()->sor('ülkeler kısmına Japonya ekle', $this->admin());
 
@@ -117,49 +134,84 @@ class KahyaSohbetTest extends TestCase
         $this->assertSame(KahyaEylemKaydi::DURUM_UYGULANDI, $yanit->eylem->durum);
         $this->assertFalse($yanit->onayBekliyor);
         $this->assertDatabaseHas('countries', ['code' => 'JP', 'name_tr' => 'Japonya']);
-        // Yanıt GERÇEK sonucu taşır, modelin iddiasını değil.
-        $this->assertStringContainsString('✅', $yanit->metin);
     }
 
     /**
-     * Model katalogda olmayan bir ad uydurursa kullanıcı DÜRÜSTÇE bilgilendirilir
-     * ve hiçbir şey çalışmaz — modelin "yaptım" demesi bir şey değiştirmez.
+     * F0'IN VAROLUŞ SEBEBİ: "üst kategori id'lerini bilmiyorum, sisteme
+     * bakamıyorum" çağı kapandı. Model önce tablo-sorgula ile GERÇEK id'yi
+     * bulur, sonra eylemi o id ile çağırır — iki araç, tek turda.
      */
-    public function test_katalog_disi_eylem_durustce_reddedilir(): void
+    public function test_once_bakar_sonra_yapar(): void
     {
-        $this->sahte->yanit = [
-            'cevap' => 'Siliyorum.',
-            'eylem' => 'tum-ilanlari-sil',
-            'parametreler' => [],
-        ];
+        $ust = Category::query()->whereNull('parent_id')->firstOrFail();
 
-        $yanit = $this->sohbet()->sor('bütün ilanları sil', $this->admin());
+        $this->sahteAjan([
+            new ToolCall('t1', 'tablo-sorgula', ['tablo' => 'categories', 'ara' => $ust->name]),
+            new ToolCall('t2', 'kategori-ekle', ['ad' => 'Çatı Onarımı', 'ust_kategori' => $ust->id]),
+            "\"{$ust->name}\" altına Çatı Onarımı'nı ekledim.",
+        ]);
 
-        $this->assertNull($yanit->eylem);
-        $this->assertStringContainsString('yapamıyorum', $yanit->metin);
-        $this->assertSame(0, KahyaEylemKaydi::query()->count());
+        $yanit = $this->sohbet()->sor("{$ust->name} altına Çatı Onarımı diye alt kategori aç", $this->admin());
+
+        $this->assertNotNull($yanit->eylem);
+        $this->assertSame(KahyaEylemKaydi::DURUM_UYGULANDI, $yanit->eylem->durum);
+        $this->assertDatabaseHas('categories', ['name' => 'Çatı Onarımı', 'parent_id' => $ust->id]);
+    }
+
+    /**
+     * Model katalogda olmayan bir araç adı uyduramaz: laravel/ai bilinmeyen
+     * aracı sağlayıcıya hiç sunmaz, sahte gateway'de de karşılığı yoktur.
+     * Bizim sınırımız ayrıca EylemCalistirici'de durur — bu test onu araç
+     * katmanının ALTINDAN sınar: kataloğa sorulmadan hiçbir şey çalışmaz.
+     */
+    public function test_katalog_disi_eylem_calismaz(): void
+    {
+        $this->expectException(\RuntimeException::class);
+
+        app(EylemCalistirici::class)->calistir('tum-ilanlari-sil', [], $this->admin());
     }
 
     public function test_yuksek_risk_sohbette_onay_bekler(): void
     {
-        $this->sahte->yanit = [
-            'cevap' => 'Almanya\'yı pasife çekmek istiyorsun.',
-            'eylem' => 'ulke-durum-degistir',
-            'parametreler' => ['kod' => 'DE', 'aktif' => false],
-        ];
+        $this->sahteAjan([
+            new ToolCall('t1', 'ulke-durum-degistir', ['kod' => 'DE', 'aktif' => false]),
+            'Almanya\'yı kapatma işini onayına sundum.',
+        ]);
 
         $yanit = $this->sohbet()->sor('Almanya\'yı kapat', $this->admin());
 
         $this->assertTrue($yanit->onayBekliyor);
-        $this->assertStringContainsString('onayına sunuyorum', $yanit->metin);
         // Onay gelmeden hiçbir şey değişmedi.
         $this->assertDatabaseHas('countries', ['code' => 'DE', 'is_active' => true]);
     }
 
+    /**
+     * F0 KARARI (tasarım §2.2): iç yazma için onay kapısı kalktı — eskiden
+     * yüksek riskli olan seo-doldur artık doğrudan uygulanır ve geri alınabilir.
+     */
+    public function test_seo_doldur_artik_onaysiz_uygulanir(): void
+    {
+        $this->sahteAjan([
+            new ToolCall('t1', 'seo-doldur', [
+                'baslik' => 'Nisoya — Yurtdışındaki Türklerin Pazaryeri',
+                'aciklama' => 'Yurtdışındaki Türkler için ücretsiz ilan ve hizmet pazaryeri.',
+            ]),
+            'SEO metinlerini yazdım.',
+        ]);
+
+        $yanit = $this->sohbet()->sor('SEO\'yu doldur', $this->admin());
+
+        $this->assertNotNull($yanit->eylem);
+        $this->assertSame(KahyaEylemKaydi::DURUM_UYGULANDI, $yanit->eylem->durum);
+        $this->assertFalse($yanit->onayBekliyor);
+        $this->assertTrue($yanit->eylem->geriAlinabilirMi());
+    }
+
     public function test_saglayici_cokerse_kibarca_soyler(): void
     {
-        $this->sahte->yanit = null;
-        $this->sahte->sonHata = 'bağlantı zaman aşımı';
+        // Sahte ajan YOK: gerçek gateway koşar ama HTTP katmanı kapalı —
+        // test ağı asla dışarı çıkmaz, hata yolu deterministiktir.
+        Http::fake(['*' => Http::response(['error' => 'down'], 500)]);
 
         $yanit = $this->sohbet()->sor('kaç ilan var?', $this->admin());
 
@@ -167,16 +219,51 @@ class KahyaSohbetTest extends TestCase
         $this->assertStringContainsString('Yapay Zekâ Ayarları', $yanit->metin);
     }
 
-    /** Yönerge katalog metnini ve site durumunu taşımalı — model kör karar veremez. */
-    public function test_yonerge_katalogu_ve_durumu_tasir(): void
+    public function test_harcama_deftere_yazilir(): void
     {
-        $this->sahte->yanit = ['cevap' => 'Tamam.', 'eylem' => ''];
+        $this->sahteAjan(['Merhaba!']);
 
-        $this->sohbet()->sor('merhaba', $this->admin());
+        $this->sohbet()->sor('selam', $this->admin());
 
-        $this->assertNotNull($this->sahte->sonYonerge);
-        $this->assertStringContainsString('### ulke-ekle', $this->sahte->sonYonerge);
-        $this->assertStringContainsString('Aktif ilan: 0', $this->sahte->sonYonerge);
+        // Sahte gateway 0 token bildirir; satırın kendisi yeter — sayaç ilk
+        // günden var (tasarım kararı), gerçek tokenlar canlıda dolar.
+        $this->assertDatabaseHas('kahya_harcamalar', ['kaynak' => 'sohbet']);
+    }
+
+    // ------------------------------------------------------------ Yönerge
+
+    private function ajan(?User $sahip = null): KahyaAjani
+    {
+        return new KahyaAjani(
+            app(KahyaTeshisi::class),
+            app(BekleyenIsler::class),
+            app(PanelHaritasi::class),
+            app(EylemKatalogu::class),
+            app(EylemCalistirici::class),
+            new EylemToplayici,
+            collect(),
+            $sahip,
+        );
+    }
+
+    /** Yönerge site durumunu taşımalı; katalog metni ise artık araçlarda yaşar. */
+    public function test_yonerge_durumu_araclar_katalogu_tasir(): void
+    {
+        $ajan = $this->ajan($this->admin());
+
+        $yonerge = (string) $ajan->instructions();
+        $this->assertStringContainsString('Aktif ilan: 0', $yonerge);
+
+        // Katalog yönergeye gömülü DEĞİL — her eylem kendi aracı olarak sunulur.
+        $adlar = array_map(
+            fn (object $arac): string => method_exists($arac, 'name') ? $arac->name() : class_basename($arac),
+            [...$ajan->tools()],
+        );
+        $this->assertContains('ulke-ekle', $adlar);
+        $this->assertContains('kategori-ekle', $adlar);
+        $this->assertContains('tablo-sorgula', $adlar);
+        // 10 eylem + tablo-sorgula.
+        $this->assertCount(11, $adlar);
     }
 
     /**
@@ -185,39 +272,12 @@ class KahyaSohbetTest extends TestCase
      */
     public function test_yonerge_panel_haritasini_ve_site_kimligini_tasir(): void
     {
-        $this->sahte->yanit = ['cevap' => 'Tamam.', 'eylem' => ''];
+        $yonerge = (string) $this->ajan()->instructions();
 
-        $this->sohbet()->sor('etiketler nerede?', $this->admin());
-
-        $yonerge = (string) $this->sahte->sonYonerge;
-
-        $this->assertStringContainsString('## Panel haritası', $yonerge);
+        $this->assertStringContainsString('Panel haritası', $yonerge);
         $this->assertStringContainsString('/yonetim/tags', $yonerge);
-        $this->assertStringContainsString('## Site kimliği', $yonerge);
+        $this->assertStringContainsString('Site kimliği', $yonerge);
         $this->assertStringContainsString('Site adı: Nisoya', $yonerge);
-    }
-
-    /**
-     * BU TEST BİR CANLI HATANIN MEZAR TAŞI.
-     *
-     * `response_format: json_object` kullanan OpenAI-uyumlu uçlar (OpenAI,
-     * OpenRouter üzerinden geçen OpenAI-uyumlu modeller dâhil) mesaj
-     * içeriğinde "json" kelimesi GEÇMİYORSA 400 hatası döner — bu, sahte
-     * sağlayıcının maskeleyemeyeceği bir HTTP kısıtı, model karar mantığı
-     * değil. Yönerge tamamen Türkçe yazıldığı için ilk sürümde hiçbir yerde
-     * "json" geçmiyordu; canlıda ilk gerçek çağrı bu yüzden düştü
-     * (doğrulandı: 2026-07-29, üretimde `HTTP 400: Provider returned error`).
-     *
-     * Sahte sağlayıcı bu HTTP katmanını atladığı için diğer testler bunu
-     * YAKALAYAMAZ — bu yüzden yönergenin kelimesi ayrıca sınanıyor.
-     */
-    public function test_yonerge_json_kelimesini_icerir(): void
-    {
-        $this->sahte->yanit = ['cevap' => 'Tamam.', 'eylem' => ''];
-
-        $this->sohbet()->sor('merhaba', $this->admin());
-
-        $this->assertStringContainsStringIgnoringCase('json', (string) $this->sahte->sonYonerge);
     }
 
     // ------------------------------------------------------------- Arayüz
@@ -233,7 +293,7 @@ class KahyaSohbetTest extends TestCase
 
     public function test_admin_mesaj_gonderir_ve_gecmis_gorunur(): void
     {
-        $this->sahte->yanit = ['cevap' => 'Şu an bekleyen iş yok.', 'eylem' => ''];
+        $this->sahteAjan(['Şu an bekleyen iş yok.']);
 
         Livewire::actingAs($this->admin())
             ->test(KahyaSohbet::class)
@@ -246,11 +306,10 @@ class KahyaSohbetTest extends TestCase
 
     public function test_panelden_onaylanan_eylem_uygulanir(): void
     {
-        $this->sahte->yanit = [
-            'cevap' => 'Onayına sunuyorum.',
-            'eylem' => 'ulke-durum-degistir',
-            'parametreler' => ['kod' => 'DE', 'aktif' => false],
-        ];
+        $this->sahteAjan([
+            new ToolCall('t1', 'ulke-durum-degistir', ['kod' => 'DE', 'aktif' => false]),
+            'Onayına sundum.',
+        ]);
 
         $admin = $this->admin();
         $this->sohbet()->sor('Almanya\'yı kapat', $admin);
@@ -267,11 +326,10 @@ class KahyaSohbetTest extends TestCase
 
     public function test_panelden_geri_alma_calisir(): void
     {
-        $this->sahte->yanit = [
-            'cevap' => 'Ekliyorum.',
-            'eylem' => 'ulke-ekle',
-            'parametreler' => ['kod' => 'JP', 'ad' => 'Japonya'],
-        ];
+        $this->sahteAjan([
+            new ToolCall('t1', 'ulke-ekle', ['kod' => 'JP', 'ad' => 'Japonya']),
+            'Ekledim.',
+        ]);
 
         $admin = $this->admin();
         $this->sohbet()->sor('Japonya ekle', $admin);

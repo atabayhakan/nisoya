@@ -334,6 +334,9 @@ class AppServiceProvider extends ServiceProvider
         $apiKey = Settings::get('ai.api_anahtari');
         if ($apiKey) {
             Config::set("ai.providers.{$active}.api_key", $apiKey);
+            // laravel/ai (Kâhya ajan çekirdeği) aynı sağlayıcıyı `key` adıyla
+            // okur — çift şema notu için bkz. config/ai.php üst yorumu.
+            Config::set("ai.providers.{$active}.key", $apiKey);
         }
 
         $model = Settings::get('ai.model');
