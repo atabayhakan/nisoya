@@ -20,6 +20,7 @@ use App\Services\Growth\Discovery\BusinessDiscoverySource;
 use App\Services\Growth\Discovery\FixtureDiscoverySource;
 use App\Services\Growth\Discovery\GooglePlacesDiscoverySource;
 use App\Services\Growth\Discovery\OverpassDiscoverySource;
+use App\Services\Kahya\Dis\HamleGonderici;
 use App\Services\PerformanceService;
 use App\Services\VisitorLocationService;
 use App\Support\Settings;
@@ -317,6 +318,27 @@ class AppServiceProvider extends ServiceProvider
         // sessiz hataları görünür kılmak; kendisi sessizce ölmemeli.
         if ($saat && preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $saat)) {
             Config::set('kahya.rapor_saati', $saat);
+        }
+
+        /*
+         * F4 — Kâhya'nın AYRI gönderim kimliği. Ana `mail.mailers.smtp`'ye
+         * dokunulmaz ve host boşken mailer hiç tanımlanmaz: yanlışlıkla ana
+         * kimlikle erişim postası atmanın yolu KAPALI kalmalı
+         * (bkz. App\Services\Kahya\Dis\HamleGonderici sınıf notu).
+         */
+        $gonderimHost = trim((string) Settings::get('kahya.gonderim_host', ''));
+        if ($gonderimHost !== '') {
+            $port = (int) (Settings::get('kahya.gonderim_port') ?: 465);
+
+            Config::set('mail.mailers.'.HamleGonderici::MAILER, [
+                'transport' => 'smtp',
+                'host' => $gonderimHost,
+                'port' => $port,
+                'encryption' => $port === 465 ? 'ssl' : 'tls',
+                'username' => (string) Settings::get('kahya.gonderim_kullanici', ''),
+                'password' => (string) Settings::get('kahya.gonderim_parola', ''),
+                'timeout' => 20,
+            ]);
         }
     }
 

@@ -49,7 +49,9 @@ class TabloSorgula implements Tool
         // Görev defteri + hamle kartları (F2) — kapalı görevlerin geçmişi ve
         // verilmiş hamle kararları buradan okunur.
         'kahya_gorevleri' => ['id', 'baslik', 'hedef', 'durum', 'son_islem_at', 'created_at'],
-        'bekleyen_hamleler' => ['id', 'kahya_gorevi_id', 'baslik', 'tur', 'durum', 'karar_notu', 'karar_at', 'created_at'],
+        'bekleyen_hamleler' => ['id', 'kahya_gorevi_id', 'baslik', 'tur', 'alici_eposta', 'durum', 'karar_notu', 'karar_at', 'gonderildi_at', 'gonderim_hata', 'created_at'],
+        // Gönderim engel listesi (F4) — engelli adrese hamle önerme.
+        'kahya_gonderim_engelleri' => ['id', 'eposta', 'neden', 'created_at'],
     ];
 
     /** Araç adı — katalogdaki eylem adlarıyla aynı biçimde (kebab-case). */

@@ -138,6 +138,8 @@ class KahyaGorevTest extends TestCase
             'gerekce' => 'Eylül dönem başında binlerce yeni öğrenci geliyor.',
             'icerik' => 'Merhaba, Nisoya yurtdışındaki Türkler için ücretsiz bir pazaryeri...',
             'tur' => 'eposta',
+            // F4'ten beri e-posta türünde alıcı zorunlu.
+            'alici_eposta' => 'info@tusu-uk.org',
         ]);
 
         $this->assertSame(KahyaEylemKaydi::DURUM_UYGULANDI, $kayit->durum);

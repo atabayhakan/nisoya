@@ -15,9 +15,12 @@ use Illuminate\Support\Carbon;
  * @property string $gerekce
  * @property string $icerik
  * @property string $tur
+ * @property ?string $alici_eposta
  * @property string $durum
  * @property ?string $karar_notu
  * @property ?Carbon $karar_at
+ * @property ?Carbon $gonderildi_at
+ * @property ?string $gonderim_hata
  */
 class BekleyenHamle extends Model
 {
@@ -30,14 +33,14 @@ class BekleyenHamle extends Model
     protected $table = 'bekleyen_hamleler';
 
     protected $fillable = [
-        'kahya_gorevi_id', 'baslik', 'gerekce', 'icerik', 'tur',
-        'durum', 'karar_notu', 'karar_at',
+        'kahya_gorevi_id', 'baslik', 'gerekce', 'icerik', 'tur', 'alici_eposta',
+        'durum', 'karar_notu', 'karar_at', 'gonderildi_at', 'gonderim_hata',
     ];
 
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['karar_at' => 'datetime'];
+        return ['karar_at' => 'datetime', 'gonderildi_at' => 'datetime'];
     }
 
     /** @return BelongsTo<KahyaGorevi, $this> */

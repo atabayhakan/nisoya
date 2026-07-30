@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\BekleyenHamleler\Tables;
 
 use App\Models\BekleyenHamle;
+use App\Services\Kahya\Dis\HamleGonderici;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
@@ -50,6 +51,14 @@ class BekleyenHamlelerTable
                         BekleyenHamle::DURUM_ONAYLANDI => 'success',
                         default => 'danger',
                     }),
+                TextColumn::make('gonderildi_at')
+                    ->label('Gönderim')
+                    ->state(fn (BekleyenHamle $record): string => match (true) {
+                        $record->gonderildi_at !== null => '✓ '.$record->gonderildi_at->format('d.m H:i'),
+                        $record->gonderim_hata !== null => '⚠ hata',
+                        default => '—',
+                    })
+                    ->tooltip(fn (BekleyenHamle $record): ?string => $record->gonderim_hata),
                 TextColumn::make('created_at')
                     ->label('Önerildi')
                     ->since()
@@ -82,7 +91,12 @@ class BekleyenHamlelerTable
                     ->color('success')
                     ->visible(fn (BekleyenHamle $record): bool => $record->durum === BekleyenHamle::DURUM_BEKLEMEDE)
                     ->modalHeading(fn (BekleyenHamle $record): string => "Onayla: {$record->baslik}")
-                    ->modalDescription(fn (BekleyenHamle $record): string => Str::limit($record->icerik, 400))
+                    // Onay = e-posta türünde GÖNDERİM demek (F4) — sahip neyi
+                    // onayladığını alıcısıyla birlikte görmeli.
+                    ->modalDescription(fn (BekleyenHamle $record): string => ($record->tur === 'eposta' && $record->alici_eposta
+                            ? "Alıcı: {$record->alici_eposta} — onaylarsan Kâhya'nın gönderim kimliğiyle GÖNDERİLİR.\n\n"
+                            : '')
+                        .Str::limit($record->icerik, 400))
                     ->schema([
                         Textarea::make('karar_notu')
                             ->label('Not (isteğe bağlı)')
@@ -93,11 +107,26 @@ class BekleyenHamlelerTable
                     ->action(function (BekleyenHamle $record, array $data): void {
                         $record->kararVer(BekleyenHamle::DURUM_ONAYLANDI, $data['karar_notu'] ?? null);
 
-                        // F2 sınırı dürüstçe söylenir: onay kaydedildi ama
-                        // otomatik gönderim yok — uygulama şimdilik sahipte.
+                        // F4: e-posta hamlesi onaylandığında gönderim denenir;
+                        // sonuç ne olursa olsun sahibe AYNEN söylenir (gönderildi /
+                        // tavan dolu / yapılandırılmamış / hata) — HamleGonderici
+                        // her durumda dürüst bir cümle döndürür.
+                        if ($record->tur === 'eposta') {
+                            $sonuc = app(HamleGonderici::class)->gonder($record->refresh());
+
+                            Notification::make()
+                                ->title('Hamle onaylandı')
+                                ->body($sonuc)
+                                ->{str_starts_with($sonuc, 'Gönderildi') ? 'success' : 'warning'}()
+                                ->persistent()
+                                ->send();
+
+                            return;
+                        }
+
                         Notification::make()
                             ->title('Hamle onaylandı')
-                            ->body('Karar kaydedildi. Otomatik gönderim henüz yok — hamleyi şimdilik elle uygula; Kâhya kararını gördü.')
+                            ->body('Karar kaydedildi. Bu tür (e-posta değil) elle uygulanır; Kâhya kararını gördü.')
                             ->success()
                             ->send();
                     }),
