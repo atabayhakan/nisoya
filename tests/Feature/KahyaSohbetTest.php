@@ -266,9 +266,11 @@ class KahyaSohbetTest extends TestCase
         $this->assertContains('unut', $adlar);
         $this->assertContains('gorev-ac', $adlar);
         $this->assertContains('hamle-oner', $adlar);
+        $this->assertContains('web-ara', $adlar);
+        $this->assertContains('isletme-kesfet', $adlar);
         // 15 eylem (10 + F1 hatirla/unut + F2 gorev-ac/gorev-guncelle/hamle-oner)
-        // + tablo-sorgula.
-        $this->assertCount(16, $adlar);
+        // + okuma halkası: tablo-sorgula + F3 web-ara + isletme-kesfet.
+        $this->assertCount(18, $adlar);
     }
 
     /**

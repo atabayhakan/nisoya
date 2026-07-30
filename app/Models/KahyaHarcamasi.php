@@ -21,7 +21,7 @@ class KahyaHarcamasi extends Model
     protected $table = 'kahya_harcamalar';
 
     protected $fillable = [
-        'kaynak', 'saglayici', 'model',
+        'kaynak', 'saglayici', 'model', 'detay',
         'girdi_token', 'cikti_token',
         'onbellek_okuma_token', 'onbellek_yazma_token',
     ];

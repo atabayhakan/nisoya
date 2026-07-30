@@ -3,7 +3,9 @@
 namespace App\Ai\Kahya;
 
 use App\Ai\Kahya\Araclar\EylemAraci;
+use App\Ai\Kahya\Araclar\IsletmeKesfet;
 use App\Ai\Kahya\Araclar\TabloSorgula;
+use App\Ai\Kahya\Araclar\WebAra;
 use App\Models\BekleyenHamle;
 use App\Models\Category;
 use App\Models\KahyaGorevi;
@@ -116,6 +118,9 @@ class KahyaAjani implements Agent, Conversational, HasTools
            bir görevde ne zaman ilerleme olsa `gorev-guncelle` ile İŞLE. Sistemden DIŞARI
            çıkacak her iş (e-posta, tanıtım, sosyal içerik) için tek yolun `hamle-oner`:
            bitmiş bir taslak yaz, kartı bırak, kararın sahibde olduğunu söyle.
+        10. Güncel/dış bilgi için `web-ara`, işletme keşfi için `isletme-kesfet` kullan —
+           ikisi de aylık kredili: gereksiz tekrar sorgu atma, bulduğunu görevin notuna işle.
+           Araç "YAPILANDIRILMAMIŞ" ya da "LİMİT DOLDU" derse bunu sahibe aynen aktar.
         METIN;
     }
 
@@ -134,7 +139,13 @@ class KahyaAjani implements Agent, Conversational, HasTools
     /** @return list<Tool> */
     public function tools(): iterable
     {
-        $araclar = [new TabloSorgula];
+        $araclar = [
+            new TabloSorgula,
+            // Dış gözler (F3) — anahtar yokken de kayıtlı: model sahibe
+            // "şurayı yapılandır" tarifini ancak aracı görürse verebilir.
+            app(WebAra::class),
+            app(IsletmeKesfet::class),
+        ];
 
         foreach ($this->katalog->hepsi() as $eylem) {
             $araclar[] = new EylemAraci($eylem, $this->calistirici, $this->toplayici, $this->sahip);
