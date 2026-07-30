@@ -58,7 +58,7 @@ class KahyaAyarlari extends Page
             'alici' => Settings::get('kahya.alici') ?: '',
             'rapor_saati' => Settings::get('kahya.rapor_saati') ?: config('kahya.rapor_saati', '07:30'),
             'sohbet_modeli' => Settings::get('kahya.sohbet_modeli') ?: '',
-            'arama_saglayici' => Settings::get('kahya.arama_saglayici') ?: 'tavily',
+            'arama_saglayici' => Settings::get('kahya.arama_saglayici') ?: 'openrouter',
             'arama_anahtari' => Settings::get('kahya.arama_anahtari') ?: '',
             'places_anahtari' => Settings::get('kahya.places_anahtari') ?: '',
             'aylik_arama_limiti' => (int) (Settings::get('kahya.aylik_arama_limiti') ?: 300),
@@ -121,17 +121,18 @@ class KahyaAyarlari extends Page
                         Select::make('arama_saglayici')
                             ->label('Web arama sağlayıcısı')
                             ->options([
-                                'tavily' => 'Tavily (LLM için tasarlanmış — tavily.com)',
+                                'openrouter' => 'OpenRouter web (mevcut AI kredin — ek hesap gerekmez)',
+                                'tavily' => 'Tavily (ücretsiz kota — tavily.com)',
                                 'brave' => 'Brave Search (geniş dizin — brave.com/search/api)',
                             ])
-                            ->helperText('İkisinin de ücretsiz başlangıç kotası var; anahtarı seçtiğin sağlayıcıdan al.'),
+                            ->helperText('OpenRouter ~$4/1000 arama (krediden); Tavily/Brave ücretsiz kotalı ama ayrı hesap ister.'),
 
                         TextInput::make('arama_anahtari')
                             ->label('Arama API anahtarı')
                             ->password()
                             ->revealable()
                             ->maxLength(200)
-                            ->helperText('Boşsa web-ara aracı kapalı kalır.'),
+                            ->helperText('OpenRouter\'da boş bırakılabilir — Yapay Zekâ Ayarları\'ndaki anahtar kullanılır. Tavily/Brave için zorunlu.'),
 
                         TextInput::make('places_anahtari')
                             ->label('Google Places API anahtarı')

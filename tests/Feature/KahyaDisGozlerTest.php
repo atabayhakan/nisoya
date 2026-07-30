@@ -36,6 +36,56 @@ class KahyaDisGozlerTest extends TestCase
         $this->assertSame(0, KahyaHarcamasi::query()->count());
     }
 
+    /**
+     * "Ek hesap gerekmez" vaadinin testi: arama anahtarı alanı BOŞKEN,
+     * sahibin Yapay Zekâ Ayarları'ndaki OpenRouter anahtarı kullanılır ve
+     * arama sonuçları web eklentisinin url_citation ek açıklamalarından
+     * çözülür. (Üretimdeki gerçek durum tam olarak bu.)
+     */
+    public function test_openrouter_ai_anahtarina_duser_ve_alintilari_cozer(): void
+    {
+        Settings::setMany([
+            'ai.saglayici' => 'openrouter',
+            'ai.api_anahtari' => 'sk-or-mevcut-kredi',
+            // kahya.arama_saglayici ve kahya.arama_anahtari bilerek BOŞ:
+            // varsayılan openrouter + AI anahtarına düşüş sınanıyor.
+        ]);
+        Http::fake(['openrouter.ai/*' => Http::response([
+            'choices' => [['message' => [
+                'content' => 'İngiltere\'de Türk öğrenci birlikleri özeti...',
+                'annotations' => [
+                    ['type' => 'url_citation', 'url_citation' => [
+                        'title' => 'TUSU — Turkish Student Union of UK',
+                        'url' => 'https://tusu-uk.org',
+                        'content' => '48 üniversite derneğini çatısında toplar.',
+                    ]],
+                ],
+            ]]],
+        ])]);
+
+        $sonuc = (string) app(WebAra::class)->handle(new Request(['sorgu' => 'UK Türk öğrenci birlikleri']));
+
+        $this->assertStringContainsString('TUSU', $sonuc);
+        $this->assertStringContainsString('https://tusu-uk.org', $sonuc);
+        $this->assertDatabaseHas('kahya_harcamalar', ['kaynak' => 'web-ara', 'saglayici' => 'openrouter']);
+        // Doğru anahtar gitti mi?
+        Http::assertSent(fn ($istek): bool => $istek->hasHeader('Authorization', 'Bearer sk-or-mevcut-kredi'));
+    }
+
+    /** Alıntı yoksa modelin özeti kaynaksız tek satır olarak verilir — boş dönmez. */
+    public function test_openrouter_alintisiz_yanitta_ozeti_verir(): void
+    {
+        Settings::setMany(['ai.saglayici' => 'openrouter', 'ai.api_anahtari' => 'sk-or-test']);
+        Http::fake(['openrouter.ai/*' => Http::response([
+            'choices' => [['message' => ['content' => 'Kaynak bulunamadı ama bilinen birlikler şunlar...']]],
+        ])]);
+
+        $sonuc = (string) app(WebAra::class)->handle(new Request(['sorgu' => 'test']));
+
+        $this->assertStringContainsString('kaynaksız', $sonuc);
+        $this->assertStringContainsString('bilinen birlikler', $sonuc);
+    }
+
     public function test_tavily_aramasi_calisir_ve_deftere_yazilir(): void
     {
         Settings::setMany(['kahya.arama_saglayici' => 'tavily', 'kahya.arama_anahtari' => 'test-anahtar']);
