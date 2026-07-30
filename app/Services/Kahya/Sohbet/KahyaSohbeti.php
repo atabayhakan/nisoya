@@ -3,12 +3,12 @@
 namespace App\Services\Kahya\Sohbet;
 
 use App\Contracts\AiProvider;
+use App\Models\Category;
 use App\Models\KahyaEylemKaydi;
 use App\Models\KahyaMesaji;
 use App\Models\User;
 use App\Services\Ai\AiManager;
 use App\Services\Kahya\BekleyenIsler;
-use App\Models\Category;
 use App\Services\Kahya\Eylem\EylemCalistirici;
 use App\Services\Kahya\Eylem\EylemKatalogu;
 use App\Services\Kahya\KahyaTeshisi;

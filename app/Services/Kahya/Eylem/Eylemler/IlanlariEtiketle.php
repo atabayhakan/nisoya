@@ -7,6 +7,8 @@ use App\Models\Listing;
 use App\Models\Tag;
 use App\Services\Ai\AiManager;
 use App\Services\Kahya\Eylem\Eylem;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -237,13 +239,13 @@ class IlanlariEtiketle extends Eylem
         return max(1, min($sinir, self::UST_SINIR));
     }
 
-    /** @return \Illuminate\Database\Eloquent\Builder<Listing> */
+    /** @return Builder<Listing> */
     private function adaySorgusu()
     {
         return Listing::query()->active()->whereDoesntHave('tags');
     }
 
-    /** @param  \Illuminate\Support\Collection<int, Listing>  $ilanlar */
+    /** @param  Collection<int, Listing>  $ilanlar */
     private function yonerge($ilanlar): string
     {
         $mevcut = Tag::query()->orderBy('name')->pluck('name')->implode(', ');
