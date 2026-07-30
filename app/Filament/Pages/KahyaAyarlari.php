@@ -58,6 +58,11 @@ class KahyaAyarlari extends Page
             'alici' => Settings::get('kahya.alici') ?: '',
             'rapor_saati' => Settings::get('kahya.rapor_saati') ?: config('kahya.rapor_saati', '07:30'),
             'sohbet_modeli' => Settings::get('kahya.sohbet_modeli') ?: '',
+            'arama_saglayici' => Settings::get('kahya.arama_saglayici') ?: 'tavily',
+            'arama_anahtari' => Settings::get('kahya.arama_anahtari') ?: '',
+            'places_anahtari' => Settings::get('kahya.places_anahtari') ?: '',
+            'aylik_arama_limiti' => (int) (Settings::get('kahya.aylik_arama_limiti') ?: 300),
+            'aylik_kesif_limiti' => (int) (Settings::get('kahya.aylik_kesif_limiti') ?: 200),
         ]);
     }
 
@@ -107,6 +112,49 @@ class KahyaAyarlari extends Page
                             ->maxLength(120)
                             ->columnSpanFull(),
                     ]),
+
+                Section::make('Dış Gözler (F3)')
+                    ->description('Kâhya\'nın web araması ve işletme keşfi. Anahtar girilmeden ilgili araç '
+                        .'çalışmaz; Kâhya sohbette neyin eksik olduğunu söyler. Her çağrı Kâhya '
+                        .'Harcamaları\'nda sayılır ve aylık limite tabidir.')
+                    ->schema([
+                        Select::make('arama_saglayici')
+                            ->label('Web arama sağlayıcısı')
+                            ->options([
+                                'tavily' => 'Tavily (LLM için tasarlanmış — tavily.com)',
+                                'brave' => 'Brave Search (geniş dizin — brave.com/search/api)',
+                            ])
+                            ->helperText('İkisinin de ücretsiz başlangıç kotası var; anahtarı seçtiğin sağlayıcıdan al.'),
+
+                        TextInput::make('arama_anahtari')
+                            ->label('Arama API anahtarı')
+                            ->password()
+                            ->revealable()
+                            ->maxLength(200)
+                            ->helperText('Boşsa web-ara aracı kapalı kalır.'),
+
+                        TextInput::make('places_anahtari')
+                            ->label('Google Places API anahtarı')
+                            ->password()
+                            ->revealable()
+                            ->maxLength(200)
+                            ->helperText('Google Cloud Console → Places API (New) etkinleştir + anahtar oluştur. Boşsa isletme-kesfet kapalı kalır.'),
+
+                        TextInput::make('aylik_arama_limiti')
+                            ->label('Aylık arama limiti')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(100000)
+                            ->helperText('Web araması, ay içinde bu sayıya ulaşınca durur (0 = tamamen kapalı).'),
+
+                        TextInput::make('aylik_kesif_limiti')
+                            ->label('Aylık keşif limiti')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(100000)
+                            ->helperText('İşletme keşfi (Places ücretli) için aylık tavan.'),
+                    ])
+                    ->columns(2),
             ])
             ->statePath('data');
     }
@@ -119,6 +167,11 @@ class KahyaAyarlari extends Page
             'kahya.alici' => trim((string) ($state['alici'] ?? '')),
             'kahya.rapor_saati' => $state['rapor_saati'] ?? '07:30',
             'kahya.sohbet_modeli' => trim((string) ($state['sohbet_modeli'] ?? '')),
+            'kahya.arama_saglayici' => (string) ($state['arama_saglayici'] ?? 'tavily'),
+            'kahya.arama_anahtari' => trim((string) ($state['arama_anahtari'] ?? '')),
+            'kahya.places_anahtari' => trim((string) ($state['places_anahtari'] ?? '')),
+            'kahya.aylik_arama_limiti' => (string) max(0, (int) ($state['aylik_arama_limiti'] ?? 300)),
+            'kahya.aylik_kesif_limiti' => (string) max(0, (int) ($state['aylik_kesif_limiti'] ?? 200)),
         ]);
 
         Notification::make()
