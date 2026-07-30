@@ -46,6 +46,10 @@ class TabloSorgula implements Tool
         // Kâhya'nın kendi kalıcı hafızası (F1) — yönergeye sığmayan kayıtlar
         // buradan aranır; `unut` için id de buradan bulunur.
         'kahya_hafiza' => ['id', 'tur', 'metin', 'kaynak', 'aktif', 'created_at'],
+        // Görev defteri + hamle kartları (F2) — kapalı görevlerin geçmişi ve
+        // verilmiş hamle kararları buradan okunur.
+        'kahya_gorevleri' => ['id', 'baslik', 'hedef', 'durum', 'son_islem_at', 'created_at'],
+        'bekleyen_hamleler' => ['id', 'kahya_gorevi_id', 'baslik', 'tur', 'durum', 'karar_notu', 'karar_at', 'created_at'],
     ];
 
     /** Araç adı — katalogdaki eylem adlarıyla aynı biçimde (kebab-case). */
@@ -101,7 +105,8 @@ class TabloSorgula implements Tool
             $adKolonu = in_array('name', $kolonlar, true) ? 'name'
                 : (in_array('name_tr', $kolonlar, true) ? 'name_tr'
                 : (in_array('title', $kolonlar, true) ? 'title'
-                : (in_array('metin', $kolonlar, true) ? 'metin' : null)));
+                : (in_array('metin', $kolonlar, true) ? 'metin'
+                : (in_array('baslik', $kolonlar, true) ? 'baslik' : null))));
 
             if ($adKolonu === null) {
                 return "HATA: {$tablo} tablosunda ad araması yapılamaz.";

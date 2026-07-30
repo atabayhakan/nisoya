@@ -3,6 +3,8 @@
 namespace App\Services\Kahya;
 
 use App\Enums\ListingStatus;
+use App\Models\BekleyenHamle;
+use App\Models\KahyaGorevi;
 use App\Models\Listing;
 use App\Models\User;
 
@@ -64,6 +66,45 @@ class KahyaTeshisi
                 'log' => $this->log->ozetle($logSaat),
             ],
             'eksik' => $this->eksik->tara(),
+            'gorevler' => $this->gorevDurumu(),
+        ];
+    }
+
+    /**
+     * Görev defterinin rapor özeti (F2): açık misyonlar + karar bekleyen
+     * hamle kartları. Günlük raporun varlık sebebiyle aynı gerekçe —
+     * zamanlanmış işler gibi uzun misyonlar da SESSİZCE ölür; her sabah
+     * raporda görünen görev, unutulamayan görevdir.
+     *
+     * @return array{acik: list<array<string, mixed>>, bekleyen_hamle: int}
+     */
+    public function gorevDurumu(): array
+    {
+        $acik = KahyaGorevi::query()
+            ->acik()
+            ->latest('son_islem_at')
+            ->limit(10)
+            ->get()
+            ->map(function (KahyaGorevi $g): array {
+                $ilerleme = $g->ilerleme();
+
+                return [
+                    'id' => $g->id,
+                    'baslik' => $g->baslik,
+                    'yapildi' => $ilerleme['yapildi'],
+                    'toplam' => $ilerleme['toplam'],
+                    'siradaki' => $g->siradakiAdim(),
+                    // Hareketsiz görev uyarısının hammaddesi.
+                    'hareketsiz_gun' => $g->son_islem_at !== null
+                        ? (int) $g->son_islem_at->diffInDays(now())
+                        : null,
+                ];
+            })
+            ->all();
+
+        return [
+            'acik' => $acik,
+            'bekleyen_hamle' => BekleyenHamle::query()->beklemede()->count(),
         ];
     }
 

@@ -4,6 +4,9 @@ namespace App\Services\Kahya\Eylem;
 
 use App\Services\Kahya\Eylem\Eylemler\AyarDoldur;
 use App\Services\Kahya\Eylem\Eylemler\EtiketEkle;
+use App\Services\Kahya\Eylem\Eylemler\GorevAc;
+use App\Services\Kahya\Eylem\Eylemler\GorevGuncelle;
+use App\Services\Kahya\Eylem\Eylemler\HamleOner;
 use App\Services\Kahya\Eylem\Eylemler\Hatirla;
 use App\Services\Kahya\Eylem\Eylemler\IlanlariEtiketle;
 use App\Services\Kahya\Eylem\Eylemler\KategoriEkle;
@@ -56,6 +59,11 @@ class EylemKatalogu
         // Kalıcı hafıza (F1, 2026-07-30) — sohbet penceresi unutur, bunlar unutmaz.
         Hatirla::class,
         Unut::class,
+
+        // Görev defteri + hamle kartları (F2, 2026-07-30) — haftalar ölçeği.
+        GorevAc::class,
+        GorevGuncelle::class,
+        HamleOner::class,
     ];
 
     /** @var array<string, Eylem>|null */

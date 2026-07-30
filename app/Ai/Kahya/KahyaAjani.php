@@ -4,7 +4,9 @@ namespace App\Ai\Kahya;
 
 use App\Ai\Kahya\Araclar\EylemAraci;
 use App\Ai\Kahya\Araclar\TabloSorgula;
+use App\Models\BekleyenHamle;
 use App\Models\Category;
+use App\Models\KahyaGorevi;
 use App\Models\KahyaMesaji;
 use App\Models\User;
 use App\Services\Kahya\BekleyenIsler;
@@ -86,6 +88,9 @@ class KahyaAjani implements Agent, Conversational, HasTools
         ## Hatırladıkların (kalıcı hafızan — kurallara UY, gerçeklere GÜVEN)
         {$this->hafizaMetni()}
 
+        ## Görevlerin (görev defteri — uzun vadeli misyonlar)
+        {$this->gorevMetni()}
+
         ## Panel haritası (yol tarifi için)
         Sahip bir ekranın ya da özelliğin NEREDE olduğunu sorarsa buradan cevapla:
         sol menüdeki grup adını, ekran adını ve adresini söyle. Haritada olmayan bir
@@ -107,6 +112,10 @@ class KahyaAjani implements Agent, Conversational, HasTools
         8. Sahip "hatırla/unutma/bundan sonra hep..." derse `hatirla` aracını, "unut/artık
            geçersiz" derse `unut` aracını kullan. Hatırladıkların bölümüne sığmayan eski
            kayıtları tablo-sorgula ile kahya_hafiza tablosunda arayabilirsin.
+        9. Haftalar sürecek bir iş istenirse `gorev-ac` ile deftere yaz (planı sen tasarla);
+           bir görevde ne zaman ilerleme olsa `gorev-guncelle` ile İŞLE. Sistemden DIŞARI
+           çıkacak her iş (e-posta, tanıtım, sosyal içerik) için tek yolun `hamle-oner`:
+           bitmiş bir taslak yaz, kartı bırak, kararın sahibde olduğunu söyle.
         METIN;
     }
 
@@ -152,6 +161,40 @@ class KahyaAjani implements Agent, Conversational, HasTools
         return $kayitlar
             ->map(fn (\App\Models\KahyaHafizasi $k): string => "- [{$k->id}·{$k->tur->etiket()}] {$k->metin}")
             ->implode("\n");
+    }
+
+    /**
+     * Görev defterinin yönergedeki hâli (F2 — tasarım §2.3).
+     *
+     * Yalnız AÇIK görevler girer (kapalıların yeri tablo-sorgula); her görev
+     * id + ilerleme + sıradaki adım + son not taşır — model "neredeyiz"i
+     * sormadan bilsin. Bekleyen hamle sayısı da burada: model aynı hamleyi
+     * ikinci kez önermesin.
+     */
+    private function gorevMetni(): string
+    {
+        $gorevler = KahyaGorevi::query()->acik()->latest('id')->limit(10)->get();
+        $bekleyenHamle = BekleyenHamle::query()->beklemede()->count();
+
+        if ($gorevler->isEmpty() && $bekleyenHamle === 0) {
+            return '(Açık görev yok. Sahip uzun vadeli bir iş isterse `gorev-ac` ile defter tut.)';
+        }
+
+        $satirlar = $gorevler->map(function (KahyaGorevi $g): string {
+            $ilerleme = $g->ilerleme();
+            $siradaki = $g->siradakiAdim();
+            $sonNot = collect($g->ilerleme_notlari ?? [])->last();
+
+            return "- [#{$g->id}] {$g->baslik} ({$ilerleme['yapildi']}/{$ilerleme['toplam']} adım)"
+                .($siradaki !== null ? " · sıradaki: {$siradaki}" : ' · plandaki tüm adımlar işlendi')
+                .($sonNot !== null ? " · son not: {$sonNot['not']}" : '');
+        });
+
+        if ($bekleyenHamle > 0) {
+            $satirlar->push("- Onay kuyruğunda {$bekleyenHamle} hamle kartı sahibin kararını bekliyor — aynısını tekrar önerme.");
+        }
+
+        return $satirlar->implode("\n");
     }
 
     /**
