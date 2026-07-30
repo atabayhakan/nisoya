@@ -63,6 +63,13 @@ class KahyaAyarlari extends Page
             'places_anahtari' => Settings::get('kahya.places_anahtari') ?: '',
             'aylik_arama_limiti' => (int) (Settings::get('kahya.aylik_arama_limiti') ?: 300),
             'aylik_kesif_limiti' => (int) (Settings::get('kahya.aylik_kesif_limiti') ?: 200),
+            'gonderim_host' => Settings::get('kahya.gonderim_host') ?: '',
+            'gonderim_port' => (int) (Settings::get('kahya.gonderim_port') ?: 465),
+            'gonderim_kullanici' => Settings::get('kahya.gonderim_kullanici') ?: '',
+            'gonderim_parola' => Settings::get('kahya.gonderim_parola') ?: '',
+            'gonderim_adresi' => Settings::get('kahya.gonderim_adresi') ?: '',
+            'gonderim_ad' => Settings::get('kahya.gonderim_ad') ?: '',
+            'gunluk_gonderim_limiti' => (int) (Settings::get('kahya.gunluk_gonderim_limiti') ?: 10),
         ]);
     }
 
@@ -156,6 +163,47 @@ class KahyaAyarlari extends Page
                             ->helperText('İşletme keşfi (Places ücretli) için aylık tavan.'),
                     ])
                     ->columns(2),
+
+                Section::make('Dış Eller (F4) — hamle gönderim kimliği')
+                    ->description('Onayladığın e-posta hamle kartları bu kimlikle GÖNDERİLİR. UYARI: Buraya ana '
+                        .'alan adının (nisoya.com) SMTP\'sini DEĞİL, AYRI bir gönderim alanının kimliğini gir '
+                        .'(ör. mail.nisoya.com altında Amazon SES) — erişim postası şikâyet yerse spam damgasını '
+                        .'yalnız o alan yer, üyelerin şifre sıfırlama postaları etkilenmez. Boş bırakılırsa onay '
+                        .'yine kaydedilir ama gönderim yapılmaz (elle uygularsın).')
+                    ->schema([
+                        TextInput::make('gonderim_host')
+                            ->label('SMTP sunucusu')
+                            ->placeholder('örn. email-smtp.eu-central-1.amazonaws.com')
+                            ->maxLength(190),
+                        TextInput::make('gonderim_port')
+                            ->label('Port')
+                            ->numeric()
+                            ->helperText('465 = SSL, 587 = TLS.'),
+                        TextInput::make('gonderim_kullanici')
+                            ->label('SMTP kullanıcı adı')
+                            ->maxLength(190),
+                        TextInput::make('gonderim_parola')
+                            ->label('SMTP parolası')
+                            ->password()
+                            ->revealable()
+                            ->maxLength(190),
+                        TextInput::make('gonderim_adresi')
+                            ->label('Gönderen adres')
+                            ->email()
+                            ->placeholder('örn. merhaba@mail.nisoya.com')
+                            ->helperText('SPF/DKIM/DMARC kayıtları bu alan için DNS\'te tanımlı olmalı.'),
+                        TextInput::make('gonderim_ad')
+                            ->label('Gönderen adı')
+                            ->placeholder('örn. Hakan — Nisoya')
+                            ->maxLength(100),
+                        TextInput::make('gunluk_gonderim_limiti')
+                            ->label('Günlük gönderim tavanı (ısıtma)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(500)
+                            ->helperText('Yeni gönderim kimliği ilk haftalarda günde 5-10 postayla ısınmalı; aceleyle artırma.'),
+                    ])
+                    ->columns(2),
             ])
             ->statePath('data');
     }
@@ -173,6 +221,13 @@ class KahyaAyarlari extends Page
             'kahya.places_anahtari' => trim((string) ($state['places_anahtari'] ?? '')),
             'kahya.aylik_arama_limiti' => (string) max(0, (int) ($state['aylik_arama_limiti'] ?? 300)),
             'kahya.aylik_kesif_limiti' => (string) max(0, (int) ($state['aylik_kesif_limiti'] ?? 200)),
+            'kahya.gonderim_host' => trim((string) ($state['gonderim_host'] ?? '')),
+            'kahya.gonderim_port' => (string) max(1, (int) ($state['gonderim_port'] ?? 465)),
+            'kahya.gonderim_kullanici' => trim((string) ($state['gonderim_kullanici'] ?? '')),
+            'kahya.gonderim_parola' => (string) ($state['gonderim_parola'] ?? ''),
+            'kahya.gonderim_adresi' => trim((string) ($state['gonderim_adresi'] ?? '')),
+            'kahya.gonderim_ad' => trim((string) ($state['gonderim_ad'] ?? '')),
+            'kahya.gunluk_gonderim_limiti' => (string) max(0, (int) ($state['gunluk_gonderim_limiti'] ?? 10)),
         ]);
 
         Notification::make()

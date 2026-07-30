@@ -45,10 +45,13 @@ class HamleOner extends Eylem
     public function sema(): array
     {
         return [
-            'baslik' => 'Hamlenin kısa adı. Ör. "TUSU\'ya tanıtım mesajı".',
+            'baslik' => 'Hamlenin kısa adı; eposta türünde KONU satırı olarak da gider. Ör. "TUSU\'ya tanıtım mesajı".',
             'gerekce' => 'Neden bu hamle, neden şimdi — sahibin karar cümlesi.',
             'icerik' => 'Hamlenin kendisi: gönderilecek taslak metin / yapılacak işin tam tarifi.',
             'tur' => 'İsteğe bağlı: eposta, sosyal ya da oneri (varsayılan).',
+            'alici_eposta' => 'eposta türünde ZORUNLU: mesajın gideceği adres (kurumun herkese '
+                .'açık iletişim adresi). Adresi UYDURMA — web-ara/isletme-kesfet ile bulduğun '
+                .'gerçek adresi yaz; bulamadıysan tur=oneri bırak ve gerekçede söyle.',
             'gorev_id' => 'İsteğe bağlı: hamle bir görevin parçasıysa görevin kimliği.',
         ];
     }
@@ -60,6 +63,7 @@ class HamleOner extends Eylem
             'gerekce' => ['required', 'string', 'min:10', 'max:500'],
             'icerik' => ['required', 'string', 'min:20', 'max:5000'],
             'tur' => ['nullable', 'string', 'in:oneri,eposta,sosyal'],
+            'alici_eposta' => ['nullable', 'email:rfc', 'max:190', 'required_if:tur,eposta'],
             'gorev_id' => ['nullable', 'integer', 'exists:kahya_gorevleri,id'],
         ];
     }
@@ -84,6 +88,7 @@ class HamleOner extends Eylem
             'gerekce' => (string) $p['gerekce'],
             'icerik' => (string) $p['icerik'],
             'tur' => (string) ($p['tur'] ?? 'oneri'),
+            'alici_eposta' => isset($p['alici_eposta']) ? mb_strtolower(trim((string) $p['alici_eposta'])) : null,
         ]);
 
         return [

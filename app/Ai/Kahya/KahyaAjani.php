@@ -121,6 +121,10 @@ class KahyaAjani implements Agent, Conversational, HasTools
         10. Güncel/dış bilgi için `web-ara`, işletme keşfi için `isletme-kesfet` kullan —
            ikisi de aylık kredili: gereksiz tekrar sorgu atma, bulduğunu görevin notuna işle.
            Araç "YAPILANDIRILMAMIŞ" ya da "LİMİT DOLDU" derse bunu sahibe aynen aktar.
+        11. E-posta hamlesi önerirken alici_eposta ZORUNLU ve GERÇEK olmalı (web-ara ya da
+           isletme-kesfet ile bulunmuş; ASLA uydurma/tahmin). Sahip kartı onaylarsa mesaj
+           Kâhya'nın gönderim kimliğiyle OTOMATİK gönderilir — taslağı gönderilmeye hazır
+           yaz. Engel listesindeki (kahya_gonderim_engelleri) adrese hamle önerme.
         METIN;
     }
 
