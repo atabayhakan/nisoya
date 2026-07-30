@@ -8,12 +8,13 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Kâhya'nın web'e açılan gözü (F3 — tasarım §3): Tavily ya da Brave ile arama.
+ * Kâhya'nın web'e açılan gözü (F3 — tasarım §3): OpenRouter, Tavily ya da Brave.
  *
- * İki sağlayıcı bilinçli: Tavily LLM-tüketimi için tasarlanmış (temiz
- * özetli sonuç), Brave klasik arama (geniş dizin, cömert ücretsiz kota).
- * Sahip panelden seçer; anahtar da panelden girilir — env dosyasına SSH
- * gerekmez (AI anahtarlarıyla aynı ilke).
+ * Üç sağlayıcı bilinçli: OpenRouter web eklentisi MEVCUT AI kredisiyle
+ * çalışır (ek hesap yok — varsayılan bu yüzden o; sahibin kararı,
+ * 2026-07-30), Tavily LLM-tüketimi için tasarlanmış ücretsiz kotalı bir
+ * arama API'si, Brave klasik arama (geniş dizin). Sahip panelden seçer;
+ * anahtar da panelden girilir — env dosyasına SSH gerekmez.
  *
  * HER ÇAĞRI DEFTERE YAZILIR ve aylık limite tabidir — dış kredi harcayan
  * hiçbir yol sayaçsız bırakılmaz (tasarım: "bütçe korkusu değil, bütçe
@@ -31,7 +32,7 @@ class WebAramasi
 
     public function saglayici(): string
     {
-        return trim((string) Settings::get('kahya.arama_saglayici', '')) ?: 'tavily';
+        return trim((string) Settings::get('kahya.arama_saglayici', '')) ?: 'openrouter';
     }
 
     /** Bu ay yapılmış arama sayısı — limit kapısının okuduğu sayı. */
@@ -60,9 +61,11 @@ class WebAramasi
     {
         $sonucSayisi = min(max($sonucSayisi, 1), 10);
 
-        $sonuclar = $this->saglayici() === 'brave'
-            ? $this->braveAra($sorgu, $sonucSayisi)
-            : $this->tavilyAra($sorgu, $sonucSayisi);
+        $sonuclar = match ($this->saglayici()) {
+            'brave' => $this->braveAra($sorgu, $sonucSayisi),
+            'tavily' => $this->tavilyAra($sorgu, $sonucSayisi),
+            default => $this->openrouterAra($sorgu, $sonucSayisi),
+        };
 
         // Defter, sonuç sayısından bağımsız yazılır: başarısız sorgu da
         // krediden düşer (sağlayıcı öyle sayar), sayaç da öyle saymalı.
@@ -72,6 +75,59 @@ class WebAramasi
             'model' => '',
             'detay' => mb_substr($sorgu, 0, 200),
         ]);
+
+        return $sonuclar;
+    }
+
+    /**
+     * OpenRouter web eklentisi: ucuz bir modele tek çağrı, arama sonuçları
+     * yanıtın url_citation ek açıklamalarında döner (~$4/1000 sonuç,
+     * mevcut krediden). Alıntı yoksa modelin özet metni tek satır olarak
+     * verilir — boş dönmekten iyidir, ama kaynaklı satırlar esastır.
+     *
+     * @return list<array{baslik: string, url: string, ozet: string}>
+     */
+    private function openrouterAra(string $sorgu, int $sonucSayisi): array
+    {
+        $model = trim((string) config('ai.providers.openrouter.model')) ?: 'openai/gpt-4o-mini';
+
+        $yanit = Http::timeout(45)
+            ->withToken($this->anahtar())
+            ->post('https://openrouter.ai/api/v1/chat/completions', [
+                'model' => $model,
+                'plugins' => [['id' => 'web', 'max_results' => $sonucSayisi]],
+                'max_tokens' => 600,
+                'messages' => [[
+                    'role' => 'user',
+                    'content' => "Web'de ara ve kısaca Türkçe özetle: {$sorgu}",
+                ]],
+            ]);
+
+        if (! $yanit->successful()) {
+            $this->hatayiLogla('openrouter', $yanit->status());
+
+            throw new \RuntimeException("Arama sağlayıcısı hata döndürdü (HTTP {$yanit->status()}). OpenRouter kredini ve anahtarını kontrol et.");
+        }
+
+        $mesaj = $yanit->json('choices.0.message') ?? [];
+
+        $sonuclar = collect($mesaj['annotations'] ?? [])
+            ->filter(fn (array $a): bool => ($a['type'] ?? '') === 'url_citation')
+            ->map(fn (array $a): array => [
+                'baslik' => (string) (($a['url_citation']['title'] ?? null) ?? ''),
+                'url' => (string) (($a['url_citation']['url'] ?? null) ?? ''),
+                'ozet' => mb_substr((string) (($a['url_citation']['content'] ?? null) ?? ''), 0, 300),
+            ])
+            ->values()
+            ->all();
+
+        if ($sonuclar === [] && trim((string) ($mesaj['content'] ?? '')) !== '') {
+            $sonuclar = [[
+                'baslik' => 'Web özeti (kaynaksız)',
+                'url' => '',
+                'ozet' => mb_substr(trim((string) $mesaj['content']), 0, 600),
+            ]];
+        }
 
         return $sonuclar;
     }
@@ -127,9 +183,25 @@ class WebAramasi
             ->all();
     }
 
+    /**
+     * Anahtar çözümü: panele girilen arama anahtarı her sağlayıcıda önce
+     * gelir. OpenRouter'da alan BOŞ bırakılabilir — sahibin AI anahtarına
+     * düşülür (Yapay Zekâ Ayarları'ndaki), sonra config'e. "Ek hesap
+     * gerekmez" vaadinin kodu bu üç satırdır.
+     */
     private function anahtar(): string
     {
-        return trim((string) Settings::get('kahya.arama_anahtari', ''));
+        $anahtar = trim((string) Settings::get('kahya.arama_anahtari', ''));
+
+        if ($anahtar !== '' || $this->saglayici() !== 'openrouter') {
+            return $anahtar;
+        }
+
+        if (trim((string) Settings::get('ai.saglayici', '')) === 'openrouter') {
+            $anahtar = trim((string) Settings::get('ai.api_anahtari', ''));
+        }
+
+        return $anahtar !== '' ? $anahtar : trim((string) config('ai.providers.openrouter.key', ''));
     }
 
     private function hatayiLogla(string $saglayici, int $durum): void

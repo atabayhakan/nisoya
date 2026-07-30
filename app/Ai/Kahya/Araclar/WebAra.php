@@ -37,9 +37,10 @@ class WebAra implements Tool
     public function handle(Request $request): Stringable|string
     {
         if (! $this->arama->hazirMi()) {
-            return 'YAPILANDIRILMAMIŞ: Web araması için anahtar girilmemiş. Sahibe söyle: '
-                .'Kâhya Ayarları → Dış Gözler bölümünden sağlayıcı (Tavily ya da Brave) seçip '
-                .'API anahtarını girmeli. Tavily: tavily.com · Brave: brave.com/search/api';
+            return 'YAPILANDIRILMAMIŞ: Web araması için anahtar bulunamadı. Sahibe söyle: '
+                .'Kâhya Ayarları → Dış Gözler\'den sağlayıcı seçmeli — OpenRouter seçiliyse '
+                .'Yapay Zekâ Ayarları\'ndaki OpenRouter anahtarı yeter (ek hesap gerekmez); '
+                .'Tavily (tavily.com) ya da Brave (brave.com/search/api) için ayrı anahtar gerekir.';
         }
 
         $kullanim = $this->arama->buAykiKullanim();
