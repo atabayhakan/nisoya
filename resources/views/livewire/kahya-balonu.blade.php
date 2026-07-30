@@ -25,7 +25,7 @@
             <div class="flex items-center gap-3 border-b border-gray-200 bg-gray-50/80 px-4 py-3 dark:border-white/10 dark:bg-white/[0.03]">
                 <x-kahya.avatar durum />
                 <div class="min-w-0 flex-1">
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white">Kâhya</p>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ config('kahya.isim', 'Kâhya') }}</p>
                     <p class="truncate text-xs text-gray-400 dark:text-gray-500">Sor ya da iş iste — her şey geri alınabilir</p>
                 </div>
                 <a
@@ -81,9 +81,15 @@
                         wire:model="mesaj"
                         rows="1"
                         placeholder="Örn: etiketler nerede? · SEO'yu doldur"
-                        class="block w-full resize-none rounded-xl border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                        class="block max-h-40 w-full resize-none overflow-y-auto rounded-xl border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                        x-data
+                        x-init="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                        {{-- Yazarken yükseklik içeriğe göre büyür — sabit tek satır
+                             yüzünden yazının üst kısmı görünmez kalıyordu. --}}
+                        x-on:input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                        x-on:kahya-kaydir.window="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
                         {{-- Enter gönderir, Shift+Enter satır atlar — sohbet kutusu beklentisi. --}}
-                        x-on:keydown.enter.prevent="if (!$event.shiftKey) { $wire.gonder(); } else { $el.value += '\n'; $wire.set('mesaj', $el.value, false); }"
+                        x-on:keydown.enter.prevent="if (!$event.shiftKey) { $wire.gonder(); } else { $el.value += '\n'; $wire.set('mesaj', $el.value, false); $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'; }"
                         wire:loading.attr="disabled"
                         wire:target="gonder"
                     ></textarea>

@@ -311,6 +311,11 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function mergeKahyaConfig(): void
     {
+        $isim = trim((string) Settings::get('kahya.isim', ''));
+        if ($isim !== '') {
+            Config::set('kahya.isim', $isim);
+        }
+
         $saat = Settings::get('kahya.rapor_saati');
 
         // Biçim DOĞRULANIR: dailyAt() geçersiz bir değerde sessizce çalışmaz,

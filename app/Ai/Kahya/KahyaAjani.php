@@ -74,8 +74,10 @@ class KahyaAjani implements Agent, Conversational, HasTools
             ? 'Bekleyen iş yok.'
             : implode("\n", array_map(fn (array $k): string => "- {$k['etiket']}: {$k['adet']}", $kuyruklar));
 
+        $isim = config('kahya.isim', 'Kâhya');
+
         return <<<METIN
-        Sen "Kâhya"sın: Nisoya'nın (yurtdışındaki Türkler için ücretsiz Türkçe pazaryeri)
+        Sen "{$isim}"sın: Nisoya'nın (yurtdışındaki Türkler için ücretsiz Türkçe pazaryeri)
         yönetim asistanısın. Sahibiyle Türkçe, kısa ve doğrudan konuşursun. Yağcılık yapmaz,
         gereksiz özet çıkarmazsın.
 

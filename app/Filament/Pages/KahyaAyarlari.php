@@ -55,6 +55,7 @@ class KahyaAyarlari extends Page
     public function mount(): void
     {
         $this->form->fill([
+            'isim' => Settings::get('kahya.isim') ?: config('kahya.isim', 'Kâhya'),
             'alici' => Settings::get('kahya.alici') ?: '',
             'rapor_saati' => Settings::get('kahya.rapor_saati') ?: config('kahya.rapor_saati', '07:30'),
             'sohbet_modeli' => Settings::get('kahya.sohbet_modeli') ?: '',
@@ -77,6 +78,17 @@ class KahyaAyarlari extends Page
     {
         return $schema
             ->components([
+                Section::make('Kimlik')
+                    ->description('Ajanın sohbet başlığında, karşılama kartında ve kendi tanıtımında kullandığı ad.')
+                    ->schema([
+                        TextInput::make('isim')
+                            ->label('Ad')
+                            ->placeholder('Kâhya')
+                            ->maxLength(40)
+                            ->helperText('Boş bırakılırsa "Kâhya" kullanılır.')
+                            ->columnSpanFull(),
+                    ]),
+
                 Section::make('Günlük rapor')
                     ->description('Kâhya her sabah sitenin durumunu özetleyip e-posta gönderir: ne oldu, seni bekleyen işler, ne bozuk, ne eksik.')
                     ->schema([
@@ -213,6 +225,7 @@ class KahyaAyarlari extends Page
         $state = $this->form->getState();
 
         Settings::setMany([
+            'kahya.isim' => trim((string) ($state['isim'] ?? '')),
             'kahya.alici' => trim((string) ($state['alici'] ?? '')),
             'kahya.rapor_saati' => $state['rapor_saati'] ?? '07:30',
             'kahya.sohbet_modeli' => trim((string) ($state['sohbet_modeli'] ?? '')),

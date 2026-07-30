@@ -48,7 +48,7 @@ class KahyaSohbet extends Page
 
     public function getTitle(): string
     {
-        return 'Kâhya ile Konuş';
+        return config('kahya.isim', 'Kâhya').' ile Konuş';
     }
 
     public function getSubheading(): ?string

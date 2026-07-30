@@ -16,6 +16,12 @@
 return [
 
     /*
+    | Ajanın görünen adı — sohbet başlığı, karşılama kartı ve kendi
+    | tanıtımında kullanılır. Panelden değiştirilebilir (Kâhya Ayarları).
+    */
+    'isim' => env('KAHYA_ISIM', 'Kâhya'),
+
+    /*
     | Günlük raporun gönderileceği saat (sunucu saati, UTC).
     |
     | 03:30 medya temizliği ve 04:00 yedekten SONRA olmalı — rapor "son yedek"

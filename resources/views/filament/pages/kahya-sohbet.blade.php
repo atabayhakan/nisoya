@@ -35,9 +35,15 @@
                     wire:model="mesaj"
                     rows="2"
                     placeholder="Örn: ülkeler kısmına Japonya ekle · duyuru bandına şunu yaz · kaç ilan var?"
-                    class="block w-full resize-none rounded-xl border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                    class="block max-h-60 w-full resize-none overflow-y-auto rounded-xl border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                    x-data
+                    x-init="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                    {{-- Yazarken yükseklik içeriğe göre büyür — sabit tek satır
+                         yüzünden yazının üst kısmı görünmez kalıyordu. --}}
+                    x-on:input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                    x-on:kahya-kaydir.window="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
                     {{-- Enter gönderir, Shift+Enter satır atlar — sohbet kutusu beklentisi. --}}
-                    x-on:keydown.enter.prevent="if (!$event.shiftKey) { $wire.gonder(); } else { $el.value += '\n'; $wire.set('mesaj', $el.value, false); }"
+                    x-on:keydown.enter.prevent="if (!$event.shiftKey) { $wire.gonder(); } else { $el.value += '\n'; $wire.set('mesaj', $el.value, false); $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'; }"
                     wire:loading.attr="disabled"
                     wire:target="gonder"
                 ></textarea>

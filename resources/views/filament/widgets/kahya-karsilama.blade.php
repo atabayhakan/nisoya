@@ -4,7 +4,7 @@
             <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2">
                     <span class="text-xl">🤵</span>
-                    <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100">Kâhya</h2>
+                    <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100">{{ config('kahya.isim', 'Kâhya') }}</h2>
                 </div>
 
                 {{-- whitespace-pre-line: karşılama metni madde satırları içeriyor. --}}
@@ -18,7 +18,7 @@
                     icon="heroicon-o-chat-bubble-left-right"
                     color="primary"
                 >
-                    Kâhya ile konuş
+                    {{ config('kahya.isim', 'Kâhya') }} ile konuş
                 </x-filament::button>
             @endif
         </div>
