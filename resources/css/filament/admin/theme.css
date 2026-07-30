@@ -8,6 +8,11 @@
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+/* Kâhya balonu ve ortak mesaj listesi panel dışı klasörlerde yaşar; bu iki
+   satır olmadan balonun sınıfları (w-[24rem], z-30, ...) derlenmez ve balon
+   sessizce şekilsiz kalırdı. */
+@source '../../../../resources/views/livewire/**/*';
+@source '../../../../resources/views/kahya/**/*';
 
 @theme {
     /* Tasarım Modu önizlemesindeki "font-serif" örneği için — asıl @font-face

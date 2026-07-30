@@ -8,9 +8,11 @@ use App\Models\KahyaMesaji;
 use App\Models\User;
 use App\Services\Ai\AiManager;
 use App\Services\Kahya\BekleyenIsler;
+use App\Models\Category;
 use App\Services\Kahya\Eylem\EylemCalistirici;
 use App\Services\Kahya\Eylem\EylemKatalogu;
 use App\Services\Kahya\KahyaTeshisi;
+use App\Services\Kahya\PanelHaritasi;
 use App\Support\Settings;
 use RuntimeException;
 use Throwable;
@@ -60,6 +62,7 @@ class KahyaSohbeti
         private readonly EylemCalistirici $calistirici,
         private readonly KahyaTeshisi $teshis,
         private readonly BekleyenIsler $bekleyen,
+        private readonly PanelHaritasi $harita,
     ) {}
 
     /**
@@ -215,16 +218,27 @@ class KahyaSohbeti
         Bekleyen işler:
         {$kuyrukMetni}
 
+        ## Site kimliği (SEO ve metin yazarken buradan beslen)
+        {$this->siteKimligi()}
+
         ## Yapabildiğin işler
         Aşağıdaki listede OLMAYAN hiçbir işi yapamazsın. Sana veritabanı erişimi verilmedi;
         yalnızca bu adlardan birini seçip parametrelerini doldurabilirsin.
 
         {$this->katalog->yapayZekaIcin()}
 
+        ## Panel haritası (yol tarifi için)
+        Sahip bir ekranın ya da özelliğin NEREDE olduğunu sorarsa buradan cevapla:
+        sol menüdeki grup adını, ekran adını ve adresini söyle. Haritada olmayan bir
+        yeri tarif etme.
+
+        {$this->harita->metin()}
+
         ## Kurallar
         1. Sahip bir İŞ istiyorsa `eylem` alanına katalogdaki adı yaz ve `parametreler`i doldur.
         2. Sadece soru soruyorsa `eylem` alanını BOŞ bırak, `cevap`ta yanıtla.
-        3. İstenen iş katalogda yoksa uydurma — `eylem`i boş bırak ve yapamadığını söyle.
+        3. İstenen iş katalogda yoksa uydurma — `eylem`i boş bırak ve yapamadığını söyle;
+           iş panelde elle yapılabiliyorsa panel haritasından yerini tarif et.
         4. Parametre için gereken bilgi eksikse iş SEÇME; önce eksik bilgiyi sor.
         5. `cevap` kısa olsun. Bir işi seçtiysen ne yapacağını tek cümlede söyle;
            yaptığını İDDİA ETME — sonucu sistem söyleyecek.
@@ -239,6 +253,31 @@ class KahyaSohbeti
         ## Yanıt biçimi
         Yanıtını SADECE JSON olarak ver: {"cevap": "...", "eylem": "...", "parametreler": {...}}
         METIN;
+    }
+
+    /**
+     * Sitenin kimlik kartı: ad, mevcut SEO metinleri, ana kategoriler.
+     *
+     * `seo-doldur` gibi metin ÜRETEN eylemler için modelin tek malzeme
+     * kaynağı burası — site hakkında bilmediği şeyi uydurmak zorunda
+     * kalmasın diye kısa ve olgusal tutulur.
+     */
+    private function siteKimligi(): string
+    {
+        $ad = (string) Settings::get('genel.site_adi', 'Nisoya');
+        $baslik = (string) Settings::get('seo.default_title', '');
+        $aciklama = (string) Settings::get('seo.default_description', '');
+
+        $kategoriler = Category::query()
+            ->whereNull('parent_id')
+            ->orderBy('name')
+            ->pluck('name')
+            ->implode(', ');
+
+        return "Site adı: {$ad}\n"
+            ."Mevcut SEO başlığı: \"{$baslik}\"\n"
+            ."Mevcut SEO açıklaması: \"{$aciklama}\"\n"
+            .'Ana kategoriler: '.($kategoriler !== '' ? $kategoriler : '(henüz yok)');
     }
 
     private function gecmisMetni(): string
