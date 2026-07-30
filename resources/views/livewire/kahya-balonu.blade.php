@@ -14,13 +14,16 @@
             class="fixed bottom-5 right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-primary-600 text-2xl shadow-lg ring-1 ring-black/10 transition hover:scale-105 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-400"
         >
             <span aria-hidden="true">🤵</span>
+            {{-- "Aktif" noktası: Kâhya'nın çevrimiçi/hazır olduğunu, klasik
+                 sohbet widget'larındaki gibi tek bakışta söyler. --}}
+            <span class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-900"></span>
             <span class="sr-only">Kâhya ile konuş</span>
         </button>
     @else
         <div class="fixed bottom-5 right-5 z-30 flex max-h-[75vh] w-[24rem] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-gray-950/10 dark:bg-gray-900 dark:ring-white/10">
             {{-- Başlık çubuğu --}}
-            <div class="flex items-center gap-2 border-b border-gray-200 px-4 py-3 dark:border-white/10">
-                <span class="text-lg">🤵</span>
+            <div class="flex items-center gap-3 border-b border-gray-200 bg-gray-50/80 px-4 py-3 dark:border-white/10 dark:bg-white/[0.03]">
+                <x-kahya.avatar durum />
                 <div class="min-w-0 flex-1">
                     <p class="text-sm font-semibold text-gray-900 dark:text-white">Kâhya</p>
                     <p class="truncate text-xs text-gray-400 dark:text-gray-500">Sor ya da iş iste — her şey geri alınabilir</p>
@@ -52,19 +55,21 @@
                 {{-- Karşılama her açılışta en üstte: sahip nereden devam
                      edeceğini sormadan görsün. Kaydedilmez — mesaj değil,
                      o anki durumun özeti. --}}
-                <div class="flex gap-3">
-                    <span class="mt-1 shrink-0 text-lg">🤵</span>
-                    <div class="min-w-0 rounded-xl rounded-tl-none bg-gray-100 px-4 py-3 dark:bg-gray-800">
+                <div class="flex items-start gap-2.5">
+                    <x-kahya.avatar boyut="h-7 w-7 text-sm" class="mt-0.5" />
+                    <div class="min-w-0 rounded-2xl rounded-tl-md bg-gray-100 px-4 py-3 shadow-sm ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/5">
                         <p class="whitespace-pre-line text-sm leading-relaxed text-gray-800 dark:text-gray-100">{{ $this->getKarsilama() }}</p>
                     </div>
                 </div>
 
                 @include('kahya.mesajlar', ['mesajlar' => $this->getMesajlar()])
 
-                <div wire:loading wire:target="gonder" class="flex gap-3">
-                    <span class="mt-1 shrink-0 text-lg">🤵</span>
-                    <div class="rounded-xl rounded-tl-none bg-gray-100 px-4 py-3 dark:bg-gray-800">
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Düşünüyorum…</p>
+                <div wire:loading wire:target="gonder" class="flex items-center gap-2.5">
+                    <x-kahya.avatar boyut="h-7 w-7 text-sm" />
+                    <div class="flex items-center gap-1 rounded-2xl rounded-tl-md bg-gray-100 px-4 py-3.5 shadow-sm ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/5">
+                        <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.3s] dark:bg-gray-500"></span>
+                        <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.15s] dark:bg-gray-500"></span>
+                        <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 dark:bg-gray-500"></span>
                     </div>
                 </div>
             </div>

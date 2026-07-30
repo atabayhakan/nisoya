@@ -9,19 +9,21 @@
             {{-- Karşılama her açılışta en üstte: sahip nereden devam
                  edeceğini sormadan görsün. Kaydedilmez — bir mesaj değil,
                  o anki durumun özeti. --}}
-            <div class="flex gap-3">
-                <span class="mt-1 shrink-0 text-lg">🤵</span>
-                <div class="min-w-0 rounded-xl rounded-tl-none bg-gray-100 px-4 py-3 dark:bg-gray-800">
+            <div class="flex items-start gap-2.5">
+                <x-kahya.avatar boyut="h-7 w-7 text-sm" class="mt-0.5" />
+                <div class="min-w-0 rounded-2xl rounded-tl-md bg-gray-100 px-4 py-3 shadow-sm ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/5">
                     <p class="whitespace-pre-line text-sm leading-relaxed text-gray-800 dark:text-gray-100">{{ $this->getKarsilama() }}</p>
                 </div>
             </div>
 
             @include('kahya.mesajlar', ['mesajlar' => $mesajlar])
 
-            <div wire:loading wire:target="gonder" class="flex gap-3">
-                <span class="mt-1 shrink-0 text-lg">🤵</span>
-                <div class="rounded-xl rounded-tl-none bg-gray-100 px-4 py-3 dark:bg-gray-800">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Düşünüyorum…</p>
+            <div wire:loading wire:target="gonder" class="flex items-center gap-2.5">
+                <x-kahya.avatar boyut="h-7 w-7 text-sm" />
+                <div class="flex items-center gap-1 rounded-2xl rounded-tl-md bg-gray-100 px-4 py-3.5 shadow-sm ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/5">
+                    <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.3s] dark:bg-gray-500"></span>
+                    <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.15s] dark:bg-gray-500"></span>
+                    <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 dark:bg-gray-500"></span>
                 </div>
             </div>
         </div>
