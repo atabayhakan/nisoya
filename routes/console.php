@@ -44,6 +44,13 @@ Schedule::command('kahya:gunluk-rapor')
     ->dailyAt(config('kahya.rapor_saati', '07:30'))
     ->withoutOverlapping();
 
+// F5 — haftalık öğrenme koşusu: sahibin geçen haftaki kararlarından ders
+// damıtır. Pazartesi 06:00: haftanın sinyalleri tamamlanmış, günün raporundan
+// (07:30) ÖNCE — yeni dersler aynı sabahki sohbetlerde hemen geçerli olsun.
+Schedule::command('kahya:ders-cikar')
+    ->weeklyOn(1, '06:00')
+    ->withoutOverlapping();
+
 // Büyüme Ajanı keşif işlerini (RunDiscoveryJob, 'database' kuyruğu) her dakika
 // işle. Ayrı bir queue worker/supervisor gerektirmez — scheduler kuyruğu
 // boşaltır. --stop-when-empty: iş yoksa hemen çıkar; --max-time: dakikayı aşma;
