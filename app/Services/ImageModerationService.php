@@ -86,6 +86,9 @@ class ImageModerationService
           sıradan insan fotoğrafları KESİNLİKLE uygunsuz DEĞİLDİR — emin
           değilsen uygunsuz=false yaz.
         - Bu bir ön-eleme; nihai kararı bir admin verecek. Şüpheliyse false yaz.
+
+        ## Yanıt biçimi
+        Yanıtını SADECE JSON olarak ver: {"uygunsuz": true|false, "kategori": "..."|null}
         PROMPT;
     }
 

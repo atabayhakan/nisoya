@@ -132,6 +132,62 @@ class ImageModerationTest extends TestCase
         $this->assertNull($captured->timeout);
     }
 
+    /**
+     * BU TEST BİR CANLI HATANIN MEZAR TAŞI.
+     *
+     * `response_format: json_object` kullanan OpenAI-uyumlu uçlar (OpenAI,
+     * OpenRouter üzerinden geçen OpenAI-uyumlu modeller dâhil) mesaj
+     * içeriğinde "json" kelimesi GEÇMİYORSA 400 hatası döner — Kâhya'nın
+     * yönergesinde aynı kusur bulunup düzeltildi (bkz. KahyaSohbetTest);
+     * bu servisin istemi de aynı taramada eksik çıkıp canlıda doğrulandı
+     * (2026-07-30, üretimde `HTTP 400: Provider returned error`, sessiz
+     * fail-open yüzünden fark edilmemişti).
+     *
+     * `Http::fake` bu HTTP kısıtını görmediği için diğer testler bunu
+     * YAKALAYAMAZ — bu yüzden istemin kelimesi ayrıca sınanıyor.
+     */
+    public function test_prompt_json_kelimesini_icerir(): void
+    {
+        $captured = (object) ['prompt' => null];
+        $fake = new class($captured) implements AiProvider
+        {
+            public function __construct(private object $captured) {}
+
+            public function isConfigured(): bool
+            {
+                return true;
+            }
+
+            public function name(): string
+            {
+                return 'fake';
+            }
+
+            public function lastError(): ?string
+            {
+                return null;
+            }
+
+            public function analyzeImage(string $base64Image, string $mediaType, string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
+            {
+                $this->captured->prompt = $prompt;
+
+                return ['uygunsuz' => false, 'kategori' => null];
+            }
+
+            public function analyzeText(string $prompt, ?array $jsonSchema = null, ?int $timeoutSeconds = null): ?array
+            {
+                return null;
+            }
+        };
+        $this->app->instance(AiProvider::class, $fake);
+        config(['ai.features.image_moderation' => true]);
+
+        app(ImageModerationService::class)->check(public_path('icons/icon-192.png'));
+
+        $this->assertStringContainsStringIgnoringCase('json', (string) $captured->prompt);
+    }
+
     // --- İlan görseli akışı (ProcessListingImage) ---
 
     public function test_flagged_listing_image_puts_listing_under_review(): void
