@@ -1,4 +1,5 @@
 @php
+    $this->kontrolVeBildir();
     $durum = $this->getDurum();
 @endphp
 

@@ -17,6 +17,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Livewire\Attributes\On;
 
 class ListOutreachTargets extends ListRecords
 {
@@ -28,6 +29,17 @@ class ListOutreachTargets extends ListRecords
             KesifIlerlemeWidget::class,
         ];
     }
+
+    /**
+     * KesifIlerlemeWidget bir parti bitince bunu yayınlar — tablo AYRI bir
+     * Livewire bileşeni olduğu için widget'ın pollaması kendiliğinden burayı
+     * yenilemez (canlıda fark edildi: keşif yeni sonuçlar bulmuştu ama liste
+     * hâlâ eski toplamı gösteriyordu). Gövde boş yeterli: bir Livewire olay
+     * dinleyicisi tetiklenince bileşen zaten baştan render olur, tablo kaydı
+     * bu istekte TAZE sorgulanır.
+     */
+    #[On('kesif-tamamlandi')]
+    public function kesifSonuclariniYenile(): void {}
 
     /**
      * Havuz büyüyünce (yüzlerce aday) her sayfa gezintisi için tablonun

@@ -31,6 +31,11 @@ class KesifIlerlemesi
         return "kesif_lot:{$lot}:tamamlanan";
     }
 
+    private static function bildirildiAnahtar(string $lot): string
+    {
+        return "kesif_lot:{$lot}:bildirildi";
+    }
+
     /** Yeni bir parti başlatır, RunDiscoveryJob'a verilecek lot kimliğini döndürür. */
     public static function baslat(int $userId, int $toplam): string
     {
@@ -54,6 +59,22 @@ class KesifIlerlemesi
     public static function tamamlaniyor(string $lot): void
     {
         Cache::increment(self::tamamlananAnahtar($lot));
+    }
+
+    /**
+     * Parti bitince SONUÇ TABLOSU (ayrı bir Livewire bileşeni — widget'ın
+     * pollamasından habersiz) tek seferlik yenilensin diye kullanılır.
+     * TEK SEFERLİK olması bilinçli: her poll'de olay yayınlarsa tablo
+     * dakikada 20 kere yeniden render olur (kaydırma/arama kaybolur).
+     */
+    public static function bildirildiMi(string $lot): bool
+    {
+        return (bool) Cache::get(self::bildirildiAnahtar($lot), false);
+    }
+
+    public static function bildirildi(string $lot): void
+    {
+        Cache::put(self::bildirildiAnahtar($lot), true, now()->addMinutes(self::TTL_DAKIKA));
     }
 
     /**

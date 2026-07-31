@@ -40,6 +40,31 @@ class KesifIlerlemeWidget extends Widget
         return $userId ? KesifIlerlemesi::aktifDurum((int) $userId) : null;
     }
 
+    /**
+     * Parti bitince SONUÇ TABLOSU (ayrı Livewire bileşeni, bu widget'ın
+     * pollamasından habersiz) kendini yenilesin diye bir kerelik olay
+     * yayınlar — aksi hâlde sahip yeni bulunan işletmeleri görmek için
+     * sayfayı elle yenilemek zorunda kalıyordu (canlıda fark edildi,
+     * 2026-07-31). `bildirildiMi` sayesinde tamamlandıktan sonraki her
+     * pollamada TEKRAR tetiklenmez — tablo tek sefer, temiz bir şekilde
+     * yenilenir.
+     */
+    public function kontrolVeBildir(): void
+    {
+        $durum = $this->getDurum();
+
+        if ($durum === null || $durum['tamamlanan'] < $durum['toplam']) {
+            return;
+        }
+
+        if (KesifIlerlemesi::bildirildiMi($durum['lot'])) {
+            return;
+        }
+
+        KesifIlerlemesi::bildirildi($durum['lot']);
+        $this->dispatch('kesif-tamamlandi');
+    }
+
     /** @return Collection<int, array{id: int, name: string}> */
     public function getSonBulunanlar(): Collection
     {

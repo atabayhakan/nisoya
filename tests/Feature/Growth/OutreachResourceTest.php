@@ -4,12 +4,14 @@ namespace Tests\Feature\Growth;
 
 use App\Enums\UserRole;
 use App\Filament\Resources\OutreachTargets\Pages\ListOutreachTargets;
+use App\Filament\Widgets\KesifIlerlemeWidget;
 use App\Jobs\EnrichTargetJob;
 use App\Jobs\RunDiscoveryJob;
 use App\Models\OutreachTarget;
 use App\Models\User;
 use App\Services\Growth\DiscoveryRunner;
 use App\Services\Growth\EnrichmentRunner;
+use App\Support\Growth\KesifIlerlemesi;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -104,6 +106,39 @@ class OutreachResourceTest extends TestCase
         Livewire::test(ListOutreachTargets::class)->call('runEnrichment');
 
         Queue::assertPushed(EnrichTargetJob::class, 1);
+    }
+
+    /**
+     * Canlıda bulunan hata (2026-07-31): keşif yeni sonuçlar bulmuştu ama
+     * SONUÇ TABLOSU (widget'tan ayrı bir Livewire bileşeni) eski toplamı
+     * göstermeye devam ediyordu — widget'ın pollaması yalnız kendini
+     * yeniliyordu. Bitince widget tek seferlik bir olay yayınlamalı.
+     */
+    public function test_kesif_tamamlaninca_tablo_yenileme_olayi_bir_kez_yayinlanir(): void
+    {
+        $admin = $this->admin();
+        $lot = KesifIlerlemesi::baslat($admin->id, 1);
+        KesifIlerlemesi::tamamlaniyor($lot);
+
+        Livewire::actingAs($admin)
+            ->test(KesifIlerlemeWidget::class)
+            ->assertDispatched('kesif-tamamlandi');
+
+        // İkinci render (bir sonraki poll): TEKRAR yayınlanmamalı.
+        Livewire::actingAs($admin)
+            ->test(KesifIlerlemeWidget::class)
+            ->assertNotDispatched('kesif-tamamlandi');
+    }
+
+    public function test_kesif_devam_ederken_olay_yayinlanmaz(): void
+    {
+        $admin = $this->admin();
+        $lot = KesifIlerlemesi::baslat($admin->id, 3);
+        KesifIlerlemesi::tamamlaniyor($lot);
+
+        Livewire::actingAs($admin)
+            ->test(KesifIlerlemeWidget::class)
+            ->assertNotDispatched('kesif-tamamlandi');
     }
 
     public function test_enrich_target_job_persists_email(): void
