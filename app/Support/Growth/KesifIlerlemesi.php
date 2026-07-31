@@ -2,15 +2,18 @@
 
 namespace App\Support\Growth;
 
+use App\Filament\Resources\OutreachTargets\Pages\ListOutreachTargets;
+use App\Filament\Widgets\KesifIlerlemeWidget;
+use App\Jobs\RunDiscoveryJob;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 /**
  * "Yeni keşif çalıştır" ile kuyruklanan parti (lot) için canlı ilerleme
- * durumu — panel {@see \App\Filament\Widgets\KesifIlerlemeWidget} bunu
- * pollar. Tek gerçek kaynak burası: {@see \App\Jobs\RunDiscoveryJob}
+ * durumu — panel {@see KesifIlerlemeWidget} bunu
+ * pollar. Tek gerçek kaynak burası: {@see RunDiscoveryJob}
  * (tamamlanan sayacını artırır) ve
- * {@see \App\Filament\Resources\OutreachTargets\Pages\ListOutreachTargets}
+ * {@see ListOutreachTargets}
  * (partiyi başlatır) aynı anahtar biçimini kullanır.
  *
  * DB'ye değil Cache'e yazılır: bu tamamen geçici, süslemelik bir durum —

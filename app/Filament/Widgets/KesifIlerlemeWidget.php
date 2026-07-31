@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Resources\OutreachTargets\Pages\ListOutreachTargets;
 use App\Models\OutreachTarget;
 use App\Support\Growth\KesifIlerlemesi;
 use Filament\Widgets\Widget;
@@ -11,7 +12,7 @@ use Illuminate\Support\Collection;
  * Keşif Havuzu'nun ÜST alanında canlı ilerleme — "Yeni keşif çalıştır"
  * tetiklendiğinde kuyruklanan iş sayısı kadar gösterge belirir, her iş
  * bitince biri tamamlanır, bulunan işletmeler adlarıyla bir kez belirip
- * kaybolur. Sadece {@see \App\Filament\Resources\OutreachTargets\Pages\ListOutreachTargets}
+ * kaybolur. Sadece {@see ListOutreachTargets}
  * başlığında kayıtlı — durumu {@see KesifIlerlemesi} üzerinden (Cache) okur,
  * o sayfanın Livewire state'iyle DOĞRUDAN bağlı değildir.
  */

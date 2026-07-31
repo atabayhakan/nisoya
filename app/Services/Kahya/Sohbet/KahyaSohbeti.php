@@ -98,9 +98,9 @@ class KahyaSohbeti
      * Sahibin mesajını işler: ajan döngüsünü koşturur, yanıt döndürür.
      *
      * @param  array{yol: string, ad: string, tipi: ?string}|null  $ek  Sohbete
-     *         eklenen dosya (varsa). Yalnızca SAKLANIR/GÖSTERİLİR — model
-     *         metin tabanlı çalıştığı için içeriğini GÖREMEZ, promptta yalnız
-     *         bir dosyanın eklendiği bilgisi geçer (bkz. aşağıdaki $promptMetni).
+     *                                                                  eklenen dosya (varsa). Yalnızca SAKLANIR/GÖSTERİLİR — model
+     *                                                                  metin tabanlı çalıştığı için içeriğini GÖREMEZ, promptta yalnız
+     *                                                                  bir dosyanın eklendiği bilgisi geçer (bkz. aşağıdaki $promptMetni).
      */
     public function sor(string $mesaj, User $sahip, ?array $ek = null): SohbetYaniti
     {
