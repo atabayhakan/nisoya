@@ -22,7 +22,7 @@ class KahyaMesaji extends Model
 
     protected $table = 'kahya_mesajlari';
 
-    protected $fillable = ['rol', 'metin', 'kahya_eylemi_id', 'user_id', 'ek_yolu', 'ek_ad', 'ek_tipi'];
+    protected $fillable = ['rol', 'metin', 'kahya_eylemi_id', 'user_id', 'ek_yolu', 'ek_ad', 'ek_tipi', 'hedef_url', 'hedef_etiket'];
 
     public function eylem(): BelongsTo
     {
