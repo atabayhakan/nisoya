@@ -11,6 +11,7 @@ use App\Models\ListingImage;
 use App\Models\Message;
 use App\Models\Review;
 use App\Models\User;
+use App\Services\Ai\FotografUretici;
 use App\Services\Demo\DemoDefteri;
 use App\Services\Demo\DemoFabrikasi;
 use App\Services\Demo\DemoGorselUretici;
@@ -20,6 +21,7 @@ use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -380,12 +382,58 @@ class DemoVerisiTest extends TestCase
 
     public function test_gorsel_uretici_disaridan_indirmez(): void
     {
-        // Ağ çağrısı yapılsaydı bu test ortamında istisna ya da yavaşlama
-        // olurdu; asıl güvence sınıfın hiçbir HTTP istemcisi kullanmaması.
+        // AI yolu bilinçli istisna (ayrı sınıfta, FotografUretici) — bu
+        // sınıfın KENDİSİ ağ çağrısı yapamaz; varsayılan üretim ağsızdır.
         $kaynak = file_get_contents(app_path('Services/Demo/DemoGorselUretici.php'));
 
         $this->assertStringNotContainsString('Http::', (string) $kaynak);
         $this->assertStringNotContainsString('file_get_contents(\'http', (string) $kaynak);
+    }
+
+    /** AI kapalıyken (varsayılan) üretim TEK ağ çağrısı bile yapmaz. */
+    public function test_ai_kapaliyken_uretim_ag_cagrisi_yapmaz(): void
+    {
+        Http::fake();
+
+        $this->fabrika()->uret(1, 2);
+
+        Http::assertNothingSent();
+    }
+
+    /**
+     * AI fotoğraf yolu: sahte fotoğraf baytları döndüğünde görsel filigranlı
+     * PNG olarak işlenir ve normal varyant boru hattından geçer; AI null
+     * dönerse (anahtar yok/kırık) grafik tuvale düşülür — üretim KIRILMAZ.
+     */
+    public function test_ai_fotograf_yolu_ve_geri_dusme(): void
+    {
+        $sahteFoto = app(DemoGorselUretici::class)->tuval('ham foto', 0, 600, 400);
+
+        $fotograf = \Mockery::mock(FotografUretici::class);
+        $fotograf->shouldReceive('uret')->andReturn($sahteFoto, null);
+        $this->app->instance(FotografUretici::class, $fotograf);
+
+        // İki ilan: ilki AI fotoğraf alır, ikincisi null → tuvale düşer.
+        $this->fabrika()->uret(1, 2, gorunur: false, aiGorsel: true);
+
+        $this->assertSame(2, ListingImage::query()->count());
+
+        foreach (ListingImage::query()->get() as $gorsel) {
+            $this->assertTrue(Storage::disk('public')->exists($gorsel->path_large));
+        }
+    }
+
+    public function test_avatarlar_ai_istese_de_grafik_kalir(): void
+    {
+        $fotograf = \Mockery::mock(FotografUretici::class);
+        // Avatar üretimi FotografUretici'ye HİÇ uğramamalı (sahte kişiye
+        // gerçekçi yüz üretilmez — bilinçli sınır).
+        $fotograf->shouldReceive('uret')->never();
+        $this->app->instance(FotografUretici::class, $fotograf);
+
+        $this->fabrika()->uret(1, 0, gorunur: false, aiGorsel: true);
+
+        $this->assertSame(1, User::query()->where('is_demo', true)->count());
     }
 
     // -------------------------------------------------------------- Komut

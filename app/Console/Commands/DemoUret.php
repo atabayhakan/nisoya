@@ -24,6 +24,7 @@ class DemoUret extends Command
                             {--uye=4 : Üretilecek demo üye sayısı}
                             {--ilan=2 : Üye başına ilan sayısı}
                             {--gorunur : İlanlar sitede görünsün (aktif); varsayılan taslak}
+                            {--ai-gorsel : İlan görsellerini AI ile gerçekçi fotoğraf olarak üret (ÖRNEK filigranlı; anahtar yoksa grafik tuvale düşer)}
                             {--force : Üretim ortamında çalışmaya izin ver}';
 
     protected $description = 'Örnek (demo) veri üretir — üye, ilan, görsel, sohbet, anlaşma, değerlendirme';
@@ -53,7 +54,7 @@ class DemoUret extends Command
             $this->line('  Kâhya teşhisi bu ilanları saymaz — "gerçek envanter" ölçüsü bozulmaz.');
         }
 
-        $sonuc = $fabrika->uret($uye, $ilan, $gorunur);
+        $sonuc = $fabrika->uret($uye, $ilan, $gorunur, (bool) $this->option('ai-gorsel'));
 
         $this->components->info("Demo partisi üretildi: {$sonuc['parti']}");
         $this->table(
