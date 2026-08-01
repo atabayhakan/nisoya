@@ -3,13 +3,11 @@
 namespace App\Services\Demo;
 
 use App\Services\ImageService;
-use Intervention\Image\Alignment;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Encoders\PngEncoder;
 use Intervention\Image\Geometry\Factories\CircleFactory;
 use Intervention\Image\Geometry\Factories\RectangleFactory;
 use Intervention\Image\ImageManager;
-use Intervention\Image\Interfaces\ImageInterface;
 use Intervention\Image\Typography\FontFactory;
 use RuntimeException;
 
@@ -25,20 +23,19 @@ use RuntimeException;
  * sahte olduğunu belli etmelidir.
  *
  * ---------------------------------------------------------------------------
- * NEDEN FONT DOSYASI YOK — ve bunun bedeli
+ * TTF'YE GEÇİŞ (2026-08-01) — eski bitmap-font kararının revizyonu
  *
- * GD ile metin yazmanın iki yolu var: TTF (FreeType) ya da gömülü bitmap
- * font. TTF yolu Türkçe karakterleri düzgün basar ama depoya bir font ikilisi
- * eklemeyi gerektirir; bu depoda hiç TTF yok ve `public/build` altındaki
- * woff'lar kullanılamıyor (FreeType woff2'yi okuyamıyor; woff'lar ise
- * fontsource alt kümesi olduğu için ş/ğ/ı ya da ü/ç yerine tofu kutusu
- * basıyor — ölçüldü).
+ * İlk sürüm GD'nin gömülü bitmap fontunu kullanıyordu (depoya font eklememek
+ * için). Bedeli canlıda ölçüldü: yalnız ASCII bastığı için ana sayfa
+ * "BEBEK BAKICILIGI" / "RESM EVRAK TERCUMESI" gibi Türkçe'siz, kesik
+ * metinlerle doldu ve "dürüst yer tutucu" niyeti "bozuk site" izlenimine
+ * dönüştü. Depoya açık lisanslı DejaVu Sans Bold eklendi
+ * (resources/fonts/, lisans: DEJAVU-LICENSE.txt — Bitstream Vera türevi,
+ * yeniden dağıtım serbest). FreeType üretim PHP'sinde de mevcut.
  *
- * Gömülü bitmap font seçildi: yeni bağımlılık yok, üretim Linux'unda birebir
- * aynı çalışır. BEDELİ: yalnız ASCII (`imagestring` bayt tabanlıdır, UTF-8
- * Türkçe mojibake olur) ve boyut 1–5 ile sınırlı. Bu yüzden metin küçük bir
- * katmana yazılıp büyütülüyor — çıkan blok/piksel görünüm bir kayıp değil,
- * "bu gerçek bir fotoğraf değil" sinyalinin ta kendisi.
+ * "Sahte olduğu belli olsun" ilkesi DURUYOR: görsel hâlâ düz renk + grafik
+ * desen (fotoğraf değil) ve köşesinde kalıcı "ÖRNEK GÖRSEL" rozeti taşıyor.
+ * Değişen şey dürüstlüğün özensizlik gibi görünmesi.
  *
  * ---------------------------------------------------------------------------
  * INTERVENTION v4 API TUZAKLARI (yaygın dokümantasyondan farklı, ölçüldü)
@@ -94,77 +91,117 @@ class DemoGorselUretici
     public function tuval(string $etiket, int $tohum = 0, int $genislik = 1200, int $yukseklik = 800): string
     {
         [$zemin, $vurgu] = self::PALET[$tohum % count(self::PALET)];
+        $font = $this->fontYolu();
 
         $yonetici = new ImageManager(new Driver);
         $resim = $yonetici->createImage($genislik, $yukseklik);
         $resim->fill($zemin);
 
-        // Köşedeki daire ve şerit: düz zeminden ayırt edilebilir bir desen,
-        // ama hiçbir şekilde fotoğrafa benzemeyen bir desen.
+        // Köşedeki daire ve alt şerit: düz zeminden ayırt edilebilir bir
+        // desen, ama hiçbir şekilde fotoğrafa benzemeyen bir desen.
         $resim->drawCircle(function (CircleFactory $daire) use ($genislik, $yukseklik, $vurgu): void {
-            $daire->at((int) ($genislik * 0.82), (int) ($yukseklik * 0.26));
-            $daire->radius((int) ($yukseklik * 0.22));
-            $daire->background($vurgu);
+            $daire->at((int) ($genislik * 0.86), (int) ($yukseklik * 0.18));
+            $daire->radius((int) ($yukseklik * 0.30));
+            $daire->background($vurgu.'55'); // yarı saydam — zeminle kaynaşsın
         });
 
         $resim->drawRectangle(function (RectangleFactory $dikdortgen) use ($genislik, $yukseklik, $vurgu): void {
-            $dikdortgen->at(0, (int) ($yukseklik * 0.62));
-            $dikdortgen->size($genislik, (int) ($yukseklik * 0.06));
+            $dikdortgen->at(0, $yukseklik - (int) ($yukseklik * 0.035));
+            $dikdortgen->size($genislik, (int) ($yukseklik * 0.035));
             $dikdortgen->background($vurgu);
         });
 
-        // İmza sırası: (görsel, x, y, hizalama) — v4'te hizalama DÖRDÜNCÜ
-        // parametre; x/y hizalanmış konuma göre kaydırmadır.
-        $resim->insert($this->metinKatmani('ORNEK GORSEL'), 0, (int) (-$yukseklik * 0.10), Alignment::CENTER);
-        $resim->insert($this->metinKatmani($this->asciyeCevir($etiket), 2), 0, (int) ($yukseklik * 0.04), Alignment::CENTER);
+        // Başlık — Türkçe karakterlerle, ortalanmış, gerekirse iki satır.
+        $boyut = (int) round($yukseklik * 0.085);
+        $satirlar = $this->satirlara($etiket, $boyut, (int) ($genislik * 0.82));
+        $satirYuksekligi = (int) ($boyut * 1.35);
+        $baslangicY = (int) ($yukseklik * 0.52 - (count($satirlar) - 1) * $satirYuksekligi / 2);
+
+        foreach ($satirlar as $i => $satir) {
+            $resim->text($satir, (int) ($genislik / 2), $baslangicY + $i * $satirYuksekligi,
+                function (FontFactory $f) use ($font, $boyut): void {
+                    $f->filename($font);
+                    $f->size($boyut);
+                    $f->color('#ffffff');
+                    $f->align('center', 'center');
+                });
+        }
+
+        // "ÖRNEK GÖRSEL" rozeti — sol üstte, her varyantta kalıcı damga.
+        $rozetBoyut = max(14, (int) round($yukseklik * 0.038));
+        $rozetMetin = 'ÖRNEK GÖRSEL';
+        $rozetGenislik = (int) ($rozetBoyut * 0.62 * mb_strlen($rozetMetin)) + $rozetBoyut * 2;
+        $rozetYukseklik = (int) ($rozetBoyut * 2.1);
+
+        $resim->drawRectangle(function (RectangleFactory $r) use ($rozetGenislik, $rozetYukseklik, $yukseklik): void {
+            $kenar = (int) ($yukseklik * 0.05);
+            $r->at($kenar, $kenar);
+            $r->size($rozetGenislik, $rozetYukseklik);
+            $r->background('#00000066');
+        });
+
+        $resim->text($rozetMetin, (int) ($yukseklik * 0.05) + (int) ($rozetGenislik / 2), (int) ($yukseklik * 0.05) + (int) ($rozetYukseklik / 2),
+            function (FontFactory $f) use ($font, $rozetBoyut): void {
+                $f->filename($font);
+                $f->size($rozetBoyut);
+                $f->color('#ffffff');
+                $f->align('center', 'center');
+            });
 
         return (string) $resim->encode(new PngEncoder);
     }
 
     /**
-     * Metni küçük bir şeffaf katmana yazıp büyütür.
+     * Metni tahmini karakter genişliğiyle en fazla iki satıra böler.
      *
-     * GD'nin gömülü fontu ölçeklenemez (boyut 1–5, 5'te karakter 9×16 px);
-     * 1200 px genişliğinde bir tuvalde okunmaz kalırdı. Küçük yazıp büyütmek
-     * klasik çözüm ve piksel estetiği burada tam olarak istenen şey.
+     * FreeType gerçek ölçüm de verebilirdi (imagettfbbox) ama tahmin bu iş
+     * için yeterli: başlıklar kısa, tuval geniş ve taşma durumunda ikinci
+     * satır kırpılmıyor — yalnızca alta iniyor.
+     *
+     * @return list<string>
      */
-    private function metinKatmani(string $metin, int $olcek = 4): ImageInterface
+    private function satirlara(string $metin, int $boyut, int $azamiGenislik): array
     {
-        $metin = $metin === '' ? 'DEMO' : $metin;
+        $metin = trim($metin) === '' ? 'ÖRNEK' : trim($metin);
+        // DejaVu Sans Bold ortalama glif genişliği ~0.62 em (ölçüldü, kaba).
+        $sigar = max(4, (int) floor($azamiGenislik / ($boyut * 0.62)));
 
-        // Gömülü font boyut 5: karakter genişliği 9 px, yükseklik 16 px.
-        $genislik = max(1, strlen($metin) * 9);
-        $yukseklik = 16;
+        if (mb_strlen($metin) <= $sigar) {
+            return [$metin];
+        }
 
-        $yonetici = new ImageManager(new Driver);
-        $katman = $yonetici->createImage($genislik, $yukseklik);
+        $kelimeler = explode(' ', $metin);
+        $satirlar = [''];
 
-        $katman->text($metin, 0, 0, function (FontFactory $font): void {
-            // filename() ÇAĞRILMIYOR — gömülü bitmap font bu yüzden devreye girer.
-            $font->size(5);
-            $font->color('#ffffff');
-            $font->align('left', 'top');
-        });
+        foreach ($kelimeler as $kelime) {
+            $aday = trim($satirlar[count($satirlar) - 1].' '.$kelime);
 
-        return $katman->scale(width: $genislik * $olcek);
+            if (mb_strlen($aday) <= $sigar || $satirlar[count($satirlar) - 1] === '') {
+                $satirlar[count($satirlar) - 1] = $aday;
+
+                continue;
+            }
+
+            $satirlar[] = $kelime;
+        }
+
+        // İki satırdan fazlası görsel karmaşa: üçüncü ve sonrası ikinciye
+        // sığmıyorsa üç nokta ile kısaltılır.
+        if (count($satirlar) > 2) {
+            $satirlar = [$satirlar[0], mb_substr(implode(' ', array_slice($satirlar, 1)), 0, $sigar - 1).'…'];
+        }
+
+        return $satirlar;
     }
 
-    /**
-     * Türkçe harfleri ASCII karşılığına indirger.
-     *
-     * `imagestring` bayt tabanlıdır: "ÖRNEK" doğrudan yazılırsa mojibake olur.
-     * Sessizce bozuk metin basmaktansa harfleri bilinçli olarak indirgemek
-     * daha dürüst.
-     */
-    private function asciyeCevir(string $metin): string
+    private function fontYolu(): string
     {
-        $metin = strtr($metin, [
-            'ç' => 'c', 'Ç' => 'C', 'ğ' => 'g', 'Ğ' => 'G', 'ı' => 'i', 'İ' => 'I',
-            'ö' => 'o', 'Ö' => 'O', 'ş' => 's', 'Ş' => 'S', 'ü' => 'u', 'Ü' => 'U',
-        ]);
+        $yol = resource_path('fonts/DejaVuSans-Bold.ttf');
 
-        $metin = (string) preg_replace('/[^\x20-\x7E]/', '', $metin);
+        if (! is_file($yol)) {
+            throw new RuntimeException('Demo görsel fontu bulunamadı: '.$yol);
+        }
 
-        return mb_strtoupper(trim(mb_substr($metin, 0, 34)));
+        return $yol;
     }
 }

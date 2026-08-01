@@ -61,24 +61,42 @@ class DemoFabrikasi
         ['Elif', 'Kaya'], ['Mehmet', 'Demir'], ['Zeynep', 'Şahin'], ['Can', 'Yıldız'],
         ['Ayşe', 'Çelik'], ['Burak', 'Arslan'], ['Deniz', 'Koç'], ['Selin', 'Aydın'],
         ['Emre', 'Özkan'], ['Merve', 'Doğan'], ['Kerem', 'Polat'], ['Nazlı', 'Erdem'],
+        ['Ozan', 'Kurt'], ['İrem', 'Aksoy'], ['Baran', 'Güneş'], ['Ece', 'Karan'],
+        ['Tolga', 'Yavuz'], ['Aslı', 'Bulut'], ['Umut', 'Şen'], ['Gizem', 'Ateş'],
+        ['Halil', 'Öztürk'], ['Buse', 'Duran'], ['Serkan', 'Acar'], ['Melis', 'Ünal'],
     ];
 
     private const SEHIRLER = [
         ['DE', 'Berlin', 'EUR'], ['DE', 'Köln', 'EUR'], ['NL', 'Amsterdam', 'EUR'],
         ['GB', 'Londra', 'GBP'], ['CH', 'Zürih', 'CHF'], ['DE', 'Münih', 'EUR'],
+        ['DE', 'Frankfurt', 'EUR'], ['AT', 'Viyana', 'EUR'], ['FR', 'Paris', 'EUR'],
+        ['US', 'New York', 'USD'], ['GB', 'Manchester', 'GBP'], ['NL', 'Rotterdam', 'EUR'],
     ];
 
-    private const ILAN_BASLIKLARI = [
-        'Online İngilizce konuşma dersi',
-        'Almanca A1-B2 özel ders',
-        'Ev taşıma ve nakliyat yardımı',
-        'Ev yapımı baklava ve börek',
-        'Düğün fotoğrafçılığı',
-        'Web sitesi tasarımı',
-        'Resmî evrak tercümesi',
-        'Bebek bakıcılığı',
-        'Havalimanı transferi',
-        'Tadilat, boya ve montaj',
+    /**
+     * İlan kataloğu: başlık + GERÇEK kategori slug'ı + gerçekçi fiyat aralığı.
+     *
+     * Eski hâli yalnız başlık listesiydi ve her ilana veritabanındaki İLK alt
+     * kategori atanıyordu — ana sayfa "Bebek bakıcılığı" kartında "Yabancı
+     * Dil Dersi" çipiyle doldu (canlıda görüldü, 2026-08-01). Slug'lar
+     * CategorySeeder'daki adların Str::slug karşılığı; kategori bulunamazsa
+     * (admin silmiş/yeniden adlandırmış olabilir) ilk alt kategoriye düşülür
+     * ki demo üretimi hiç kırılmasın.
+     *
+     * Fiyatlar aralıktan DETERMİNİSTİK seçilir (sira tohumlu) — testler ve
+     * tekrar koşular kararlı kalır, ama her ilan aynı fiyatı taşımaz.
+     */
+    private const ILAN_KATALOGU = [
+        ['Online İngilizce konuşma dersi', 'yabanci-dil-dersi', 15, 25, 'saatlik'],
+        ['Almanca A1-B2 özel ders', 'yabanci-dil-dersi', 18, 30, 'saatlik'],
+        ['Ev taşıma ve nakliyat yardımı', 'nakliyat-tasinma', 45, 70, 'saatlik'],
+        ['Ev yapımı baklava ve börek', 'pasta-tatli', 22, 40, 'paket'],
+        ['Düğün fotoğrafçılığı', 'fotograf-video', 350, 600, 'is_basina'],
+        ['Web sitesi tasarımı', 'web-sitesi', 400, 900, 'is_basina'],
+        ['Resmî evrak tercümesi', 'tercume', 30, 60, 'is_basina'],
+        ['Bebek bakıcılığı', 'bebek-bakiciligi', 12, 18, 'saatlik'],
+        ['Havalimanı transferi', 'havalimani-transferi', 40, 70, 'is_basina'],
+        ['Tadilat, boya ve montaj', 'tadilat-boya', 28, 45, 'saatlik'],
     ];
 
     public function __construct(
@@ -198,20 +216,24 @@ class DemoFabrikasi
 
     private function ilanUret(string $parti, User $sahip, int $sira, bool $gorunur): Listing
     {
-        $baslik = self::ILAN_BASLIKLARI[$sira % count(self::ILAN_BASLIKLARI)];
+        [$baslik, $kategoriSlug, $enAz, $enCok, $birim] = self::ILAN_KATALOGU[$sira % count(self::ILAN_KATALOGU)];
         [$ulke, $sehir, $paraBirimi] = self::SEHIRLER[$sira % count(self::SEHIRLER)];
+
+        // Aralıktan deterministik fiyat: tekrar koşular kararlı, ilanlar çeşitli.
+        $fiyat = $enAz + (($sira * 7) % ($enCok - $enAz + 1));
 
         $ilan = Listing::create([
             'user_id' => $sahip->id,
-            'category_id' => Category::query()->whereNotNull('parent_id')->value('id'),
+            'category_id' => Category::query()->where('slug', $kategoriSlug)->value('id')
+                ?? Category::query()->whereNotNull('parent_id')->value('id'),
             'type' => 'hizmet',
             'title' => '[ÖRNEK] '.$baslik,
             'slug' => Str::slug($baslik).'-demo-'.str_replace('-', '', $parti).'-'.$sira,
             'description' => 'Bu bir ÖRNEK ilandır — Nisoya demo verisidir, gerçek bir hizmet değildir. '
                 .$baslik.' için örnek açıklama metni. Bu ilana gelen mesajlar yanıtlanmaz.',
-            'price' => 20 + ($sira * 15),
+            'price' => $fiyat,
             'currency' => $paraBirimi,
-            'price_unit' => 'saatlik',
+            'price_unit' => $birim,
             'country_code' => $ulke,
             'city' => $sehir,
             'is_remote' => $sira % 3 === 0,
@@ -230,7 +252,7 @@ class DemoFabrikasi
 
     private function gorselUret(string $parti, Listing $ilan, int $tohum): ListingImage
     {
-        $yollar = $this->gorsel->uret(self::ILAN_BASLIKLARI[$tohum % count(self::ILAN_BASLIKLARI)], 'listings', $tohum);
+        $yollar = $this->gorsel->uret(self::ILAN_KATALOGU[$tohum % count(self::ILAN_KATALOGU)][0], 'listings', $tohum);
 
         $gorsel = ListingImage::create([
             'listing_id' => $ilan->id,

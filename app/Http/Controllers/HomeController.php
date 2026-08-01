@@ -17,6 +17,29 @@ class HomeController extends Controller
 {
     public function index(NabizService $nabiz): View
     {
+        /*
+         * VİTRİN KURALI (2026-08-01): "Öne çıkan ilanlar" GERÇEK ilan
+         * önceliklidir. [ÖRNEK] rozetli demo ilanlarla dolu bir ana sayfa,
+         * ilk kez gelen ziyaretçiye "bu site sahte/boş" dedirtir — işaretleme
+         * dürüstlüğü doğru, ama vitrine taşınması ayrı bir karar. Demo YALNIZ
+         * tek bir gerçek aktif ilan bile yokken gösterilir (tamamen boş bir
+         * vitrinden yine de iyidir) ve o durumda da rozetlidir.
+         */
+        $latestListings = Listing::query()->active()
+            ->where('is_demo', false)
+            ->with(['coverImage', 'category.parent', 'country', 'user'])
+            ->latest()
+            ->take(8)
+            ->get();
+
+        if ($latestListings->isEmpty()) {
+            $latestListings = Listing::query()->active()
+                ->with(['coverImage', 'category.parent', 'country', 'user'])
+                ->latest()
+                ->take(8)
+                ->get();
+        }
+
         return view('home', [
             'categories' => Category::query()->whereNull('parent_id')->where('is_active', true)
                 ->orderBy('sort_order')->get(),
@@ -29,22 +52,26 @@ class HomeController extends Controller
                 // Vitrin hero'nun kanıt satırı için: katalog büyüklüğü değil
                 // GERÇEK HAREKET. 'categories' (97) ve 'cities' (ülke başına
                 // 2 tohumlanmış) ziyaretçiye bir şey söylemiyor; "kaç aktif
-                // ilan var" ve "kaç şehirde ilan var" söylüyor.
+                // ilan var" ve "kaç şehirde ilan var" söylüyor. Demo ilanlar
+                // SAYILMAZ — "gerçek hareket" iddiası örnek veriyle şişirilemez
+                // (Kâhya teşhisiyle aynı ilke).
                 // Şehir sayımı LOWER(TRIM(city)) üzerinden: listings.city
                 // serbest metin, ham distinct 'Berlin'/'berlin'/'Berlin ' → 3 sayardı.
-                'activeListings' => Listing::query()->active()->count(),
+                'activeListings' => Listing::query()->active()->where('is_demo', false)->count(),
                 'activeCities' => Listing::query()->active()
+                    ->where('is_demo', false)
                     ->whereNotNull('city')
                     ->where('city', '!=', '')
                     ->distinct()
                     ->count(DB::raw('LOWER(TRIM(city))')),
             ],
-            'latestListings' => Listing::query()->active()
-                ->with(['coverImage', 'category.parent', 'country', 'user'])
-                ->latest()
-                ->take(8)
-                ->get(),
+            'latestListings' => $latestListings,
+            // "Canlı akış" satırlarında ÖRNEK işareti görünmez (ad + kategori
+            // + zaman) — demo burada rozetsiz sahte hareket gibi okunurdu, bu
+            // yüzden akışa HİÇ girmez (vitrin kuralının aksine boş-durum
+            // istisnası da yok: akış bölümü boşken kendini zaten gizliyor).
             'activityFeed' => Listing::query()->active()
+                ->where('is_demo', false)
                 ->with(['category.parent', 'country', 'user'])
                 ->latest()
                 ->take(10)
@@ -80,7 +107,8 @@ class HomeController extends Controller
             // yani boş sonuç yapısal olarak imkânsız.
             'heroCips' => Category::query()
                 ->where('is_active', true)
-                ->withCount(['listings' => fn ($q) => $q->active()])
+                // Demo sayılmaz: çip "bu kategoride gerçek ilan var" vaadidir.
+                ->withCount(['listings' => fn ($q) => $q->active()->where('is_demo', false)])
                 ->orderByDesc('listings_count')
                 ->take(4)
                 ->get()
