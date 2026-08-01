@@ -28,21 +28,21 @@
             </div>
         </div>
 
-        {{-- Yazma alanı --}}
+        {{-- Yazma alanı — balonla aynı "composer" kapsülü (bkz. kahya-balonu). --}}
         <form wire:submit="gonder" class="mt-6 flex flex-col gap-2">
             @include('kahya.ek-onizleme')
 
-            <div class="flex items-end gap-2">
-            <label class="cursor-pointer rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/5 dark:hover:text-gray-300" title="Dosya/resim ekle">
-                <input type="file" wire:model="ekDosya" class="hidden" />
-                <x-filament::icon icon="heroicon-m-paper-clip" class="h-5 w-5" />
-            </label>
-            <div class="min-w-0 flex-1">
+            <div class="flex items-end gap-1 rounded-2xl bg-gray-100 p-2 ring-1 ring-transparent transition focus-within:bg-white focus-within:ring-primary-500 dark:bg-white/5 dark:focus-within:bg-gray-900 dark:focus-within:ring-primary-500">
+                <label class="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-xl text-gray-400 transition hover:bg-gray-200/70 hover:text-gray-600 dark:hover:bg-white/10 dark:hover:text-gray-300" title="Dosya/resim ekle">
+                    <input type="file" wire:model="ekDosya" class="hidden" />
+                    <x-filament::icon icon="heroicon-m-paper-clip" class="h-5 w-5" />
+                </label>
+
                 <textarea
                     wire:model="mesaj"
                     rows="2"
-                    placeholder="Örn: ülkeler kısmına Japonya ekle · duyuru bandına şunu yaz · kaç ilan var?"
-                    class="block max-h-60 w-full resize-none overflow-y-auto rounded-xl border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                    placeholder="Kâhya'ya yaz — soru sor ya da iş ver…"
+                    class="block max-h-60 min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-transparent px-1 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 dark:text-gray-100 dark:placeholder:text-gray-500"
                     x-data
                     x-init="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
                     {{-- Yazarken yükseklik içeriğe göre büyür — sabit tek satır
@@ -54,12 +54,13 @@
                     wire:loading.attr="disabled"
                     wire:target="gonder"
                 ></textarea>
-            </div>
 
-            <x-filament::button type="submit" icon="heroicon-m-paper-airplane"
-                wire:loading.attr="disabled" wire:target="gonder">
-                Gönder
-            </x-filament::button>
+                <button type="submit" title="Gönder"
+                    class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-600 text-white transition hover:bg-primary-500 disabled:opacity-50"
+                    wire:loading.attr="disabled" wire:target="gonder">
+                    <x-filament::icon icon="heroicon-m-paper-airplane" class="h-5 w-5" />
+                    <span class="sr-only">Gönder</span>
+                </button>
             </div>
         </form>
 
