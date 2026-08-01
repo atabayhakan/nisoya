@@ -46,6 +46,8 @@ class OrnekVeri extends Page
 
     public bool $gorunur = false;
 
+    public bool $aiGorsel = false;
+
     public static function canAccess(): bool
     {
         return auth()->user()?->isAdmin() ?? false;
@@ -66,6 +68,7 @@ class OrnekVeri extends Page
         $this->uyeSayisi = 4;
         $this->ilanSayisi = 2;
         $this->gorunur = false;
+        $this->aiGorsel = false;
     }
 
     public function mcpAcikMi(): bool
@@ -110,7 +113,7 @@ class OrnekVeri extends Page
         $ilan = min(10, max(0, $this->ilanSayisi));
 
         try {
-            $sonuc = app(DemoFabrikasi::class)->uret($uye, $ilan, $this->gorunur);
+            $sonuc = app(DemoFabrikasi::class)->uret($uye, $ilan, $this->gorunur, $this->aiGorsel);
         } catch (Throwable $e) {
             report($e);
 

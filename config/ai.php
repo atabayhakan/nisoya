@@ -17,6 +17,14 @@ return [
 
     'default' => env('AI_PROVIDER', 'anthropic'),
 
+    /*
+    | AI fotoğraf üretim modeli (App\Services\Ai\FotografUretici — şimdilik
+    | yalnız demo ilan görselleri). OpenRouter model adı; sağlayıcı yeniden
+    | adlandırırsa site_settings'e 'ai.gorsel_model' yazarak panelsiz
+    | değiştirilebilir (bkz. AppServiceProvider::mergeAiConfig).
+    */
+    'gorsel_model' => env('AI_GORSEL_MODEL', 'google/gemini-2.5-flash-image'),
+
     // Özellik bayrakları — sağlayıcıdan bağımsız. Anahtar yoksa özellik
     // zaten kapanır; bu bayrak anahtar varken bile kapatmak için.
     'features' => [

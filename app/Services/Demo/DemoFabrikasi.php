@@ -113,7 +113,7 @@ class DemoFabrikasi
      *                         sitesinde hiçbir şey değişmez.
      * @return array{parti: string, uye: int, ilan: int, gorsel: int, sohbet: int, anlasma: int, degerlendirme: int}
      */
-    public function uret(int $uyeSayisi = 4, int $uyeBasinaIlan = 2, bool $gorunur = false): array
+    public function uret(int $uyeSayisi = 4, int $uyeBasinaIlan = 2, bool $gorunur = false, bool $aiGorsel = false): array
     {
         $parti = $this->defter->yeniParti();
 
@@ -123,7 +123,7 @@ class DemoFabrikasi
          * ve o tablonun modele bağlı bir FK'si YOK — yani demo silindikten
          * sonra bile orada kalırdı. Üretmemek, sonradan temizlemekten güvenli.
          */
-        return activity()->withoutLogs(function () use ($parti, $uyeSayisi, $uyeBasinaIlan, $gorunur): array {
+        return activity()->withoutLogs(function () use ($parti, $uyeSayisi, $uyeBasinaIlan, $gorunur, $aiGorsel): array {
             $uyeler = [];
             $ilanlar = [];
             $gorselSayisi = 0;
@@ -142,7 +142,7 @@ class DemoFabrikasi
                      */
                     $sira = count($ilanlar);
                     $ilanlar[] = $ilan = $this->ilanUret($parti, $uye, $sira, $gorunur);
-                    $this->gorselUret($parti, $ilan, $sira);
+                    $this->gorselUret($parti, $ilan, $sira, $aiGorsel);
                     $gorselSayisi++;
                 }
             }
@@ -259,9 +259,9 @@ class DemoFabrikasi
         return $ilan;
     }
 
-    private function gorselUret(string $parti, Listing $ilan, int $tohum): ListingImage
+    private function gorselUret(string $parti, Listing $ilan, int $tohum, bool $aiGorsel = false): ListingImage
     {
-        $yollar = $this->gorsel->uret(self::ILAN_KATALOGU[$tohum % count(self::ILAN_KATALOGU)][0], 'listings', $tohum);
+        $yollar = $this->gorsel->uret(self::ILAN_KATALOGU[$tohum % count(self::ILAN_KATALOGU)][0], 'listings', $tohum, ai: $aiGorsel);
 
         $gorsel = ListingImage::create([
             'listing_id' => $ilan->id,

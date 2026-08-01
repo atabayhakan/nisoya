@@ -46,10 +46,14 @@
                 <input id="ilanSayisi" type="number" min="0" max="10" wire:model="ilanSayisi"
                        class="mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100" />
             </div>
-            <div class="flex items-end">
+            <div class="flex flex-col justify-end gap-2">
                 <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
                     <input type="checkbox" wire:model="gorunur" class="rounded border-gray-300 dark:border-gray-600" />
                     Sitede görünsün
+                </label>
+                <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                    <input type="checkbox" wire:model="aiGorsel" class="rounded border-gray-300 dark:border-gray-600" />
+                    AI fotoğraf (filigranlı)
                 </label>
             </div>
         </div>
@@ -59,6 +63,9 @@
             İşaretlemezsen ilanlar <strong>taslak</strong> doğar ve sitede hiç görünmez —
             üretimde hiçbir şey değişmez. İşaretlersen yayınlanırlar ama her yerde
             <strong>"ÖRNEK"</strong> işareti taşırlar.
+            "AI fotoğraf" ilan görsellerini yapay zekâyla gerçekçi fotoğraf olarak üretir
+            (görsel başına küçük bir API maliyeti; üzerine tüm görsele yayılan yarı saydam
+            <strong>ÖRNEK</strong> filigranı basılır — anahtar yoksa/hata olursa grafik tuvale düşer, üretim uzayabilir).
         </p>
 
         @if ($this->uretimMi())

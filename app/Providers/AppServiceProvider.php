@@ -371,6 +371,13 @@ class AppServiceProvider extends ServiceProvider
             Config::set("ai.providers.{$active}.model", $model);
         }
 
+        // Fotoğraf üretim modeli (demo görselleri) — panelsiz override:
+        // sağlayıcı model adını değiştirirse DB'ye yazmak yeter.
+        $gorselModel = Settings::get('ai.gorsel_model');
+        if ($gorselModel) {
+            Config::set('ai.gorsel_model', $gorselModel);
+        }
+
         $quickListing = Settings::get('ai.hizli_ilan_aktif');
         if ($quickListing !== null && $quickListing !== '') {
             Config::set('ai.features.quick_listing', $quickListing === '1');
