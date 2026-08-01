@@ -130,7 +130,12 @@ class OrnekVeri extends Page
                 "{$sonuc['uye']} üye, {$sonuc['ilan']} ilan, {$sonuc['gorsel']} görsel, ".
                 "{$sonuc['sohbet']} sohbet, {$sonuc['anlasma']} anlaşma. ".
                 ($this->gorunur
-                    ? 'İlanlar YAYINDA ve "ÖRNEK" işareti taşıyor.'
+                    // Vitrin kuralı (2026-08-01): ana sayfa gerçek ilan öncelikli —
+                    // sahip "ürettim ama sayfada yok" diye aramasın, nereye
+                    // bakacağı bildirimde yazsın.
+                    ? 'İlanlar YAYINDA ve "ÖRNEK" işareti taşıyor. İlanlar sayfasında (/ilanlar) '
+                        .'ve kategori sayfalarında görünürler; ana sayfa vitrini gerçek ilan '
+                        .'öncelikli olduğu için orada YALNIZ hiç gerçek ilan yokken çıkarlar.'
                     : 'İlanlar taslak — sitede görünmüyorlar.')
             )
             ->success()
