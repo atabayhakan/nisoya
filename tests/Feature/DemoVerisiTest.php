@@ -263,6 +263,76 @@ class DemoVerisiTest extends TestCase
         $this->assertSame(0, $sonGun['yeni_ilan']);
     }
 
+    // -------------------------------------------------- Kalite (2026-08-01)
+
+    /**
+     * Canlıda görülen hata: her demo ilana veritabanındaki İLK alt kategori
+     * atanıyordu — ana sayfa "Bebek bakıcılığı" kartında "Yabancı Dil Dersi"
+     * çipiyle dolmuştu. Katalog artık başlıkla eşleşen gerçek kategoriyi taşır.
+     */
+    public function test_ilan_kategorisi_basligiyla_eslesir(): void
+    {
+        $this->fabrika()->uret(1, 8);
+
+        $bakim = Listing::query()->where('title', 'like', '%Bebek bakıcılığı%')->firstOrFail();
+        $this->assertSame('Bebek Bakıcılığı', $bakim->category?->name);
+
+        $tercume = Listing::query()->where('title', 'like', '%tercümesi%')->firstOrFail();
+        $this->assertSame('Tercüme', $tercume->category?->name);
+
+        // Hiçbir demo ilan kategorisiz kalmaz.
+        $this->assertSame(0, Listing::query()->where('is_demo', true)->whereNull('category_id')->count());
+    }
+
+    public function test_fiyatlar_gercekci_araliktan_gelir(): void
+    {
+        $this->fabrika()->uret(1, 8);
+
+        $bakim = Listing::query()->where('title', 'like', '%Bebek bakıcılığı%')->firstOrFail();
+        $this->assertGreaterThanOrEqual(12, (float) $bakim->price);
+        $this->assertLessThanOrEqual(18, (float) $bakim->price);
+        $this->assertSame('saatlik', $bakim->price_unit->value ?? $bakim->price_unit);
+
+        $foto = Listing::query()->where('title', 'like', '%Düğün fotoğrafçılığı%')->firstOrFail();
+        $this->assertGreaterThanOrEqual(350, (float) $foto->price);
+        $this->assertSame('is_basina', $foto->price_unit->value ?? $foto->price_unit);
+    }
+
+    /**
+     * Vitrin kuralı: ana sayfanın "öne çıkan" listesi GERÇEK ilan öncelikli;
+     * demo yalnız hiç gerçek aktif ilan yokken görünür. İstatistik ve canlı
+     * akış demo'yu HİÇ saymaz (gerçek hareket iddiası şişirilemez).
+     */
+    public function test_ana_sayfa_gercek_ilan_varken_demo_gostermez(): void
+    {
+        $this->fabrika()->uret(2, 2, gorunur: true);
+
+        $gercek = Listing::factory()->create(['status' => ListingStatus::Aktif, 'title' => 'Gerçek berber hizmeti']);
+
+        $yanit = $this->get('/')->assertOk();
+
+        $liste = $yanit->viewData('latestListings');
+        $this->assertTrue($liste->contains('id', $gercek->id));
+        $this->assertSame(0, $liste->where('is_demo', true)->count());
+
+        $this->assertSame(1, $yanit->viewData('stats')['activeListings']);
+        $this->assertSame(0, $yanit->viewData('activityFeed')->filter(fn ($i) => str_contains($i['href'], 'demo'))->count());
+    }
+
+    public function test_ana_sayfa_hic_gercek_ilan_yokken_demo_gosterir(): void
+    {
+        $this->fabrika()->uret(2, 2, gorunur: true);
+
+        $yanit = $this->get('/')->assertOk();
+
+        $liste = $yanit->viewData('latestListings');
+        $this->assertGreaterThan(0, $liste->count());
+        $this->assertSame($liste->count(), $liste->where('is_demo', true)->count());
+
+        // Vitrin dolu görünse de "gerçek hareket" sayacı dürüst kalır.
+        $this->assertSame(0, $yanit->viewData('stats')['activeListings']);
+    }
+
     // ------------------------------------------------------------- Görsel
 
     public function test_gorsel_uretici_gecerli_png_uretir(): void
