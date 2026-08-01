@@ -15,7 +15,7 @@ namespace App\Support;
 class Modules
 {
     /** Yönetilebilir dikey modüller. */
-    public const KEYS = ['emlak', 'vasita', 'davetiye', 'is_ilanlari'];
+    public const KEYS = ['emlak', 'vasita', 'davetiye', 'is_ilanlari', 'rehber'];
 
     /** İnsan-okunur etiketler (admin sayfası ve mesajlar için). */
     public const LABELS = [
@@ -23,6 +23,7 @@ class Modules
         'vasita' => 'Vasıta',
         'davetiye' => 'Davetiye',
         'is_ilanlari' => 'İş İlanları',
+        'rehber' => 'Ülke Rehberi',
     ];
 
     /** Modül açık mı? Bilinmeyen/ayarsız anahtar varsayılan olarak AÇIK. */

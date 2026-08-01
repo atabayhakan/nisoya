@@ -41,6 +41,8 @@ use App\Http\Controllers\PropertyBrowseController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\QuickListingController;
 use App\Http\Controllers\QuickSearchController;
+use App\Http\Controllers\RehberController;
+use App\Http\Controllers\RehberGeriBildirimController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SavedSearchController;
@@ -339,6 +341,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+/*
+ * Ülke-Adaptif Rehber (F1) — /de, /de/koeln, /de/koeln/vekaletname.
+ *
+ * KONUM ÖNEMLİ: catch-all /{slug}'dan hemen ÖNCE. {ulke} deseni [a-z]{2}
+ * olduğu için tek segmentli 2 harfli yollar (ör. /de) buraya, diğer her
+ * tek segment catch-all'a düşer. 2 harfli CMS slug'ı PageForm'da yasak
+ * (K5) — yani bu rota hiçbir CMS sayfasını gölgeleyemez. Geçersiz/pasif
+ * ülke kodu controller'da 404 olur.
+ */
+Route::middleware('module:rehber')->group(function () {
+    Route::post('/rehber/geri-bildirim/{islemKaydi}', [RehberGeriBildirimController::class, 'store'])
+        ->middleware(['honeypot', 'throttle:rehber-geri-bildirim'])
+        ->name('rehber.geribildirim');
+
+    Route::get('/{ulke}', [RehberController::class, 'ulke'])
+        ->where('ulke', '[a-z]{2}')
+        ->name('rehber.ulke');
+    Route::get('/{ulke}/{temsilcilik}', [RehberController::class, 'temsilcilik'])
+        ->where(['ulke' => '[a-z]{2}', 'temsilcilik' => '[a-z0-9\-]+'])
+        ->name('rehber.temsilcilik');
+    Route::get('/{ulke}/{temsilcilik}/{islem}', [RehberController::class, 'islem'])
+        ->where(['ulke' => '[a-z]{2}', 'temsilcilik' => '[a-z0-9\-]+', 'islem' => '[a-z0-9\-]+'])
+        ->name('rehber.islem');
+});
 
 // Yönetilebilir içerik sayfaları (catch-all — DİĞER TÜM ROTALARDAN SONRA olmalı)
 Route::get('/{slug}', [PageController::class, 'show'])

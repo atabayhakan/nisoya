@@ -7,13 +7,38 @@ use App\Models\Company;
 use App\Models\JobListing;
 use App\Models\Listing;
 use App\Models\Page;
+use App\Models\Temsilcilik;
+use App\Models\TemsilcilikIslemi;
 use App\Models\User;
 use App\Support\Modules;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 
 class SitemapController extends Controller
 {
+    /**
+     * Üretim maliyeti onlarca sorgu ve URL seti rehber sayfalarıyla büyüdü —
+     * 15 dk cache, tarayıcıların (Google birkaç günde bir gelir) tazelik
+     * ihtiyacını fazlasıyla karşılar. Testler tek istekle doğrular; içerik
+     * değişimi en geç 15 dk içinde sitemap'e yansır.
+     */
+    private const CACHE_SANIYE = 900;
+
     public function index(): Response
+    {
+        /*
+         * Anahtar modül durumunu İÇERİR: panelden bir modül kapatılınca URL'leri
+         * sitemap'ten ANINDA düşer (TTL beklenmez, elle flush gerekmez). İçerik
+         * değişimleri (yeni ilan/sayfa) ise TTL ile en geç 15 dk'da yansır.
+         */
+        $anahtar = 'sitemap.xml:'.md5(json_encode(Modules::all()) ?: '');
+
+        $xml = Cache::remember($anahtar, self::CACHE_SANIYE, fn (): string => $this->uret());
+
+        return response($xml, 200, ['Content-Type' => 'application/xml']);
+    }
+
+    private function uret(): string
     {
         $urls = [
             ['loc' => url('/'), 'priority' => '1.0'],
@@ -101,6 +126,41 @@ class SitemapController extends Controller
             $urls[] = ['loc' => route('profiles.show', $user->username), 'priority' => '0.5'];
         }
 
+        /*
+         * Ülke Rehberi — boş-kategori felsefesiyle aynı kural (yukarıdaki uzun
+         * yorum): içeriği OLMAYAN sayfa arama motoruna önerilmez. Ülke sayfası
+         * ancak yayında işlemi olan bir temsilcilik varsa; temsilcilik sayfası
+         * ancak yayında işlemi varsa; işlem sayfası zaten yalnız yayındakiler.
+         */
+        if (Modules::enabled('rehber')) {
+            $temsilcilikler = Temsilcilik::query()
+                ->aktif()
+                ->whereHas('islemler', fn ($q) => $q->where('status', TemsilcilikIslemi::STATUS_YAYIN))
+                ->with(['islemler' => fn ($q) => $q->yayinda()->with('islemTuru')])
+                ->get();
+
+            foreach ($temsilcilikler->pluck('country_code')->unique() as $kod) {
+                $urls[] = ['loc' => route('rehber.ulke', strtolower($kod)), 'priority' => '0.7'];
+            }
+
+            foreach ($temsilcilikler as $temsilcilik) {
+                $ulke = strtolower($temsilcilik->country_code);
+                $urls[] = ['loc' => route('rehber.temsilcilik', [$ulke, $temsilcilik->slug]), 'priority' => '0.6'];
+
+                foreach ($temsilcilik->islemler as $islem) {
+                    if ($islem->islemTuru === null || ! $islem->islemTuru->is_active) {
+                        continue;
+                    }
+
+                    $urls[] = [
+                        'loc' => route('rehber.islem', [$ulke, $temsilcilik->slug, $islem->islemTuru->slug]),
+                        'lastmod' => $islem->updated_at?->toAtomString(),
+                        'priority' => '0.7',
+                    ];
+                }
+            }
+        }
+
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
         foreach ($urls as $url) {
@@ -114,6 +174,6 @@ class SitemapController extends Controller
         }
         $xml .= '</urlset>'."\n";
 
-        return response($xml, 200, ['Content-Type' => 'application/xml']);
+        return $xml;
     }
 }
