@@ -132,8 +132,17 @@ class DemoFabrikasi
                 $uyeler[] = $uye = $this->uyeUret($parti, $i);
 
                 for ($j = 0; $j < $uyeBasinaIlan; $j++) {
-                    $ilanlar[] = $ilan = $this->ilanUret($parti, $uye, count($ilanlar), $gorunur);
-                    $this->gorselUret($parti, $ilan, count($ilanlar));
+                    /*
+                     * Sıra İKİ çağrıya da AYNI değerle gider. Eskiden görsel
+                     * `count($ilanlar)` ile çağrılıyordu ama o an ilan diziye
+                     * eklenmiş olduğundan sayı BİR FAZLAYDI — her kartın
+                     * görseli bir sonraki ilanın başlığını taşıyordu
+                     * ("Havalimanı transferi" kartında "Tadilat, boya" görseli;
+                     * canlıda görüldü, 2026-08-01).
+                     */
+                    $sira = count($ilanlar);
+                    $ilanlar[] = $ilan = $this->ilanUret($parti, $uye, $sira, $gorunur);
+                    $this->gorselUret($parti, $ilan, $sira);
                     $gorselSayisi++;
                 }
             }

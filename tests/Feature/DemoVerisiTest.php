@@ -284,6 +284,37 @@ class DemoVerisiTest extends TestCase
         $this->assertSame(0, Listing::query()->where('is_demo', true)->whereNull('category_id')->count());
     }
 
+    /**
+     * Canlıda görülen off-by-one: görsel `count($ilanlar)` push SONRASI
+     * çağrılıyordu — her kartın görseli bir SONRAKİ ilanın başlığını
+     * taşıyordu. Başlık ve görsel etiketi artık aynı sıradan gelir.
+     */
+    public function test_gorsel_etiketi_ilan_basligiyla_eslesir(): void
+    {
+        $etiketler = [];
+
+        $sahte = \Mockery::mock(DemoGorselUretici::class);
+        $sahte->shouldReceive('uret')
+            ->andReturnUsing(function (string $etiket, string $dizin) use (&$etiketler): array {
+                if ($dizin === 'listings') {
+                    $etiketler[] = $etiket;
+                }
+
+                $yol = 'sahte/'.uniqid().'.webp';
+                Storage::disk('public')->put($yol, 'x');
+
+                return ['thumb' => $yol, 'medium' => $yol, 'large' => $yol];
+            });
+        $this->app->instance(DemoGorselUretici::class, $sahte);
+
+        $this->fabrika()->uret(2, 3);
+
+        $basliklar = Listing::query()->where('is_demo', true)->orderBy('id')
+            ->pluck('title')->map(fn (string $b): string => str_replace('[ÖRNEK] ', '', $b))->all();
+
+        $this->assertSame($basliklar, $etiketler);
+    }
+
     public function test_fiyatlar_gercekci_araliktan_gelir(): void
     {
         $this->fabrika()->uret(1, 8);
