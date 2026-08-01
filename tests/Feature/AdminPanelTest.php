@@ -87,6 +87,8 @@ class AdminPanelTest extends TestCase
         $canonical = [
             'Pazaryeri & Ticaret',
             'İş & Kariyer Portalı',
+            // Ülke-Adaptif Rehber F1 ile açıldı (2026-08-01, tasarım belgesi).
+            'Ülke Rehberi',
             'Topluluk & İletişim',
             'Kullanıcılar & Güvenlik',
             'İçerik & Tasarım (CMS)',

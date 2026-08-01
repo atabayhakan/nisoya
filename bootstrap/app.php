@@ -108,6 +108,11 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('portfolio-store', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
         );
 
+        // Rehber "güncel mi?" geri bildirimi anonim ve oturumsuz — gerçek bir
+        // kullanıcı aynı sayfada en fazla birkaç kez bildirir; seri gönderim bot izi.
+        RateLimiter::for('rehber-geri-bildirim', fn (Request $request) => Limit::perMinute(5)->by($request->ip())
+        );
+
         RateLimiter::for('company-gallery-store', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
         );
 

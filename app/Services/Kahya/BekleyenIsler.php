@@ -8,8 +8,11 @@ use App\Models\FeatureRequest;
 use App\Models\JobFeatureRequest;
 use App\Models\Listing;
 use App\Models\ListingImage;
+use App\Models\RehberGeriBildirimi;
 use App\Models\Report;
 use App\Models\Story;
+use App\Models\TemsilcilikIslemi;
+use App\Support\Modules;
 
 /**
  * Sahibin müdahalesini bekleyen işlerin TEK kaynağı.
@@ -107,6 +110,31 @@ class BekleyenIsler
                 'aciklama' => 'Ücretli talep',
             ],
         ];
+
+        /*
+         * Ülke Rehberi (K7): yayında olup doğrulaması BAYATLIK_GUN'ü aşan
+         * içerik. Yanlış evrak listesi kullanıcıyı konsolosluk kapısından
+         * geri çevirtir — bayatlık bir estetik sorunu değil, güven sorunudur.
+         * İncelenmemiş "güncel mi?" geri bildirimleri de aynı sebepten burada.
+         * Modül kapalıyken iki kuyruk da eklenmez (kapalı yüzeyin bakımı
+         * gürültüdür).
+         */
+        if (Modules::enabled('rehber')) {
+            $kuyruklar[] = [
+                'anahtar' => 'rehber_bayat',
+                'etiket' => 'Doğrulaması eskimiş rehber içeriği',
+                'adet' => TemsilcilikIslemi::query()->bayat()->count(),
+                'aciliyet' => 'orta',
+                'aciklama' => TemsilcilikIslemi::BAYATLIK_GUN.' günden eski doğrulama — yayında',
+            ];
+            $kuyruklar[] = [
+                'anahtar' => 'rehber_geri_bildirim',
+                'etiket' => 'İncelenmemiş rehber geri bildirimi',
+                'adet' => RehberGeriBildirimi::query()->where('incelendi', false)->count(),
+                'aciliyet' => 'orta',
+                'aciklama' => 'Ziyaretçi "bilgi güncel değil" dedi',
+            ];
+        }
 
         return array_values(array_filter($kuyruklar, fn (array $k) => $k['adet'] > 0));
     }

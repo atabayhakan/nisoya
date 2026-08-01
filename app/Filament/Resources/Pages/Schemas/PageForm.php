@@ -40,7 +40,12 @@ class PageForm
                         ->maxLength(255)
                         ->unique(ignoreRecord: true)
                         ->rule(Rule::notIn(Page::RESERVED_SLUGS))
-                        ->helperText('Adres: nisoya.com/kısa-ad — sadece küçük harf, rakam ve tire.'),
+                        // K5 (ülke-adaptif rehber tasarımı): 2 harfli yollar ülke
+                        // rehberine ayrıldı (/de, /kg...) — 2 harfli bir CMS slug'ı
+                        // rehber rotasının gölgesinde kalır ve asla açılamazdı.
+                        ->notRegex('/^[a-z]{2}$/')
+                        ->validationMessages(['not_regex' => '2 harfli kısa adlar ülke rehberi adresleri (/de gibi) için ayrılmıştır.'])
+                        ->helperText('Adres: nisoya.com/kısa-ad — sadece küçük harf, rakam ve tire. 2 harfli adlar ülke rehberine ayrılmıştır.'),
                     Select::make('status')
                         ->label('Durum')
                         ->options(PageStatus::class)

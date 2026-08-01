@@ -67,6 +67,7 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 NavigationGroup::make('Pazaryeri & Ticaret'),
                 NavigationGroup::make('İş & Kariyer Portalı'),
+                NavigationGroup::make('Ülke Rehberi'),
                 NavigationGroup::make('Topluluk & İletişim'),
                 NavigationGroup::make('Kullanıcılar & Güvenlik'),
                 NavigationGroup::make('İçerik & Tasarım (CMS)'),
