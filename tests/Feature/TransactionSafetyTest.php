@@ -68,7 +68,9 @@ class TransactionSafetyTest extends TestCase
         foreach (range(1, 5) as $i) {
             Review::create([
                 'reviewee_id' => $seller->id,
-                'reviewer_id' => User::factory()->create()->id,
+                // Değerlendirme kapısı (2026-08-02): rozet yalnız NİTELİKLİ
+                // yorumları sayar — değerlendiren hesabı ≥7 günlük olmalı.
+                'reviewer_id' => User::factory()->create(['created_at' => now()->subDays(30)])->id,
                 'listing_id' => null,
                 'rating' => 5,
                 'status' => 'yayinda',

@@ -97,6 +97,28 @@ class Conversation extends Model
             ->exists();
     }
 
+    /**
+     * İki kullanıcı arasında İKİ TARAFIN DA en az bir mesaj yazdığı bir
+     * konuşma var mı?
+     *
+     * existsBetween'den farkı bilinçli: tek yönlü bir "merhaba" (hatta hiç
+     * mesajsız açılmış bir konuşma kaydı) değerlendirme kapısını AÇMAZ —
+     * değerlendirme gerçekleşmiş bir iletişimin beyanıdır ve karşı tarafın
+     * hiç cevap yazmadığı bir konuşma o iddiayı taşıyamaz
+     * (açık işler envanteri: "tek mesaj = puanlama hakkı" istismarı).
+     */
+    public static function mutualExistsBetween(int $userId, int $otherId): bool
+    {
+        return static::query()
+            ->where(function ($q) use ($userId, $otherId) {
+                $q->where(['user_one_id' => $userId, 'user_two_id' => $otherId])
+                    ->orWhere(['user_one_id' => $otherId, 'user_two_id' => $userId]);
+            })
+            ->whereHas('messages', fn ($q) => $q->where('sender_id', $userId))
+            ->whereHas('messages', fn ($q) => $q->where('sender_id', $otherId))
+            ->exists();
+    }
+
     public function isParticipant(User $user): bool
     {
         return in_array($user->id, [$this->user_one_id, $this->user_two_id], true);

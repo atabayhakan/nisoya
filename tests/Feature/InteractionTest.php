@@ -179,11 +179,21 @@ class InteractionTest extends TestCase
 
     // --- Değerlendirme ---
 
+    /** Kapı sözleşmesi DEĞİŞTİ (değerlendirme kapısı): iki taraf da yazmış olmalı. */
+    private function karsilikliKonusma(User $a, User $b): Conversation
+    {
+        $konusma = Conversation::create(['user_one_id' => $a->id, 'user_two_id' => $b->id, 'last_message_at' => now()]);
+        $konusma->messages()->create(['sender_id' => $a->id, 'body' => 'Merhaba, ilanınız hâlâ geçerli mi?']);
+        $konusma->messages()->create(['sender_id' => $b->id, 'body' => 'Evet, geçerli.']);
+
+        return $konusma;
+    }
+
     public function test_user_can_review_seller(): void
     {
         $seller = User::factory()->create();
         $reviewer = User::factory()->create();
-        Conversation::create(['user_one_id' => $reviewer->id, 'user_two_id' => $seller->id, 'last_message_at' => now()]);
+        $this->karsilikliKonusma($reviewer, $seller);
 
         $this->actingAs($reviewer)
             ->post("/uye/{$seller->username}/degerlendir", ['rating' => 5, 'comment' => 'Çok memnun kaldım.'])
@@ -196,7 +206,7 @@ class InteractionTest extends TestCase
     {
         $seller = User::factory()->create();
         $reviewer = User::factory()->create();
-        Conversation::create(['user_one_id' => $reviewer->id, 'user_two_id' => $seller->id, 'last_message_at' => now()]);
+        $this->karsilikliKonusma($reviewer, $seller);
         Review::create(['reviewee_id' => $seller->id, 'reviewer_id' => $reviewer->id, 'rating' => 5, 'status' => 'yayinda']);
 
         $this->actingAs($reviewer)->post("/uye/{$seller->username}/degerlendir", ['rating' => 3]);
@@ -291,7 +301,7 @@ class InteractionTest extends TestCase
             ->assertSee('Deneyimini paylaş');
     }
 
-    public function test_review_form_only_shown_after_contact(): void
+    public function test_review_form_only_shown_after_mutual_contact(): void
     {
         $seller = User::factory()->create();
         $strangerVisitor = User::factory()->create();
@@ -300,9 +310,11 @@ class InteractionTest extends TestCase
             ->get("/uye/{$seller->username}")
             ->assertOk()
             ->assertDontSee('Deneyimini paylaş')
-            ->assertSee('önce kendisiyle iletişime geçmiş olman gerekir');
+            ->assertSee('iki tarafın da yazdığı bir konuşma');
 
-        Conversation::create(['user_one_id' => $strangerVisitor->id, 'user_two_id' => $seller->id, 'last_message_at' => now()]);
+        // Değerlendirme kapısı (2026-08-02): salt konuşma kaydı YETMEZ —
+        // iki taraf da yazmış olmalı.
+        $this->karsilikliKonusma($strangerVisitor, $seller);
 
         $this->actingAs($strangerVisitor)
             ->get("/uye/{$seller->username}")

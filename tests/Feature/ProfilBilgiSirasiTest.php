@@ -130,7 +130,11 @@ class ProfilBilgiSirasiTest extends TestCase
         $satici = User::factory()->create(['email_verified_at' => now()]);
         $ziyaretci = User::factory()->create(['email_verified_at' => now()]);
 
-        Conversation::findOrCreateBetween($ziyaretci->id, $satici->id, null);
+        // Değerlendirme kapısı (2026-08-02): form ancak iki tarafın da
+        // yazdığı konuşmada görünür.
+        $konusma = Conversation::findOrCreateBetween($ziyaretci->id, $satici->id, null);
+        $konusma->messages()->create(['sender_id' => $ziyaretci->id, 'body' => 'Merhaba!']);
+        $konusma->messages()->create(['sender_id' => $satici->id, 'body' => 'Buyrun?']);
 
         // Ziyaretçinin yorumu EN ESKİ olsun ki `latest()` sıralamasında
         // son sayfaya düşsün.

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserStatus;
 use App\Models\Conversation;
+use App\Models\Deal;
 use App\Models\User;
 use Illuminate\View\View;
 
@@ -60,11 +61,13 @@ class ProfileController extends Controller
         $myReview = auth()->check()
             ? (clone $yayindaki)->where('reviewer_id', auth()->id())->first()
             : null;
-        // Değerlendirme yalnızca daha önce iletişime geçmiş (mesajlaşmış) kullanıcılar
-        // için açılır — bkz. ReviewController::store().
+        // Değerlendirme kapısı ReviewController::store() ile BİREBİR aynı olmak
+        // zorunda — form burada görünüp orada 403 yerse kullanıcı haklı olarak
+        // "bozuk" der: iki tarafın da yazdığı konuşma YA DA tamamlanmış anlaşma.
         $canReview = auth()->check()
             && auth()->id() !== $user->id
-            && Conversation::existsBetween(auth()->id(), $user->id);
+            && (Deal::latestCompletedIdBetween(auth()->id(), $user->id) !== null
+                || Conversation::mutualExistsBetween(auth()->id(), $user->id));
 
         return view('profiles.show', compact('user', 'listings', 'reviews', 'rating', 'myReview', 'canReview'));
     }

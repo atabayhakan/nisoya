@@ -33,7 +33,10 @@ class NotificationAlertTest extends TestCase
         Notification::fake();
         $seller = User::factory()->create();
         $reviewer = User::factory()->create();
-        Conversation::create(['user_one_id' => $reviewer->id, 'user_two_id' => $seller->id, 'last_message_at' => now()]);
+        // Değerlendirme kapısı (2026-08-02): iki taraf da yazmış olmalı.
+        $konusma = Conversation::create(['user_one_id' => $reviewer->id, 'user_two_id' => $seller->id, 'last_message_at' => now()]);
+        $konusma->messages()->create(['sender_id' => $reviewer->id, 'body' => 'Merhaba!']);
+        $konusma->messages()->create(['sender_id' => $seller->id, 'body' => 'Buyrun?']);
 
         $this->actingAs($reviewer)->post("/uye/{$seller->username}/degerlendir", ['rating' => 5]);
 

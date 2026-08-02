@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\DealStatus;
 use App\Models\Conversation;
 use App\Models\Deal;
 use App\Models\Review;
@@ -20,31 +19,27 @@ class ReviewController extends Controller
 
         abort_if($reviewer->id === $user->id, 403, 'Kendini değerlendiremezsin.');
 
-        // Değerlendirme yalnızca gerçekten iletişime geçilmiş (dolayısıyla hizmet/alışveriş
-        // süreci başlamış) kullanıcılar için bırakılabilir — platformda henüz sipariş/işlem
-        // kaydı olmadığından mesajlaşma geçmişi bunun için elimizdeki en güvenilir sinyal.
+        // Tamamlanmış anlaşma hem kapıyı açar hem değerlendirmeye bağlanır
+        // ("Doğrulanmış işlem" rozeti, K-C) — bu yüzden kapıdan ÖNCE bakılır.
+        $completedDealId = Deal::latestCompletedIdBetween($reviewer->id, $user->id);
+
+        /*
+         * DEĞERLENDİRME KAPISI: puan, gerçekleşmiş bir etkileşimin beyanıdır.
+         * Eski kapı "aramızda bir konuşma kaydı var" idi ve TEK YÖNLÜ tek
+         * mesajla açılıyordu — beş taze hesap, beş "merhaba" ve beş yıldızla
+         * rozet basılabilirdi. Şimdi: ya İKİ TARAFIN DA yazdığı bir konuşma
+         * ya da tamamlanmış bir anlaşma gerekir.
+         */
         abort_unless(
-            Conversation::existsBetween($reviewer->id, $user->id),
+            $completedDealId !== null || Conversation::mutualExistsBetween($reviewer->id, $user->id),
             403,
-            'Bu kullanıcıyı değerlendirebilmek için önce kendisiyle iletişime geçmiş (mesajlaşmış) olman gerekir.'
+            'Bu kullanıcıyı değerlendirebilmek için aranızda iki tarafın da yazdığı bir konuşma ya da tamamlanmış bir anlaşma olması gerekir.'
         );
 
         $data = $request->validate([
             'rating' => ['required', 'integer', 'between:1,5'],
             'comment' => ['nullable', 'string', 'max:1000'],
         ], attributes: ['rating' => 'puan', 'comment' => 'yorum']);
-
-        // Taraflar arasında TAMAMLANMIŞ bir anlaşma varsa değerlendirmeye bağla
-        // → "Doğrulanmış işlem" rozeti kazanır (K-C). Yoksa deal_id null kalır
-        // (konuşma-bağlı değerlendirme; hâlâ geçerli, sadece rozetsiz).
-        $completedDealId = Deal::query()
-            ->where('status', DealStatus::Tamamlandi->value)
-            ->where(function ($q) use ($reviewer, $user) {
-                $q->where(['seller_id' => $reviewer->id, 'buyer_id' => $user->id])
-                    ->orWhere(['seller_id' => $user->id, 'buyer_id' => $reviewer->id]);
-            })
-            ->latest('completed_at')
-            ->value('id');
 
         $review = Review::updateOrCreate(
             ['reviewee_id' => $user->id, 'reviewer_id' => $reviewer->id, 'listing_id' => null],
