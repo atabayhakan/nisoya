@@ -7,9 +7,12 @@ use App\Enums\ListingType;
 use App\Enums\UserStatus;
 use App\Models\JobListing;
 use App\Models\Listing;
+use App\Models\TemsilcilikIslemi;
 use App\Models\User;
+use App\Support\Modules;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
@@ -70,7 +73,44 @@ class QuickSearchController extends Controller
             ]);
 
         return response()->json([
-            'results' => $listings->concat($jobs)->concat($candidates)->values(),
+            'results' => $listings->concat($jobs)->concat($candidates)->concat($this->rehber($q))->values(),
         ]);
+    }
+
+    /**
+     * Rehber işlem araması (F2): "vekaletname" Cmd+K'da bulunmalı.
+     *
+     * Yalnız YAYINDA kayıtlar döner (K7 — taslak içerik aramaya sızmaz) ve
+     * modül kapalıyken hiç sorgu koşmaz. Eşleşme işlem türü adında ya da
+     * temsilcilik adında/şehrinde aranır; sonuç doğrudan işlem sayfasına gider.
+     *
+     * @return Collection<int, array{category: 'Rehber', title: string, subtitle: string, url: string}>
+     */
+    private function rehber(string $q): Collection
+    {
+        if (! Modules::enabled('rehber')) {
+            return collect();
+        }
+
+        return TemsilcilikIslemi::query()
+            ->yayinda()
+            ->whereHas('islemTuru', fn ($t) => $t->where('is_active', true))
+            ->whereHas('temsilcilik', fn ($t) => $t->where('is_active', true))
+            ->where(fn ($sub) => $sub
+                ->whereHas('islemTuru', fn ($t) => $t->where('ad', 'like', "%{$q}%"))
+                ->orWhereHas('temsilcilik', fn ($t) => $t->where('ad', 'like', "%{$q}%")
+                    ->orWhere('sehir', 'like', "%{$q}%")))
+            ->with(['islemTuru', 'temsilcilik'])
+            ->limit(5)->get()
+            ->map(fn (TemsilcilikIslemi $islem) => [
+                'category' => 'Rehber',
+                'title' => $islem->islemTuru->ad,
+                'subtitle' => $islem->temsilcilik->ad,
+                'url' => route('rehber.islem', [
+                    strtolower($islem->temsilcilik->country_code),
+                    $islem->temsilcilik->slug,
+                    $islem->islemTuru->slug,
+                ]),
+            ]);
     }
 }

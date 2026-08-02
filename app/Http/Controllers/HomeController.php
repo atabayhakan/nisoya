@@ -6,16 +6,21 @@ use App\Models\Category;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\HomeHighlight;
+use App\Models\IslemTuru;
 use App\Models\Listing;
 use App\Services\NabizService;
+use App\Services\RehberYuzeyi;
 use App\Support\CategoryIcon;
+use App\Support\Modules;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    public function index(NabizService $nabiz): View
+    public function index(Request $request, NabizService $nabiz, RehberYuzeyi $rehberYuzeyi): View
     {
         /*
          * VİTRİN KURALI (2026-08-01): "Öne çıkan ilanlar" GERÇEK ilan
@@ -119,6 +124,40 @@ class HomeController extends Controller
             'pulseCountries' => $nabiz->countryActivity(),
             'bigHighlights' => HomeHighlight::forSlot(HomeHighlight::SLOT_BIG),
             'smallHighlights' => HomeHighlight::forSlot(HomeHighlight::SLOT_SMALL),
+            'rehber' => $this->rehberVerisi($request, $rehberYuzeyi),
         ]);
+    }
+
+    /**
+     * "Ülke rehberi" bölümünün verisi (F2) — iki temanın ORTAK sözleşmesi.
+     *
+     * Modül kapalıyken ya da hiçbir ülkenin yayında içeriği yokken null döner
+     * ve bölüm hiç basılmaz: boş bir rehber vaadi, ana sayfada yer kaplayan
+     * bir özürden ibaret olurdu. Ülke önceliği K1 (üye ikameti > GeoIP);
+     * çözülen ülke hazır değilse bölüm hazır ülkeleri gösterir, dayatmaz.
+     *
+     * @return array{ulkeler: Collection<int, Country>, secili: ?Country, cozulenKod: ?string, ozet: ?array{temsilcilikSayisi: int, islemTurleri: Collection<int, IslemTuru>}}|null
+     */
+    private function rehberVerisi(Request $request, RehberYuzeyi $yuzey): ?array
+    {
+        if (! Modules::enabled('rehber')) {
+            return null;
+        }
+
+        $ulkeler = $yuzey->hazirUlkeler();
+
+        if ($ulkeler->isEmpty()) {
+            return null;
+        }
+
+        $cozulenKod = $yuzey->cozulenUlkeKodu($request->user(), $request);
+        $secili = $cozulenKod !== null ? $ulkeler->firstWhere('code', $cozulenKod) : null;
+
+        return [
+            'ulkeler' => $ulkeler,
+            'secili' => $secili,
+            'cozulenKod' => $cozulenKod,
+            'ozet' => $secili !== null ? $yuzey->ulkeOzeti($secili) : null,
+        ];
     }
 }
