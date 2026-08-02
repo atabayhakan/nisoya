@@ -1,5 +1,5 @@
 import Alpine from 'alpinejs';
-import Webpass from '@laragear/webpass';
+import { Passkeys, UserCancelledError, InvalidDomainError, PasskeyExistsError, NotSupportedError } from '@laravel/passkeys';
 
 // Hafif scroll-reveal: eleman görünüme girdiğinde hafifçe belirir/yükselir.
 // JS çalışmazsa hiçbir static class eklenmediği için içerik normal
@@ -704,34 +704,36 @@ function urlBase64ToUint8Array(base64String) {
     return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
 }
 
-// Passkey ile giriş (Faz M2). Giriş sayfasındaki düğme — e-posta alanı
-// doluysa o hesabın passkey'leri, boşsa cihazın hatırladığı (discoverable)
-// passkey kullanılır. Sunucu: App\Http\Controllers\WebAuthn\WebAuthnLoginController.
-// webpass'in attest()/assert() döndürdüğü {error} nesnesini insan-okur bir
-// mesaja çevirir. En sık görülen gerçek neden: sayfa bir e-posta/uygulama içi
-// tarayıcıda (Outlook, Gmail, Instagram vb. WKWebView) açılmış — bu tür
-// gömülü tarayıcılar Face ID/Touch ID ceremonisine izin vermiyor ve
-// navigator.credentials.create()/get() sunucuya hiç ulaşmadan NotAllowedError
-// ile reddediyor (bkz. webpass kaynağı: DOMException .cause üzerinde saklanır).
+// Passkey hataları (Faz M2; laravel/passkeys'e geçiş 2026-08-02) — istemci
+// paketi DOMException'ları tipli hatalara çevirir (UserCancelledError vb.),
+// biz de insan-okur Türkçeye. En sık görülen gerçek neden: sayfa bir
+// e-posta/uygulama içi tarayıcıda (Outlook, Gmail, Instagram vb. WKWebView)
+// açılmış — bu tür gömülü tarayıcılar Face ID/Touch ID ceremonisine izin
+// vermiyor ve ceremony sunucuya hiç ulaşmadan iptalle düşüyor.
 function passkeyErrorMessage(error) {
-    const domName = error?.cause?.name || error?.name;
     const inAppHint = 'Bu bağlantıyı bir e-posta/uygulama içi tarayıcıda (ör. Outlook, Gmail) açtıysan Face ID/parmak izi çalışmaz — Safari veya Chrome\'da doğrudan aç, ya da Nisoya\'yı ana ekranına ekleyip oradan kullan.';
 
-    if (domName === 'NotAllowedError') {
+    if (error instanceof UserCancelledError) {
         return 'İşlem tamamlanamadı veya izin verilmedi. ' + inAppHint;
     }
-    if (domName === 'SecurityError') {
+    if (error instanceof InvalidDomainError) {
         // Alan adı sabit kodlanmaz; kullanıcının gerçekten üzerinde olduğu host.
         return 'Bu sayfa adresi passkey için güvenli kabul edilmedi. ' + window.location.hostname + ' adresinden doğrudan eriştiğinden emin ol.';
     }
-    if (domName === 'AbortError') {
-        return 'İşlem zaman aşımına uğradı veya iptal edildi. Tekrar dene.';
+    if (error instanceof PasskeyExistsError) {
+        return 'Bu cihaz için zaten kayıtlı bir passkey var.';
+    }
+    if (error instanceof NotSupportedError) {
+        return 'Bu tarayıcı passkey desteklemiyor — telefonundan veya güncel bir tarayıcıdan dene.';
     }
     return 'Passkey işlemi tamamlanamadı. Cihazın desteklemiyor olabilir. ' + inAppHint;
 }
 
-Alpine.data('passkeyLogin', (optionsUrl, loginUrl) => ({
-    supported: Webpass.isSupported(),
+// Passkey ile giriş: kayıtlar keşfedilebilir (resident) olduğu için cihaz
+// kendi hesap seçicisini gösterir. Uçlar paketin varsayılanları
+// (/passkeys/login/options + /passkeys/login).
+Alpine.data('passkeyLogin', () => ({
+    supported: Passkeys.isSupported(),
     busy: false,
     error: null,
 
@@ -740,25 +742,20 @@ Alpine.data('passkeyLogin', (optionsUrl, loginUrl) => ({
         this.busy = true;
         this.error = null;
 
-        const email = document.getElementById('email')?.value.trim();
-        const { data, success, error } = await Webpass.assert(
-            { path: optionsUrl, body: email ? { email } : {} },
-            loginUrl,
-        );
-
-        this.busy = false;
-        if (success && data?.redirect) {
-            window.location.href = data.redirect;
-            return;
+        try {
+            const response = await Passkeys.verify();
+            window.location.href = response?.redirect || '/panel';
+        } catch (error) {
+            this.busy = false;
+            this.error = passkeyErrorMessage(error);
         }
-        this.error = passkeyErrorMessage(error);
     },
 }));
 
-// Passkey ekleme (Faz M2, 2FA/güvenlik sayfası). Alias'ı query string ile
-// taşıyoruz — sunucu tarafındaki gerekçe için bkz. WebAuthnRegisterController.
-Alpine.data('passkeyManage', (optionsUrl, registerUrl) => ({
-    supported: Webpass.isSupported(),
+// Passkey ekleme (2FA/güvenlik sayfası). Paket 'name' alanını zorunlu tutar;
+// kullanıcı ad vermezse UI'daki varsayılan etiketle kaydedilir.
+Alpine.data('passkeyManage', () => ({
+    supported: Passkeys.isSupported(),
     busy: false,
     error: null,
     alias: '',
@@ -768,17 +765,13 @@ Alpine.data('passkeyManage', (optionsUrl, registerUrl) => ({
         this.busy = true;
         this.error = null;
 
-        const url = this.alias.trim()
-            ? `${registerUrl}?alias=${encodeURIComponent(this.alias.trim())}`
-            : registerUrl;
-        const { success, error } = await Webpass.attest(optionsUrl, url);
-
-        this.busy = false;
-        if (success) {
+        try {
+            await Passkeys.register({ name: this.alias.trim().slice(0, 50) || 'Passkey' });
             window.location.reload();
-            return;
+        } catch (error) {
+            this.busy = false;
+            this.error = passkeyErrorMessage(error);
         }
-        this.error = passkeyErrorMessage(error);
     },
 }));
 

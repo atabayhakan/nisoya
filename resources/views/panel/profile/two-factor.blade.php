@@ -96,10 +96,12 @@
             </section>
         @endif
 
-        {{-- Passkey yönetimi (Faz M2). WebAuthn desteklemeyen tarayıcıda
-             ekleme düğmesi gizlenir ama mevcut liste görünür kalır. --}}
+        {{-- Passkey yönetimi (Faz M2; laravel/passkeys'e geçiş 2026-08-02 —
+             uçlar paketin varsayılanları /user/passkeys*). WebAuthn
+             desteklemeyen tarayıcıda ekleme düğmesi gizlenir ama mevcut
+             liste görünür kalır. --}}
         <section
-            x-data="passkeyManage(@js(route('panel.profile.passkey.options')), @js(route('panel.profile.passkey.register')))"
+            x-data="passkeyManage()"
             class="mt-6 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none"
         >
             <header>
@@ -123,13 +125,13 @@
                         <li class="flex items-center justify-between gap-3 px-4 py-3">
                             <div class="min-w-0">
                                 <div class="truncate text-sm font-medium text-stone-800 dark:text-stone-100">
-                                    {{ $passkey->alias ?: 'Passkey' }}
+                                    {{ $passkey->name ?: 'Passkey' }}
                                 </div>
                                 <div class="text-xs text-stone-600 dark:text-stone-400">
                                     Eklendi: {{ $passkey->created_at->format('d.m.Y') }}
                                 </div>
                             </div>
-                            <form method="POST" action="{{ route('panel.profile.passkey.destroy', $passkey->getKey()) }}" onsubmit="return confirm('Bu passkey silinsin mi? Bu cihazla şifresiz giriş yapamazsın.')">
+                            <form method="POST" action="{{ route('passkey.destroy', $passkey) }}" onsubmit="return confirm('Bu passkey silinsin mi? Bu cihazla şifresiz giriş yapamazsın.')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="rounded-lg p-2 text-stone-600 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400" title="Passkey'i sil">

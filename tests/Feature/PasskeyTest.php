@@ -7,13 +7,22 @@ use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Foundation\Testing\WithFaker;
+use Laravel\Passkeys\Passkey;
 use Tests\TestCase;
 
+/**
+ * Passkey akışı — laravel/passkeys'e geçiş sonrası (2026-08-02; eski
+ * laragear/webauthn resmen terk edilmişti, halefi Packagist'te ilan edilmişti).
+ *
+ * WebAuthn kripto törenleri gerçek cihaz ister; burada tören DIŞI sözleşme
+ * sınanır: uçların kimlik kapıları, seçeneklerin şekli, sahiplik (başkasının
+ * passkey'i silinemez) ve arayüz yüzeyleri. Uçlar artık paketin
+ * varsayılanları: /passkeys/login/* (misafir) + /user/passkeys* (oturum).
+ */
 class PasskeyTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, WithFaker;
 
     protected function setUp(): void
     {
@@ -22,79 +31,61 @@ class PasskeyTest extends TestCase
     }
 
     /** Sahte bir passkey satırı ekler (WebAuthn kripto akışı olmadan). */
-    private function fakeCredential(User $user, string $id = 'test-credential-id'): string
+    private function fakeCredential(User $user, string $ad = 'Test Cihazı'): Passkey
     {
-        DB::table('webauthn_credentials')->insert([
-            'id' => $id,
-            'authenticatable_type' => User::class,
-            'authenticatable_id' => $user->id,
-            'user_id' => (string) Str::uuid(),
-            'alias' => 'Test Cihazı',
-            'rp_id' => 'localhost',
-            'origin' => 'http://localhost',
-            'public_key' => 'test-public-key',
-            'created_at' => now(),
-            'updated_at' => now(),
+        // İlişki üzerinden: user_id paket modelinde fillable değil.
+        return $user->passkeys()->create([
+            'name' => $ad,
+            'credential_id' => $this->faker->unique()->sha256(),
+            'credential' => ['publicKeyCredentialId' => 'test', 'credentialPublicKey' => 'test-key'],
         ]);
-
-        return $id;
     }
 
-    public function test_attestation_options_requires_auth(): void
+    public function test_kayit_secenekleri_oturum_ister(): void
     {
-        $this->post('/panel/profil/passkey/secenekler')->assertRedirect('/giris');
+        $this->get('/user/passkeys/options')->assertRedirect('/giris');
     }
 
-    public function test_user_gets_attestation_options(): void
+    public function test_uye_kayit_seceneklerini_alir(): void
     {
         $this->actingAs(User::factory()->create())
-            ->postJson('/panel/profil/passkey/secenekler')
+            ->getJson('/user/passkeys/options')
             ->assertOk()
-            ->assertJsonStructure(['challenge', 'rp', 'user']);
+            ->assertJsonStructure(['options' => ['challenge', 'rp', 'user']]);
     }
 
-    public function test_guest_gets_assertion_options(): void
+    public function test_misafir_giris_seceneklerini_alir(): void
     {
-        $this->postJson('/webauthn/giris/secenekler')
+        $this->getJson('/passkeys/login/options')
             ->assertOk()
-            ->assertJsonStructure(['challenge']);
+            ->assertJsonStructure(['options' => ['challenge']]);
     }
 
-    public function test_assertion_options_with_email(): void
-    {
-        $user = User::factory()->create();
-        $this->fakeCredential($user);
-
-        $this->postJson('/webauthn/giris/secenekler', ['email' => $user->email])
-            ->assertOk()
-            ->assertJsonStructure(['challenge']);
-    }
-
-    public function test_user_can_delete_own_passkey(): void
+    public function test_uye_kendi_passkeyini_silebilir(): void
     {
         $user = User::factory()->create();
-        $id = $this->fakeCredential($user);
+        $passkey = $this->fakeCredential($user);
 
         $this->actingAs($user)
-            ->delete('/panel/profil/passkey/'.$id)
+            ->delete('/user/passkeys/'.$passkey->id)
             ->assertRedirect();
 
-        $this->assertDatabaseMissing('webauthn_credentials', ['id' => $id]);
+        $this->assertDatabaseMissing('passkeys', ['id' => $passkey->id]);
     }
 
-    public function test_user_cannot_delete_others_passkey(): void
+    public function test_uye_baskasinin_passkeyini_silemez(): void
     {
         $owner = User::factory()->create();
-        $id = $this->fakeCredential($owner);
+        $passkey = $this->fakeCredential($owner);
 
         $this->actingAs(User::factory()->create())
-            ->delete('/panel/profil/passkey/'.$id)
-            ->assertRedirect();
+            ->delete('/user/passkeys/'.$passkey->id)
+            ->assertForbidden();
 
-        $this->assertDatabaseHas('webauthn_credentials', ['id' => $id]);
+        $this->assertDatabaseHas('passkeys', ['id' => $passkey->id]);
     }
 
-    public function test_security_page_lists_passkeys(): void
+    public function test_guvenlik_sayfasi_passkeyleri_listeler(): void
     {
         $user = User::factory()->create();
         $this->fakeCredential($user);
@@ -106,7 +97,7 @@ class PasskeyTest extends TestCase
             ->assertSee('Passkey');
     }
 
-    public function test_login_page_has_passkey_button(): void
+    public function test_giris_sayfasinda_passkey_dugmesi_var(): void
     {
         $this->get('/giris')
             ->assertOk()
