@@ -28,10 +28,11 @@ class PwaTest extends TestCase
 
     public function test_manifest_is_valid(): void
     {
-        $path = public_path('manifest.webmanifest');
-        $this->assertFileExists($path);
+        // Manifest artık statik dosya değil, dinamik rota (theme_color marka
+        // rengini izlesin diye) — ayrıntılar ManifestTest'te; burada PWA
+        // sözleşmesinin çekirdeği doğrulanır.
+        $manifest = $this->get('/manifest.webmanifest')->assertOk()->json();
 
-        $manifest = json_decode(file_get_contents($path), true);
         $this->assertSame('Nisoya', $manifest['short_name']);
         $this->assertSame('standalone', $manifest['display']);
         $this->assertNotEmpty($manifest['icons']);

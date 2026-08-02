@@ -26,6 +26,7 @@ use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\JobSavedSearchController;
 use App\Http\Controllers\ListingAvailabilityController;
 use App\Http\Controllers\ListingController;
+use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NabizController;
@@ -111,6 +112,11 @@ Route::view('/cerez-tercihleri', 'pages.cerez-tercihleri')->name('pages.cookie-p
 
 // SEO  (robots.txt → public/robots.txt statik dosyası, nginx doğrudan sunar)
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
+// PWA manifest'i — DİNAMİK: theme_color marka rengini/temayı izler.
+// public/ altında aynı adlı statik dosya BIRAKILMAMALI, yoksa nginx onu
+// sunar ve bu rota hiç çalışmaz (dosya bu yüzden silindi).
+Route::get('/manifest.webmanifest', ManifestController::class)->name('manifest');
 
 // Sağlık kontrolü (uptime monitor'ler için basit JSON)
 Route::middleware('throttle:health-basic')
