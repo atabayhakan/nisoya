@@ -34,6 +34,11 @@ class CountrySeeder extends Seeder
             ['UZ', 'Özbekistan', '🇺🇿', 'UZS', 41.2995, 69.2401],
             ['TM', 'Türkmenistan', '🇹🇲', 'TMT', 37.9601, 58.3261],
             ['RU', 'Rusya', '🇷🇺', 'RUB', 55.7558, 37.6173],
+            // Körfez (büyüme kararı 2026-07-29, öneri 3): sona eklendi —
+            // sort_order dizin sırası olduğu için mevcut ülkelerin sırası bozulmaz.
+            ['AE', 'Birleşik Arap Emirlikleri', '🇦🇪', 'AED', 25.2048, 55.2708],
+            ['QA', 'Katar', '🇶🇦', 'QAR', 25.2854, 51.5310],
+            ['SA', 'Suudi Arabistan', '🇸🇦', 'SAR', 24.7136, 46.6753],
         ];
 
         foreach ($countries as $i => $c) {

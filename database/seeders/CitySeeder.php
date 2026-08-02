@@ -35,6 +35,10 @@ class CitySeeder extends Seeder
             'UZ' => ['Taşkent', 'Semerkant'],
             'TM' => ['Aşkabat', 'Türkmenabat'],
             'RU' => ['Moskova', 'Sankt-Peterburg'],
+            // Körfez
+            'AE' => ['Dubai', 'Abu Dabi'],
+            'QA' => ['Doha', 'Al Rayyan'],
+            'SA' => ['Riyad', 'Cidde'],
         ];
 
         foreach ($data as $countryCode => $cities) {
