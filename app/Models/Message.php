@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\PlatformDisiIsaret;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
@@ -108,6 +109,11 @@ class Message extends Model
             'image' => $this->imageUrl(),
             'lat' => $coords['lat'] ?? null,
             'lng' => $coords['lng'] ?? null,
+            // Platform-dışı çekme işareti YALNIZ karşı tarafın mesajında:
+            // uyarının muhatabı alıcıdır (bkz. PlatformDisiIsaret).
+            'dikkat' => $this->sender_id !== $me
+                && ! $this->isRecalled()
+                && PlatformDisiIsaret::tespit($this->displayBody()),
         ];
     }
 
