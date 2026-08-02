@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Jobs\ProcessEventImage;
 use App\Models\Event;
 use App\Models\EventMedia;
+use App\Services\VideoKonumTemizleyici;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Anı akışı yüklemeleri (herkese açık davet sayfasından).
@@ -60,6 +62,12 @@ class EventMediaController extends Controller
                 }
 
                 $path = $file->store('event-media/'.$event->id.'/video', EventMedia::DISK);
+
+                // Gizlilik: fotoğrafın EXIF'i kuyrukta temizleniyor; videonun
+                // konum atomları da (©xyz / loci / Apple meta) burada YERİNDE
+                // silinir — dosya yeniden paketlenmez, oynatma bozulamaz
+                // (bkz. VideoKonumTemizleyici sözleşmesi).
+                app(VideoKonumTemizleyici::class)->temizle(Storage::disk(EventMedia::DISK)->path($path));
 
                 $event->media()->create([
                     'event_guest_id' => $guest?->id,
