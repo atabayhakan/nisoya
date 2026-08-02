@@ -55,6 +55,11 @@ class TemaTest extends TestCase
         'partials/home/rehber.blade.php',
         'partials/home/ulkeler.blade.php',
         'partials/home/yeni_ilanlar.blade.php',
+
+        // R1 (2026-08-02): kart ayrışması onarımı — profil/anasayfa/emlak/
+        // vasıta/favoriler de Vitrin'de Vitrin kartını bassın diye aynı-ad
+        // köprüsü (içeriği x-vitrin.listing-card'a devreder).
+        'partials/listing-card.blade.php',
     ];
 
     protected function setUp(): void
@@ -276,6 +281,38 @@ class TemaTest extends TestCase
             ->assertSee('Sonuç bulunamadı', false)
             ->assertSee('Tüm ilanları gör', false)
             ->assertSee('viewBox="0 0 120 90"', false);
+    }
+
+    /**
+     * R1 — kart ayrışması onarımı: profil, emlak, vasıta ve ana sayfa
+     * `partials.listing-card` include ettiği için Vitrin temasında bile
+     * klasik kart basıyordu. Aynı-ad override köprüsü hepsini tek dosyayla
+     * Vitrin kartına çevirir. Ayırt edici imza `rounded-[14px]`: kartın iç
+     * görsel çerçevesi, yalnız Vitrin kartında var.
+     */
+    public function test_vitrin_karti_profil_ve_emlakta_da_basilir(): void
+    {
+        Settings::setMany(['gorunum.tema' => 'vitrin']);
+
+        $listing = Listing::factory()->create(['status' => 'aktif']);
+        Listing::factory()->create(['status' => 'aktif', 'type' => 'emlak']);
+
+        // R1'in ana şikâyeti profildi.
+        $profil = $this->get(route('profiles.show', $listing->user->username))->assertOk()->getContent();
+        $this->assertStringContainsString('rounded-[14px]', $profil, 'Profil Vitrin kartı basmalı.');
+
+        $emlak = $this->get('/emlak')->assertOk()->getContent();
+        $this->assertStringContainsString('rounded-[14px]', $emlak, 'Emlak listesi Vitrin kartı basmalı.');
+    }
+
+    public function test_klasik_temada_kartlar_klasik_kalir(): void
+    {
+        $listing = Listing::factory()->create(['status' => 'aktif']);
+
+        // Override köprüsü yalnız Vitrin yolunda yaşar — klasikte iz bırakmaz.
+        $this->get(route('profiles.show', $listing->user->username))
+            ->assertOk()
+            ->assertDontSee('rounded-[14px]', false);
     }
 
     public function test_vitrin_listing_card_keeps_image_and_featured_contracts(): void
