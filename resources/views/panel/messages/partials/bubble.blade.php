@@ -31,6 +31,15 @@
                 @if ($mine && $message->read_at)<span class="read-mark">· okundu</span>@endif
                 @if ($mine)<button type="button" class="recall-btn font-medium underline decoration-dotted underline-offset-2 hover:no-underline">· geri al</button>@endif
             </p>
+
+            {{-- Platform-dışı çekme uyarısı — yalnız KARŞI TARAFIN mesajında
+                 (uyarının muhatabı alıcı). Engellemez, işaretler; metin JS
+                 aynasıyla (show.blade dikkatNode) birebir aynı kalmalı. --}}
+            @if (! $mine && \App\Support\PlatformDisiIsaret::tespit($message->body))
+                <p class="platform-uyari mt-1.5 border-t border-amber-300/50 pt-1.5 text-2xs font-medium text-amber-700 dark:border-amber-400/20 dark:text-amber-400">
+                    ⚠️ Konuşmayı platform dışına taşıma teklifi olabilir — yazışma burada kalırsa kaydı elinde olur; görmeden ödeme yapma.
+                </p>
+            @endif
         </div>
     @endif
 </div>

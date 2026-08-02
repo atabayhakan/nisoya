@@ -165,8 +165,18 @@
                 bubble.className = 'max-w-[75%] rounded-2xl px-4 py-2 ' + (m.mine ? MINE : THEIRS);
                 fillBubble(bubble, m);
                 bubble.append(metaEl(m));
+                if (m.dikkat) bubble.append(dikkatNode());
                 wrap.append(bubble);
                 thread.append(wrap);
+            }
+
+            // Platform-dışı çekme uyarısı — sunucu render'ındaki
+            // bubble.blade.php metniyle BİREBİR aynı kalmalı.
+            function dikkatNode() {
+                const p = document.createElement('p');
+                p.className = 'platform-uyari mt-1.5 border-t border-amber-300/50 pt-1.5 text-2xs font-medium text-amber-700 dark:border-amber-400/20 dark:text-amber-400';
+                p.textContent = '⚠️ Konuşmayı platform dışına taşıma teklifi olabilir — yazışma burada kalırsa kaydı elinde olur; görmeden ödeme yapma.';
+                return p;
             }
 
             function markRecalled(id) {
