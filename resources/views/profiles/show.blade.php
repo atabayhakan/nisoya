@@ -247,7 +247,9 @@
                     </form>
                 @elseif (auth()->id() !== $user->id)
                     <div class="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-5 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300">
-                        Bu üyeyi değerlendirebilmek için önce kendisiyle iletişime geçmiş olman gerekir.
+                        {{-- Metin ReviewController'daki kapı kuralıyla aynı: değerlendirme,
+                             gerçekleşmiş bir etkileşimin beyanıdır. --}}
+                        Değerlendirme bırakabilmek için aranızda iki tarafın da yazdığı bir konuşma ya da tamamlanmış bir anlaşma olması gerekir.
                         @if ($listings->isNotEmpty())
                             @php($firstListing = $listings->first())
                             <a href="{{ route('listings.show', [$firstListing, $firstListing->slug]) }}" class="font-medium text-emerald-700 hover:underline dark:text-emerald-400">Bir ilanına mesaj gönder</a>

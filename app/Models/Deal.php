@@ -43,6 +43,24 @@ class Deal extends Model
         ];
     }
 
+    /**
+     * İki kullanıcı arasındaki EN SON tamamlanmış anlaşmanın id'si (yoksa null).
+     *
+     * Değerlendirme kapısının iki müşterisi var (form görünürlüğü +
+     * kaydetme); sorgu tek yerde dursun ki tanımlar ayrışamasın.
+     */
+    public static function latestCompletedIdBetween(int $userId, int $otherId): ?int
+    {
+        return static::query()
+            ->where('status', DealStatus::Tamamlandi->value)
+            ->where(function ($q) use ($userId, $otherId) {
+                $q->where(['seller_id' => $userId, 'buyer_id' => $otherId])
+                    ->orWhere(['seller_id' => $otherId, 'buyer_id' => $userId]);
+            })
+            ->latest('completed_at')
+            ->value('id');
+    }
+
     /** @return BelongsTo<Conversation, $this> */
     public function conversation(): BelongsTo
     {

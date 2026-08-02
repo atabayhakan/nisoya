@@ -37,6 +37,11 @@ class DealTest extends TestCase
         $listing = Listing::factory()->create(['user_id' => $seller->id, 'status' => 'aktif']);
         $conversation = Conversation::findOrCreateBetween($buyer->id, $seller->id, $listing->id);
 
+        // Gerçek hayatta anlaşma bir yazışmanın içinde doğar; değerlendirme
+        // kapısı da (2026-08-02) iki tarafın yazdığı konuşma ister.
+        $conversation->messages()->create(['sender_id' => $buyer->id, 'body' => 'İlanla ilgileniyorum.']);
+        $conversation->messages()->create(['sender_id' => $seller->id, 'body' => 'Konuşalım.']);
+
         return compact('seller', 'buyer', 'conversation', 'listing');
     }
 

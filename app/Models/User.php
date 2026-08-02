@@ -294,7 +294,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
      * çeker ve istek başına önbelleğe alır (profil/ilan detay tek-kayıt
      * sayfalarında kullanılır, kart listelerinde değil → N+1 riski yok).
      *
-     * @return array{tier: TrustTier, review_count: int, avg: float, age_days: int, email_verified: bool, profile_complete: bool}
+     * @return array{tier: TrustTier, review_count: int, avg: float, age_days: int, email_verified: bool, profile_complete: bool, completed_deals: int, qualified_reviews: int}
      */
     /**
      * Okunmamış mesaj sayısı.
@@ -323,12 +323,28 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
             return $this->trustProfileCache;
         }
 
-        $reviewCount = $this->reviewsReceived()
-            ->where('status', ReviewStatus::Yayinda->value)
-            ->count();
-        $avg = $reviewCount > 0
-            ? round((float) $this->reviewsReceived()->where('status', ReviewStatus::Yayinda->value)->avg('rating'), 1)
-            : 0.0;
+        /*
+         * Sayı + ortalama + NİTELİKLİ sayısı TEK toplama sorgusunda: nitelikli
+         * ölçütü (aşağıda) ayrı sorgu olarak eklenseydi ilan detayı/profil
+         * sorgu bütçeleri şişerdi; birleşince eski iki sorgu bire indi.
+         * Tarih eşiği SQL fonksiyonu değil PHP'den bağlanan parametre —
+         * SQLite (test) ile MySQL (canlı) arasında taşınabilirlik için.
+         */
+        $ozet = $this->reviewsReceived()
+            ->where('reviews.status', ReviewStatus::Yayinda->value)
+            ->leftJoin('users as yorumcu', 'yorumcu.id', '=', 'reviews.reviewer_id')
+            ->selectRaw(
+                'COUNT(*) as adet, AVG(reviews.rating) as ortalama, '
+                .'SUM(CASE WHEN yorumcu.email_verified_at IS NOT NULL '
+                .'AND (reviews.deal_id IS NOT NULL OR yorumcu.created_at <= ?) THEN 1 ELSE 0 END) as nitelikli',
+                [now()->subDays(7)],
+            )
+            ->toBase()
+            ->first();
+
+        $reviewCount = (int) ($ozet->adet ?? 0);
+        $avg = $reviewCount > 0 ? round((float) ($ozet->ortalama ?? 0), 1) : 0.0;
+        $qualifiedReviews = (int) ($ozet->nitelikli ?? 0);
         $ageDays = (int) abs($this->created_at?->diffInDays(now()) ?? 0);
         $emailVerified = $this->email_verified_at !== null;
         $profileComplete = filled($this->avatar_path) && filled($this->bio) && filled($this->country_code);
@@ -340,8 +356,18 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
             ->where(fn ($q) => $q->where('seller_id', $this->id)->orWhere('buyer_id', $this->id))
             ->count();
 
+        /*
+         * GÜVENİLİR rozeti için yalnız NİTELİKLİ değerlendirmeler sayılır
+         * (yukarıdaki toplama sorgusundaki CASE): değerlendiren e-postası
+         * doğrulanmış VE (değerlendirme tamamlanmış bir anlaşmaya bağlı YA DA
+         * değerlendiren hesabı en az 7 günlük). Gerekçe (açık işler
+         * envanteri, "değerlendirme kapısı"): beş taze hesapla beş yıldız
+         * basıp rozet almak mümkündü. Görünen sayı/ortalama ($reviewCount/
+         * $avg) bilerek DEĞİŞMEDİ — sayfada gizlenen yorum yok, yalnız
+         * rozetin kanıt eşiği sertleşti.
+         */
         $tier = match (true) {
-            $ageDays >= 60 && $avg >= 4.0 && ($reviewCount >= 5 || $completedDeals >= 5) => TrustTier::Guvenilir,
+            $ageDays >= 60 && $avg >= 4.0 && ($qualifiedReviews >= 5 || $completedDeals >= 5) => TrustTier::Guvenilir,
             $emailVerified && $profileComplete && ($reviewCount >= 1 || $completedDeals >= 1 || $ageDays >= 30) => TrustTier::Uye,
             default => TrustTier::Yeni,
         };
@@ -354,6 +380,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Web
             'email_verified' => $emailVerified,
             'profile_complete' => $profileComplete,
             'completed_deals' => $completedDeals,
+            'qualified_reviews' => $qualifiedReviews,
         ];
     }
 
