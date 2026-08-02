@@ -40,7 +40,11 @@ return [
             'connection' => env('DB_QUEUE_CONNECTION'),
             'table' => env('DB_QUEUE_TABLE', 'jobs'),
             'queue' => env('DB_QUEUE', 'default'),
-            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 90),
+            // DEĞİŞMEZ: retry_after, worker'ın --timeout'undan BÜYÜK olmalı
+            // (şablonda 120 — bkz. deploy/supervisor-nisoya-worker.conf).
+            // Küçük kalırsa kuyruk, hâlâ çalışan işi ikinci kez salıverir ve
+            // e-posta bildirimleri ÇİFT gider. Bekçi: KuyrukDegismeziTest.
+            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 180),
             'after_commit' => false,
         ],
 
@@ -68,7 +72,9 @@ return [
             'driver' => 'redis',
             'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
             'queue' => env('REDIS_QUEUE', 'default'),
-            'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 90),
+            // CANLI bu bağlantıyı kullanıyor (QUEUE_CONNECTION=redis) — aynı
+            // değişmez: worker --timeout'undan büyük kalmalı (üstteki not).
+            'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 180),
             'block_for' => null,
             'after_commit' => false,
         ],
