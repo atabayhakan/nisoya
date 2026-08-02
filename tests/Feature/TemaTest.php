@@ -51,6 +51,8 @@ class TemaTest extends TestCase
         'partials/home/deger_onerileri.blade.php',
         'partials/home/kategoriler.blade.php',
         'partials/home/nasil_calisir.blade.php',
+        // Rehber F2 (2026-08-02): "Ülke Rehberi" anasayfa bölümünün Vitrin yüzü.
+        'partials/home/rehber.blade.php',
         'partials/home/ulkeler.blade.php',
         'partials/home/yeni_ilanlar.blade.php',
     ];

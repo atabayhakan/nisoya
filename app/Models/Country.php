@@ -54,6 +54,12 @@ class Country extends Model
         return $this->hasMany(Listing::class, 'country_code', 'code');
     }
 
+    /** @return HasMany<Temsilcilik, $this> */
+    public function temsilcilikler(): HasMany
+    {
+        return $this->hasMany(Temsilcilik::class, 'country_code', 'code');
+    }
+
     public function defaultCurrency(): BelongsTo
     {
         return $this->belongsTo(Currency::class, 'default_currency', 'code');

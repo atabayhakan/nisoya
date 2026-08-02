@@ -32,6 +32,7 @@ class HomeSections
         'deger_onerileri' => 'Değer önerileri + öne çıkanlar',
         'kategoriler' => 'Kategoriler',
         'ulkeler' => 'Ülkeler',
+        'rehber' => 'Ülke rehberi (konsolosluk işlemleri)',
         'yeni_ilanlar' => 'Yeni ilanlar',
         'nasil_calisir' => 'Nasıl çalışır',
         'cta' => 'Kayıt çağrısı (CTA)',
@@ -46,8 +47,11 @@ class HomeSections
      * @var array<string, array<int, string>>
      */
     public const VARSAYILAN_SIRA = [
-        'klasik' => ['canli_akis', 'deger_onerileri', 'kategoriler', 'ulkeler', 'yeni_ilanlar', 'nasil_calisir', 'cta'],
-        'vitrin' => ['kategoriler', 'yeni_ilanlar', 'deger_onerileri', 'ulkeler', 'nasil_calisir', 'cta'],
+        // 'rehber' varsayılanda 'ulkeler'den SONRA: çapalar sıra İNDEKSİNE
+        // bağlı (klasik zone_orta=3, vitrin nabiz=1) — araya daha önden bir
+        // bölüm sokmak çapalı blokları sayfada kaydırırdı.
+        'klasik' => ['canli_akis', 'deger_onerileri', 'kategoriler', 'ulkeler', 'rehber', 'yeni_ilanlar', 'nasil_calisir', 'cta'],
+        'vitrin' => ['kategoriler', 'yeni_ilanlar', 'deger_onerileri', 'ulkeler', 'rehber', 'nasil_calisir', 'cta'],
     ];
 
     /**
