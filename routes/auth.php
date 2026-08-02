@@ -9,7 +9,6 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\Auth\VerifyEmailController;
-use App\Http\Controllers\WebAuthn\WebAuthnLoginController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -28,13 +27,9 @@ Route::middleware('guest')->group(function () {
         ->middleware('throttle:6,1')
         ->name('two-factor.login.store');
 
-    // Passkey ile giriş (Faz M2, WebAuthn assertion)
-    Route::post('webauthn/giris/secenekler', [WebAuthnLoginController::class, 'options'])
-        ->middleware('throttle:login')
-        ->name('webauthn.login.options');
-    Route::post('webauthn/giris', [WebAuthnLoginController::class, 'login'])
-        ->middleware('throttle:login')
-        ->name('webauthn.login');
+    // Passkey ile giriş: uçlar artık laravel/passkeys paketinden gelir
+    // (GET /passkeys/login/options + POST /passkeys/login, guest+throttle'lı;
+    // yönetim uçları /user/passkeys* auth arkasında — bkz. config/passkeys.php).
 
     Route::get('sifremi-unuttum', [PasswordResetLinkController::class, 'create'])->name('password.request');
     // throttle: e-posta bombardımanı/enumeration denemelerine karşı IP başına 6/dk.

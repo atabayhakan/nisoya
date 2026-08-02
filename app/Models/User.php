@@ -21,8 +21,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Laragear\WebAuthn\Contracts\WebAuthnAuthenticatable;
-use Laragear\WebAuthn\WebAuthnAuthentication;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\PasskeyAuthenticatable;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -31,10 +31,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property UserStatus $status UserStatus::class cast (bkz. casts())
  * @property array<int, string>|null $account_recovery_codes encrypted:array cast (bkz. casts())
  */
-class User extends Authenticatable implements FilamentUser, MustVerifyEmail, WebAuthnAuthenticatable
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasPushSubscriptions, LogsActivity, Notifiable, WebAuthnAuthentication;
+    use HasFactory, HasPushSubscriptions, LogsActivity, Notifiable, PasskeyAuthenticatable;
 
     protected $fillable = [
         'name',

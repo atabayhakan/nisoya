@@ -38,11 +38,13 @@
         </button>
     </form>
 
-    {{-- Passkey ile giriş (Faz M2) — WebAuthn desteklenmiyorsa hiç görünmez.
-         E-posta alanı doluysa o hesabın passkey'i, boşsa cihazın hatırladığı
-         passkey kullanılır. JS: resources/js/app.js → passkeyLogin(). --}}
+    {{-- Passkey ile giriş (Faz M2; laravel/passkeys'e geçiş 2026-08-02) —
+         WebAuthn desteklenmiyorsa hiç görünmez. Kayıtlar keşfedilebilir
+         (resident) olduğu için cihaz kendi hesap seçicisini gösterir;
+         e-posta alanına bağımlılık kalktı. Uçlar paketin varsayılanları
+         (/passkeys/login/options + /passkeys/login), JS: app.js → passkeyLogin(). --}}
     <div
-        x-data="passkeyLogin(@js(route('webauthn.login.options')), @js(route('webauthn.login')))"
+        x-data="passkeyLogin()"
         x-show="supported"
         x-cloak
     >

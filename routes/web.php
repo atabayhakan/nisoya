@@ -52,7 +52,6 @@ use App\Http\Controllers\StoryController;
 use App\Http\Controllers\TemaOzellestiriciController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\VehicleBrowseController;
-use App\Http\Controllers\WebAuthn\WebAuthnRegisterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -340,10 +339,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/panel/profil/iki-faktor/kapat', [TwoFactorController::class, 'disable'])
         ->middleware('throttle:6,1')->name('panel.profile.2fa.disable');
 
-    // Passkey kayıt/yönetim (Faz M2, WebAuthn attestation)
-    Route::post('/panel/profil/passkey/secenekler', [WebAuthnRegisterController::class, 'options'])->name('panel.profile.passkey.options');
-    Route::post('/panel/profil/passkey', [WebAuthnRegisterController::class, 'register'])->name('panel.profile.passkey.register');
-    Route::delete('/panel/profil/passkey/{credentialId}', [WebAuthnRegisterController::class, 'destroy'])->name('panel.profile.passkey.destroy');
+    // Passkey kayıt/yönetim uçları artık laravel/passkeys paketinden
+    // (GET /user/passkeys/options + POST /user/passkeys + DELETE
+    // /user/passkeys/{passkey}) — bkz. config/passkeys.php.
 });
 
 require __DIR__.'/auth.php';
