@@ -35,7 +35,21 @@
 
             <div class="flex min-w-0 max-w-[85%] flex-col gap-1">
                 <div class="min-w-0 rounded-2xl rounded-tl-md bg-gray-100 px-4 py-3 shadow-sm ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/5">
-                    <p class="whitespace-pre-line text-sm leading-relaxed text-gray-800 dark:text-gray-100">{{ $m->metin }}</p>
+                    {{-- Kâhya cevabı KISITLI markdown'la basılır (yalnız kalın/italik/
+                         bağlantı; önce her şey kaçırılır — bkz. KisitliMarkdown).
+                         Sahip mesajı yukarıda düz metin kalır: kullanıcı yazısı yorumlanmaz. --}}
+                    <p class="whitespace-pre-line text-sm leading-relaxed text-gray-800 dark:text-gray-100 [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-2">{!! \App\Support\KisitliMarkdown::cevir($m->metin) !!}</p>
+
+                    {{-- Yol gösterme: hedef PanelHaritasi'nda DOĞRULANMIŞ adrestir
+                         (model uydurma adres bağlatamaz, bkz. PanelYonlendir).
+                         Düğme geçmişte kalıcı — sahip günler sonra da aynı yerden gidebilir. --}}
+                    @if ($m->hedef_url !== null)
+                        <div class="mt-2.5">
+                            <x-filament::button tag="a" :href="$m->hedef_url" size="sm" color="gray" outlined icon="heroicon-m-arrow-right">
+                                {{ $m->hedef_etiket }} sayfasını aç
+                            </x-filament::button>
+                        </div>
+                    @endif
 
                     {{-- Eylem düğmeleri TIKLANAN mesajın eylemine bağlı —
                          sayfadaki "son eyleme" değil. Arka arkaya iki iş

@@ -105,7 +105,17 @@ trait KahyaSohbetiYurutur
         $this->dusunuyor = true;
 
         try {
-            app(KahyaSohbeti::class)->sor($metin, auth()->user(), $ek);
+            $yanit = app(KahyaSohbeti::class)->sor($metin, auth()->user(), $ek);
+
+            /*
+             * Yol gösterme: hedef varsa sol menüdeki ögeyi birkaç saniye
+             * yakıp söndür (bkz. kahya/yol-gosterici.blade.php). Sayfa
+             * KENDİLİĞİNDEN DEĞİŞTİRİLMEZ — gitmek, cevaptaki "Aç"
+             * düğmesiyle sahibin tek tıklık kararıdır.
+             */
+            if ($yanit->hedef !== null) {
+                $this->dispatch('kahya-yonlendir', url: $yanit->hedef->adres, etiket: $yanit->hedef->etiket);
+            }
         } catch (Throwable $e) {
             report($e);
 

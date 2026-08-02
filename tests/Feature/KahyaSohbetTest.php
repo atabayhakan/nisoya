@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Ai\Kahya\EylemToplayici;
 use App\Ai\Kahya\KahyaAjani;
+use App\Ai\Kahya\YonlendirmeToplayici;
 use App\Enums\UserRole;
 use App\Filament\Pages\KahyaSohbet;
 use App\Models\Category;
@@ -243,6 +244,7 @@ class KahyaSohbetTest extends TestCase
             app(EylemKatalogu::class),
             app(EylemCalistirici::class),
             new EylemToplayici,
+            new YonlendirmeToplayici,
             collect(),
             $sahip,
         );
@@ -270,9 +272,11 @@ class KahyaSohbetTest extends TestCase
         $this->assertContains('hamle-oner', $adlar);
         $this->assertContains('web-ara', $adlar);
         $this->assertContains('isletme-kesfet', $adlar);
+        $this->assertContains('panel-yonlendir', $adlar);
         // 15 eylem (10 + F1 hatirla/unut + F2 gorev-ac/gorev-guncelle/hamle-oner)
-        // + okuma halkası: tablo-sorgula + F3 web-ara + isletme-kesfet.
-        $this->assertCount(18, $adlar);
+        // + okuma halkası: tablo-sorgula + F3 web-ara + isletme-kesfet
+        // + yol gösterme: panel-yonlendir.
+        $this->assertCount(19, $adlar);
     }
 
     /**

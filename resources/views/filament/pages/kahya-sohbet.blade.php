@@ -18,14 +18,7 @@
 
             @include('kahya.mesajlar', ['mesajlar' => $mesajlar])
 
-            <div wire:loading wire:target="gonder" class="flex items-center gap-2.5">
-                <x-kahya.avatar boyut="h-7 w-7 text-sm" />
-                <div class="flex items-center gap-1 rounded-2xl rounded-tl-md bg-gray-100 px-4 py-3.5 shadow-sm ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/5">
-                    <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.3s] dark:bg-gray-500"></span>
-                    <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.15s] dark:bg-gray-500"></span>
-                    <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 dark:bg-gray-500"></span>
-                </div>
-            </div>
+            @include('kahya.dusunuyor')
         </div>
 
         {{-- Yazma alanı — balonla aynı "composer" kapsülü (bkz. kahya-balonu). --}}

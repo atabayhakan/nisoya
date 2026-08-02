@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Ai\Kahya\Araclar\TabloSorgula;
 use App\Ai\Kahya\EylemToplayici;
 use App\Ai\Kahya\KahyaAjani;
+use App\Ai\Kahya\YonlendirmeToplayici;
 use App\Enums\HafizaTuru;
 use App\Enums\UserRole;
 use App\Models\KahyaEylemKaydi;
@@ -61,6 +62,7 @@ class KahyaHafizaTest extends TestCase
             app(EylemKatalogu::class),
             app(EylemCalistirici::class),
             new EylemToplayici,
+            new YonlendirmeToplayici,
             collect(),
         );
     }

@@ -4,6 +4,7 @@ namespace App\Ai\Kahya;
 
 use App\Ai\Kahya\Araclar\EylemAraci;
 use App\Ai\Kahya\Araclar\IsletmeKesfet;
+use App\Ai\Kahya\Araclar\PanelYonlendir;
 use App\Ai\Kahya\Araclar\TabloSorgula;
 use App\Ai\Kahya\Araclar\WebAra;
 use App\Models\BekleyenHamle;
@@ -61,6 +62,7 @@ class KahyaAjani implements Agent, Conversational, HasTools
         private readonly EylemKatalogu $katalog,
         private readonly EylemCalistirici $calistirici,
         private readonly EylemToplayici $toplayici,
+        private readonly YonlendirmeToplayici $yonlendirici,
         private readonly Collection $gecmis,
         private readonly ?User $sahip = null,
     ) {}
@@ -97,8 +99,10 @@ class KahyaAjani implements Agent, Conversational, HasTools
 
         ## Panel haritası (yol tarifi için)
         Sahip bir ekranın ya da özelliğin NEREDE olduğunu sorarsa buradan cevapla:
-        sol menüdeki grup adını, ekran adını ve adresini söyle. Haritada olmayan bir
-        yeri tarif etme.
+        sol menüdeki grup adını ve ekran adını söyle, ayrıca `panel-yonlendir` aracını
+        haritadaki adresle çağır — ekran menüde vurgulanır ve cevabına tek tıkla giden
+        bir "Aç" düğmesi eklenir. Ham adresi cevabına yazma. Haritada olmayan bir yeri
+        tarif etme, adres uydurma.
 
         {$this->harita->metin()}
 
@@ -147,6 +151,7 @@ class KahyaAjani implements Agent, Conversational, HasTools
     {
         $araclar = [
             new TabloSorgula,
+            new PanelYonlendir($this->harita, $this->yonlendirici),
             // Dış gözler (F3) — anahtar yokken de kayıtlı: model sahibe
             // "şurayı yapılandır" tarifini ancak aracı görürse verebilir.
             app(WebAra::class),

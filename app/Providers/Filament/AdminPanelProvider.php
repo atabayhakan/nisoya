@@ -137,11 +137,16 @@ class AdminPanelProvider extends PanelProvider
                         return '';
                     }
 
-                    if (request()->routeIs('filament.admin.pages.kahya-sohbet')) {
-                        return '';
+                    // Yol gösterici HER admin sayfasında: "X nerede?" cevabının
+                    // menü vurgusu, sorunun sorulduğu ekranda çalışmalı — buna
+                    // balonun gizlendiği Kâhya ile Konuş sayfası da dahil.
+                    $parcalar = view('kahya.yol-gosterici')->render();
+
+                    if (! request()->routeIs('filament.admin.pages.kahya-sohbet')) {
+                        $parcalar .= Blade::render("@livewire('kahya-balonu')");
                     }
 
-                    return Blade::render("@livewire('kahya-balonu')");
+                    return $parcalar;
                 },
             );
     }

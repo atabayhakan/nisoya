@@ -4,6 +4,7 @@ namespace App\Services\Kahya\Sohbet;
 
 use App\Ai\Kahya\EylemToplayici;
 use App\Ai\Kahya\KahyaAjani;
+use App\Ai\Kahya\YonlendirmeToplayici;
 use App\Models\KahyaEylemKaydi;
 use App\Models\KahyaHarcamasi;
 use App\Models\KahyaMesaji;
@@ -13,6 +14,7 @@ use App\Services\Kahya\Eylem\EylemCalistirici;
 use App\Services\Kahya\Eylem\EylemKatalogu;
 use App\Services\Kahya\KahyaTeshisi;
 use App\Services\Kahya\PanelHaritasi;
+use App\Services\Kahya\PanelHedefi;
 use App\Support\Settings;
 use Illuminate\Support\Collection;
 use Laravel\Ai\Responses\AgentResponse;
@@ -53,6 +55,7 @@ class KahyaSohbeti
         private readonly BekleyenIsler $bekleyen,
         private readonly PanelHaritasi $harita,
         private readonly EylemToplayici $toplayici,
+        private readonly YonlendirmeToplayici $yonlendirici,
     ) {}
 
     /**
@@ -133,6 +136,7 @@ class KahyaSohbeti
 
         // Uzun ömürlü süreçlerde (kuyruk işçisi) önceki turun kayıtları sızmasın.
         $this->toplayici->sifirla();
+        $this->yonlendirici->sifirla();
 
         $saglayici = $this->saglayiciAdi();
         $model = $this->modelAdi($saglayici);
@@ -178,7 +182,7 @@ class KahyaSohbeti
                 : 'Bunu anlayamadım, başka türlü sorar mısın?';
         }
 
-        return $this->yanitla($metin, $sahip, $kayit);
+        return $this->yanitla($metin, $sahip, $kayit, $this->yonlendirici->son());
     }
 
     /** Bekleyen bir eylemi onaylar ve sonucu sohbete yazar. */
@@ -209,6 +213,7 @@ class KahyaSohbeti
             $this->katalog,
             $this->calistirici,
             $this->toplayici,
+            $this->yonlendirici,
             $gecmis,
             $sahip,
         );
@@ -283,19 +288,24 @@ class KahyaSohbeti
         };
     }
 
-    private function yanitla(string $metin, User $sahip, ?KahyaEylemKaydi $kayit = null): SohbetYaniti
+    private function yanitla(string $metin, User $sahip, ?KahyaEylemKaydi $kayit = null, ?PanelHedefi $hedef = null): SohbetYaniti
     {
         KahyaMesaji::create([
             'rol' => KahyaMesaji::ROL_KAHYA,
             'metin' => $metin,
             'kahya_eylemi_id' => $kayit?->id,
             'user_id' => $sahip->id,
+            // Hedef mesaja da yazılır: "Aç" düğmesi sohbet geçmişinde kalıcı —
+            // sahip iki gün sonra kaydırıp aynı düğmeden yine gidebilsin.
+            'hedef_url' => $hedef?->adres,
+            'hedef_etiket' => $hedef?->etiket,
         ]);
 
         return new SohbetYaniti(
             $metin,
             $kayit,
             $kayit?->durum === KahyaEylemKaydi::DURUM_BEKLEMEDE,
+            $hedef,
         );
     }
 }
