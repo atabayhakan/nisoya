@@ -175,7 +175,15 @@ class VitrinHeroTest extends TestCase
 
     public function test_kanit_satiri_katalog_degil_gercek_hareket_gosterir(): void
     {
-        Listing::factory()->count(3)->create(['status' => 'aktif', 'city' => 'Berlin']);
+        // 12 kayıt ŞART, 3 değil. Bu test 3 kayıtla da geçiyordu ama YANLIŞ
+        // SEBEPLE: "aktif ilan" ifadesini kanıt şeridinden değil, mobil ülke
+        // şeridinden okuyordu. O şerit 2026-08-05'te sayı yerine yer
+        // göstermeye geçti (düşük sayı negatif sosyal kanıt) ve test kırıldı.
+        // İddianın kendisi doğruydu, ölçtüğü yer yanlıştı — eşiği geçip
+        // gerçekten kanıt şeridine bakıyoruz (bkz. HomeController::heroSerit).
+        foreach (range(1, 12) as $i) {
+            Listing::factory()->create(['status' => 'aktif', 'is_demo' => false, 'city' => 'Berlin']);
+        }
 
         $yanit = $this->get('/')->assertOk();
 

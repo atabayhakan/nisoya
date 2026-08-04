@@ -159,8 +159,27 @@ class NabizService
      */
     public function countryActivity(): array
     {
-        return Cache::remember('nabiz_country_activity', self::CACHE_TTL_SECONDS, function () {
+        // Anahtar sürümlü (v2): demo süzgeci eklendiğinde eski anahtarda
+        // KİRLİ sayı duruyordu ve TTL dolana kadar canlıda görünmeye devam
+        // ederdi. Sürüm artırmak, elle önbellek temizlemeyi gereksiz kılar.
+        return Cache::remember('nabiz_country_activity_v2', self::CACHE_TTL_SECONDS, function () {
+            // DEMO SAYILMAZ — 2026-08-05'te canlıda bulunan kural ihlali.
+            //
+            // Bu süzgeç eksikken ana sayfada 100 piksel arayla iki öge
+            // birbirinin tersini söylüyordu: kanıt şeridi "şehrinde ilk ilanı
+            // sen ver" (demo süzülü, gerçek envanter az) derken hemen altındaki
+            // ülke satırı "Almanya 12 aktif ilan" diyordu (demo dahil).
+            //
+            // Sızıntı üç yerdeydi: mobil kanıt şeridi, masaüstü "şu an nerede
+            // ilan var" kartı ve nabız haritası. Haritanın altında aynen
+            // "temsili değil, gerçek veri" yazıyor — yani sayfa sahte bir
+            // sayının altına gerçek diyordu.
+            //
+            // Kural zaten vardı ve başka her yerde uygulanıyordu (Kâhya
+            // teşhisi, kanıt şeridi, süreç şeridi, belgeler): demo veri hiçbir
+            // sayıya girmez. Burada unutulmuştu.
             $counts = Listing::query()->active()
+                ->where('is_demo', false)
                 ->whereNotNull('country_code')
                 ->select('country_code', DB::raw('count(*) as toplam'))
                 ->groupBy('country_code')
