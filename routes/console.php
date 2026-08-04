@@ -23,6 +23,12 @@ Schedule::command('geoip:update')->weekly()->withoutOverlapping();
 // Etkinlik medyası saklama politikası: 11. ayda ev sahibini uyar, 12. ayda sil
 Schedule::command('events:purge-media')->dailyAt('03:30')->withoutOverlapping();
 
+// Paylaşım kartı önbelleğinin çöpünü topla. İlanın kartı yeniden istendiğinde
+// eskisi zaten anında siliniyor; bu süpürme yalnız o yolun ulaşamadıklarını
+// alır (bir daha hiç istenmeyen kartlar + silinmiş ilanların yetim dosyaları),
+// o yüzden günlük değil haftalık yetiyor.
+Schedule::command('paylasim-kartlari:temizle')->weeklyOn(1, '03:45')->withoutOverlapping();
+
 // Günlük tam yedek (veritabanı + medya) + eski yedekleri temizle.
 // Sahibin geliştirici olmadan siteyi kurtarabilmesi için güvenlik ağı
 // (bkz. Admin → Sistem → Yedekleme). Saat config/backup.php'den ayarlanabilir.
