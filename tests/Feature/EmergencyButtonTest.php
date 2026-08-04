@@ -22,7 +22,7 @@ class EmergencyButtonTest extends TestCase
         $response = $this->get('/');
 
         $response->assertOk();
-        $response->assertSeeInOrder(['Acil Yardım', 'Doktorlar', 'Çilingirler']);
+        $response->assertSeeInOrder(['Acil Yardım', 'Doktorlar', 'Çilingirler', 'Avukatlar']);
     }
 
     public function test_emergency_button_hidden_when_no_emergency_category_exists(): void

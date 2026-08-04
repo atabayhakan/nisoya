@@ -20,6 +20,13 @@ use Illuminate\View\View;
 
 class HomeController extends Controller
 {
+    /**
+     * Kanıt şeridinin sayıları göstermeye başladığı aktif ilan eşiği.
+     * Değer BrowseController'ın sayfa boyutuyla aynı (12) — bir sayfayı bile
+     * doldurmayan envanter kendi lehine tanıklık edemez.
+     */
+    private const SERIT_ILAN_ESIGI = 12;
+
     public function index(Request $request, NabizService $nabiz, RehberYuzeyi $rehberYuzeyi): View
     {
         /*
@@ -45,6 +52,10 @@ class HomeController extends Controller
                 ->get();
         }
 
+        $rehber = $this->rehberVerisi($request, $rehberYuzeyi);
+
+        $aktifIlan = Listing::query()->active()->where('is_demo', false)->count();
+
         return view('home', [
             'categories' => Category::query()->whereNull('parent_id')->where('is_active', true)
                 ->orderBy('sort_order')->get(),
@@ -62,13 +73,15 @@ class HomeController extends Controller
                 // (Kâhya teşhisiyle aynı ilke).
                 // Şehir sayımı LOWER(TRIM(city)) üzerinden: listings.city
                 // serbest metin, ham distinct 'Berlin'/'berlin'/'Berlin ' → 3 sayardı.
-                'activeListings' => Listing::query()->active()->where('is_demo', false)->count(),
+                'activeListings' => $aktifIlan,
                 'activeCities' => Listing::query()->active()
                     ->where('is_demo', false)
                     ->whereNotNull('city')
                     ->where('city', '!=', '')
                     ->distinct()
                     ->count(DB::raw('LOWER(TRIM(city))')),
+
+                'serit' => $this->heroSerit($aktifIlan, $rehber),
             ],
             'latestListings' => $latestListings,
             // "Canlı akış" satırlarında ÖRNEK işareti görünmez (ad + kategori
@@ -124,7 +137,7 @@ class HomeController extends Controller
             'pulseCountries' => $nabiz->countryActivity(),
             'bigHighlights' => HomeHighlight::forSlot(HomeHighlight::SLOT_BIG),
             'smallHighlights' => HomeHighlight::forSlot(HomeHighlight::SLOT_SMALL),
-            'rehber' => $this->rehberVerisi($request, $rehberYuzeyi),
+            'rehber' => $rehber,
         ]);
     }
 
@@ -138,6 +151,51 @@ class HomeController extends Controller
      *
      * @return array{ulkeler: Collection<int, Country>, secili: ?Country, cozulenKod: ?string, ozet: ?array{temsilcilikSayisi: int, islemTurleri: Collection<int, IslemTuru>}}|null
      */
+    /**
+     * Hero'nun kanıt şeridi hangi hâlde basılacak?
+     *
+     * Şerit bir kez "97 kategori · 44 şehir"den GERÇEK harekete çevrilmişti
+     * (katalog büyüklüğü ziyaretçiye bir şey söylemiyordu). O düzeltme doğruydu
+     * ama yeni bir sorun doğurdu: gerçek hareket azken şerit siteyi SAVUNMUYOR,
+     * ALEYHİNE tanıklık ediyor. Mobilde ilk ekranda görünen somut sayı
+     * "3 aktif ilan" olunca ziyaretçi "burada kimse yok" diye okuyor.
+     *
+     * Çözüm sayıyı şişirmek DEĞİL (demo saymak, kategori saymak — ikisi de
+     * daha önce bilerek elendi), o ziyaretçi için gerçekten dolu olan şeyi
+     * göstermek:
+     *
+     *   sayilar → hareket kendi başına duruyorsa
+     *   rehber  → durmuyor ama ziyaretçinin ülkesinde YAYINDA rehber varsa
+     *   cagri   → ikisi de yoksa: sayı yerine arz çağrısı
+     *
+     * Eşik uydurma değil: ilan listesi sayfa başına 12 kayıt gösteriyor
+     * (BrowseController). Bir sayfayı bile doldurmayan envanter, "gelin bakın"
+     * demeye yetmez; o eşiğin altında dürüst olan şey davet etmektir.
+     *
+     * @param  array{ulkeler: mixed, secili: mixed, cozulenKod: ?string, ozet: ?array}|null  $rehber
+     * @return array{tip: string, ulke?: mixed, temsilcilik?: int, islem?: int}
+     */
+    private function heroSerit(int $aktifIlan, ?array $rehber): array
+    {
+        if ($aktifIlan >= self::SERIT_ILAN_ESIGI) {
+            return ['tip' => 'sayilar'];
+        }
+
+        $secili = $rehber['secili'] ?? null;
+        $ozet = $rehber['ozet'] ?? null;
+
+        if ($secili !== null && $ozet !== null && $ozet['temsilcilikSayisi'] > 0) {
+            return [
+                'tip' => 'rehber',
+                'ulke' => $secili,
+                'temsilcilik' => $ozet['temsilcilikSayisi'],
+                'islem' => $ozet['islemTurleri']->count(),
+            ];
+        }
+
+        return ['tip' => 'cagri'];
+    }
+
     private function rehberVerisi(Request $request, RehberYuzeyi $yuzey): ?array
     {
         if (! Modules::enabled('rehber')) {
