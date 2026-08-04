@@ -101,6 +101,125 @@ yüksek), ve varsa somut ilk adım.
 
 ---
 
+## [2026-08-04]
+
+**Envanter ölçümü (bu tur, canlıdan):** `/ilanlar` **31 ilan** — ama görünenlerin
+**tamamı `[ÖRNEK]` demo**. Ülke kırılımı: DE 12, GB 4, US 1, **AE 0**.
+`/emlak` **0**, `/vasita` **0**. Yani 2026-07-29'a göre vitrin *doldu* ama
+**üçüncü taraf ilan hâlâ sıfır** — envanter kapısı aynen geçerli, geri
+dönülemez kanallara giden her mesaj **arz çağrısı** olmalı.
+
+**Bu turun ayırt edici gözlemi:** Nisoya'nın elinde artık demo olmayan,
+gerçek bir varlık var — **Ülke Rehberi (Almanya)**. 14 temsilcilik × 15 işlem
+türü = 210 içerik canlı veritabanında duruyor. Bu, "boş pazaryerine davet"
+sorununu yapısal olarak çözüyor: geri dönülemez kanallara **pazaryerini
+değil rehberi** götürürsek, karşı taraf linke tıkladığında demo ilan değil
+gerçek bir kamu hizmeti görür. Aşağıdaki önerilerin üçü bu eksene oturuyor.
+Almanya bugüne dek hiç hedeflenmemişti (önceki turlar: İngiltere, Körfez, ABD).
+
+**⚠️ Ama 210 içeriğin tamamı TASLAK, yayında 0.** Öneri 1 ve 4'ün ön koşulu
+öneri 2'dir. Rehber yayında değilken bu kanallara gidilirse elimizdeki tek
+gerçek varlık da boş görünür.
+
+---
+
+**1. TGD — Türkische Gemeinde in Deutschland** *(kategori 1 + 4: topluluk
+kanalı + ortaklık)*
+
+Almanya'nın en büyük Türk çatı örgütü: **260 üye dernek**, eyalet örgütleri ve
+meslek federasyonlarıyla birlikte. Merkez Berlin-Kreuzberg (Obentrautstr. 72,
+10963), iletişim **info@tgd.de**, tel 030-896 83 81 0. 1995'te Hamburg'da
+kuruldu, Bundestag lobi siciline kayıtlı (R002736) — yani kurumsal ve
+doğrulanabilir.
+
+*Neden işe yarayabilir:* Almanya ~3 milyonla en büyük Türk diasporası ve
+Nisoya'nın rehber modülü **tam olarak Almanya için** yazılmış. TGD'ye gidecek
+teklif "pazaryerimize gelin" değil, **"üyeleriniz için ücretsiz, reklamsız bir
+konsolosluk işlem rehberi hazırladık — 14 temsilcilik, 15 işlem türü"**.
+Bu, bir dernek bülteninin gerçekten paylaşabileceği türden bir içerik; ilan
+sayısına bağlı değil, dolayısıyla envanter kapısına takılmıyor.
+
+*Efor:* düşük (tek e-posta). **Ön koşul: öneri 2 — rehber yayında olmalı.**
+
+*İlk adım:* `info@tgd.de`'ye kısa bir tanıtım; ilanlardan hiç söz etmeden
+yalnız rehberi anlat, dönerse ikinci adımda pazaryeri arz çağrısı açılır.
+ATAA dersini uygula: **çatı örgüte tek kişiselleştirilmiş mesaj**, üye
+derneklere toplu gönderim YOK (gönderim itibarı riski).
+
+**2. 210 taslağı "hepsini doğrula" yerine talebe göre 18'e indir**
+*(kategori 2: SEO/içerik)*
+
+Bugün rehberde **210 taslak, 0 yayın** var ve sahibin önündeki iş "210 içeriği
+resmî kaynaktan doğrula" olarak duruyor. Bu iş bitmeyeceği için **hiçbiri
+yayınlanmıyor** — modül canlıda ama SEO değeri sıfır.
+
+*Öneri:* eşit muameleyi bırak, **3 temsilcilik × 6 işlem = 18 sayfa** ile aç.
+Temsilcilikler Türk nüfusuna göre: **Köln, Düsseldorf, Berlin**. İşlemler
+sürekli talep görenler: **vekaletname, pasaport, T.C. kimlik kartı, doğum
+bildirimi, evlenme bildirimi, vefat ve cenaze işlemleri** (altısı da seeder'da
+mevcut).
+
+*Neden işe yarayabilir:* 18 sayfa bir oturumda (2-4 saat) doğrulanır, 210 asla
+bitmez. Bu aramalar mevsimsel değil — "vekaletname Köln başkonsolosluk" tipi
+sorgular yıl boyu tekrar eder ve arayan kişi **somut bir işlem** peşindedir.
+Ayrıca 18 sayfa, şablonun gerçekten trafik getirip getirmediğini ölçmeye
+yeter; getirmiyorsa kalan 192'yi doğrulamaya hiç girişilmez.
+
+*Efor:* düşük (kod yok, panelden yayın kararı) + 2-4 saat içerik doğrulama.
+
+*İlk adım:* panelde Ülke Rehberi → İşlem İçerikleri'nde bu 18'i filtreleyip
+resmî temsilcilik sayfalarından doğrula ve yayına al. `verified_at` doldur
+(K7 gereği 90 günde bir tazelenecek).
+
+**3. WhatsApp durumu için otomatik ilan paylaşım kartı** *(kategori 3: ürün
+içi viral)*
+
+Bugün `partials/share-buttons.blade.php` WhatsApp'a **düz metin linki**
+gönderiyor; `og:image` ise ilanın kendi fotoğrafı — WhatsApp *durumunda*
+kullanılamaz, çünkü durum dikey görsel ister.
+
+*Öneri:* ilan başına sunucuda **1080×1920 dikey paylaşım kartı** üret
+(ilan görseli + başlık + fiyat + şehir/ülke + `nisoya.com` + küçük QR) ve ilan
+detayına tek bir **"Durumuma koy"** butonu ekle.
+
+*Neden işe yarayabilir:* Diasporada WhatsApp durumu birincil yayın kanalı ve
+paylaşan kişi **ilan sahibinin kendisi** — yani yayılım kendi tanıdık ağına
+gider, spam değil, marka tonuna ("kendi insanından") birebir uyar. Üstelik bu
+mekanizma **arz tarafını** çoğaltır: ilan veren kişiye yayma aracı verirsin,
+o da kendi çevresinden ilan verenleri getirir. Envanter darboğazına doğrudan
+dokunan tek ürün fikri bu.
+
+*Efor:* orta — ama **görsel üretim yığını zaten var**: demo ilanlar için TTF
+tabanlı görsel üretimi yapıldı (PR #67), aynı yaklaşım yeniden kullanılır,
+yeni bağımlılık gerekmez.
+
+*İlk adım:* tek ilan tipinde (hizmet) pilot buton; kartı istek anında üretip
+kısa süreli cache'le, tıklama sayısını ölç.
+
+**4. Metropol FM** *(kategori 4: ortaklık/medya)*
+
+metropolfm.de — **Almanya'nın tek 24 saat Türkçe radyosu**, 1999'dan beri
+yayında. Berlin 101.9 FM; 5 eyalet (Berlin, Kuzey Ren-Vestfalya, Baden-
+Württemberg, Hessen, Bremen, Rheinland-Pfalz) ve 16 şehirde alınıyor,
+Avrupa'da yarım milyondan fazla kişiye ulaşıyor; 18-49 yaş bandında %70,1
+pazar payı bildiriyor.
+
+*Neden işe yarayabilir:* Radyo reklam satar ama **haber değeri olan topluluk
+içeriğini ücretsiz konuşur**. "Ücretsiz, reklamsız konsolosluk işlem rehberi"
+bir sabah kuşağı için yeterince somut bir hizmet haberidir — özellikle
+vekaletname/pasaport gibi dinleyicinin gerçekten sorduğu konular.
+
+*Efor:* düşük-orta. **Dürüst uyarı:** bu, listedeki en zayıf halka — radyonun
+ilgilenmesi için elimizde bir *hikâye* olması gerekiyor ve "yeni bir site
+açıldı" hikâye değil. Öneri 2 yayına girip rehber birkaç yüz ziyaret aldıktan
+sonra "Almanya'daki Türklerin en çok aradığı 5 konsolosluk işlemi" gibi
+**veriye dayalı** bir açıyla gidilirse şansı artar.
+
+*İlk adım:* şimdi değil. Öneri 2'nin ilk ölçüm verisi geldiğinde
+metropolfm.de iletişim formundan içerik önerisi olarak sun.
+
+---
+
 ## [2026-07-27]
 
 **1. TUSU — Turkish Student Union of the UK** *(kategori 1: topluluk kanalı)*
