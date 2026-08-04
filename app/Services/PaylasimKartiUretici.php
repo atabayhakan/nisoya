@@ -82,6 +82,9 @@ class PaylasimKartiUretici
      */
     private const SURUM = 2;
 
+    /** Kartların public diskteki klasörü (süpürme komutu da buradan okur). */
+    public const KLASOR = 'paylasim-kartlari';
+
     public const GENISLIK = 1080;
 
     public const YUKSEKLIK = 1920;
@@ -104,9 +107,58 @@ class PaylasimKartiUretici
 
         if (! $disk->exists($yol)) {
             $disk->put($yol, $this->uret($listing));
+            $this->eskileriSil($listing, $yol);
         }
 
         return $yol;
+    }
+
+    /**
+     * Bu ilanın ARTIK GEÇERSİZ kartlarını siler (yeni kart yazıldıktan sonra).
+     *
+     * Dosya adı `{id}-{imza}.png` olduğu için ilan başına birikme kaçınılmaz:
+     * başlık/fiyat değişimi ya da SURUM artışı yeni bir ad üretir, eskisi
+     * diskte kalır. Kart başına ~800KB olduğundan bu sessizce büyür.
+     *
+     * Temizlik ÜRETİMDEN SONRA yapılıyor, öncesinde değil: sıra tersine
+     * dönerse eski kart silinip yeni üretim hata verdiğinde ilan kartsız
+     * kalırdı. Bu sırayla en kötü ihtimalle bir tur fazladan dosya durur.
+     *
+     * Bu yalnız kartı yeniden istenen ilanları temizler; hiç istenmeyenler
+     * için haftalık süpürme var (paylasim-kartlari:temizle).
+     */
+    private function eskileriSil(Listing $listing, string $guncelYol): void
+    {
+        $disk = Storage::disk('public');
+
+        $eskiler = array_filter(
+            $disk->files(self::KLASOR),
+            fn (string $dosya): bool => $dosya !== $guncelYol
+                && self::dosyaAdindanIlanId($dosya) === $listing->id
+        );
+
+        if ($eskiler !== []) {
+            $disk->delete($eskiler);
+        }
+    }
+
+    /**
+     * Dosya adı bizim ürettiğimiz kart desenine (`{id}-{hex}.png`) uyuyorsa
+     * ilan id'sini, uymuyorsa null döner.
+     *
+     * Tek kaynak olması ŞART: anında temizlik ile haftalık süpürme farklı
+     * kurallar kullanırsa aynı dosya birine göre çöp, diğerine göre korunacak
+     * olur. İlk sürümde tam bu oldu — anında temizlik `{id}-` ile başlayan her
+     * şeyi siliyordu, süpürme ise yalnız hex imzalıları; klasöre elle konan bir
+     * dosya birinden kurtulup diğerine yakalanıyordu.
+     */
+    public static function dosyaAdindanIlanId(string $dosyaYolu): ?int
+    {
+        if (! preg_match('/^(\d+)-[0-9a-f]+\.png$/', basename($dosyaYolu), $eslesme)) {
+            return null;
+        }
+
+        return (int) $eslesme[1];
     }
 
     /**
@@ -142,7 +194,7 @@ class PaylasimKartiUretici
             brandColorHex(),
         ]));
 
-        return 'paylasim-kartlari/'.$listing->id.'-'.substr($imza, 0, 10).'.png';
+        return self::KLASOR.'/'.$listing->id.'-'.substr($imza, 0, 10).'.png';
     }
 
     /** Ham PNG baytları — testler diski kullanmadan da doğrulayabilsin diye ayrı. */
