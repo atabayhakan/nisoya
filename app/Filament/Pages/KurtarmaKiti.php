@@ -68,6 +68,23 @@ class KurtarmaKiti extends Page
             ->count();
     }
 
+    /**
+     * 2FA'sı AÇIK olan aktif yönetici sayısı.
+     *
+     * 2026-08-05'ten beri panel 2FA olmadan açılmıyor. Yani "iki yönetici var"
+     * artık tek başına güvence DEĞİL: ikinci yöneticinin 2FA'sı kurulmamışsa,
+     * birincisi kilitlendiği gün o da kurulum ekranına düşer ve panele
+     * giremez. Bu sayaç, kağıt üzerindeki yedeği gerçek yedekten ayırır.
+     */
+    public function ikiFaktorluAdminCount(): int
+    {
+        return User::query()
+            ->where('role', UserRole::Admin)
+            ->where('status', UserStatus::Aktif)
+            ->whereNotNull('two_factor_confirmed_at')
+            ->count();
+    }
+
     /** Giriş yapan yöneticinin kalan kurtarma kodu sayısı. */
     public function remainingCodes(): int
     {

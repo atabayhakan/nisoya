@@ -1,6 +1,7 @@
 <x-filament-panels::page>
     @php
         $adminCount = $this->adminCount();
+        $ikiFaktorlu = $this->ikiFaktorluAdminCount();
         $remaining = $this->remainingCodes();
     @endphp
 
@@ -30,6 +31,22 @@
                     <strong>Tek yöneticin var.</strong> Güvenilir bir kişiyi (veya kendine ait ikinci bir
                     e-postayı) ikinci yönetici olarak eklemeni öneririz — "Yeni yönetici ekle" ile ekleyip
                     rolünü <em>Yönetici</em> seç.
+                </span>
+            </div>
+        @endif
+
+        {{-- 2026-08-05: panel artık 2FA olmadan açılmıyor. "İki yönetici var"
+             tek başına güvence değil — 2FA'sı kurulmamış ikinci yönetici,
+             birincisi kilitlendiği gün kurulum ekranına düşer ve giremez.
+             Kağıt üzerindeki yedekle gerçek yedeği ayıran satır bu. --}}
+        @if ($ikiFaktorlu < $adminCount)
+            <div class="mt-3 flex items-start gap-3 rounded-lg bg-warning-50 p-3 text-sm dark:bg-warning-500/10">
+                <x-filament::icon icon="heroicon-o-shield-exclamation" class="h-5 w-5 shrink-0 text-warning-500" />
+                <span class="text-gray-700 dark:text-gray-300">
+                    <strong>{{ $adminCount - $ikiFaktorlu }} yöneticinin iki faktörlü doğrulaması kurulu değil.</strong>
+                    Yönetim paneli 2FA olmadan açılmıyor, yani o hesaplar şu an <em>yedek sayılmaz</em> —
+                    panele girmeye çalıştıklarında kurulum ekranına düşerler. Kurulumdaki 8 yedek kodu
+                    saklamaları önemli: telefon kaybolursa panele dönüşün yolu onlar.
                 </span>
             </div>
         @endif
@@ -120,7 +137,12 @@
             <ul>
                 <li>Parola verilmezse rastgele güçlü bir parola üretilip ekrana yazılır.</li>
                 <li>Belirli bir parola için: <code>--password=YeniParola123</code></li>
-                <li>Mevcut yöneticileri görmek için: <code>php artisan admin:recover --list</code></li>
+                <li>Mevcut yöneticileri (ve 2FA durumlarını) görmek için: <code>php artisan admin:recover --list</code></li>
+                <li>
+                    <strong>Telefonunu ve yedek kodlarını birlikte kaybettiysen</strong> parolayı sıfırlamak
+                    yetmez — panel 2FA ister. İkisini birden temizlemek için:
+                    <code>--iki-faktor-sifirla</code>. Girişten sonra 2FA'yı yeniden kurman istenir.
+                </li>
             </ul>
             <p class="text-gray-500 dark:text-gray-400">Her kurtarma işlemi İşlem Geçmişi'ne kaydedilir.</p>
         </div>
