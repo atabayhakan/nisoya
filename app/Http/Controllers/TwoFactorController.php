@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\QrKodu;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -24,13 +25,43 @@ class TwoFactorController extends Controller
         $user = $request->user();
         $enabled = $user->two_factor_confirmed_at !== null;
 
+        /*
+         * QR, FLASH SESSION'DAN DEĞİL VERİTABANINDAN türetilir.
+         *
+         * Eskiden yalnız setup()'ın flash'ında yaşıyordu ve iki sorunu vardı:
+         *
+         *   1. Sayfa yenilenince QR kayboluyor, ekran "Kur" düğmesine geri
+         *      dönüyordu — oysa anahtar zaten üretilmiş ve DB'ye yazılmıştı.
+         *   2. Kullanıcı o düğmeye basınca YENİ anahtar üretiliyordu. Eskisini
+         *      authenticator'ına çoktan okuttuysa, uygulamasındaki kayıt
+         *      sessizce ölüyor ve girdiği kod hiçbir zaman tutmuyordu.
+         *
+         * Onaylanmamış bir anahtar varken QR'ı ondan üretmek ikisini de kapatır;
+         * anahtarı bilerek değiştirmek isteyen için ayrı bir "yeni QR üret"
+         * düğmesi var.
+         */
+        $qrSvg = null;
+        $bekleyenSecret = null;
+
+        if (! $enabled && $user->two_factor_secret !== null) {
+            $bekleyenSecret = $user->two_factor_secret;
+            $qrSvg = QrKodu::svg($this->otpauthUrl($user->email, $bekleyenSecret));
+        }
+
         return view('panel.profile.two-factor', [
             'user' => $user,
             'enabled' => $enabled,
+            'qrSvg' => $qrSvg,
+            'bekleyenSecret' => $bekleyenSecret,
             // Passkey yönetimi de bu güvenlik sayfasında (Faz M2;
             // laravel/passkeys'e geçiş 2026-08-02 — trait ilişkisi passkeys()).
             'passkeys' => $user->passkeys()->latest('created_at')->get(),
         ]);
+    }
+
+    private function otpauthUrl(string $email, string $secret): string
+    {
+        return $this->google2fa->getQRCodeUrl(config('app.name', 'Nisoya'), $email, $secret);
     }
 
     /**
@@ -48,15 +79,10 @@ class TwoFactorController extends Controller
         $secret = $this->google2fa->generateSecretKey();
         $user->update(['two_factor_secret' => $secret]); // henüz confirmed_at yok
 
-        $qrCodeUrl = $this->google2fa->getQRCodeUrl(
-            config('app.name', 'Nisoya'),
-            $user->email,
-            $secret
-        );
-
-        return redirect()->route('panel.profile.2fa')
-            ->with('qr_code_url', $qrCodeUrl)
-            ->with('secret', $secret);
+        // QR artık show()'da DB'deki anahtardan üretiliyor; flash'a gerek yok
+        // (gerekçe show()'da yazılı). Anahtarı flash'ta taşımak, sırrı bir de
+        // session deposuna kopyalamak demekti.
+        return redirect()->route('panel.profile.2fa');
     }
 
     /**
