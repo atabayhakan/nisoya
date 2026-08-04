@@ -4,7 +4,7 @@
         <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Profil Ayarları</h1>
 
         {{-- Profil bilgileri --}}
-        <form method="POST" action="{{ route('panel.profile.update') }}" enctype="multipart/form-data" class="mt-6 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
+        <form id="profil-formu" method="POST" action="{{ route('panel.profile.update') }}" enctype="multipart/form-data" class="mt-6 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
             @csrf
             @method('PUT')
 
@@ -41,9 +41,7 @@
                          öğe içeriğinin altına inemez; w-full ise girdiyi artık küçülebilen
                          kolona bağlar. Biri eksikse taşma geri gelir. --}}
                     <div class="min-w-0">
-                        <label for="avatar" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Profil fotoğrafı</label>
-                        <input id="avatar" name="avatar" type="file" accept="image/*" class="mt-1 w-full text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
-                        @error('avatar') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <x-file-input name="avatar" label="Profil fotoğrafı" />
                         <button type="button" @click="openModal()" class="mt-2 flex items-center gap-1 text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">
                             <span aria-hidden="true">✏️</span> Profil fotoğrafını düzenle
                         </button>
@@ -143,9 +141,7 @@
                          96px'lik bir daire + dosya girdisi barındıran aynı flex satırı olduğu
                          için taşma ikisinde de oluşur; düzeltme ikisine de uygulanmalı. --}}
                     <div class="min-w-0">
-                        <label for="avatar" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Profil fotoğrafı</label>
-                        <input id="avatar" name="avatar" type="file" accept="image/*" class="mt-1 w-full text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
-                        @error('avatar') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <x-file-input name="avatar" label="Profil fotoğrafı" />
                     </div>
                 </div>
             @endif
@@ -219,7 +215,10 @@
                 </div>
             </div>
 
-            <button type="submit" class="rounded-lg bg-emerald-700 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Profili Kaydet</button>
+            {{-- Etiket KAPSAMI söylüyor. "Profili Kaydet" sayfanın tamamını
+                 kaydediyormuş gibi okunuyordu; ödeme yöntemi ve portfolyo AYRI
+                 formlar ve kendi düğmeleriyle kaydediliyor. --}}
+            <button type="submit" class="rounded-lg bg-emerald-700 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Profil bilgilerini kaydet</button>
         </form>
 
         {{-- Ödeme yöntemleri --}}
@@ -255,7 +254,7 @@
             @endif
 
             @if ($availablePaymentMethods->isNotEmpty())
-                <form method="POST" action="{{ route('panel.payment-links.store') }}" enctype="multipart/form-data" class="space-y-3 border-t border-stone-100 pt-4 dark:border-stone-800">
+                <form method="POST" action="{{ route('panel.payment-links.store') }}" enctype="multipart/form-data" data-alt-form="Ödeme yöntemlerim" class="space-y-3 border-t border-stone-100 pt-4 dark:border-stone-800">
                     @csrf
                     <div class="grid gap-3 sm:grid-cols-2">
                         <div>
@@ -276,11 +275,22 @@
                         </div>
                     </div>
                     <div>
-                        <label for="pl_qr" class="block text-sm font-medium text-stone-700 dark:text-stone-300">QR kod görseli <span class="text-stone-600">(ops.)</span></label>
-                        <input id="pl_qr" name="qr" type="file" accept="image/*" class="mt-1 text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
-                        @error('qr') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <x-file-input
+                            id="pl_qr"
+                            name="qr"
+                            label="QR kod görseli (ops.)"
+                            hint="JPG, PNG veya WebP · en fazla 2 MB"
+                        />
                     </div>
-                    <button type="submit" class="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">+ Ödeme yöntemi ekle</button>
+
+                    {{-- Bu düğme BİRİNCİL görünmeli. Bildirilen hata tam olarak
+                         buydu: kullanıcı QR'ı seçip yukarıdaki "Profili Kaydet"e
+                         basıyor ve hiçbir şey kaydolmuyor — çünkü QR AYRI bir
+                         forma ait ve o form yalnız bu düğmeyle gönderiliyor.
+                         Eskiden bu düğme soluk bir "ikincil" görünümdeydi, üstteki
+                         koyu yeşil "Profili Kaydet" ise sayfanın tek gerçek kaydet
+                         düğmesi gibi duruyordu. --}}
+                    <button type="submit" class="w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-800 sm:w-auto dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">Ödeme yöntemini kaydet</button>
                 </form>
             @endif
         </section>
@@ -317,19 +327,16 @@
             @endif
 
             @if ($portfolioItems->count() < \App\Http\Controllers\PortfolioItemController::MAX_ITEMS)
-                <form method="POST" action="{{ route('panel.portfolio.store') }}" enctype="multipart/form-data" class="space-y-3 border-t border-stone-100 pt-4 dark:border-stone-800">
+                <form method="POST" action="{{ route('panel.portfolio.store') }}" enctype="multipart/form-data" data-alt-form="Portfolyo" class="space-y-3 border-t border-stone-100 pt-4 dark:border-stone-800">
                     @csrf
                     <div class="grid gap-3 sm:grid-cols-2">
-                        <div>
-                            <label for="pf_image" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Görsel</label>
-                            <input id="pf_image" name="image" type="file" accept="image/*" class="mt-1 text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
-                        </div>
+                        <x-file-input id="pf_image" name="image" label="Görsel" />
                         <div>
                             <label for="pf_caption" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Açıklama <span class="text-stone-600">(ops.)</span></label>
                             <input id="pf_caption" name="caption" type="text" value="{{ old('caption') }}" placeholder="ör. Mutfak tadilatı, 2026" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                         </div>
                     </div>
-                    <button type="submit" class="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">+ Portfolyo görseli ekle</button>
+                    <button type="submit" class="w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-800 sm:w-auto dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">Portfolyo görselini kaydet</button>
                 </form>
             @endif
         </section>
@@ -364,6 +371,32 @@
 
             <button type="submit" class="rounded-lg border border-stone-300 px-5 py-2.5 font-semibold text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">Şifreyi Güncelle</button>
         </form>
+
+        {{-- Oturumu kapat.
+
+             Buraya konuldu çünkü MOBİLDE HİÇBİR YERDE YOKTU: header'daki Çıkış
+             `hidden md:block`, alt sekme çubuğunda da yok. Telefonda çıkmanın
+             tek yolu /panel'e gitmekti — oysa insan çıkışı "profil/hesap"
+             ekranında arar. Masaüstünde header'daki düğme yerinde duruyor;
+             burası onun yerini almıyor, mobildeki boşluğu kapatıyor. --}}
+        <section class="mt-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="min-w-0">
+                    <h2 class="font-semibold text-stone-800 dark:text-stone-100">Oturum</h2>
+                    <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
+                        <span class="font-medium text-stone-700 dark:text-stone-300">{{ $user->email }}</span> ile giriş yaptın.
+                    </p>
+                </div>
+
+                <form method="POST" action="{{ route('logout') }}" class="shrink-0">
+                    @csrf
+                    <button type="submit" class="inline-flex items-center gap-2 rounded-lg border border-stone-300 px-4 py-2.5 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">
+                        <x-heroicon-o-arrow-right-start-on-rectangle class="h-4 w-4" />
+                        Çıkış yap
+                    </button>
+                </form>
+            </div>
+        </section>
 
         {{-- KVKK: Verilerini indir / Hesabı sil --}}
         <section class="mt-6 space-y-4 rounded-2xl border border-amber-200 bg-amber-50/50 p-6 dark:border-amber-800 dark:bg-amber-950/20">
@@ -456,4 +489,35 @@
             </form>
         </section>
     </div>
+    {{-- Yanlış-düğme koruması.
+
+         Bildirilen hata: QR seçilip "Profili Kaydet"e basılıyor, hiçbir şey
+         kaydolmuyor. Sebep, ödeme yöntemi ve portfolyonun AYRI formlar olması
+         — profil formunun düğmesi onları göndermez ve tarayıcı da bunu
+         söylemez, sessizce profil alanlarını kaydeder.
+
+         Düğme etiketleri artık kapsamı söylüyor ama etiket okunmayabilir;
+         bu koruma veriyi kaybetmeden ÖNCE uyarır. --}}
+    <script>
+        document.getElementById('profil-formu')?.addEventListener('submit', function (e) {
+            const bekleyen = [...document.querySelectorAll('form[data-alt-form]')].find(f =>
+                [...f.querySelectorAll('input[type="file"]')].some(i => i.files.length > 0) ||
+                [...f.querySelectorAll('input[type="text"]')].some(i => i.value.trim() !== '')
+            );
+
+            if (!bekleyen) return;
+
+            const ad = bekleyen.dataset.altForm;
+            const onay = confirm(
+                `"${ad}" bölümünde kaydedilmemiş bilgi var.\n\n` +
+                'Bu düğme yalnız profil bilgilerini kaydeder — o bölümün kendi kaydet düğmesine basman gerekiyor.\n\n' +
+                'Yine de devam edilsin mi?'
+            );
+
+            if (!onay) {
+                e.preventDefault();
+                bekleyen.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    </script>
 </x-layouts.app>
