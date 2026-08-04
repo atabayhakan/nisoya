@@ -161,6 +161,46 @@ K4 ve K5 pilot yayına girdikten sonra; K1-K3 pilottan önce.
 7. Ölçüm (Search Console, 2-4 hafta) → genişletme kararı
 ```
 
+## 6.5 KARARLAR (2026-08-04, sahip)
+
+> **KARAR · 2026-08-04 · İşlemler ONAYLANDI** — vekaletname, pasaport, T.C.
+> kimlik kartı, doğum bildirimi, askerlik işlemleri, mavi kart.
+>
+> **KARAR · 2026-08-04 · Ücret YAYINLANMAYACAK** — yıllık tarifeyle değişiyor,
+> bayatlaması en muhtemel alan. Ziyaretçi güncel tarifeyi resmî kaynaktan görür.
+> Yayın kapısı bu yüzden ücret aramaz (`RehberYayinKapisiTest` mühürlüyor).
+>
+> **KARAR · 2026-08-04 · Temsilcilikler ONAYLANDI** — DE Köln/Düsseldorf/Berlin,
+> US New York/Los Angeles/Chicago, KG Bişkek.
+>
+> **KARAR · 2026-08-04 · Oş UYGULANAMADI (fahri)** — sahip "Bişkek ve Oş" dedi
+> ama Oş'taki temsilcilik **fahri başkonsolosluk**; pasaport/vekaletname/nüfus
+> işlemi YAPMIYOR. Rehberde işlem yapan temsilcilik olarak göstermek insanı
+> işini yaptıramayacağı adrese yollamak olurdu. Kırgızistan'da bu işlemler
+> Bişkek Büyükelçiliği'nde yapılıyor. Model de "fahri" türünü tanımıyor.
+> *Sahip isterse ileride "burada işlem yapılmaz, en yakın temsilcilik Bişkek"
+> notuyla bilgi amaçlı bir kayıt eklenebilir — ayrı karar.*
+
+## 6.6 UYGULANDI (2026-08-04)
+
+- **K1 tamam** — `RehberTemsilcilikleriSeeder`: ABD 7 (1 büyükelçilik + 6
+  **kariyer** başkonsolosluğu; fahri olanlar bilerek yok) + KG 1 (Bişkek).
+- **K1'de beklenmeyen onarım** — Almanya'nın **14 adresinin tamamı kırıkmış.**
+  `RehberAlmanyaSeeder` adresleri bir desenden üretmiş (`{sehir}.bk.mfa.gov.tr`,
+  noktayla) ve docblock'unda "sahip teyit etmeli" demiş; teyit edilmemiş.
+  Ölçüldü: **noktalı biçim hiç çözülmüyor**, doğrusu tireli (`koln-bk`).
+  Temsilcilik sayfasındaki "Resmî siteye git" bağlantısı 14 temsilcilikte de
+  hiçbir yere gitmiyordu. Onarıldı.
+- **Desen üretilemez, ölçülmeli:** `berlin-be` · `biskek-be` ama
+  `washington-emb` (`-be` çözülmüyor) · `sikago-bk` ve `munih-bk` (Türkçe
+  yazım). Her alan adı tek tek HTTP ile denendi.
+- **K2 tamam** — `rehber:yayinla` komutu + yayın kapısı. Ölçüt: evrak listesi
+  dolu · kaynak adresi işleme özel (genel `konsolosluk.gov.tr` reddedilir) ·
+  doğrulanma tarihi dolu. Ücret ve süre **aranmaz** (sahip kararı).
+  `--rapor` ile kuru çalıştırma. 7 test.
+- **Kapının ilk ölçümü:** 209 taslak aday, **0 hazır**. Yani bugün panelden
+  yanlışlıkla bile eksik içerik yayınlanamaz.
+
 ## 7. Sahibin karar vermesi gerekenler
 
 1. **İşlem seçimi** — önerilen altı uygun mu? (askerlik/mavi kart ↔ evlilik/vefat)
