@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Responses\PanelCikisYaniti;
 use App\Filament\Widgets\BekleyenIslerWidget;
 use App\Filament\Widgets\ExifPrivacyWidget;
 use App\Filament\Widgets\IlanHareketleriWidget;
@@ -9,7 +10,9 @@ use App\Filament\Widgets\KategoriDagilimiWidget;
 use App\Filament\Widgets\StatsOverview;
 use App\Filament\Widgets\SystemHealthWidget;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\YonetimIkiFaktorZorunlu;
 use App\Support\Settings;
+use Filament\Auth\Http\Responses\Contracts\LogoutResponse;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -44,7 +47,27 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('yonetim')
             ->brandName('Nisoya Yönetim')
-            ->login()
+            /*
+             * ->login() BİLİNÇLE YOK — 2026-08-05'te kapatılan bir baypas.
+             *
+             * Panelin kendi giriş ekranı (/yonetim/login) Filament'in varsayılan
+             * Login sayfasıydı ve yalnız e-posta+parola doğruluyordu. Sitenin
+             * giriş akışı (AuthenticatedSessionController) ise 2FA açıksa
+             * oturumu AÇMADAN challenge'a yönlendiriyor.
+             *
+             * Sonuç: 2FA'sı AÇIK bir yönetici, /yonetim/login'den kod girmeden
+             * içeri girebiliyordu. 2FA vardı, çalışıyordu, iyi test edilmişti —
+             * ama yanlış kapıya takılıydı. Bir test bunu kanıtladı ve
+             * YonetimGirisiTest artık tersini mühürlüyor.
+             *
+             * Kök neden İKİ AYRI kimlik doğrulama yolu olmasıydı; ikincisine
+             * 2FA eklemek yerine ikinci yol kaldırıldı. Filament'in Authenticate
+             * middleware'i getLoginUrl() null dönünce Laravel'in route('login')
+             * yedeğine düşer — yani /giris. Hedef URL session'da korunduğu için
+             * kullanıcı doğrulamadan sonra /yonetim'e geri döner.
+             *
+             * Yeni bir panel açılırken bu satırın yokluğu KORUNMALIDIR.
+             */
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
                 'primary' => $this->resolveBrandColor(),
@@ -117,8 +140,13 @@ class AdminPanelProvider extends PanelProvider
                 // SecurityHeaders buraya uğramaz).
                 SecurityHeaders::class,
             ])
+            /*
+             * Authenticate'ten SONRA gelmesi şart: zorunluluk kontrolü kimliği
+             * bilinen kullanıcı üzerinde çalışır, misafirde değil.
+             */
             ->authMiddleware([
                 Authenticate::class,
+                YonetimIkiFaktorZorunlu::class,
             ])
             /*
              * Kâhya balonu — panelin HER sayfasında sağ altta duran sohbet
@@ -159,6 +187,9 @@ class AdminPanelProvider extends PanelProvider
         // ör. IcerikAyarlari, bu alt yapıyı kullanmadığı için ayrıca kendi
         // Blade görünümünde yapışkan bir alt çubukla çözülür.)
         BasePage::stickyFormActions();
+
+        // Panel çıkışı doğrudan site giriş ekranına gitsin (gerekçe sınıfta).
+        $this->app->bind(LogoutResponse::class, PanelCikisYaniti::class);
     }
 
     /**
