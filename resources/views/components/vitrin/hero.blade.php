@@ -97,11 +97,35 @@
                 @endif
             </h1>
 
+            {{-- SLOGAN — artık H1 DEĞİL, bir basamak aşağıda.
+
+                 H1 eskiden sloganı taşıyordu ("Tarif etmeye çalışma.") ve
+                 ürünün NE OLDUĞU 250px'teki paragrafta bekliyordu. Ölçüm:
+                 ziyaretçilerin %79'u tarıyor, %16'sı okuyor — yani sitenin ne
+                 olduğunu anlatan tek cümle, okunmama olasılığı en yüksek
+                 biçimde yazılmıştı. H1 artık tanımlıyor; slogan burada
+                 duygusal çapa olarak kalıyor. Silinmedi, yeri değişti. --}}
             @if ($hero::altBaslik())
-                <p class="mt-4 text-base font-medium leading-relaxed {{ $koyu ? 'mx-auto max-w-xl text-white/80' : 'max-w-md text-stone-600 dark:text-stone-300' }}" style="text-wrap: pretty">
+                <p class="mt-3 text-base font-medium leading-relaxed {{ $koyu ? 'mx-auto max-w-xl text-white/70' : 'max-w-md text-stone-500 dark:text-stone-400' }}" style="text-wrap: pretty">
                     {{ $hero::altBaslik() }}
                 </p>
             @endif
+
+            {{-- KAPSAM ÇİPLERİ — "bu ne?" sorusunun cevabı, ilk taramada.
+
+                 Aşağıdaki "popüler" çiplerle KARIŞTIRILMAMALI: onlar
+                 "bu kategoride GERÇEK ilan var" vaadidir ve demo süzgecinden
+                 geçer (bugün yalnız 2 tane çıkıyor). Bunlar ise sitenin
+                 KAPSAMINI anlatır — envanter vaadi değil.
+
+                 Bu yüzden TIKLANAMAZLAR. Tıklanabilir olsalardı boş bir
+                 kategori sayfasına götürür ve tutulmamış bir vaat olurlardı;
+                 envanter büyüyünce bağlanabilirler. --}}
+            <ul class="mt-4 flex flex-wrap gap-1.5 {{ $sahne ? 'justify-center' : '' }}" aria-label="Nisoya'da neler var">
+                @foreach (['Nakliyeci', 'Hoca', 'Tamirci', 'Kuaför', 'Tercüman', 'İkinci el', 'İş ilanı', 'Ülke rehberi'] as $kapsam)
+                    <li class="rounded-full px-2.5 py-1 text-xs font-medium {{ $koyu ? 'bg-white/15 text-white/90' : 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300' }}">{{ $kapsam }}</li>
+                @endforeach
+            </ul>
 
             @foreach ($bloklar as $blokAnahtari)
                 <x-vitrin.hero-blok
@@ -132,17 +156,28 @@
             @endif
         </div>
 
-        {{-- MOBİL KANIT ŞERİDİ: sağ bento yalnız lg+'da basıldığı için mobil
-             ziyaretçi bugüne dek sadece İDDİA görüyordu, KANIT görmüyordu —
-             diaspora trafiğinin ağırlığı ise mobil. Tek satır, tek tıklama
-             hedefi, aynı gerçek veri. Veri yoksa hiç basılmaz. --}}
+        {{-- MOBİL YERELLİK ŞERİDİ — sayı DEĞİL, yer.
+
+             Eskiden burada "🇩🇪 Almanya — 12 aktif ilan" yazıyordu ve iki ayrı
+             sorunu vardı:
+
+             1. Sayı DEMO DAHİLDİ (bkz. NabizService::countryActivity) —
+                hemen üstündeki kanıt şeridi demo süzüyordu. İki öge 100 piksel
+                arayla birbirinin tersini söylüyordu.
+             2. Süzgeç eklenince sayı "3" olacaktı. Düşük sayı POZİTİF değil
+                NEGATİF sosyal kanıttır: ziyaretçiye "burası boş" der.
+                Araştırma bulgusu: sayı düşükken sayı gösterme, YER göster.
+
+             Yerellik sinyalinin kendisi değerli (diaspora güveninde en güçlü
+             ikinci sinyal, ana dilden sonra) — kaybolan yalnız rakam. --}}
         @if (! $sahne && $ulkeHareketi->isNotEmpty())
             <a href="{{ url('/ilanlar') }}?ulke={{ $ulkeHareketi->first()['code'] }}"
                class="mt-6 flex min-h-11 items-center gap-2 rounded-2xl border border-stone-200/70 bg-white px-3 py-2 text-sm shadow-brand lg:hidden dark:border-stone-800 dark:bg-stone-900">
                 <span aria-hidden="true">{{ $ulkeHareketi->first()['emoji'] }}</span>
-                <span class="min-w-0 flex-1 truncate font-semibold text-stone-700 dark:text-stone-200">{{ $ulkeHareketi->first()['name'] }}</span>
-                <span class="shrink-0 font-extrabold text-emerald-700 dark:text-emerald-400">{{ $ulkeHareketi->first()['count'] }}</span>
-                <span class="shrink-0 text-stone-600 dark:text-stone-400">aktif ilan</span>
+                <span class="min-w-0 flex-1 truncate text-stone-600 dark:text-stone-400">
+                    <span class="font-semibold text-stone-700 dark:text-stone-200">{{ $ulkeHareketi->first()['name'] }}</span>'dasın
+                </span>
+                <span class="shrink-0 font-semibold text-emerald-700 dark:text-emerald-400">İlanlara bak →</span>
             </a>
         @endif
 

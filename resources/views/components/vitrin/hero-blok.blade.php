@@ -29,6 +29,32 @@
             <x-heroicon-o-arrow-right class="h-4 w-4" />
         </button>
     </form>
+
+    {{-- YAPISAL GÜVEN — tek satır, aramanın hemen altında.
+
+         Nisoya'nın tek gerçek farklılaştırıcısı bu ve BEDAVA: kaçılan kanallar
+         (Facebook Marketplace, WhatsApp vitrinleri) bunu asla söyleyemez.
+
+         "Ücretsiz" bunun YERİNİ TUTMAZ — ücretsiz FİYAT der, "para geçmez"
+         RİSK der. Göçmen hedefli dolandırıcılığın merkezinde para transferi
+         var; ziyaretçinin taşıdığı korku fiyat değil, kandırılma korkusu.
+
+         Ölçülmüş "zero-price effect": ücretsiz sunulan hizmet daha DÜŞÜK
+         kaliteli algılanabiliyor. Sebebini söylemezsek ziyaretçi boşluğu
+         "gizli bir tuzak var" diye doldurur.
+
+         Ardından gelen bağlantı bilinçli olarak DÜRÜST OLUMSUZ taşıyor:
+         para geçmediği için işlemi garanti de etmiyoruz. Bu bir zayıflık
+         itirafı gibi görünür ama blemishing effect (JCR 2012) tersini
+         söylüyor — olumlu tablonun ardına küçük ve dürüst bir olumsuz
+         eklemek, aceleci okuyucuda olumlu izlenimi ARTIRIYOR. --}}
+    <p class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs {{ $koyu ? 'text-white/75' : 'text-stone-500 dark:text-stone-400' }}">
+        <span class="font-semibold {{ $koyu ? 'text-white' : 'text-stone-700 dark:text-stone-200' }}">Nisoya'dan para geçmez.</span>
+        <span>Komisyon yok, aracı yok.</span>
+        <a href="{{ url('/guvenli-alisveris') }}" class="font-medium underline decoration-dotted underline-offset-2 hover:text-emerald-700 dark:hover:text-emerald-400">
+            Dolandırılmamak için →
+        </a>
+    </p>
 @endif
 
 {{-- Çipler artık GERÇEK KATEGORİLERDEN kurulur ve `?kategori=` ile gider.
