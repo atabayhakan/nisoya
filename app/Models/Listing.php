@@ -19,6 +19,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property ListingType $type
+ * @property PriceUnit|null $price_unit casts() enum'a çeviriyor; docblock'suz
+ *                                      kalınca statik analiz kolonu düz `string` sanıyor ve enum
+ *                                      metotlarına (suffix() vb.) erişimi hata sayıyor.
  * @property Carbon|null $featured_until
  * @property-read User|null $user
  */
@@ -93,6 +96,7 @@ class Listing extends Model
         return $this->belongsTo(Category::class);
     }
 
+    /** @return BelongsTo<Country, $this> */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class, 'country_code', 'code');
