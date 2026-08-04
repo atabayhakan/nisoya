@@ -10,6 +10,8 @@ etiketler: ilan, moderasyon, durum, yayın
 İlan şu durumlardan geçer: **taslak → beklemede (moderasyon) → aktif**, ya da
 **pasif** / **reddedildi**.
 
+{{surec:ilan-yasam-dongusu}}
+
 Yalnız **aktif** ilanlar sitede görünür ve aramada çıkar.
 
 ## "İlanım neden görünmüyor?"

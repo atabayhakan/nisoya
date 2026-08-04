@@ -12,6 +12,7 @@ use App\Models\RehberGeriBildirimi;
 use App\Models\Report;
 use App\Models\Story;
 use App\Models\TemsilcilikIslemi;
+use App\Services\Rehber\RehberBoslukAvcisi;
 use App\Support\Modules;
 
 /**
@@ -126,6 +127,13 @@ class BekleyenIsler
                 'adet' => TemsilcilikIslemi::query()->bayat()->count(),
                 'aciliyet' => 'orta',
                 'aciklama' => TemsilcilikIslemi::BAYATLIK_GUN.' günden eski doğrulama — yayında',
+            ];
+            $kuyruklar[] = [
+                'anahtar' => 'rehber_bosluk',
+                'etiket' => 'Rehberde eksik sayfa',
+                'adet' => app(RehberBoslukAvcisi::class)->sayi(),
+                'aciliyet' => 'orta',
+                'aciklama' => 'Kâhya cevap veremedi — soruldu ama rehberde yok',
             ];
             $kuyruklar[] = [
                 'anahtar' => 'rehber_geri_bildirim',
