@@ -102,6 +102,90 @@ class NisoyaDosyasi
         ];
     }
 
+    /**
+     * KUZEY YILDIZI: haftalık karşılıklı ilk temas.
+     *
+     * Neden bu metrik: bir pazaryerinde tek anlamlı sinyal, iki yabancının
+     * gerçekten konuşmaya başlaması. Kayıtlı üye, sayfa görüntüleme, ilan
+     * sayısı — hepsi vanity; hiçbiri "bu ürün işe yarıyor" demiyor.
+     *
+     * "Karşılıklı" ŞART: tek taraflı mesaj temas değildir. Aynı tanım
+     * değerlendirme kapısında da kullanılıyor (Conversation::mutualExistsBetween)
+     * — iki ayrı "temas" tanımı olmamalı.
+     *
+     * @return list<array{hafta: string, adet: int}>
+     */
+    public function kuzeyYildizi(int $hafta = 8): array
+    {
+        $baslangic = now()->startOfWeek()->subWeeks($hafta - 1);
+
+        // Karşılıklı konuşmalar: her iki tarafın da en az bir mesajı olan.
+        $karsilikli = DB::table('messages')
+            ->select('conversation_id', DB::raw('COUNT(DISTINCT sender_id) as taraf'), DB::raw('MIN(created_at) as ilk'))
+            ->groupBy('conversation_id')
+            ->havingRaw('COUNT(DISTINCT sender_id) >= 2');
+
+        $satirlar = DB::query()
+            ->fromSub($karsilikli, 't')
+            ->where('ilk', '>=', $baslangic)
+            ->get();
+
+        // Haftalara PHP'de bölünüyor: SQLite ile MySQL'in hafta fonksiyonları
+        // farklı (WEEKOFYEAR vs strftime) ve testler SQLite'ta koşuyor.
+        $sayimlar = [];
+
+        foreach ($satirlar as $satir) {
+            $anahtar = Carbon::parse($satir->ilk)->startOfWeek()->toDateString();
+            $sayimlar[$anahtar] = ($sayimlar[$anahtar] ?? 0) + 1;
+        }
+
+        $sonuc = [];
+
+        for ($i = 0; $i < $hafta; $i++) {
+            $h = $baslangic->copy()->addWeeks($i);
+            $sonuc[] = ['hafta' => $h->toDateString(), 'adet' => $sayimlar[$h->toDateString()] ?? 0];
+        }
+
+        return $sonuc;
+    }
+
+    /**
+     * Huni: konuşma → karşılıklı konuşma → tamamlanan anlaşma.
+     *
+     * Yatırımcıya "kaç ilan var"dan daha çok şey söyler: ürünün hangi
+     * adımında kopuyor.
+     *
+     * @return array{konusma: int, karsilikli: int, anlasma: int}
+     */
+    public function huni(): array
+    {
+        $karsilikli = DB::table('messages')
+            ->select('conversation_id')
+            ->groupBy('conversation_id')
+            ->havingRaw('COUNT(DISTINCT sender_id) >= 2');
+
+        return [
+            'konusma' => DB::table('conversations')->count(),
+            'karsilikli' => DB::query()->fromSub($karsilikli, 't')->count(),
+            'anlasma' => DB::table('deals')->where('status', 'tamamlandi')->count(),
+        ];
+    }
+
+    /**
+     * Sermaye verimliliği: ürünün canlıda olduğu ay sayısı.
+     *
+     * Yatırımcıya anlatılacak şey özellik sayısı DEĞİL: "tek kişi, geliştirici
+     * değil, N ayda bunu kurdu". Özellikler ancak bu çerçevede anlamlı.
+     *
+     * En eski üye kaydından türüyor — elle girilen bir tarih bayatlar.
+     */
+    public function aySayisi(): int
+    {
+        $ilk = User::query()->min('created_at');
+
+        return $ilk === null ? 0 : (int) max(1, Carbon::parse($ilk)->diffInMonths(now()));
+    }
+
     /** Açık modüller — ürünün kapsamını sayıyla değil ADLA anlatır. */
     public function moduller(): array
     {
