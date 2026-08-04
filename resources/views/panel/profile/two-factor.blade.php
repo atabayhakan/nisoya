@@ -43,23 +43,59 @@
                 <header>
                     <h2 class="font-semibold text-stone-900 dark:text-stone-100">2FA Kurulumu</h2>
                     <p class="mt-1 text-sm text-stone-600 dark:text-stone-400">
-                        Aşağıdaki "Kur" düğmesine basınca QR kod oluşturulacak. TOTP uygulamanla okut ve 6 haneli kodu gir.
+                        "Kur" düğmesine bas, çıkan QR kodu authenticator uygulamanla okut,
+                        uygulamanın gösterdiği 6 haneli kodu gir.
                     </p>
                 </header>
 
-                @if (session('qr_code_url'))
-                    <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/20">
-                        <h3 class="text-sm font-semibold text-amber-900 dark:text-amber-200">1. QR Kodu Okut</h3>
-                        <p class="mt-1 text-xs text-amber-800 dark:text-amber-300 break-all">
-                            URL: <code>{{ session('qr_code_url') }}</code>
+                @if ($qrSvg)
+                    {{-- EKRAN GÖRÜNTÜSÜ UYARISI — 2026-08-05'te gerçekten yaşandı.
+                         Sayfa QR basmayıp gizli anahtarı düz metin gösterdiği için
+                         sahip ekranı paylaştı ve anahtar yakıldı. Anahtarı bilen
+                         herkes geçerli kod üretebilir; yani ikinci faktör hiç
+                         yokmuş gibi olur. Uyarı bu yüzden EN ÜSTTE. --}}
+                    <div class="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+                        <x-heroicon-o-exclamation-triangle class="mt-0.5 h-4 w-4 shrink-0" />
+                        <span>
+                            <strong>Bu ekranın görüntüsünü kimseyle paylaşma.</strong>
+                            Aşağıdaki kod hesabının anahtarıdır — gören biri senin adına
+                            geçerli doğrulama kodu üretebilir. Paylaştıysan "Yeni QR üret"e bas.
+                        </span>
+                    </div>
+
+                    <div class="rounded-2xl border border-stone-200 bg-white p-4 dark:border-stone-700 dark:bg-stone-800/50">
+                        <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">1. QR kodu okut</h3>
+                        <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">
+                            Authenticator uygulamanı aç, "hesap ekle" de ve bu kodu okut.
                         </p>
-                        <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
-                            Secret: <code class="font-mono">{{ session('secret') }}</code>
-                        </p>
+
+                        {{-- QR beyaz zemin ŞART: koyu modda koyu zemine basılan QR
+                             birçok telefon kamerasında okunmaz. --}}
+                        <div class="mt-3 flex justify-center">
+                            <div class="rounded-xl bg-white p-3 shadow-sm">
+                                {!! $qrSvg !!}
+                            </div>
+                        </div>
+
+                        {{-- Elle giriş İKİNCİL: sırrı ekranda sürekli açık tutmak,
+                             omuz üstünden bakan biri ve ekran görüntüsü için
+                             gereksiz bir risk. Kamerası çalışmayan kullanıcı için
+                             yine de bir yol lazım — katlanmış hâlde duruyor. --}}
+                        <details class="mt-3 group">
+                            <summary class="cursor-pointer text-xs font-medium text-stone-600 underline decoration-dotted underline-offset-2 hover:text-emerald-700 dark:text-stone-400 dark:hover:text-emerald-400">
+                                QR okutamıyorum — kodu elle gireyim
+                            </summary>
+                            <div class="mt-2 rounded-lg bg-stone-100 p-3 dark:bg-stone-800">
+                                <p class="text-xs text-stone-600 dark:text-stone-400">
+                                    Uygulamanda "kurulum anahtarını elle gir" seçeneğini kullan:
+                                </p>
+                                <code class="mt-1.5 block break-all font-mono text-sm font-semibold text-stone-900 dark:text-stone-100">{{ $bekleyenSecret }}</code>
+                            </div>
+                        </details>
                     </div>
                 @endif
 
-                @if (session('qr_code_url'))
+                @if ($qrSvg)
                     <form method="POST" action="{{ route('panel.profile.2fa.confirm') }}" class="space-y-3 border-t border-stone-200 pt-4 dark:border-stone-800">
                         @csrf
                         <div>
@@ -67,8 +103,21 @@
                             <input id="confirm_code" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 font-mono text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                             @error('code') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
-                        <button type="submit" class="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
-                            Etkinleştir
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button type="submit" class="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
+                                Etkinleştir
+                            </button>
+                        </div>
+                    </form>
+
+                    {{-- Anahtarı bilerek değiştirmenin yolu. QR artık kalıcı
+                         olduğu için "Kur"a tekrar basmak diye bir kaza yok;
+                         yenileme bilinçli bir eylem oldu. --}}
+                    <form method="POST" action="{{ route('panel.profile.2fa.setup') }}"
+                          onsubmit="return confirm('Yeni bir anahtar üretilecek ve şu anki QR geçersiz olacak. Uygulamana eklediysen o kaydı silmen gerekir. Devam edilsin mi?')">
+                        @csrf
+                        <button type="submit" class="text-xs font-medium text-stone-600 underline decoration-dotted underline-offset-2 hover:text-red-600 dark:text-stone-400 dark:hover:text-red-400">
+                            Yeni QR üret (anahtarı paylaştıysan)
                         </button>
                     </form>
                 @else
@@ -79,22 +128,52 @@
                         </button>
                     </form>
                 @endif
-
-                @if (session('recovery_codes'))
-                    <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/20">
-                        <h3 class="text-sm font-semibold text-emerald-900 dark:text-emerald-200">Yedek Kurtarma Kodları</h3>
-                        <p class="mt-1 text-xs text-amber-800 dark:text-amber-300">
-                            Bu kodları güvenli bir yere kaydet. Telefonunu kaybedersen bu kodlarla giriş yapabilirsin.
-                        </p>
-                        <div class="mt-3 grid grid-cols-2 gap-2 font-mono text-sm">
-                            @foreach (session('recovery_codes') as $code)
-                                <code class="rounded bg-white px-2 py-1 text-center text-stone-900 dark:bg-stone-800 dark:text-stone-100">{{ $code }}</code>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
             </section>
         @endif
+
+        {{-- KURTARMA KODLARI — @if($enabled) DIŞINDA olmak ZORUNDA.
+
+             Eskiden kurulum bloğunun içindeydi ve HİÇ GÖRÜNMÜYORDU: confirm()
+             başarılı olunca two_factor_confirmed_at yazılır, sayfa yeniden
+             yüklendiğinde $enabled true olur ve o dal artık basılmaz. Yani 8
+             kod üretiliyor, veritabanına yazılıyor, flash'a konuyor —
+             kullanıcı hiçbir zaman göremiyordu.
+
+             Panel 2FA olmadan açılmadığı için bu kodlar telefonu kaybeden
+             yöneticinin kullanıcı-tarafındaki TEK geri dönüş yolu.
+
+             Ayrıca eskiden "kaydet" diyordu ama kaydetmenin bir yolunu
+             sunmuyor ve tek seferlik olduğunu söylemiyordu. İki test artık
+             bunları mühürlüyor. --}}
+        @if (session('recovery_codes'))
+            <div class="mt-6"><div x-data="{ kopyalandi: false, kodlar: @js(session('recovery_codes')) }"
+                     class="rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950/20">
+                    <h3 class="flex items-center gap-2 text-sm font-bold text-amber-900 dark:text-amber-200">
+                        <x-heroicon-o-key class="h-4 w-4" />
+                        Yedek kurtarma kodların
+                    </h3>
+                    <p class="mt-1 text-xs font-semibold text-amber-900 dark:text-amber-200">
+                        Bu kodlar bir daha gösterilmeyecek. Şimdi kaydet.
+                    </p>
+                    <p class="mt-1 text-xs text-amber-800 dark:text-amber-300">
+                        Telefonunu kaybedersen yönetim paneline yalnız bunlarla girebilirsin.
+                        Her kod bir kez çalışır.
+                    </p>
+
+                    <div class="mt-3 grid grid-cols-2 gap-2 font-mono text-sm">
+                        @foreach (session('recovery_codes') as $code)
+                            <code class="rounded bg-white px-2 py-1 text-center font-semibold text-stone-900 dark:bg-stone-800 dark:text-stone-100">{{ $code }}</code>
+                        @endforeach
+                    </div>
+
+                    <button type="button"
+                            @click="navigator.clipboard.writeText(kodlar.join('\n')).then(() => { kopyalandi = true; setTimeout(() => kopyalandi = false, 2500) })"
+                            class="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-semibold text-amber-900 transition hover:bg-amber-100 dark:border-amber-700 dark:bg-stone-800 dark:text-amber-200 dark:hover:bg-stone-700">
+                        <x-heroicon-o-clipboard-document class="h-4 w-4" />
+                        <span x-text="kopyalandi ? 'Kopyalandı ✓' : 'Kodları kopyala'"></span>
+                    </button>
+                </div>
+            @endif
 
         {{-- Passkey yönetimi (Faz M2; laravel/passkeys'e geçiş 2026-08-02 —
              uçlar paketin varsayılanları /user/passkeys*). WebAuthn
