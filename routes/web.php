@@ -34,6 +34,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\PanelController;
+use App\Http\Controllers\PaylasimKartiController;
 use App\Http\Controllers\PaymentLinkController;
 use App\Http\Controllers\PortfolioItemController;
 use App\Http\Controllers\ProfileController;
@@ -67,6 +68,9 @@ Route::get('/nabiz', [NabizController::class, 'index'])->name('nabiz');
 Route::get('/mutlu-anlar', [HappyMomentsController::class, 'index'])->name('happy-moments');
 
 // Herkese açık ilan detayı
+// DİKKAT: kart rotası detaydan ÖNCE gelmeli — {slug?} "kart.png"i de yakalar
+// ve kart isteği ilan sayfasına 301'lenirdi.
+Route::get('/ilan/{listing}/kart.png', PaylasimKartiController::class)->name('listings.card');
 Route::get('/ilan/{listing}/{slug?}', [ListingController::class, 'show'])->name('listings.show');
 
 // Davetiye (herkese açık — misafirler hesap açmadan LCV verir).

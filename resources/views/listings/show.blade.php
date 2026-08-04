@@ -372,7 +372,7 @@
 
                         <div class="mt-4 border-t border-stone-100 pt-3 dark:border-stone-800">
                             <p class="mb-2 text-xs font-medium text-stone-500 dark:text-stone-400">Bu ilanı paylaş</p>
-                            @include('partials.share-buttons', ['shareUrl' => route('listings.show', [$listing, $listing->slug]), 'shareText' => $listing->title])
+                            @include('partials.share-buttons', ['shareUrl' => route('listings.show', [$listing, $listing->slug]), 'shareText' => $listing->title, 'cardUrl' => route('listings.card', $listing)])
                         </div>
                     </div>
 
