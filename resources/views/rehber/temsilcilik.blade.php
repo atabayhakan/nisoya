@@ -34,7 +34,30 @@
 
         <h2 class="mt-10 text-xl font-semibold text-stone-900 dark:text-stone-50">İşlem rehberleri</h2>
 
-        @if ($islemler->isEmpty())
+        @if ($islemler->isEmpty() && $temsilcilik->yonlendirme_notu)
+            {{-- YÖNLENDİRME — "hazırlanıyor" DEĞİL.
+
+                 Bu temsilcilik işlem bilgisini kendi sitesinde yayınlamıyor
+                 (Bişkek'te ölçüldü: bilgi notu indeksi tamamen boş). Ziyaretçiye
+                 "hazırlanıyor" demek onu beklemeye iter; oysa yapması gereken
+                 merkezî kaynağa gitmek. Bekleme ile yönlendirme farklı şeyler. --}}
+            <div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-950/30">
+                <p class="leading-relaxed text-stone-700 dark:text-stone-200">{{ $temsilcilik->yonlendirme_notu }}</p>
+                <a href="https://www.konsolosluk.gov.tr" target="_blank" rel="noopener nofollow"
+                    class="mt-4 inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 font-medium text-white transition hover:bg-emerald-800">
+                    Konsolosluk işlemleri portalını aç ↗
+                </a>
+                @if ($temsilcilik->resmi_url)
+                    <p class="mt-3 text-sm">
+                        <a href="{{ $temsilcilik->resmi_url }}" target="_blank" rel="noopener nofollow"
+                            class="font-medium text-emerald-700 hover:underline dark:text-emerald-400">
+                            {{ $temsilcilik->ad }} resmî sitesi ↗
+                        </a>
+                        <span class="text-stone-500 dark:text-stone-400">— iletişim ve duyurular</span>
+                    </p>
+                @endif
+            </div>
+        @elseif ($islemler->isEmpty())
             <div class="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-6 dark:border-stone-700 dark:bg-stone-800/50">
                 <p class="text-stone-600 dark:text-stone-300">Bu temsilcilik için işlem rehberleri hazırlanıyor.</p>
             </div>

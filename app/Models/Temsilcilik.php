@@ -24,7 +24,7 @@ class Temsilcilik extends Model
 
     protected $fillable = [
         'country_code', 'ad', 'slug', 'tur', 'sehir', 'adres',
-        'latitude', 'longitude', 'resmi_url', 'is_active', 'sort_order',
+        'latitude', 'longitude', 'resmi_url', 'yonlendirme_notu', 'is_active', 'sort_order',
     ];
 
     protected function casts(): array
