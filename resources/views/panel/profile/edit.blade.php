@@ -1,10 +1,65 @@
 <x-layouts.app title="Profilim — Nisoya">
-    <div class="mx-auto max-w-2xl px-4 py-10">
+    {{-- ---------------------------------------------------------------------
+         DÜZEN (2026-08-04)
+
+         Önceki hâl: max-w-2xl içinde SEKİZ kart alt alta, hepsi aynı görsel
+         ağırlıkta — profil formu, ödeme, portfolyo, şifre, oturum, güvenlik,
+         KVKK, hesap silme. Tek sütunda çok uzun bir kaydırma ve "hangi ayar
+         neredeydi" sorusuna cevap yok.
+
+         Yeni hâl: solda yapışkan bölüm menüsü, sağda gruplanmış bölümler.
+         Sekiz kart beş gruba indi (profil / ödeme / portfolyo / güvenlik /
+         hesap); şifre ile 2FA "Güvenlik" altında, oturum-KVKK-silme "Hesap"
+         altında birleşti.
+
+         SEKME DEĞİL ÇAPA — bilinçli. Bu sayfadaki formlar sunucu tarafında
+         doğrulanıyor ve hata durumunda geri yönlendiriliyor. Sekmeli bir
+         düzende ödeme formundaki bir hata GİZLİ sekmede kalır ve kullanıcı
+         neden kaydedilmediğini göremez. Çapa bağlantıları JS'siz de çalışır,
+         derin bağlantı verilebilir, hiçbir hata gizlenmez.
+    --------------------------------------------------------------------- --}}
+    <div class="mx-auto max-w-6xl px-4 py-10">
         <x-panel.back-link />
         <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Profil Ayarları</h1>
 
+        <div class="mt-6 grid gap-6 lg:grid-cols-4">
+            {{-- Yapışkan bölüm menüsü --}}
+            {{-- min-w-0 ŞART: grid öğesinin varsayılan `min-width:auto` kilidi,
+                 öğenin içeriğinin min-content genişliğinin altına inmesini
+                 engelliyor. Onsuz bu kenar çubuğu 375px ekranda 408px'e şişip
+                 sayfaya 49px yatay taşma veriyordu (ölçüldü). Aynı tuzak bu
+                 depoda avatar satırında da belgelenmiş. --}}
+            <aside class="min-w-0 lg:col-span-1">
+                <div class="lg:sticky lg:top-24">
+                    <div class="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+                        <div class="flex items-center gap-3">
+                            <x-avatar :user="$user" size="h-12 w-12" text="text-lg" />
+                            <div class="min-w-0">
+                                <div class="truncate font-semibold text-stone-800 dark:text-stone-100">{{ $user->name }}</div>
+                                <a href="{{ route('profiles.show', $user->username) }}" class="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400">Herkese açık profilim →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <nav class="mt-3 rounded-2xl border border-stone-200 bg-white p-2 shadow-sm dark:border-stone-800 dark:bg-stone-900" aria-label="Ayar bölümleri">
+                        @foreach ([
+                            'profil' => 'Profil bilgileri',
+                            'odeme' => 'Ödeme yöntemleri',
+                            'portfolyo' => 'Portfolyo',
+                            'guvenlik' => 'Güvenlik',
+                            'hesap' => 'Hesap',
+                        ] as $capa => $etiket)
+                            <a href="#{{ $capa }}" class="block rounded-xl px-3 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-50 hover:text-stone-900 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-50">{{ $etiket }}</a>
+                        @endforeach
+                    </nav>
+                </div>
+            </aside>
+
+            <div class="min-w-0 lg:col-span-3">
+
         {{-- Profil bilgileri --}}
-        <form id="profil-formu" method="POST" action="{{ route('panel.profile.update') }}" enctype="multipart/form-data" class="mt-6 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
+        <h2 id="profil" class="scroll-mt-24 text-lg font-bold text-stone-900 dark:text-stone-50">Profil bilgileri</h2>
+        <form id="profil-formu" method="POST" action="{{ route('panel.profile.update') }}" enctype="multipart/form-data" class="mt-3 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
             @csrf
             @method('PUT')
 
@@ -222,9 +277,10 @@
         </form>
 
         {{-- Ödeme yöntemleri --}}
-        <section class="mt-6 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
+        <h2 id="odeme" class="mt-10 scroll-mt-24 text-lg font-bold text-stone-900 dark:text-stone-50">Ödeme yöntemleri</h2>
+        <section class="mt-3 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
             <header>
-                <h2 class="font-semibold text-stone-800 dark:text-stone-100">💳 Ödeme yöntemlerim</h2>
+                <h3 class="font-semibold text-stone-800 dark:text-stone-100">💳 Ödeme yöntemlerim</h3>
                 <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
                     Nisoya ödemeleri işlemez — burada eklediğin kendi ödeme linkin veya QR kodun, diğer üyelere doğrudan sana ödeme yapmalarını kolaylaştırır. Ülkene göre önerilen yöntemler: {{ collect($suggestedPaymentMethods)->map->getLabel()->join(', ') }}.
                 </p>
@@ -296,9 +352,10 @@
         </section>
 
         {{-- Portfolyo --}}
-        <section class="mt-6 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
+        <h2 id="portfolyo" class="mt-10 scroll-mt-24 text-lg font-bold text-stone-900 dark:text-stone-50">Portfolyo</h2>
+        <section class="mt-3 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
             <header>
-                <h2 class="font-semibold text-stone-800 dark:text-stone-100">🖼️ Portfolyo</h2>
+                <h3 class="font-semibold text-stone-800 dark:text-stone-100">🖼️ Portfolyo</h3>
                 <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
                     Geçmiş iş örneklerinden fotoğraflar ekle, profilini ziyaret edenler yeteneklerini görsün. En fazla {{ \App\Http\Controllers\PortfolioItemController::MAX_ITEMS }} görsel.
                 </p>
@@ -341,12 +398,17 @@
             @endif
         </section>
 
+        {{-- GÜVENLİK grubu: şifre + 2FA. Eskiden ikisi sayfanın iki ayrı
+             ucundaydı (aralarında oturum ve portfolyo vardı) — aynı amaca
+             hizmet eden iki ayar birbirini bulamıyordu. --}}
+        <h2 id="guvenlik" class="mt-10 scroll-mt-24 text-lg font-bold text-stone-900 dark:text-stone-50">Güvenlik</h2>
+
         {{-- Şifre değiştir --}}
-        <form method="POST" action="{{ route('panel.profile.password') }}" class="mt-6 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
+        <form method="POST" action="{{ route('panel.profile.password') }}" class="mt-3 space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
             @csrf
             @method('PUT')
 
-            <h2 class="font-semibold text-stone-800 dark:text-stone-100">Şifre Değiştir</h2>
+            <h3 class="font-semibold text-stone-800 dark:text-stone-100">Şifre değiştir</h3>
 
             @if (session('status_password'))
                 <div class="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">{{ session('status_password') }}</div>
@@ -372,6 +434,30 @@
             <button type="submit" class="rounded-lg border border-stone-300 px-5 py-2.5 font-semibold text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">Şifreyi Güncelle</button>
         </form>
 
+        {{-- 2FA — şifrenin hemen ardında. Eskiden aralarında oturum ve KVKK
+             blokları vardı; aynı amaca hizmet eden iki ayar birbirini
+             bulamıyordu. --}}
+        <section class="mt-4 space-y-4 rounded-2xl border border-amber-200 bg-amber-50/50 p-6 dark:border-amber-800 dark:bg-amber-950/20">
+            <header>
+                <h3 class="font-semibold text-amber-900 dark:text-amber-200">🔐 İki faktörlü doğrulama</h3>
+                <p class="mt-1 text-sm text-amber-800 dark:text-amber-300">
+                    Hesabını iki faktörlü kimlik doğrulama ile koru.
+                </p>
+            </header>
+
+            <a
+                href="{{ route('panel.profile.2fa') }}"
+                class="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-white px-4 py-2.5 text-sm font-semibold text-amber-800 transition hover:bg-amber-50 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200 dark:hover:bg-amber-900/50"
+            >
+                <span aria-hidden="true">🔑</span>
+                İki Faktörlü Doğrulama (2FA) Yönet
+            </a>
+        </section>
+
+        {{-- HESAP grubu: oturum + KVKK + hesap silme. Üçü de "hesabımın
+             kendisi" ile ilgili; ayarlarla değil. --}}
+        <h2 id="hesap" class="mt-10 scroll-mt-24 text-lg font-bold text-stone-900 dark:text-stone-50">Hesap</h2>
+
         {{-- Oturumu kapat.
 
              Buraya konuldu çünkü MOBİLDE HİÇBİR YERDE YOKTU: header'daki Çıkış
@@ -379,10 +465,10 @@
              tek yolu /panel'e gitmekti — oysa insan çıkışı "profil/hesap"
              ekranında arar. Masaüstünde header'daki düğme yerinde duruyor;
              burası onun yerini almıyor, mobildeki boşluğu kapatıyor. --}}
-        <section class="mt-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
+        <section class="mt-3 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div class="min-w-0">
-                    <h2 class="font-semibold text-stone-800 dark:text-stone-100">Oturum</h2>
+                    <h3 class="font-semibold text-stone-800 dark:text-stone-100">Oturum</h3>
                     <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
                         <span class="font-medium text-stone-700 dark:text-stone-300">{{ $user->email }}</span> ile giriş yaptın.
                     </p>
@@ -399,27 +485,9 @@
         </section>
 
         {{-- KVKK: Verilerini indir / Hesabı sil --}}
-        <section class="mt-6 space-y-4 rounded-2xl border border-amber-200 bg-amber-50/50 p-6 dark:border-amber-800 dark:bg-amber-950/20">
+        <section class="mt-4 space-y-4 rounded-2xl border border-blue-200 bg-blue-50/50 p-6 dark:border-blue-800 dark:bg-blue-950/20">
             <header>
-                <h2 class="font-semibold text-amber-900 dark:text-amber-200">🔐 Güvenlik</h2>
-                <p class="mt-1 text-sm text-amber-800 dark:text-amber-300">
-                    Hesabını iki faktörlü kimlik doğrulama ile koru.
-                </p>
-            </header>
-
-            <a
-                href="{{ route('panel.profile.2fa') }}"
-                class="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-white px-4 py-2.5 text-sm font-semibold text-amber-800 transition hover:bg-amber-50 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200 dark:hover:bg-amber-900/50"
-            >
-                <span aria-hidden="true">🔑</span>
-                İki Faktörlü Doğrulama (2FA) Yönet
-            </a>
-        </section>
-
-        {{-- KVKK: Verilerini indir / Hesabı sil --}}
-        <section class="mt-6 space-y-4 rounded-2xl border border-blue-200 bg-blue-50/50 p-6 dark:border-blue-800 dark:bg-blue-950/20">
-            <header>
-                <h2 class="font-semibold text-blue-900 dark:text-blue-200">Kişisel verilerin (KVKK)</h2>
+                <h3 class="font-semibold text-blue-900 dark:text-blue-200">Kişisel verilerin (KVKK)</h3>
                 <p class="mt-1 text-sm text-blue-800 dark:text-blue-300">
                     6698 sayılı KVKK kapsamında verilerine erişme, dışa aktarma ve silme haklarına sahipsin.
                 </p>
@@ -439,10 +507,10 @@
         {{-- Hesabı Sil --}}
         <section
             x-data="{ open: false }"
-            class="mt-6 space-y-4 rounded-2xl border border-red-200 bg-red-50/50 p-6 dark:border-red-800 dark:bg-red-950/20"
+            class="mt-4 space-y-4 rounded-2xl border border-red-200 bg-red-50/50 p-6 dark:border-red-800 dark:bg-red-950/20"
         >
             <header>
-                <h2 class="font-semibold text-red-900 dark:text-red-200">Hesabı sil</h2>
+                <h3 class="font-semibold text-red-900 dark:text-red-200">Hesabı sil</h3>
                 <p class="mt-1 text-sm text-red-800 dark:text-red-300">
                     Hesabın silindiğinde tüm ilanların, yorumların ve kişisel verilerin kalıcı olarak temizlenir.
                     Bu işlem geri alınamaz.
@@ -488,6 +556,8 @@
                 </button>
             </form>
         </section>
+            </div>{{-- /sağ sütun --}}
+        </div>{{-- /grid --}}
     </div>
     {{-- Yanlış-düğme koruması.
 

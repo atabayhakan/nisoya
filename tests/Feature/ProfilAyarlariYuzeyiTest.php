@@ -54,6 +54,26 @@ class ProfilAyarlariYuzeyiTest extends TestCase
         $this->ekran()->assertSee('Henüz dosya seçilmedi');
     }
 
+    public function test_bolum_capalari_ve_menu_esleseiyor(): void
+    {
+        $yanit = $this->ekran();
+
+        // Menü çapa bağlantısı veriyor; hedef id kaybolursa bağlantı sessizce
+        // hiçbir yere gitmez (404 vermez, hata da vermez — fark edilmez).
+        foreach (['profil', 'odeme', 'portfolyo', 'guvenlik', 'hesap'] as $capa) {
+            $yanit->assertSee('id="'.$capa.'"', false);
+            $yanit->assertSee('href="#'.$capa.'"', false);
+        }
+    }
+
+    public function test_kenar_cubugu_min_w_0_tasiyor(): void
+    {
+        // Grid öğesinin varsayılan `min-width:auto` kilidi olmadan bu kenar
+        // çubuğu 375px ekranda 408px'e şişip 49px yatay taşma veriyordu
+        // (tarayıcıda ölçüldü). Sınıf düşerse taşma sessizce geri gelir.
+        $this->ekran()->assertSee('<aside class="min-w-0 lg:col-span-1"', false);
+    }
+
     public function test_misafir_profil_ekranini_goremez(): void
     {
         $this->get(route('panel.profile.edit'))->assertRedirect();
