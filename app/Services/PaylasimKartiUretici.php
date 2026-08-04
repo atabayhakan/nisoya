@@ -138,21 +138,27 @@ class PaylasimKartiUretici
         $kart->fill($marka);
 
         $this->kapakBas($kart, $listing, $font);
-        $this->panelBas($kart, $listing, $font);
 
-        // Demo damgası KOŞULSUZ — kapak görseli olsa bile.
+        // Demo damgası KOŞULSUZ ve KAPAĞA DEĞİL PANELE basılıyor.
         //
-        // "Kapak zaten damgalı, tekrar basmayalım" diye kısaltmak istemiştim;
-        // gözle bakınca çürüdü: kapağı 1200×800'den 1080×1080'e `cover()` ile
-        // kırpıyoruz ve DemoGorselUretici'nin SOL ÜST köşe rozeti kırpmada
-        // kesiliyor ("ÖRNEK GÖRSEL" → "ÖRSEL"). Grafik tuval demo görsellerinde
-        // kırpmaya dayanıklı çapraz filigran YOK (o yalnız AI fotoğraflarda),
-        // dolayısıyla kısayol bazı demo ilanlarını damgasız bırakırdı. AI
-        // fotoğraflı ilanda damga ikileniyor — o bedeli bilerek kabul ediyoruz:
-        // fazladan bir filigran sadece çirkin, eksik filigran ise yanıltıcı.
-        if ($listing->is_demo) {
-            $this->ornekDamgasi($kart, $font);
-        }
+        // İki tur aldı. Önce "kapak zaten damgalı, atlayalım" denendi: çürüdü,
+        // çünkü kapağı 1200×800'den 1080×1080'e `cover()` ile kırpıyoruz ve
+        // DemoGorselUretici'nin sol üst rozeti kırpmada kesiliyor
+        // ("ÖRNEK GÖRSEL" → "ÖRSEL"); grafik tuval görsellerinde kırpmaya
+        // dayanıklı çapraz filigran YOK (o yalnız AI fotoğraflarda). Sonra
+        // çapraz filigran koşulsuz basıldı: canlıda AI fotoğraflı ilanda iki
+        // filigran üst üste binip "ÖRRNNEEKK" gibi okundu — damga değil,
+        // bozuk render izlenimi verdi.
+        //
+        // Panel rozeti ikisini de çözüyor: panel hiçbir zaman kırpılmıyor
+        // (kartın alt üçte biri, her ilanda çiziliyor), kapağın kendi
+        // filigranıyla ÇAKIŞMIYOR ve "ÖRNEK İLAN" ifadesi çapraz bir
+        // filigrandan daha açık.
+        // (bool) şart: kolon NOT NULL ama değeri VERİTABANI varsayılanı
+        // dolduruyor, yani alanı set etmeden kaydedilen bir model örneğinde
+        // özellik tazelenene kadar bellekte null kalır. Çıplak geçmek
+        // TypeError veriyordu (testte yakalandı).
+        $this->panelBas($kart, $listing, $font, (bool) $listing->is_demo);
 
         return (string) $kart->encode(new PngEncoder);
     }
@@ -210,10 +216,15 @@ class PaylasimKartiUretici
             });
     }
 
-    /** Alt panel: başlık, fiyat, konum, adres ve QR. */
-    private function panelBas(ImageInterface $kart, Listing $listing, string $font): void
+    /** Alt panel: (demo rozeti,) başlık, fiyat, konum, adres ve QR. */
+    private function panelBas(ImageInterface $kart, Listing $listing, string $font, bool $demo): void
     {
         $y = self::KAPAK_YUKSEKLIK + 96;
+
+        if ($demo) {
+            $this->ornekRozeti($kart, $font, self::KAPAK_YUKSEKLIK + 44);
+            $y += 68; // Rozet başlığı aşağı iter; demo olmayan kartta boşluk kalmaz.
+        }
 
         // Başlık — en fazla 3 satır, sığmayan kısım üç noktayla kesilir.
         $satirlar = $this->satirlara($listing->title, 58, self::GENISLIK - self::KENAR * 2, 3);
@@ -328,19 +339,32 @@ class PaylasimKartiUretici
         }
     }
 
-    /** Demo ilanlar için kapaktan bağımsız ÖRNEK damgası. */
-    private function ornekDamgasi(ImageInterface $kart, string $font): void
+    /**
+     * Panelin sol üstüne "ÖRNEK İLAN" rozeti.
+     *
+     * Panelde durması bilinçli: kapak kırpılabilir ve zaten kendi filigranını
+     * taşıyor olabilir, panel ise her kartta tam olarak çiziliyor.
+     */
+    private function ornekRozeti(ImageInterface $kart, string $font, int $y): void
     {
-        foreach ([['#00000040', 3], ['#ffffff59', 0]] as [$renk, $kaydir]) {
-            $kart->text('Ö R N E K', (int) (self::GENISLIK * 0.5) + $kaydir, (int) (self::KAPAK_YUKSEKLIK * 0.5) + $kaydir,
-                function (FontFactory $f) use ($font, $renk): void {
-                    $f->filename($font);
-                    $f->size(120);
-                    $f->color($renk);
-                    $f->align('center', 'center');
-                    $f->angle(18);
-                });
-        }
+        $metin = 'ÖRNEK İLAN';
+        $boyut = 34;
+        $genislik = (int) ($boyut * 0.62 * mb_strlen($metin)) + $boyut * 2;
+        $yukseklik = (int) ($boyut * 1.9);
+
+        $kart->drawRectangle(function (RectangleFactory $r) use ($genislik, $yukseklik, $y): void {
+            $r->at(self::KENAR, $y);
+            $r->size($genislik, $yukseklik);
+            $r->background('#00000059');
+        });
+
+        $kart->text($metin, self::KENAR + (int) ($genislik / 2), $y + (int) ($yukseklik / 2),
+            function (FontFactory $f) use ($font, $boyut): void {
+                $f->filename($font);
+                $f->size($boyut);
+                $f->color('#ffffff');
+                $f->align('center', 'center');
+            });
     }
 
     private function fiyatMetni(Listing $listing): string

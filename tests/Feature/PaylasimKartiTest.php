@@ -135,14 +135,14 @@ class PaylasimKartiTest extends TestCase
 
         $ilan->is_demo = false;
 
-        // Kapak varken damgayı atlamak cazip bir kısayol ama YANLIŞ: kapağı
-        // kare kırptığımız için demo görselinin köşe rozeti kesiliyor ve
-        // grafik tuvalde kırpmaya dayanıklı çapraz filigran yok — kısayol
-        // bazı demo ilanlarını damgasız bırakır.
+        // Rozet PANELE basılıyor, kapağa değil — tam da bu yüzden kapak
+        // görselinin varlığı rozeti atlatmamalı. (Kapağa basan sürümde iki
+        // filigran üst üste biniyordu; kapak kırpıldığında ise demo rozeti
+        // tamamen kesilebiliyordu. İki kusur da bu testin koruduğu şey.)
         $this->assertNotSame(
             $damgali,
             md5($uretici->uret($ilan)),
-            'Kapak görseli olan demo ilanın kartına damga basılmadı.'
+            'Kapak görseli olan demo ilanın kartına ÖRNEK İLAN rozeti basılmadı.'
         );
     }
 
@@ -169,6 +169,20 @@ class PaylasimKartiTest extends TestCase
 
         $this->assertGreaterThan(200, $renk['red']);
         $this->assertLessThan(60, $renk['green']);
+    }
+
+    public function test_is_demo_okunmamis_model_kart_uretimini_kirmaz(): void
+    {
+        // Kolon NOT NULL, ama değeri VERİTABANI varsayılanı dolduruyor: insert
+        // sırasında alanı set etmeyen bir model örneğinde özellik bellekte null
+        // kalır (tazelenene kadar). Bu değeri bool parametreye çıplak geçmek
+        // TypeError veriyordu — kart 500 dönerdi.
+        $ilan = $this->ilan();
+        $ilan->is_demo = null;
+
+        $png = getimagesizefromstring(app(PaylasimKartiUretici::class)->uret($ilan));
+
+        $this->assertNotFalse($png);
     }
 
     public function test_gorselsiz_ilan_kart_uretimini_kirmaz(): void
