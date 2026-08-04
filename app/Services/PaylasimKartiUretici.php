@@ -65,6 +65,23 @@ use RuntimeException;
  */
 class PaylasimKartiUretici
 {
+    /**
+     * Çizim sürümü — kartın GÖRÜNÜMÜ her değiştiğinde ARTIRILMALI.
+     *
+     * Neden var: önbellek anahtarı ilanın içeriğini (başlık, fiyat, konum...)
+     * özetliyordu ama çizim mantığını değil. Sonuç canlıda ölçüldü: demo
+     * damgası kapaktan panele taşındı, deploy indi, ama daha önce üretilmiş
+     * kartlar diskte durduğu için ESKİ görünüm servis edilmeye devam etti —
+     * değişiklik hiçbir zaman kendiliğinden ulaşmayacaktı.
+     *
+     * Sürümü anahtara katmak bunu kalıcı olarak çözüyor: sabiti artıran her
+     * değişiklik tüm kartların dosya adını değiştirir, yani ilk istekte
+     * yeniden üretilirler. Elle önbellek temizliği gerekmez.
+     *
+     * v2: demo damgası kapaktan panele taşındı ("ÖRNEK İLAN" rozeti).
+     */
+    private const SURUM = 2;
+
     public const GENISLIK = 1080;
 
     public const YUKSEKLIK = 1920;
@@ -112,6 +129,7 @@ class PaylasimKartiUretici
     public function yol(Listing $listing): string
     {
         $imza = md5(implode('|', [
+            self::SURUM,
             $listing->title,
             $listing->price,
             $listing->currency,
