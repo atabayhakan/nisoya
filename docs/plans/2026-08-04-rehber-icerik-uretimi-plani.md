@@ -201,6 +201,81 @@ K4 ve K5 pilot yayına girdikten sonra; K1-K3 pilottan önce.
 - **Kapının ilk ölçümü:** 209 taslak aday, **0 hazır**. Yani bugün panelden
   yanlışlıkla bile eksik içerik yayınlanamaz.
 
+## 6.7 FAZ 1 KEŞİF SONUCU (2026-08-04, 8 ajan, ~7 dk)
+
+### Kapsama
+
+| Ölçüt | Sayı | Oran |
+|---|---|---|
+| Hedef hücre (7 × 6) | 42 | %100 |
+| **Kesin** kaynak | 33 | %78,6 |
+| Muhtemel kaynak | 4 | %9,5 |
+| Kaynak **yok** | 5 | %11,9 |
+
+**Karar kapısı eşiği (%50) rahatça aşıldı → araştırma fazına GEÇİLİR.**
+
+Ama daha keskin okuma: **Bişkek hariç 6 temsilcilik × 6 işlem = 36 hücrenin
+35'i kapsanıyor (%97).** Yani plan daralmıyor, **tek bir temsilcilik planın
+dışına düşüyor.**
+
+### KARAR — Bişkek içerik üretiminden ÇIKARILDI
+
+> **KARAR · 2026-08-04 · Bişkek KAPSAM DIŞI (kaynak yok)** — Bişkek
+> Büyükelçiliği'nin `/Mission/InfoNotes` indeksi **tamamen boş** ("No records",
+> üç dilde de). 262 duyurunun tamamı tarandı; tek bir bilgi notu yok. Elde
+> kalan kayıtlar e-pasaporta geçiş dönemine (2010-2012) ait **eskimiş
+> duyurular** — güncel bilgi kaynağı değil, tarihî kayıt. *Bu iddia ajanın
+> raporuyla yetinilmeyip elle ayrıca doğrulandı.*
+>
+> Kaynak olmadan içerik yazmak, bu keşfin engellemek için yapıldığı hatanın ta
+> kendisi olurdu. Kırgızistan için tek dürüst çıktı: **"Bu temsilcilik işlem
+> bilgilerini kendi sitesinde yayınlamıyor; başvuru bilgisi merkezî
+> konsolosluk.gov.tr üzerinden"** diyen bir yönlendirme kartı.
+>
+> *Sahip Kırgızistan'da yaşadığı için bunu özellikle istemişti — istek geçerli,
+> kaynak yok. Merkezî konsolosluk.gov.tr'den içerik üretmek ayrı bir karar
+> (o zaman "temsilcilik rehberi" değil "ülke rehberi" olur).*
+
+> **KARAR · 2026-08-04 · Chicago pasaport BOŞ BIRAKILACAK** — güncel bilgi notu
+> yok, yalnız 2010-2012 duyuruları. Diğer 5 işlem yazılır.
+>
+> **KARAR · 2026-08-04 · Chicago askerlik DARALTILDI** — mevcut not yalnızca
+> *öğrenci ertelemesini* kapsıyor, dövizle askerlik yok. İçerik o kapsamla
+> yazılır, "askerlik işlemleri" diye genellenmez.
+
+### Sentez ajanının kendi etiketine getirdiği eleştiri (önemli)
+
+New York ve Los Angeles'ta "kesin" işaretli hücrelerin çoğu aslında **yalnız
+PDF form listesi** — form varlığı "bu temsilcilik bu işlemi yapıyor"u kanıtlar
+ama **"nasıl yapılır"ı anlatmaz.**
+
+**Gerçek zengin metin kaynağı sayısı ~23**, 40 değil. Planlama bu sayıya göre
+yapılmalı. NY/LA için içerik ya PDF'ler okunarak üretilir ya da "hangi form
+gerekli + randevu nereden" düzeyinde tutulur; Almanya temsilcilikleri gibi
+süreç anlatımına girilmez.
+
+### Araştırma fazı için teknik tuzaklar (ölçüldü)
+
+1. **HTML `<title>` hepsinde aynı ve jenerik.** Gerçek başlık sayfa
+   gövdesinde — başlık asla `<title>`'dan alınmayacak.
+2. **`ShowInfoNote` id'leri sıralı değil ve tahmin edilemez** (374xxx–418xxx).
+   İndeks üzerinden yürümek zorunlu; URL üretilemez.
+3. **Vekaletname üç Almanya temsilciliğinde de ayrı sayfa değil** — "Noterlik
+   İşlemleri" notunun içinde bir bölüm. Çıkarım sayfa değil **bölüm**
+   düzeyinde yapılmalı.
+4. Aynı sayfa birden çok işlemi kapsayabiliyor (LA: pasaport+kimlik,
+   NY: kimlik+doğum).
+
+### Genişleme uyarısı
+
+Bişkek bir istisna değil, **muhtemelen kural**: küçük büyükelçiliklerde boş
+`InfoNotes` indeksi beklenmeli. Almanya/ABD oranı (%97) genele yansıtılamaz.
+Yeni ülke eklenmeden önce aynı keşif tekrarlanmalı.
+
+### Sıradaki kapsam
+
+**6 temsilcilik × 6 işlem = 35 hücre** (Chicago-pasaport hariç).
+
 ## 7. Sahibin karar vermesi gerekenler
 
 1. **İşlem seçimi** — önerilen altı uygun mu? (askerlik/mavi kart ↔ evlilik/vefat)
