@@ -31,10 +31,42 @@ class RehberSayfasi
         public readonly array $etiketler,
     ) {}
 
-    /** Markdown gövdesinin HTML'i (El Kitabı ekranı ve slide-over için). */
+    /**
+     * Markdown gövdesinin HTML'i (El Kitabı ekranı ve slide-over için).
+     *
+     * `{{surec:ilan-yasam-dongusu}}` yer tutucusu bir Blade bileşenine
+     * çözülür. Animasyon böylece markdown'ın SÜSÜ değil, bir BÖLÜM TİPİ olur:
+     * metin ile diyagram aynı dosyada, aynı commit'te, birlikte değişir.
+     *
+     * Yer tutucu markdown'dan ÖNCE değil SONRA çözülüyor: Str::markdown()
+     * ham HTML'i olduğu gibi geçirir ama süslü parantezleri paragrafa sarar,
+     * o yüzden değişimi HTML üzerinde yapmak gerekiyor.
+     */
     public function html(): string
     {
-        return Str::markdown($this->govde);
+        $html = Str::markdown($this->govde);
+
+        return preg_replace_callback(
+            '/<p>\s*\{\{surec:([a-z0-9-]+)\}\}\s*<\/p>/i',
+            fn (array $e): string => $this->surecHtml($e[1]),
+            $html
+        ) ?? $html;
+    }
+
+    /**
+     * Bilinen bir şerit adı gelirse bileşeni basar; bilinmeyende yer tutucuyu
+     * SESSİZCE SİLER — yazım hatası yüzünden rehber sayfasında çiğ
+     * `{{surec:...}}` metni görünmesi, diyagramın hiç görünmemesinden kötüdür.
+     */
+    private function surecHtml(string $ad): string
+    {
+        if ($ad !== 'ilan-yasam-dongusu') {
+            return '';
+        }
+
+        return view('components.surec-seridi', [
+            'adimlar' => app(SurecSeridi::class)->adimlar(),
+        ])->render();
     }
 
     /**

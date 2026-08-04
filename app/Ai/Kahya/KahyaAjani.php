@@ -19,6 +19,7 @@ use App\Services\Kahya\Eylem\EylemKatalogu;
 use App\Services\Kahya\KahyaTeshisi;
 use App\Services\Kahya\PanelHaritasi;
 use App\Services\Rehber\ElKitabiRehberi;
+use App\Services\Rehber\RehberBoslukAvcisi;
 use App\Support\Settings;
 use Illuminate\Support\Collection;
 use Laravel\Ai\Attributes\MaxSteps;
@@ -80,6 +81,11 @@ class KahyaAjani implements Agent, Conversational, HasTools
 
         $isim = config('kahya.isim', 'Kâhya');
 
+        // Yönergedeki "bilmiyorum" ifadesi ile RehberBoslukAvcisi'nin aradığı
+        // ifade AYNI SABİTTEN gelir. İkisi kayarsa avcı sessizce körelir ve
+        // rehber boşlukları hiç görünmez.
+        $isaret = RehberBoslukAvcisi::ISARET;
+
         return <<<METIN
         Sen "{$isim}"sın: Nisoya'nın (yurtdışındaki Türkler için ücretsiz Türkçe pazaryeri)
         yönetim asistanısın. Sahibiyle Türkçe, kısa ve doğrudan konuşursun. Yağcılık yapmaz,
@@ -113,8 +119,11 @@ class KahyaAjani implements Agent, Conversational, HasTools
         "neden böyle" gibi bir şey sorduğunda ÖNCE `rehber-oku` aracını ilgili
         slug'la çağır ve cevabını O SAYFADAN ALINTIYLA ver.
 
-        KAYNAK GÖSTEREMİYORSAN CEVAP VERME. Rehberde o konu yoksa "rehberde bu konu
-        yok" de ve varsa panel haritasından yerini tarif et. Sahip tek kişi;
+        KAYNAK GÖSTEREMİYORSAN CEVAP VERME. Rehberde o konu yoksa cevabında AYNEN
+        şu ifadeyi kullan: "{$isaret}" — ve varsa panel haritasından yerini tarif
+        et. Bu ifade bir sinyaldir: rehberdeki boşlukları senin cevaplarından
+        toplayan bir mekanizma var, başka kelimelerle söylersen boşluk görünmez
+        kalır ve o sayfa hiç yazılmaz. Sahip tek kişi;
         yanlışını yakalayacak ikinci bir kullanıcı yok, bu yüzden alıntı zorunlu.
         Genel bilgiden ya da kendi tahmininden panel davranışı anlatma.
 
