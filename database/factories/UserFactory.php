@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\UserRole;
+use App\Enums\UserStatus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -34,6 +35,16 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'country_code' => 'DE',
             'preferred_currency' => 'EUR',
+            /*
+             * `status` AÇIKÇA yazılır — DB varsayılanına ('aktif') güvenilmez.
+             *
+             * Varsayılan yalnız satır yazılırken uygulanır; BELLEKTEKİ model
+             * `refresh()` çağrılmadıkça `null` taşır. `canAccessPanel()` beyaz
+             * listeye geçince (yalnız Aktif içeri) bu null'lar sessizce 403'e
+             * dönüştü ve panel testleri kırıldı. Kural yanlış değildi, test
+             * kullanıcısı gerçekçi değildi.
+             */
+            'status' => UserStatus::Aktif,
         ];
     }
 

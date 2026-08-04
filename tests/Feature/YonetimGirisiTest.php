@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\UserRole;
+use App\Enums\UserStatus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
@@ -139,6 +140,34 @@ class YonetimGirisiTest extends TestCase
         $moderator = User::factory()->create(['role' => UserRole::Moderator]);
 
         $this->actingAs($moderator)->get('/yonetim')->assertSuccessful();
+    }
+
+    // ------------------------------------------------- Hesap durumu
+
+    public function test_askiya_alinan_admin_panele_giremez(): void
+    {
+        // Bu boşluk gerçekti: canAccessPanel() yalnız Silinmis'i engelliyordu.
+        // EnsureUserIsActive askıdakini oturumdan atar ama `web` grubunda ve
+        // Filament kendi yığınını tanımlıyor — oraya hiç uğramıyor. Yani
+        // "askıya al" düğmesi, en çok işe yarayacağı yerde çalışmıyordu.
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'status' => UserStatus::Askida,
+            'two_factor_secret' => 'GIZLIANAHTARTEST',
+            'two_factor_confirmed_at' => now(),
+        ]);
+
+        $this->actingAs($admin)->get('/yonetim')->assertForbidden();
+    }
+
+    public function test_askiya_alinan_moderator_panele_giremez(): void
+    {
+        $moderator = User::factory()->create([
+            'role' => UserRole::Moderator,
+            'status' => UserStatus::Askida,
+        ]);
+
+        $this->actingAs($moderator)->get('/yonetim')->assertForbidden();
     }
 
     public function test_zorunluluk_sitenin_geri_kalanini_kilitlemez(): void
