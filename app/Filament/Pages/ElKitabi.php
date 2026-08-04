@@ -5,18 +5,32 @@ namespace App\Filament\Pages;
 use App\Filament\Concerns\RestrictsToAdmins;
 use App\Filament\Resources\NavigationLinks\NavigationLinkResource;
 use App\Filament\Resources\Pages\PageResource;
-use App\Filament\Resources\Zones\ZoneResource;
+use App\Services\Rehber\ElKitabiRehberi;
+use App\Services\Rehber\RehberSayfasi;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Collection;
 use UnitEnum;
 
 /**
- * El Kitabı (Faz 1 · G10) — panelin "kendini anlatan" rehberi.
+ * El Kitabı — panelin "kendini anlatan" rehberi.
  *
- * Amaç: geliştirici olmadan da sahibin "şunu değiştirmek için nereye gideceğini"
- * tek bakışta bulması. Sık ihtiyaçları ilgili panel sayfasına bağlar ve "sen
- * yokken" acil durum adımlarını (yedekten dön, erişimi kurtar) özetler.
+ * ---------------------------------------------------------------------------
+ * ESKİ HÂLİ VE NEDEN DEĞİŞTİ
+ *
+ * Sayfa 88 satırlık, ELLE YAZILMIŞ bir bağlantı kartı dizisiydi. Doğru
+ * yöndeydi ama üç şeyi yapamıyordu: aranamıyordu, "nasıl yaparım" sorusunu
+ * yanıtlamıyordu ve panel büyüdükçe sessizce eksiliyordu.
+ *
+ * Artık `docs/rehber/*.md` okuyucusu. Metin markdown'da yaşıyor çünkü aynı
+ * metin DÖRT yüzeye birden hizmet ediyor (bkz. plan 2026-08-04):
+ * bu ekran · ekran içi "Yardım" · Kâhya'nın cevapları · belgeler.
+ * Kod içine gömülü ikinci bir anlatım olsaydı üçüncü ayda ikisi çelişirdi.
+ *
+ * Hızlı erişim kartları KALDI: onlar metin değil CANLI URL'ler
+ * (`::getUrl()`), yani yanlış yazıya dönüşemezler. Rehber "nasıl", kartlar
+ * "nereye" sorusunu yanıtlar.
  */
 class ElKitabi extends Page
 {
@@ -28,61 +42,92 @@ class ElKitabi extends Page
 
     protected static ?string $navigationLabel = 'El Kitabı';
 
-    protected static ?int $navigationSort = 0; // "Sistem & Araçlar" grubunun en üstünde
+    protected static ?int $navigationSort = 0;
 
     protected string $view = 'filament.pages.el-kitabi';
+
+    /** Arama kutusu — Livewire ile canlı süzer. */
+    public string $arama = '';
+
+    /** Açık olan rehber sayfasının slug'ı. */
+    public string $acik = '';
+
+    public function mount(): void
+    {
+        $ilk = $this->rehber()->tumSayfalar()->first();
+
+        $this->acik = $ilk instanceof RehberSayfasi ? $ilk->slug : '';
+    }
 
     public function getTitle(): string
     {
         return 'El Kitabı';
     }
 
-    /**
-     * Rehber bölümleri: her kart bir panel sayfasına bağlanır.
-     *
-     * @return array<int,array{baslik:string,kartlar:array<int,array{baslik:string,aciklama:string,url:string,ikon:string}>}>
-     */
-    public function sections(): array
+    public function ac(string $slug): void
     {
-        return [
-            [
-                'baslik' => 'Görünüm ve içerik',
-                'kartlar' => [
-                    ['baslik' => 'İçerik ve metinler', 'aciklama' => 'Anasayfa, hero, footer, iletişim ve bağış metinlerini düzenle.', 'url' => IcerikAyarlari::getUrl(), 'ikon' => 'heroicon-o-document-text'],
-                    ['baslik' => 'Tasarım', 'aciklama' => 'Logo, favicon, marka rengi ve tasarım modu.', 'url' => TasarimAyarlari::getUrl(), 'ikon' => 'heroicon-o-swatch'],
-                    ['baslik' => 'Menü', 'aciklama' => 'Üst menüye bağlantı ekle, çıkar, sırala.', 'url' => NavigationLinkResource::getUrl(), 'ikon' => 'heroicon-o-bars-3'],
-                    ['baslik' => 'Sayfalar', 'aciklama' => 'Yeni sayfa oluştur (KVKK, hakkımızda, kampanya).', 'url' => PageResource::getUrl(), 'ikon' => 'heroicon-o-document-plus'],
-                    ['baslik' => 'Reklam alanları', 'aciklama' => 'Sitedeki reklam/içerik yerleşimlerini yönet.', 'url' => ZoneResource::getUrl(), 'ikon' => 'heroicon-o-rectangle-group'],
-                ],
-            ],
-            [
-                'baslik' => 'Entegrasyonlar',
-                'kartlar' => [
-                    ['baslik' => 'Yapay zeka', 'aciklama' => 'AI aç/kapa, sağlayıcı ve anahtar. Sağlayıcı çökerse tek düğmeyle kapat.', 'url' => YapayZekaAyarlari::getUrl(), 'ikon' => 'heroicon-o-sparkles'],
-                    ['baslik' => 'E-posta (SMTP)', 'aciklama' => 'E-posta sağlayıcısını değiştir ve test e-postası gönder.', 'url' => MailAyarlari::getUrl(), 'ikon' => 'heroicon-o-envelope'],
-                ],
-            ],
-            [
-                'baslik' => 'Güvenlik ağı — sen yokken',
-                'kartlar' => [
-                    ['baslik' => 'Yedekleme', 'aciklama' => 'Tam yedek al / indir. Günlük otomatik yedek açık.', 'url' => Yedekleme::getUrl(), 'ikon' => 'heroicon-o-circle-stack'],
-                    ['baslik' => 'Kurtarma Kiti', 'aciklama' => 'Kurtarma kodları + ikinci yönetici ile panele kilitlenme.', 'url' => KurtarmaKiti::getUrl(), 'ikon' => 'heroicon-o-lifebuoy'],
-                ],
-            ],
-        ];
+        $this->acik = $slug;
+    }
+
+    /** @return Collection<int, RehberSayfasi> */
+    public function sayfalar(): Collection
+    {
+        return $this->rehber()->ara($this->arama);
+    }
+
+    public function acikSayfa(): ?RehberSayfasi
+    {
+        $sayfalar = $this->sayfalar();
+
+        // Arama sonucu açık sayfayı dışarıda bırakabilir; o durumda ilk sonuca
+        // düş, yoksa kullanıcı boş bir içerik alanına bakar ve aramanın
+        // bozulduğunu sanır.
+        return $sayfalar->firstWhere('slug', $this->acik) ?? $sayfalar->first();
     }
 
     /**
-     * "Sen yokken" acil durum adımları (bağlantı değil, yönerge).
+     * Açık sayfanın bağlı olduğu Filament ekranının URL'i (yoksa null).
      *
-     * @return array<int,array{baslik:string,adim:string}>
+     * Blade'de DEĞİL burada hesaplanıyor: bu depoda `@php` blokları Filament
+     * bileşen yuvalarının içinde derleme hatası veriyor (ölçüldü — hem kısa
+     * `@php(...)` formu hem blok form). Mantık zaten şablonun işi değil.
      */
-    public function emergency(): array
+    public function acikSayfaUrl(): ?string
+    {
+        $sinif = $this->acikSayfa()?->ekran;
+
+        if ($sinif === null || ! class_exists($sinif) || ! method_exists($sinif, 'getUrl')) {
+            return null;
+        }
+
+        return $sinif::getUrl();
+    }
+
+    /**
+     * Hızlı erişim — en sık gidilen ekranlar.
+     *
+     * Bunlar metin DEĞİL canlı URL: bir ekranın adresi değişirse burası
+     * kendiliğinden doğru kalır. Rehber sayfalarına taşınmadı çünkü markdown'a
+     * yazılan bir adres bayatlayabilir.
+     *
+     * @return array<int, array{baslik: string, url: string, ikon: string}>
+     */
+    public function hizliErisim(): array
     {
         return [
-            ['baslik' => 'Parolamı unuttum, e-posta da çalışmıyor', 'adim' => 'Kurtarma Kiti’nden önceden oluşturduğun bir kurtarma koduyla /hesap-kurtar sayfasından parolanı e-postasız sıfırla.'],
-            ['baslik' => 'Panele hiç giremiyorum (parola + 2FA + kod kayıp)', 'adim' => 'Sunucuya erişimin varsa son çare: php artisan admin:recover eposta@ornek.com — parolayı sıfırlar, hesabı Yönetici + Aktif yapar.'],
-            ['baslik' => 'Sunucuda bir şey bozuldu, siteyi geri getirmem lazım', 'adim' => 'Yedekleme sayfasından en güncel yedeği indir; içindeki veritabanı dökümünü ve media/ klasörünü sunucuya geri yükle (adımlar Yedekleme sayfasında yazılı).'],
+            ['baslik' => 'İçerik ve metinler', 'url' => IcerikAyarlari::getUrl(), 'ikon' => 'heroicon-o-document-text'],
+            ['baslik' => 'Tasarım', 'url' => TasarimAyarlari::getUrl(), 'ikon' => 'heroicon-o-swatch'],
+            ['baslik' => 'Menü', 'url' => NavigationLinkResource::getUrl(), 'ikon' => 'heroicon-o-bars-3'],
+            ['baslik' => 'Sayfalar', 'url' => PageResource::getUrl(), 'ikon' => 'heroicon-o-document-plus'],
+            ['baslik' => 'Yedekleme', 'url' => Yedekleme::getUrl(), 'ikon' => 'heroicon-o-circle-stack'],
+            ['baslik' => 'Kurtarma Kiti', 'url' => KurtarmaKiti::getUrl(), 'ikon' => 'heroicon-o-lifebuoy'],
+            ['baslik' => 'E-posta (SMTP)', 'url' => MailAyarlari::getUrl(), 'ikon' => 'heroicon-o-envelope'],
+            ['baslik' => 'Yapay zekâ', 'url' => YapayZekaAyarlari::getUrl(), 'ikon' => 'heroicon-o-sparkles'],
         ];
+    }
+
+    private function rehber(): ElKitabiRehberi
+    {
+        return app(ElKitabiRehberi::class);
     }
 }

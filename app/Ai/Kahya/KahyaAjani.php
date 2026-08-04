@@ -5,6 +5,7 @@ namespace App\Ai\Kahya;
 use App\Ai\Kahya\Araclar\EylemAraci;
 use App\Ai\Kahya\Araclar\IsletmeKesfet;
 use App\Ai\Kahya\Araclar\PanelYonlendir;
+use App\Ai\Kahya\Araclar\RehberOku;
 use App\Ai\Kahya\Araclar\TabloSorgula;
 use App\Ai\Kahya\Araclar\WebAra;
 use App\Models\BekleyenHamle;
@@ -17,6 +18,7 @@ use App\Services\Kahya\Eylem\EylemCalistirici;
 use App\Services\Kahya\Eylem\EylemKatalogu;
 use App\Services\Kahya\KahyaTeshisi;
 use App\Services\Kahya\PanelHaritasi;
+use App\Services\Rehber\ElKitabiRehberi;
 use App\Support\Settings;
 use Illuminate\Support\Collection;
 use Laravel\Ai\Attributes\MaxSteps;
@@ -106,6 +108,18 @@ class KahyaAjani implements Agent, Conversational, HasTools
 
         {$this->harita->metin()}
 
+        ## El Kitabı rehberi (NASIL YAPILIR sorularının TEK kaynağı)
+        Aşağıda rehber sayfalarının dizini var. Sahip "nasıl yaparım", "ne oluyor",
+        "neden böyle" gibi bir şey sorduğunda ÖNCE `rehber-oku` aracını ilgili
+        slug'la çağır ve cevabını O SAYFADAN ALINTIYLA ver.
+
+        KAYNAK GÖSTEREMİYORSAN CEVAP VERME. Rehberde o konu yoksa "rehberde bu konu
+        yok" de ve varsa panel haritasından yerini tarif et. Sahip tek kişi;
+        yanlışını yakalayacak ikinci bir kullanıcı yok, bu yüzden alıntı zorunlu.
+        Genel bilgiden ya da kendi tahmininden panel davranışı anlatma.
+
+        {$this->rehberDizini()}
+
         ## Kurallar
         1. Sana verilen araçların DIŞINDA hiçbir iş yapamazsın; veritabanına doğrudan erişimin yok.
         2. Bir eylem için id/kod gerekiyorsa (üst kategori, ülke kodu...) UYDURMA — önce
@@ -146,12 +160,28 @@ class KahyaAjani implements Agent, Conversational, HasTools
             ->all();
     }
 
+    /**
+     * Rehber sayfalarının DİZİNİ (gövde değil) — yönergeye giren kısım.
+     *
+     * Konteynerden çözülüyor, kurucudan değil: bu sınıfın kurucusu zaten dokuz
+     * parametreli ve çağrı yeri konumsal argüman kullanıyor; onuncuyu eklemek
+     * KahyaSohbeti::ajan()'ı da değiştirmeyi gerektirirdi. Araçlarda (WebAra,
+     * IsletmeKesfet) zaten aynı `app()` deseni var.
+     */
+    private function rehberDizini(): string
+    {
+        return app(ElKitabiRehberi::class)->yonergeDizini();
+    }
+
     /** @return list<Tool> */
     public function tools(): iterable
     {
         $araclar = [
             new TabloSorgula,
             new PanelYonlendir($this->harita, $this->yonlendirici),
+            // El Kitabı rehberi — "nasıl yaparım" sorularının kaynağı.
+            // Yönergede yalnız dizin var; tam metin bu araçla gelir.
+            app(RehberOku::class),
             // Dış gözler (F3) — anahtar yokken de kayıtlı: model sahibe
             // "şurayı yapılandır" tarifini ancak aracı görürse verebilir.
             app(WebAra::class),

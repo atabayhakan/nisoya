@@ -2,9 +2,11 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\RehberYardimi;
 use App\Filament\Concerns\RestrictsToAdmins;
 use App\Services\BackupService;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -21,7 +23,20 @@ use UnitEnum;
  */
 class Yedekleme extends Page
 {
+    use RehberYardimi;
     use RestrictsToAdmins;
+
+    /**
+     * Bu ekranın rehber sayfasını slide-over'da açar. Sayfa yoksa düğme hiç
+     * görünmez (bkz. RehberYardimi) — boş bir yardım penceresi, yardım
+     * olmamasından kötüdür.
+     *
+     * @return array<int, Action>
+     */
+    protected function getHeaderActions(): array
+    {
+        return array_values(array_filter([static::rehberYardimAksiyonu()]));
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCircleStack;
 
