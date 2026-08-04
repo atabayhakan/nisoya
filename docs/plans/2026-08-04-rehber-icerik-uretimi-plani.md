@@ -143,9 +143,24 @@ olmamasından kötüdür.
 | K2 | `rehber:yayinla` komutu + yayın kapısı | Eksik içerik yayınlanamasın (yukarıdaki 3. kapı) |
 | K3 | İnceleme paketi → içe aktarma komutu | Onaylanan içerik elle 42 kez girilmesin |
 | K4 | Liste sayfalarında "doğrulandı" rozeti | Ziyaretçi hangi içeriğin taze olduğunu listede görsün |
-| K5 | Bayat içerik uyarısı Kâhya raporuna | 90 günü geçen içerik sahibin sabah raporunda görünsün |
+| ~~K5~~ | ~~Bayat içerik uyarısı Kâhya raporuna~~ | **ZATEN VARMIŞ** — aşağıya bak |
 
-K4 ve K5 pilot yayına girdikten sonra; K1-K3 pilottan önce.
+K4 pilot yayına girdikten sonra; K1-K3 pilottan önce.
+
+> **K5 YAPILMASI GEREKMEDİ (2026-08-04 ölçümü).** Bayatlık uyarısı zincirin
+> tamamıyla zaten kuruluymuş: `TemsilcilikIslemi::scopeBayat()` →
+> `BekleyenIsler::topla()` içindeki `rehber_bayat` kuyruğu → `KahyaTeshisi` →
+> `GunlukKahyaRaporu::neBekliyor()`. Modül kapalıyken kuyruk eklenmiyor, sayı
+> sıfırken satır basılmıyor.
+>
+> Uçtan uca sınandı: iki kaydın `dogrulanma_tarihi`'i 100 gün geriye alınınca
+> rapor şu satırı bastı — *"Doğrulaması eskimiş rehber içeriği: **2** — 90
+> günden eski doğrulama — yayında"*.
+>
+> **Ders:** bu maddeyi "yapılacak" sanmamın sebebi plan belgesine bakıp koda
+> bakmamaktı. `TemsilcilikIslemiResource` zaten kullanıcıya bu uyarıyı VAAT
+> ediyordu ("Kâhya raporunda 'bayat' uyarısı çıkar") — vaadin karşılığı da
+> yazılmıştı. Plandaki bir satır, kodun durumunun kanıtı değildir.
 
 ## 6. Sıra
 
