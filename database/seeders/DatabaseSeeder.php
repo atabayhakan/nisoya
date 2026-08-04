@@ -21,6 +21,14 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             SiteSettingSeeder::class,
             StaticPagesSeeder::class,
+
+            // DİKKAT: bu liste ReferenceDataSeeder'ınkiyle AYNI DEĞİL (o
+            // deploy'da koşar ve Zone/NavigationLink/HomeHighlight/Property-
+            // Vehicle kategorilerini de içerir). Yani `migrate:fresh --seed`
+            // üretimden FARKLI bir veritabanı üretir — mevcut bir tuzak.
+            // Temsilcilikler en azından ikisinde de var: onlarsız yerel
+            // rehber içeriği aktarımı sessizce yarısını atlıyordu.
+            RehberTemsilcilikleriSeeder::class,
         ]);
     }
 }
