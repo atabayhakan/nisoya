@@ -79,7 +79,24 @@ class RehberTemsilcilikleriSeeder extends Seeder
             ...$this->abd(),
 
             // --- KIRGIZİSTAN ---
-            ['country_code' => 'KG', 'ad' => 'Bişkek Büyükelçiliği', 'slug' => 'biskek-buyukelciligi', 'tur' => Temsilcilik::TUR_BUYUKELCILIK, 'sehir' => 'Bişkek', 'resmi_url' => 'https://biskek-be.mfa.gov.tr', 'sort_order' => 0],
+            [
+                'country_code' => 'KG', 'ad' => 'Bişkek Büyükelçiliği', 'slug' => 'biskek-buyukelciligi',
+                'tur' => Temsilcilik::TUR_BUYUKELCILIK, 'sehir' => 'Bişkek',
+                'resmi_url' => 'https://biskek-be.mfa.gov.tr', 'sort_order' => 0,
+
+                // Keşif fazında (2026-08-04) ölçüldü ve elle ayrıca doğrulandı:
+                // /Mission/InfoNotes indeksi TAMAMEN BOŞ ("No records", üç dilde
+                // de), 262 duyuruda tek bilgi notu yok. Elde kalanlar e-pasaporta
+                // geçiş dönemine (2010-2012) ait eskimiş duyurular.
+                //
+                // Kaynak olmadan içerik yazmak bu modülün önlemek için var olduğu
+                // hata olurdu. Ziyaretçiye "hazırlanıyor" demek de yalan olur —
+                // hazırlanan bir şey yok. Dürüst olan: yönlendirmek.
+                'yonlendirme_notu' => 'Bişkek Büyükelçiliği işlem bilgilerini kendi sitesinde yayınlamıyor. '
+                    .'Vekaletname, pasaport, nüfus ve diğer konsolosluk işlemleri için güncel evrak listesi ve '
+                    .'randevu, Dışişleri Bakanlığı\'nın merkezî konsolosluk portalında yer alıyor. '
+                    .'Kırgızistan\'daki konsolosluk işlemleri Bişkek Büyükelçiliği\'nde yapılır.',
+            ],
         ];
     }
 
