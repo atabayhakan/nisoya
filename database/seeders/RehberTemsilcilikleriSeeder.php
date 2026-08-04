@@ -56,13 +56,39 @@ use Illuminate\Database\Seeder;
  */
 class RehberTemsilcilikleriSeeder extends Seeder
 {
+    /**
+     * Kırık olduğu ÖLÇÜLEN adres deseni: `{sehir}.bk.` / `{sehir}.be.` (noktalı).
+     * Bu biçim DNS'te hiç çözülmüyor. Yalnız bu desendeki adresler onarılır.
+     */
+    private const KIRIK_DESEN = '/\.(bk|be)\.mfa\.gov\.tr/';
+
+    /**
+     * Deploy zincirinde çalışır (ReferenceDataSeeder). Bu yüzden davranışı
+     * MUHAFAZAKÂR:
+     *
+     *   · Kayıt YOKSA → tüm alanlarıyla oluşturulur.
+     *   · Kayıt VARSA → yalnız `resmi_url` ve YALNIZ ölçülmüş kırık desendeyse
+     *     onarılır. Diğer hiçbir alana dokunulmaz.
+     *
+     * Neden böyle: `updateOrCreate` her deploy'da panelden yapılan düzeltmeleri
+     * EZERDİ. Sahip bir adresi ya da yönlendirme notunu panelden düzeltirse
+     * bir sonraki deploy onu geri alırdı — sessiz ve bulması zor bir hata.
+     * RehberAlmanyaSeeder aynı sebeple `firstOrCreate` kullanıyor.
+     */
     public function run(): void
     {
         foreach ($this->kayitlar() as $kayit) {
-            Temsilcilik::updateOrCreate(
-                ['slug' => $kayit['slug']],
-                $kayit + ['is_active' => true],
-            );
+            $mevcut = Temsilcilik::query()->where('slug', $kayit['slug'])->first();
+
+            if ($mevcut === null) {
+                Temsilcilik::create($kayit + ['is_active' => true]);
+
+                continue;
+            }
+
+            if (preg_match(self::KIRIK_DESEN, (string) $mevcut->resmi_url) === 1) {
+                $mevcut->update(['resmi_url' => $kayit['resmi_url']]);
+            }
         }
     }
 
