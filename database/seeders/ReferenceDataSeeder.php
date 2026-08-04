@@ -32,6 +32,12 @@ class ReferenceDataSeeder extends Seeder
             ZoneSeeder::class,
             NavigationLinkSeeder::class,
             HomeHighlightSeeder::class,
+
+            // Temsilcilikler referans veridir (ülke/şehir gibi): kamuya açık,
+            // yavaş değişen gerçekler. Seeder MUHAFAZAKÂR davranır — var olan
+            // kaydın yalnız ÖLÇÜLMÜŞ kırık adresini onarır, başka alana
+            // dokunmaz; panelden yapılan düzeltmeler deploy'da ezilmez.
+            RehberTemsilcilikleriSeeder::class,
         ]);
     }
 }
