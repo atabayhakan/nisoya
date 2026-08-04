@@ -187,8 +187,17 @@ class VitrinHeroTest extends TestCase
     {
         // listings.city serbest metin; ham distinct 'Berlin'/'berlin'/'Berlin '
         // üç şehir sayardı.
-        foreach (['Berlin', 'berlin', 'BERLIN'] as $sehir) {
-            Listing::factory()->create(['status' => 'aktif', 'city' => $sehir]);
+        //
+        // 12 kayıt ŞART, 3 değil: kanıt şeridi sayıları ancak envanter bir ilan
+        // listesi sayfasını doldurunca basıyor (bkz. HomeController::heroSerit).
+        // Bu testin derdi şeridin görünürlük kuralı değil, göründüğünde şehri
+        // doğru sayması — o yüzden eşiği geçip asıl iddiaya bakıyoruz.
+        foreach (range(1, 12) as $i) {
+            Listing::factory()->create([
+                'status' => 'aktif',
+                'is_demo' => false,
+                'city' => ['Berlin', 'berlin', 'BERLIN'][$i % 3],
+            ]);
         }
 
         $yanit = $this->get('/')->assertOk();

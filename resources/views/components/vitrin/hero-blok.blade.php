@@ -69,6 +69,27 @@
                 @endforeach
             </div>
         @endif
+        @php $serit = $stats['serit'] ?? ['tip' => 'sayilar']; @endphp
+
+        {{-- Şerit üç hâlden birini basar (karar HomeController::heroSerit'te,
+             gerekçesi orada yazılı). Kısaca: gerçek hareket bir ilan listesi
+             sayfasını (12) bile doldurmuyorsa sayı göstermek siteyi savunmaz,
+             aleyhine tanıklık eder — o durumda ziyaretçi için gerçekten dolu
+             olan şey (ülke rehberi) ya da dürüst bir arz çağrısı gösterilir. --}}
+        @if ($serit['tip'] === 'rehber')
+            <a href="{{ url('/'.strtolower($serit['ulke']->code)) }}"
+               class="flex items-center gap-2 {{ $koyu ? 'text-white' : 'text-stone-700 dark:text-stone-200' }}">
+                <span aria-hidden="true">{{ $serit['ulke']->emoji }}</span>
+                <span class="text-sm font-semibold">{{ $serit['ulke']->name_tr }} rehberi</span>
+                <span class="text-xs font-medium {{ $koyu ? 'text-white/70' : 'text-stone-500 dark:text-stone-400' }}">{{ $serit['temsilcilik'] }} temsilcilik · {{ $serit['islem'] }} işlem</span>
+            </a>
+        @elseif ($serit['tip'] === 'cagri')
+            <a href="{{ url('/panel/ilan/yeni') }}"
+               class="flex items-center gap-2 {{ $koyu ? 'text-white' : 'text-stone-700 dark:text-stone-200' }}">
+                <span class="text-sm font-semibold">Şehrinde ilk ilanı sen ver</span>
+                <span class="text-xs font-medium {{ $koyu ? 'text-white/70' : 'text-stone-500 dark:text-stone-400' }}">ücretsiz, komisyonsuz</span>
+            </a>
+        @else
         <div class="flex items-baseline gap-1.5">
             <span class="text-lg font-extrabold {{ $koyu ? 'text-white' : 'text-stone-800 dark:text-stone-50' }}">{{ $stats['countries'] }}</span>
             <span class="text-xs font-medium {{ $koyu ? 'text-white/70' : 'text-stone-500 dark:text-stone-400' }}">ülke</span>
@@ -88,5 +109,6 @@
             <span class="text-lg font-extrabold {{ $koyu ? 'text-white' : 'text-[#16a97f]' }}">{{ $stats['activeListings'] ?? 0 }}</span>
             <span class="text-xs font-medium {{ $koyu ? 'text-white/70' : 'text-stone-500 dark:text-stone-400' }}">aktif ilan</span>
         </div>
+        @endif
     </div>
 @endif
