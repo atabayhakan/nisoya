@@ -97,6 +97,25 @@
                     </div>
                 @endif
 
+                {{-- Çıkış.
+
+                     Mobilde çıkış HİÇBİR YERDE yoktu: header'daki düğme
+                     `hidden md:block`, sekme çubuğunun beş yuvası da dolu
+                     (Ana Sayfa/Keşfet/İlan Ver/Mesajlar/Panelim). Telefonda
+                     çıkmanın tek yolu /panel'e gitmekti. Keşfet sayfası her
+                     sayfadan tek dokunuşla açılıyor — çıkış için doğru yer
+                     burası; profil ekranındaki "Oturum" bölümü ise aramaya
+                     oradan başlayanlar için duruyor. --}}
+                @auth
+                    <form method="POST" action="{{ route('logout') }}" class="mt-3 border-t border-stone-100 pt-3 dark:border-stone-800">
+                        @csrf
+                        <button type="submit" class="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-800">
+                            <x-heroicon-o-arrow-right-start-on-rectangle class="h-4 w-4" />
+                            Çıkış yap
+                        </button>
+                    </form>
+                @endauth
+
                 {{-- PWA yükleme ipucu (Faz M1.4). Android'de native yükleme istemi
                      (beforeinstallprompt) bir düğmeye bağlı — gerçek bir eylemi
                      tetikliyor. iOS'ta öyle bir API YOK (Apple desteklemiyor);
