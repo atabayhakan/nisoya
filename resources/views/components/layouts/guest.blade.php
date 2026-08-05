@@ -47,7 +47,26 @@
             {{ $slot }}
         </div>
 
-        <p class="mt-6 text-xs text-stone-600 dark:text-stone-400">© {{ date('Y') }} Nisoya — Ne İş Olursa Yaparım</p>
+        {{-- GÜVEN BAĞLANTILARI (2026-08-05).
+
+             Bu layout'u kayıt, giriş, parola sıfırlama ve hesap kurtarma
+             sayfaları kullanıyor ve içinde site footer'ı YOK. Yani bir
+             reklamdan ya da paylaşımdan doğrudan /kayit'e gelen kişi, formu
+             doldurmadan önce sitenin kim olduğuna dair HİÇBİR bağımsız işaret
+             göremiyordu — "Hakkımızda", "Gizlilik" gibi bağlantılar yalnız
+             onay kutusunun metnine gömülüydü.
+
+             Yeni birinden e-posta ve parola istiyorsan, kim olduğunu
+             gösterecek yolu da vermen gerekir. --}}
+        <nav class="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-1.5 text-xs text-stone-600 dark:text-stone-400" aria-label="Site bilgileri">
+            <a href="{{ url('/hakkimizda') }}" class="hover:text-emerald-700 hover:underline dark:hover:text-emerald-400">Hakkımızda</a>
+            <a href="{{ url('/guvenli-alisveris') }}" class="hover:text-emerald-700 hover:underline dark:hover:text-emerald-400">Güvenli alışveriş</a>
+            <a href="{{ url('/gizlilik') }}" class="hover:text-emerald-700 hover:underline dark:hover:text-emerald-400">Gizlilik</a>
+            <a href="{{ url('/kosullar') }}" class="hover:text-emerald-700 hover:underline dark:hover:text-emerald-400">Kullanım koşulları</a>
+            <a href="{{ url('/iletisim') }}" class="hover:text-emerald-700 hover:underline dark:hover:text-emerald-400">İletişim</a>
+        </nav>
+
+        <p class="mt-3 text-xs text-stone-600 dark:text-stone-400">© {{ date('Y') }} Nisoya — Ne İş Olursa Yaparım</p>
     </div>
 
     <script>

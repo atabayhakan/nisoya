@@ -96,8 +96,23 @@
         </template>
     </div>
 @else
-    {{-- Misafir: telefonda giriş yapmanın başlıktaki tek yolu. --}}
-    <a href="{{ route('login') }}" class="rounded-full bg-emerald-700 px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-emerald-800 md:hidden dark:bg-emerald-500 dark:text-stone-900">
-        Giriş
-    </a>
+    {{-- MİSAFİR: telefonda hem giriş hem KAYIT yolu.
+
+         "Kayıt" eskiden yalnız `hidden md:inline-block` ile masaüstündeydi;
+         telefonda üye olmanın başlıkta hiçbir yolu yoktu. Ziyaretçi ya
+         footer'a kadar kaydırmak ya da "Giriş"e basıp oradaki bağlantıyı
+         bulmak zorundaydı. Nisoya'nın kitlesi ağırlıkla telefonda olduğu için
+         bu, doğrudan üye kaybı demekti.
+
+         SIRA BİLİNÇLİ: yeni gelen için birincil eylem ÜYE OLMAK, o yüzden
+         dolu düğme "Üye ol". Giriş, dönen kullanıcı için sade metin —
+         390px'lik başlıkta iki dolu düğme yan yana sığmıyor (ölçüldü). --}}
+    <div class="flex items-center gap-1.5 md:hidden">
+        <a href="{{ route('login') }}" class="rounded-full px-2 py-1.5 text-xs font-semibold text-stone-700 transition hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800">
+            Giriş
+        </a>
+        <a href="{{ route('register') }}" class="rounded-full bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900">
+            Üye ol
+        </a>
+    </div>
 @endauth

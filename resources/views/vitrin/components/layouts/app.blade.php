@@ -59,7 +59,11 @@
                         <x-logo-mark class="h-5 w-5" />
                     </span>
                 @endif
-                <span class="text-xl font-extrabold text-stone-800 dark:text-stone-50">{{ Str::lower(setting('genel.site_adi')) }}</span>
+                {{-- ÇOK DAR EKRANDA YALNIZ İKON. 380px altında marka adı ~70px
+                     yer kaplıyor ve başlık taşıyordu (360px'te 17px, 320px'te
+                     57px yatay kaydırma). İkon tek başına markayı taşıyor ve
+                     yine ana sayfaya götürüyor. --}}
+                <span class="text-xl font-extrabold text-stone-800 max-[380px]:hidden dark:text-stone-50">{{ Str::lower(setting('genel.site_adi')) }}</span>
             </a>
 
             <nav class="hidden items-center gap-6 text-sm font-semibold text-stone-600 md:flex dark:text-stone-300">
@@ -69,7 +73,7 @@
                 @endforeach
             </nav>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1 sm:gap-2">
                 <x-command-palette :nav-links="$navLinks" />
 
                 {{-- Ülke seçici: eski rozet mobilde hiç görünmüyor,
