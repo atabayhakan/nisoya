@@ -387,6 +387,9 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
 
     protected ?int $okunmamisBildirimCache = null;
 
+    /** @var array<int, int>|null İstek başına bir kez okunan favori ilan kimlikleri. */
+    protected ?array $favoriIlanCache = null;
+
     /**
      * Satıcının HESAPLANMIŞ güven profili — tamamen objektif, taklit edilemez
      * sinyallerden türetilir (admin'in keyfî `is_verified` boolean'ından farklı,
@@ -617,6 +620,31 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
     public function favorites(): HasMany
     {
         return $this->hasMany(Favorite::class);
+    }
+
+    /**
+     * Bu ilan favorilerimde mi? (kart ızgaraları için N+1'siz)
+     *
+     * -----------------------------------------------------------------------
+     * NEDEN MEMOIZE
+     *
+     * Favori kalbi 2026-08-05'te ilan KARTLARINA eklendi; o güne dek yalnız
+     * ilan detayında vardı, yani "Favorilerim" sayfası favorileri gösteriyor
+     * ama YÖNETMİYORDU — çıkarmak için her ilanın detayına girmek gerekiyordu.
+     *
+     * Kart başına ayrı sorgu, 12'lik bir ızgarada 12 sorgu demekti. Kullanıcının
+     * favori ilan kimlikleri istek başına BİR KEZ okunur; sonrası bellekten.
+     *
+     * @return array<int, int>
+     */
+    public function favoriIlanKimlikleri(): array
+    {
+        return $this->favoriIlanCache ??= $this->favorites()->pluck('listing_id')->all();
+    }
+
+    public function favorilerindeMi(int $listingId): bool
+    {
+        return in_array($listingId, $this->favoriIlanKimlikleri(), true);
     }
 
     public function savedSearches(): HasMany

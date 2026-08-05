@@ -136,6 +136,19 @@
                      burada yalnızca masaüstünde (md+) görünür. --}}
                 @auth
                     @php($unreadCount = auth()->user()->okunmamisBildirimSayisi())
+                    {{-- MESAJLAR — masaüstünde başlıkta HİÇ YOKTU.
+
+                         Mobilde alt sekme çubuğunda tek dokunuş ve kırmızı
+                         rozetle duruyor; masaüstünde ise Panelim → Bölümler
+                         (iki tık) ve hiçbir okunmamış sinyali yok. Yani
+                         asimetri iki yönlüydü: bildirimler mobilde eksikti,
+                         mesajlar masaüstünde. --}}
+                    <a href="{{ route('panel.messages.index') }}" class="relative hidden rounded-lg p-2 text-stone-600 hover:bg-stone-100 md:inline-flex dark:text-stone-300 dark:hover:bg-stone-800" title="Mesajlar">
+                        <x-heroicon-o-chat-bubble-left-right class="h-5 w-5" />
+                        @if ($okunmamisMesaj = auth()->user()->okunmamisMesajSayisi())
+                            <span class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-2xs font-bold leading-none text-white">{{ $okunmamisMesaj > 9 ? '9+' : $okunmamisMesaj }}</span>
+                        @endif
+                    </a>
                     <a href="{{ route('panel.notifications.index') }}" class="relative hidden rounded-lg p-2 text-stone-600 hover:bg-stone-100 md:inline-flex dark:text-stone-300 dark:hover:bg-stone-800" title="Bildirimler">
                         {{-- Faz H4: okunmamış varsa sayfa yüklenince zil bir kez "çalar" (bkz. app.css nisoya-bell-ring) --}}
                         <x-heroicon-o-bell class="h-5 w-5 {{ $unreadCount ? 'animate-[nisoya-bell-ring_0.6s_ease-in-out_1]' : '' }}" />

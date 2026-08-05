@@ -25,7 +25,17 @@
             aria-haspopup="dialog"
             aria-label="Hesabım"
         >
-            <x-avatar :user="auth()->user()" size="h-8 w-8" text="text-xs" />
+            {{-- ORTAM SİNYALİ: okunmamış bildirim varsa avatarda kırmızı nokta.
+                 Masaüstünde zil + sayı rozeti her sayfada duruyordu; mobilde
+                 hiçbir işaret YOKTU — kullanıcı Panelim'e girmeden okunmamış
+                 bildirimi olduğunu bilemiyordu. Sayı yerine nokta: 8x8'lik bir
+                 avatarın yanında rakam okunmuyor, "bir şey var" yeter. --}}
+            <span class="relative">
+                <x-avatar :user="auth()->user()" size="h-8 w-8" text="text-xs" />
+                @if ($okunmamisBildirim = auth()->user()->okunmamisBildirimSayisi())
+                    <span class="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-stone-900" aria-hidden="true"></span>
+                @endif
+            </span>
         </button>
 
         <template x-teleport="body">
@@ -65,6 +75,16 @@
                     <div class="py-2">
                         <a href="{{ route('dashboard') }}" class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-200 dark:hover:bg-stone-800">
                             <x-heroicon-o-squares-2x2 class="h-5 w-5 text-stone-600" /> Panelim
+                        </a>
+                        {{-- Bildirimler mobilde HİÇBİR YERDE yoktu: ne alt
+                             sekme çubuğunda ne burada. Tek yol /panel'e gidip
+                             "Bölümler" ızgarasında kartı bulmaktı. --}}
+                        <a href="{{ route('panel.notifications.index') }}" class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-200 dark:hover:bg-stone-800">
+                            <x-heroicon-o-bell class="h-5 w-5 text-stone-600" />
+                            <span class="flex-1">Bildirimler</span>
+                            @if ($okunmamisBildirim ?? auth()->user()->okunmamisBildirimSayisi())
+                                <span class="grid h-5 min-w-5 place-items-center rounded-full bg-red-500 px-1.5 text-2xs font-bold text-white">{{ auth()->user()->okunmamisBildirimSayisi() > 9 ? '9+' : auth()->user()->okunmamisBildirimSayisi() }}</span>
+                            @endif
                         </a>
                         <a href="{{ route('panel.favorites.index') }}" class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-200 dark:hover:bg-stone-800">
                             <x-heroicon-o-heart class="h-5 w-5 text-stone-600" /> Favorilerim
