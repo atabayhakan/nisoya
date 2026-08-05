@@ -10,6 +10,7 @@ use App\Models\IslemTuru;
 use App\Models\Listing;
 use App\Services\NabizService;
 use App\Services\RehberYuzeyi;
+use App\Services\VisitorLocationService;
 use App\Support\CategoryIcon;
 use App\Support\Modules;
 use Illuminate\Http\Request;
@@ -60,6 +61,19 @@ class HomeController extends Controller
             'categories' => Category::query()->whereNull('parent_id')->where('is_active', true)
                 ->orderBy('sort_order')->get(),
             'countries' => Country::query()->where('is_active', true)->orderBy('sort_order')->get(),
+            /*
+             * Arama kutusundaki ülke, ziyaretçinin BULUNDUĞU ülkeyle açılır.
+             *
+             * Mobilde bu tek seçim, aramanın en sık yapılan elle düzeltmesiydi:
+             * kutuyu açmak, listeyi kaydırmak, doğru ülkeyi bulmak. Ziyaretçi
+             * zaten Almanya'dan geliyorsa "Tüm ülkeler" ile başlamak ona iş
+             * çıkarır.
+             *
+             * Profildeki kayıtlı ülke DEĞİL, fiilen bulunulan ülke kullanılır —
+             * Acil Yardım'daki aynı gerekçe (seyahatteyken profil yanıltıcı).
+             * Tespit başarısızsa boş kalır; uydurulmaz.
+             */
+            'ziyaretciUlke' => app(VisitorLocationService::class)->resolve($request),
             'stats' => [
                 'countries' => Country::query()->where('is_active', true)->count(),
                 'categories' => Category::query()->where('is_active', true)->count(),

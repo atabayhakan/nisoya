@@ -11,7 +11,33 @@
             ];
         @endphp
         <section class="mx-auto max-w-6xl px-4" x-data x-reveal>
-            <div class="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
+            {{-- MOBİL: yatay kaydırılan ikon şeridi ("uygulama" düzeni).
+                 Telefonda 2 sütunlu kart ızgarası ekranın büyük kısmını yiyor
+                 ve ziyaretçi bir bakışta yalnız 4 kategori görüyordu. Şerit
+                 aynı yükseklikte 5-6 kategori gösterir; bir sonraki öğenin
+                 yarısı görünerek kaydırmayı kendiliğinden haber eder.
+
+                 Aynı kategoriler, aynı bağlantılar — yalnız yerleşim değişti.
+                 sm:'den itibaren mevcut kart ızgarası aynen korunur. --}}
+            <div class="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                @foreach ($categories->take(10) as $category)
+                    <a href="{{ route('listings.category', $category) }}"
+                       class="flex w-[4.75rem] shrink-0 snap-start flex-col items-center gap-1.5 text-center">
+                        <span class="grid h-[4.25rem] w-[4.25rem] place-items-center rounded-2xl {{ $kategoriRenkleri[$loop->index % 5][0] }}">
+                            <x-dynamic-component :component="'heroicon-o-'.\App\Support\CategoryIcon::heroicon($category->icon)" class="h-7 w-7" />
+                        </span>
+                        <span class="text-2xs font-semibold leading-tight text-stone-600 dark:text-stone-300">{{ $category->name }}</span>
+                    </a>
+                @endforeach
+                <a href="{{ url('/ilanlar') }}" class="flex w-[4.75rem] shrink-0 snap-start flex-col items-center gap-1.5 text-center">
+                    <span class="grid h-[4.25rem] w-[4.25rem] place-items-center rounded-2xl bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+                        <x-heroicon-o-ellipsis-horizontal class="h-7 w-7" />
+                    </span>
+                    <span class="text-2xs font-semibold leading-tight text-stone-600 dark:text-stone-300">Tümü</span>
+                </a>
+            </div>
+
+            <div class="hidden grid-cols-2 gap-3.5 sm:grid sm:grid-cols-3 lg:grid-cols-5">
                 @foreach ($categories->take(10) as $category)
                     <a href="{{ route('listings.category', $category) }}"
                        class="group rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand transition hover:-translate-y-0.5 hover:border-emerald-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-emerald-700">
@@ -25,7 +51,9 @@
                     </a>
                 @endforeach
             </div>
-            <div class="mt-4 text-right">
+            {{-- Şeritte zaten bir "Tümü" karosu var; mobilde ikinci bir
+                 "tüm kategoriler" bağlantısı yalnız yer kaplar. --}}
+            <div class="mt-4 hidden text-right sm:block">
                 <a href="{{ url('/ilanlar') }}" class="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-700 hover:text-emerald-700 dark:text-emerald-400">Tüm kategoriler <x-heroicon-o-arrow-right class="h-4 w-4" /></a>
             </div>
         </section>

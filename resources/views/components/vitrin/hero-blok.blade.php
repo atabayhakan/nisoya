@@ -1,4 +1,4 @@
-@props(['anahtar', 'countries', 'stats', 'latestListings', 'koyu' => false, 'heroCips' => null])
+@props(['anahtar', 'countries', 'stats', 'latestListings', 'koyu' => false, 'heroCips' => null, 'ziyaretciUlke' => null])
 
 {{-- VİTRİN HERO BLOĞU (P3) — Hero Yöneticisi'ndeki blok listesinin tek tek
      karşılıkları. Kapalı bloklar buraya HİÇ gelmez (çağıran taraf
@@ -6,7 +6,11 @@
      $koyu: "sahne" düzeninde metinler koyu görsel üzerinde beyaz olur. --}}
 @if ($anahtar === 'arama')
     {{-- Arama paneli — klasikle aynı form sözleşmesi (GET /ilanlar, q + ulke) --}}
-    <form action="{{ url('/ilanlar') }}" method="GET" class="mt-7 flex flex-col gap-1.5 rounded-2xl border border-stone-200/70 bg-white p-2 shadow-brand sm:flex-row sm:items-center dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
+    {{-- ARAMA KARTI — mobilde "uygulama" düzeni, masaüstünde tek satır.
+         Mobilde üç yığılmış hücre (ara · ülke · büyük eylem) telefonda tek elle
+         kullanılır; masaüstünde aynı işaretleme sm:'den itibaren tek satıra
+         döner ve mevcut görünüm korunur. --}}
+    <form action="{{ url('/ilanlar') }}" method="GET" class="mt-7 flex flex-col gap-1.5 rounded-3xl border border-stone-200/70 bg-white p-2 shadow-brand sm:flex-row sm:items-center sm:rounded-2xl dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
         <div class="flex min-w-0 flex-1 items-center gap-2 px-3">
             <x-heroicon-o-magnifying-glass class="h-4 w-4 shrink-0 text-stone-600" />
             <input type="text" name="q" placeholder="{{ setting('home.arama_placeholder') }}"
@@ -18,14 +22,21 @@
              "Kim lazım? (ör." diye kırpılıyordu. En kötü hâli tam 1024px'te:
              orada hem lg: düzeni hem de dokunmatik 16px kuralı (app.css
              pointer:coarse) aynı anda devreye giriyor. --}}
-        <select name="ulke" aria-label="Ülke seç" class="h-12 w-full shrink-0 truncate rounded-xl border-0 bg-stone-100 px-3 text-sm font-semibold text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 sm:w-36 dark:bg-stone-800 dark:text-stone-200">
+        {{-- Ziyaretçinin bulunduğu ülke önceden seçili gelir (tespit
+             edilebildiyse). Mobilde aramanın en sık yapılan elle düzeltmesi
+             buydu: kutuyu aç, listeyi kaydır, ülkeni bul. Tespit yoksa
+             "Tüm ülkeler"de kalır — uydurulmaz. --}}
+        <select name="ulke" aria-label="Ülke seç" class="h-12 w-full shrink-0 truncate rounded-2xl border-0 bg-stone-100 px-3 text-sm font-semibold text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 sm:w-36 sm:rounded-xl dark:bg-stone-800 dark:text-stone-200">
             <option value="">Tüm ülkeler</option>
             @foreach ($countries as $country)
-                <option value="{{ $country->code }}">{{ $country->emoji }} {{ $country->name_tr }}</option>
+                <option value="{{ $country->code }}" @selected($ziyaretciUlke?->code === $country->code)>{{ $country->emoji }} {{ $country->name_tr }}</option>
             @endforeach
         </select>
-        <button type="submit" class="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-6 text-sm font-bold text-white shadow-[0_12px_22px_-12px_rgba(62,99,240,1)] transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none dark:hover:bg-emerald-400">
-            Ara
+        {{-- Mobilde tam genişlik ve daha uzun (h-14): başparmakla ulaşılan
+             birincil eylem. Masaüstünde eski ölçüsüne döner. --}}
+        <button type="submit" class="inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-6 text-base font-bold text-white shadow-[0_12px_22px_-12px_rgba(62,99,240,1)] transition hover:bg-emerald-800 sm:h-12 sm:w-auto sm:rounded-xl sm:text-sm dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none dark:hover:bg-emerald-400">
+            <span class="sm:hidden">Hemen bul</span>
+            <span class="hidden sm:inline">Ara</span>
             <x-heroicon-o-arrow-right class="h-4 w-4" />
         </button>
     </form>

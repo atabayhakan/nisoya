@@ -10,7 +10,7 @@
          hareketi (HomeController'da zaten hesaplanıyor, yeni sorgu yok).
          hero-cips: ilanı olan gerçek kategoriler — çipler artık boş sonuç
          döndüremez. --}}
-    <x-vitrin.hero :countries="$countries" :stats="$stats" :latest-listings="$latestListings" :activity-feed="$activityFeed" :pulse-countries="$pulseCountries" :hero-cips="$heroCips" />
+    <x-vitrin.hero :countries="$countries" :stats="$stats" :latest-listings="$latestListings" :activity-feed="$activityFeed" :pulse-countries="$pulseCountries" :hero-cips="$heroCips" :ziyaretci-ulke="$ziyaretciUlke" />
 
     {{-- Alan: anasayfa üst (klasikle aynı zone anahtarı — reklam sözleşmesi) --}}
     <div class="mx-auto max-w-6xl px-4">
