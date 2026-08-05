@@ -12,7 +12,7 @@
 {{-- Faz H3: native-app hissi veren sabit alt sekme çubuğu. Panel sayfaları
      dahil HER sayfada gösterilir (bağış FAB'ının aksine — bu sabit bir çubuk,
      kendi yerini ayırır/taşmaz, bkz. app.blade.php'deki body padding'i). --}}
-<div x-data="{ sheetOpen: false }" @keydown.escape.window="sheetOpen = false">
+<div x-data="altSayfa" @keydown.escape.window="kapat()">
     <nav
         class="fixed inset-x-0 bottom-0 z-30 flex items-stretch justify-around border-t border-stone-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden dark:border-stone-800 dark:bg-stone-900/95"
         aria-label="Alt gezinme"
@@ -24,9 +24,9 @@
 
         <button
             type="button"
-            @click="sheetOpen = true"
+            @click="ac()"
             class="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-2xs font-medium text-stone-500 dark:text-stone-400"
-            :aria-expanded="sheetOpen ? 'true' : 'false'"
+            :aria-expanded="acik ? 'true' : 'false'"
             aria-haspopup="dialog"
         >
             <x-heroicon-o-squares-2x2 class="h-5 w-5" />
@@ -60,17 +60,17 @@
          (bkz. x-nav-link-cards) + tekil linkler (Harita, Nasıl Çalışır?). --}}
     <template x-teleport="body">
         <div
-            x-show="sheetOpen"
+            x-show="acik"
             x-transition.opacity.duration.200ms
             class="fixed inset-0 z-50 bg-stone-900/60 md:hidden"
-            @click.self="sheetOpen = false"
+            @click.self="kapat()"
             role="dialog"
             aria-modal="true"
             aria-label="Keşfet"
             x-cloak
         >
             <div
-                x-show="sheetOpen"
+                x-show="acik"
                 x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="translate-y-full"
                 x-transition:enter-end="translate-y-0"
@@ -80,9 +80,19 @@
                 class="fixed inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-3xl bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] dark:bg-stone-900"
             >
                 <div class="mx-auto mb-3 h-1.5 w-12 rounded-full bg-stone-200 dark:bg-stone-700"></div>
-                <h2 class="mb-3 text-base font-bold text-stone-900 dark:text-stone-50">Keşfet</h2>
+                <div class="mb-3 flex items-center justify-between">
+                    <h2 class="text-base font-bold text-stone-900 dark:text-stone-50">Keşfet</h2>
+                    {{-- Kapat düğmesi: eskiden YOKTU. Tek kapanma yolu arka
+                         plana dokunmaktı, o da panel ekranın %80'ini kaplayınca
+                         ince bir şeride iniyordu. --}}
+                    <button type="button" @click="kapat()" class="-mr-1 grid h-11 w-11 place-items-center rounded-full text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800" aria-label="Kapat">
+                        <x-heroicon-o-x-mark class="h-5 w-5" />
+                    </button>
+                </div>
 
-                <x-nav-link-cards :items="$navLinksMega" grid-class="" on-select="sheetOpen = false" />
+                {{-- Bir karta dokununca sayfa değişir; örtü kapanmadan gitmek
+                     gövde kilidini asılı bırakırdı (bkz. altSayfa.destroy). --}}
+                <x-nav-link-cards :items="$navLinksMega" grid-class="" on-select="kapat()" />
 
                 @if ($navLinksSingle->isNotEmpty())
                     <div class="mt-3 border-t border-stone-100 pt-3 dark:border-stone-800">
@@ -90,7 +100,7 @@
                             <a
                                 href="{{ $link->url }}"
                                 @if ($link->opens_new_tab) target="_blank" rel="noopener noreferrer" @endif
-                                @click="sheetOpen = false"
+                                @click="kapat()"
                                 class="block rounded-xl px-3 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-800"
                             >{{ $link->label }}</a>
                         @endforeach
