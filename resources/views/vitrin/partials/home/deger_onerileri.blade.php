@@ -32,8 +32,20 @@
                     <span class="grid h-9 w-9 place-items-center rounded-xl bg-[#e7f7f1] text-[#0f9d76] dark:bg-teal-950/60 dark:text-teal-300">
                         <x-heroicon-o-globe-alt class="h-5 w-5" />
                     </span>
-                    <div class="mt-3 text-base font-extrabold text-stone-800 dark:text-stone-100">{{ $stats['countries'] }} ülke · {{ $stats['cities'] }} şehir</div>
-                    <p class="mt-1 text-sm font-medium text-stone-500 dark:text-stone-400">{{ $stats['categories'] }} kategoride hizmet ve ürün.</p>
+                    {{-- KATALOG SAYISI DEĞİL, SÖZ (2026-08-05).
+
+                         Burada "25 ülke · 50 şehir · 97 kategoride hizmet ve
+                         ürün" yazıyordu. Üçü de sahte değildi ama üçü de
+                         yanıltıyordu: 'şehir' CitySeeder'ın ülke başına
+                         tohumladığı sayı (ilanı olan şehir DEĞİL), 'kategori'
+                         katalog boyutu, 'ülke' ise ilan olan ülke değil AÇIK
+                         olan ülke. Aynı yanıltıcı üçlü hero'nun kanıt
+                         satırından kaldırılmıştı; bu kartta unutulmuştu.
+
+                         Kartın işi ("nerede olursan ol") sayıya değil vaade
+                         dayanıyor — envanter büyüdükçe de küçükken de doğru. --}}
+                    <div class="mt-3 text-base font-extrabold text-stone-800 dark:text-stone-100">Nerede olursan ol, Türkçe</div>
+                    <p class="mt-1 text-sm font-medium text-stone-500 dark:text-stone-400">Ülkeni seç, şehrindeki Türkçe konuşan kişiye ulaş.</p>
                 </div>
             </div>
         </section>

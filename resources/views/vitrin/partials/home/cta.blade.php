@@ -15,11 +15,24 @@
                             <a href="{{ url('/nasil-calisir') }}" class="inline-flex items-center gap-2 rounded-xl border border-white/25 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10">Nasıl çalışır?</a>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3" aria-hidden="false">
-                        <div class="rounded-2xl bg-white/[.07] p-4"><div class="text-2xl font-extrabold">{{ $stats['countries'] }}</div><div class="mt-0.5 text-xs font-semibold text-white/60">ülke</div></div>
-                        <div class="rounded-2xl bg-white/[.07] p-4"><div class="text-2xl font-extrabold">{{ $stats['cities'] }}</div><div class="mt-0.5 text-xs font-semibold text-white/60">şehir</div></div>
-                        <div class="rounded-2xl bg-white/[.07] p-4"><div class="text-2xl font-extrabold">{{ $stats['categories'] }}</div><div class="mt-0.5 text-xs font-semibold text-white/60">kategori</div></div>
+                    {{-- SAYIM DEĞİL, SÖZ (2026-08-05).
+
+                         Buradaki dört kutu eskiden katalog büyüklüğü sayıyordu:
+                         "25 ülke · 50 şehir · 97 kategori". Üçü de sahte
+                         değildi ama hiçbiri gerçek hareketi anlatmıyordu —
+                         'şehir' CitySeeder'ın ülke başına tohumladığı sayı,
+                         'kategori' katalog boyutu. Aynı yanıltıcı üçlü hero'nun
+                         kanıt satırından zaten kaldırılmıştı; burada unutulmuş.
+
+                         Yerlerine ÜRÜNÜN DOĞRU OLAN ÖZELLİKLERİ kondu. Bunlar
+                         envanter büyüdükçe değişmez, küçükken de utandırmaz —
+                         ve satıcıya asıl sorduğu soruyu yanıtlar: "bana neye
+                         mal olacak?" --}}
+                    <div class="grid grid-cols-2 gap-3">
                         <div class="rounded-2xl bg-white/[.07] p-4"><div class="text-2xl font-extrabold text-emerald-300">%0</div><div class="mt-0.5 text-xs font-semibold text-white/60">komisyon</div></div>
+                        <div class="rounded-2xl bg-white/[.07] p-4"><div class="text-2xl font-extrabold">Ücretsiz</div><div class="mt-0.5 text-xs font-semibold text-white/60">ilan ve üyelik</div></div>
+                        <div class="rounded-2xl bg-white/[.07] p-4"><div class="text-2xl font-extrabold">Doğrudan</div><div class="mt-0.5 text-xs font-semibold text-white/60">ödeme sana gelir</div></div>
+                        <div class="rounded-2xl bg-white/[.07] p-4"><div class="text-2xl font-extrabold">Türkçe</div><div class="mt-0.5 text-xs font-semibold text-white/60">baştan sona</div></div>
                     </div>
                 </div>
             </div>
