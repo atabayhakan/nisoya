@@ -99,7 +99,24 @@ class ListingController extends Controller
                 ->with('status', 'Taslak kaydedildi. Hazır olunca "Yayınla" ile herkese açabilirsin.');
         }
 
+        /*
+         * YAYIN SONRASI PAYLAŞIM ANI (2026-08-06).
+         *
+         * Paylaşım kartı (WhatsApp durumu için 1080x1920) ve paylaş düğmeleri
+         * ilan DETAY sayfasında zaten vardı — ama kullanıcı yayınladıktan sonra
+         * İlanlarım'a düşüyor ve orada paylaşımdan söz eden hiçbir şey yok.
+         * Yani en istekli an (az önce yayınladı) boşa gidiyordu; paylaşmak için
+         * ilanı bulup detayına gitmesi gerekiyordu.
+         *
+         * Pazaryerinin darboğazı arz ve dağıtım. Yeni ilan veren kişi, o ilanın
+         * en doğal dağıtım kanalı — kendi çevresi. İstemek için doğru an bu.
+         *
+         * Yönlendirme hedefi DEĞİŞTİRİLMEDİ (mevcut testler İlanlarım'a
+         * yönlendirmeyi mühürlüyor ve bu davranış doğru): yalnız ilanın kimliği
+         * flash'a ekleniyor, İlanlarım o ilan için paylaşım bloğu basıyor.
+         */
         return redirect()->route('panel.listings.index')
+            ->with('yayinlanan', $listing->id)
             ->with('status', match ($type) {
                 'urun' => 'Ürün ilanın yayınlandı! 🎉',
                 'emlak' => 'Emlak ilanın yayınlandı! 🎉',
@@ -209,6 +226,7 @@ class ListingController extends Controller
         $listing->update(['status' => ListingStatus::Aktif]);
 
         return redirect()->route('panel.listings.index')
+            ->with('yayinlanan', $listing->id)
             ->with('status', 'İlanın yayınlandı! 🎉');
     }
 

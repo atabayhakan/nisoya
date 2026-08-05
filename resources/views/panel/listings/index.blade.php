@@ -13,6 +13,34 @@
             <div class="mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">{{ session('status') }}</div>
         @endif
 
+        {{-- YAYIN SONRASI PAYLAŞIM ANI (2026-08-06).
+
+             Paylaşım kartı ve düğmeleri ilan DETAY sayfasında zaten vardı — ama
+             kullanıcı yayınladıktan sonra buraya düşüyor ve paylaşımdan söz eden
+             hiçbir şey yoktu. En istekli an (az önce yayınladı) boşa gidiyordu.
+
+             Pazaryerinin darboğazı arz ve dağıtım; yeni ilan veren kişi o ilanın
+             en doğal dağıtım kanalı — kendi çevresi. İstemek için doğru an bu.
+
+             VAAT ABARTILMIYOR: "binlerce kişiye ulaş" demiyoruz (ulaşmıyor).
+             Söylenen şey doğru: ilanı gören ilk kişiler senin çevrendekiler. --}}
+        @php($yayinlanan = session('yayinlanan') ? $listings->firstWhere('id', session('yayinlanan')) : null)
+        @if ($yayinlanan)
+            <div class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 dark:border-emerald-900 dark:bg-emerald-950/20">
+                <h2 class="text-sm font-bold text-stone-800 dark:text-stone-100">İlanını ilk görecek kişiler senin çevrendekiler</h2>
+                <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">
+                    Tanıdıklarına gönder ya da WhatsApp durumuna koy — pazaryeri yeni, en hızlı yayılma böyle oluyor.
+                </p>
+                <div class="mt-3">
+                    @include('partials.share-buttons', [
+                        'shareUrl' => route('listings.show', [$yayinlanan, $yayinlanan->slug]),
+                        'shareText' => $yayinlanan->title,
+                        'cardUrl' => route('listings.card', $yayinlanan),
+                    ])
+                </div>
+            </div>
+        @endif
+
         @forelse ($listings as $listing)
             @if ($loop->first)<div class="mt-6 space-y-3">@endif
             <div class="flex flex-col gap-3 rounded-2xl border border-stone-200 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:gap-4 dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
