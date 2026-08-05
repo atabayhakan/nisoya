@@ -1,4 +1,4 @@
-@props(['countries', 'stats', 'latestListings', 'activityFeed', 'pulseCountries' => [], 'heroCips' => null])
+@props(['countries', 'stats', 'latestListings', 'activityFeed', 'pulseCountries' => [], 'heroCips' => null, 'ziyaretciUlke' => null])
 
 {{-- VİTRİN HERO (P1 → P3) — artık Hero Yöneticisi'nden yönetilir
      (App\Support\Hero / Filament: İçerik & Tasarım → Hero Yöneticisi):
@@ -134,6 +134,7 @@
                     :stats="$stats"
                     :latest-listings="$latestListings"
                     :hero-cips="$heroCips"
+                    :ziyaretci-ulke="$ziyaretciUlke"
                     :koyu="$koyu"
                 />
             @endforeach
