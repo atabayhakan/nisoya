@@ -43,11 +43,24 @@
             </div>
             <div class="mt-8">{{ $candidates->links() }}</div>
         @else
-            <x-empty-state
-                illustration="search"
-                title="Kimse bulunamadı"
-                description="Filtreleri değiştirmeyi dene ya da daha sonra tekrar bak."
-            />
+            @php($filtreliMi = collect($filters ?? [])->filter(fn ($v) => $v !== null && $v !== '' && $v !== false)->isNotEmpty())
+            @if ($filtreliMi)
+                <x-empty-state
+                    illustration="search"
+                    title="Bu filtrelerle aday yok"
+                    description="Aramanı genişletmeyi dene — tüm yetenek havuzuna bakabilirsin."
+                    cta-text="Filtreleri temizle"
+                    :cta-href="route('candidates.index')"
+                />
+            @else
+                <x-empty-state
+                    illustration="search"
+                    title="Yetenek havuzu henüz boş"
+                    description="Profilini yeteneklerinle doldur, iş arayanlar arasında görün."
+                    cta-text="Profilimi düzenle"
+                    :cta-href="route('panel.profile.edit')"
+                />
+            @endif
         @endif
     </div>
 </x-layouts.app>

@@ -14,7 +14,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('contact.store') }}" class="space-y-4">
+                    <form method="POST" action="{{ route('contact.store') }}" class="space-y-4" x-data="gonderimKilidi('Gönderiliyor...')" @submit="kilitle">
                         @csrf
                         @include('partials.honeypot')
 

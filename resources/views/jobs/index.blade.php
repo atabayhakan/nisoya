@@ -71,11 +71,27 @@
             </div>
             <div class="mt-8">{{ $jobs->links() }}</div>
         @else
-            <x-empty-state
-                illustration="search"
-                title="İlan bulunamadı"
-                description="Filtreleri değiştirmeyi dene ya da daha sonra tekrar bak."
-            />
+            @php($filtreliMi = collect($filters ?? [])->filter(fn ($v) => $v !== null && $v !== '' && $v !== false)->isNotEmpty())
+            {{-- İki ayrı durum, iki ayrı cevap: pano gerçekten boşken sorun
+                 filtre DEĞİL, kimse henüz ilan girmemiş. Olmayan bir filtreyi
+                 değiştirmesini söylemek kullanıcıyı çıkmaza sokar. --}}
+            @if ($filtreliMi)
+                <x-empty-state
+                    illustration="search"
+                    title="Bu filtrelerle iş ilanı yok"
+                    description="Aramanı genişletmeyi dene — tüm iş ilanlarına bakabilirsin."
+                    cta-text="Filtreleri temizle"
+                    :cta-href="route('jobs.index')"
+                />
+            @else
+                <x-empty-state
+                    illustration="search"
+                    title="Henüz iş ilanı yok"
+                    description="İlk iş ilanını sen ver — yurt dışındaki Türk topluluğuna ulaşsın."
+                    cta-text="İş ilanı ver"
+                    :cta-href="route('panel.jobs.create')"
+                />
+            @endif
         @endif
     </div>
 </x-layouts.app>

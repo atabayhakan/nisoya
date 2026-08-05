@@ -163,6 +163,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('panel.listings.store');
     Route::get('/panel/ilan/{listing}/duzenle', [ListingController::class, 'edit'])->name('panel.listings.edit');
     Route::match(['put', 'patch'], '/panel/ilan/{listing}', [ListingController::class, 'update'])->name('panel.listings.update');
+    Route::post('/panel/ilan/{listing}/yayinla', [ListingController::class, 'yayinla'])
+        ->middleware('throttle:listing-create')
+        ->name('panel.listings.publish');
     Route::delete('/panel/ilan/{listing}', [ListingController::class, 'destroy'])->name('panel.listings.destroy');
     Route::patch('/panel/ilan/{listing}/gorsel/{image}/hizala', [ListingController::class, 'alignImage'])->name('panel.listings.images.align');
     Route::post('/panel/ilan/{listing}/one-cikar', [FeatureController::class, 'store'])->name('panel.listings.feature')->middleware('throttle:listing-feature');
