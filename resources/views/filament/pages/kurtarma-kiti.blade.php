@@ -61,6 +61,23 @@
             Kodları yazdır veya bir parola yöneticisinde sakla.
         </x-slot>
 
+        {{-- OKUNAMAYAN KODLAR — sessizce "0" göstermek yanıltıcı olurdu.
+             Alan dolu ama çözülemiyorsa (APP_KEY değişmiş, satır bozulmuş)
+             sahip "hiç üretmemişim" sanar; oysa elindeki kodlar artık
+             işlemiyor. Olmayan bir güvenceye güvenmek, güvencesiz olduğunu
+             bilmekten kötüdür. --}}
+        @if (! $this->kodlarOkunabilirMi())
+            <div class="mb-4 flex items-start gap-3 rounded-lg bg-danger-50 p-3 text-sm dark:bg-danger-500/10">
+                <x-filament::icon icon="heroicon-o-exclamation-triangle" class="mt-0.5 h-5 w-5 shrink-0 text-danger-500" />
+                <span class="text-gray-700 dark:text-gray-300">
+                    <strong>Kayıtlı kurtarma kodların okunamıyor.</strong>
+                    Kodlar şifreli saklanır; şifreleme anahtarı değiştiyse eski kodlar çözülemez.
+                    Elindeki yazılı kodlar <em>artık çalışmaz</em>. Aşağıdan yeni kod üret ve
+                    eskilerini at.
+                </span>
+            </div>
+        @endif
+
         @if ($generatedCodes !== [])
             {{-- Yeni üretilen kodlar — yalnızca şimdi görünür --}}
             <div class="rounded-lg border border-emerald-300 bg-emerald-50 p-4 dark:border-emerald-500/40 dark:bg-emerald-500/10">
