@@ -12,6 +12,7 @@ use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Passkeys\Contracts\PasskeyUser;
@@ -269,7 +271,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
     public function consumeAccountRecoveryCode(string $code): bool
     {
         $code = Str::upper(trim($code));
-        $hashes = $this->account_recovery_codes ?? [];
+        $hashes = $this->hesapKurtarmaKodlari();
 
         foreach ($hashes as $index => $hash) {
             if (Hash::check($code, $hash)) {
@@ -286,7 +288,83 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
     /** Kalan (kullanılmamış) hesap kurtarma kodu sayısı. */
     public function accountRecoveryCodesRemaining(): int
     {
-        return count($this->account_recovery_codes ?? []);
+        return count($this->hesapKurtarmaKodlari());
+    }
+
+    /**
+     * Kurtarma kodları OKUNABİLİR mi? (false → alan dolu ama çözülemiyor)
+     *
+     * Sayı 0 olması iki apayrı durumu anlatır: "hiç kod üretmedin" ve "kodların
+     * var ama okunamıyor". İkincisi acil bir uyarı gerektirir, birincisi
+     * gerektirmez — ekranda ayırt edilebilsin diye ayrı bir soru.
+     */
+    public function hesapKurtarmaKodlariOkunabilirMi(): bool
+    {
+        return $this->hesapKurtarmaKodlariCoz() !== null;
+    }
+
+    /**
+     * Kurtarma kodlarını GÜVENLE okur.
+     *
+     * -----------------------------------------------------------------------
+     * NEDEN try/catch — 2026-08-05'te canlıda /yonetim/kurtarma-kiti 500 verdi
+     *
+     * `account_recovery_codes` alanı `encrypted:array` cast'i taşır. Çözülemeyen
+     * bir değer (APP_KEY değişmiş, elle yazılmış ya da bozulmuş satır) OKUMA
+     * anında DecryptException fırlatır ve sayfayı komple düşürür.
+     *
+     * Bu, tüm sayfalar arasında en kötü yerdeki hata: Kurtarma Kiti tam da
+     * işler bozulduğunda açılması gereken ekran. Kilitlenmeye karşı güvence
+     * olarak tasarlanmış bir sayfanın tek bozuk satır yüzünden erişilemez
+     * olması, güvencenin kendisini yok eder.
+     *
+     * Hata YUTULMUYOR: boş liste dönülür, `hesapKurtarmaKodlariOkunabilirMi()`
+     * false der ve ekran "kodların okunamıyor, yeniden üret" uyarısı basar.
+     * Sessizce 0 göstermek, sahibin olmayan bir güvenceye güvenmesine yol
+     * açardı — çökmekten daha tehlikeli olan tek şey budur.
+     *
+     * @return array<int, string>
+     */
+    private function hesapKurtarmaKodlari(): array
+    {
+        return $this->hesapKurtarmaKodlariCoz() ?? [];
+    }
+
+    /**
+     * Ham (şifreli) değeri çözer. null = ÇÖZÜLEMEDİ, [] = kod yok.
+     *
+     * Şifre çözme ELDEN yapılıyor, `$this->account_recovery_codes` sihirli
+     * erişimiyle değil. Sebep: sihirli erişimde statik analiz istisnanın
+     * atılabileceğini göremez ve catch bloğunu "ölü kod" sanar. Burada
+     * `Crypt::decrypt()` doğrudan çağrıldığı için niyet hem okuyucuya hem
+     * araca açık.
+     *
+     * `getAttributes()` kullanılır, `getRawOriginal()` değil: ilki modele
+     * AZ ÖNCE yazılmış (henüz kaydedilmemiş) değeri de görür.
+     *
+     * Boş liste ile çözülemeyen değeri ayırmak ŞART: sekiz kodun tamamı
+     * kullanılmışsa alan geçerli ama boştur — bu bir arıza değildir ve
+     * kırmızı uyarı çıkarmamalıdır.
+     *
+     * @return array<int, string>|null
+     */
+    private function hesapKurtarmaKodlariCoz(): ?array
+    {
+        $ham = $this->getAttributes()['account_recovery_codes'] ?? null;
+
+        if ($ham === null || $ham === '') {
+            return [];
+        }
+
+        try {
+            $json = Crypt::decrypt((string) $ham, false);
+        } catch (DecryptException) {
+            return null;
+        }
+
+        $liste = json_decode((string) $json, true);
+
+        return is_array($liste) ? $liste : null;
     }
 
     /** İstek başına bir kez hesaplanan güven profili önbelleği (bkz. trustProfile). */

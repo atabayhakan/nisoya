@@ -91,6 +91,17 @@ class KurtarmaKiti extends Page
         return auth()->user()?->accountRecoveryCodesRemaining() ?? 0;
     }
 
+    /**
+     * Kayıtlı kodlar okunabiliyor mu?
+     *
+     * false ise "0 kod" göstermek YANILTICIDIR: sahip "hiç üretmemişim"
+     * sanar, oysa üretilmiş ama artık çözülemiyor. İkisi apayrı durum.
+     */
+    public function kodlarOkunabilirMi(): bool
+    {
+        return auth()->user()?->hesapKurtarmaKodlariOkunabilirMi() ?? true;
+    }
+
     /** Yeni yönetici ekleme (ikinci admin) formunun URL'i. */
     public function createUserUrl(): string
     {
