@@ -291,14 +291,40 @@
                             {{ $listings->links() }}
                         </div>
                     @else
+                        {{-- İKİ AYRI DURUM, İKİ AYRI CEVAP (2026-08-05).
+
+                             Eskiden ikisine de aynı şey deniyordu ve "Tüm
+                             ilanları gör" düğmesi filtre yokken KENDİ SAYFASINA
+                             dönüyordu — hiçbir ilerleme sağlamayan bir düğme.
+
+                             Pazaryeri gerçekten boşken sorun filtre DEĞİL;
+                             kullanıcıya olmayan bir filtreyi değiştirmesini
+                             söylemek onu çıkmaza sokar. --}}
+                        {{-- `filled()` KULLANILMAZ: BrowseController
+                             'uzaktan' => $request->boolean(...) gönderiyor ve
+                             filtre yokken bu FALSE olur. Laravel'de
+                             filled(false) === true olduğu için filtre hep
+                             "dolu" görünüyordu ve boş pazaryerinde bile
+                             "filtreleri temizle" yazıyordu. --}}
+                        @php($filtreliMi = collect($filters ?? [])->filter(fn ($v) => $v !== null && $v !== '' && $v !== false)->isNotEmpty())
                         <div class="mt-4">
-                            <x-empty-state
-                                illustration="search"
-                                title="Sonuç bulunamadı"
-                                description="Filtreleri değiştirmeyi veya temizlemeyi dene."
-                                cta-text="Tüm ilanları gör"
-                                :cta-href="route('listings.index')"
-                            />
+                            @if ($filtreliMi)
+                                <x-empty-state
+                                    illustration="search"
+                                    title="Bu filtrelerle sonuç yok"
+                                    description="Aramanı genişletmeyi dene."
+                                    cta-text="Filtreleri temizle"
+                                    :cta-href="route('listings.index')"
+                                />
+                            @else
+                                <x-empty-state
+                                    illustration="listing"
+                                    title="Henüz ilan yok"
+                                    description="İlk ilanı sen ver — şehrindeki Türk topluluğuna ulaşsın."
+                                    cta-text="İlan ver"
+                                    :cta-href="route('panel.listings.create')"
+                                />
+                            @endif
                         </div>
                     @endif
                 </main>

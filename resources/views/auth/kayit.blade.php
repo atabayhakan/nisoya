@@ -2,7 +2,7 @@
     <h1 class="text-xl font-bold text-stone-900 dark:text-stone-50">Aramıza katıl 🎉</h1>
     <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Ücretsiz hesap oluştur, yeteneğini paraya dönüştür.</p>
 
-    <form method="POST" action="{{ route('register') }}" class="mt-6 space-y-4">
+    <form method="POST" action="{{ route('register') }}" class="mt-6 space-y-4" x-data="gonderimKilidi('Hesap oluşturuluyor...')" @submit="kilitle">
         @csrf
         @include('partials.honeypot')
 

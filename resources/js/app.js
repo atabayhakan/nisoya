@@ -234,6 +234,49 @@ function govdeKilidiniAc() {
     window.scrollTo(0, kilitliScrollY);
 }
 
+/**
+ * Çift gönderim kilidi.
+ *
+ * -------------------------------------------------------------------------
+ * NEDEN
+ *
+ * İlan verme formu 8'e kadar fotoğraf yüklüyor (multipart). Zayıf ya da
+ * uluslararası bir bağlantıda gönderim uzun sürüyor ve ekranda hiçbir şey
+ * değişmiyor — kullanıcı "tıkladım, bir şey olmadı" diye tekrar tıklıyor.
+ * Sonuç: MÜKERRER İLAN. Nisoya'nın kitlesi tanımı gereği yurt dışında,
+ * yani yavaş bağlantı istisna değil kural.
+ *
+ * Aynı sorun kayıt, iletişim ve ilk mesaj formlarında da var; oralarda
+ * bedeli mükerrer kayıt/mesaj.
+ *
+ * Kullanımı: <form x-data="gonderimKilidi" @submit="kilitle">
+ * Düğme metni "Gönderiliyor..." olur ve düğme devre dışı kalır.
+ *
+ * NOT: `disabled` doğrudan submit düğmesine uygulanır, forma değil — form
+ * disabled edilirse tarayıcı alan değerlerini GÖNDERMEZ.
+ */
+Alpine.data('gonderimKilidi', (meslugu = 'Gönderiliyor...') => ({
+    kilitli: false,
+
+    kilitle(olay) {
+        if (this.kilitli) {
+            olay.preventDefault();
+
+            return;
+        }
+
+        this.kilitli = true;
+
+        const dugme = this.$el.querySelector('button[type="submit"], input[type="submit"]');
+        if (!dugme) return;
+
+        // Metni sakla ki doğrulama hatasıyla geri dönüşte eski hâli kalsın.
+        dugme.dataset.eskiMetin = dugme.innerHTML;
+        dugme.innerHTML = meslugu;
+        dugme.disabled = true;
+    },
+}));
+
 Alpine.data('altSayfa', () => ({
     acik: false,
 

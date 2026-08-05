@@ -55,6 +55,14 @@
                             <button type="submit" class="inline-flex items-center gap-1 rounded-lg border border-amber-300 px-2 py-1 text-xs font-medium text-amber-700 transition hover:bg-amber-50 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-900/30"><x-heroicon-o-star class="h-3.5 w-3.5" /> Öne çıkar</button>
                         </form>
                     @endif
+                    {{-- Taslağın çıkış yolu. Düzenleme sayfasında durum alanı
+                         yok, yani bu düğme olmadan taslak yayınlanamazdı. --}}
+                    @if ($listing->status === \App\Enums\ListingStatus::Taslak)
+                        <form method="POST" action="{{ route('panel.listings.publish', $listing) }}">
+                            @csrf
+                            <button type="submit" class="rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">Yayınla</button>
+                        </form>
+                    @endif
                     <a href="{{ route('panel.listings.edit', $listing) }}" class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">Düzenle</a>
                 </div>
             </div>

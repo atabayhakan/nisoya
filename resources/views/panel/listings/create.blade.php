@@ -36,7 +36,7 @@
             </a>
         @endif
 
-        <form method="POST" action="{{ route('panel.listings.store') }}" enctype="multipart/form-data" class="mt-6 space-y-5">
+        <form method="POST" action="{{ route('panel.listings.store') }}" enctype="multipart/form-data" class="mt-6 space-y-5" x-data="gonderimKilidi('İlan yayınlanıyor...')" @submit="kilitle">
             @csrf
             @include('panel.listings.partials.form-fields', ['listing' => null])
 
@@ -48,9 +48,20 @@
                 @error('images.*') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
 
-            <div class="flex items-center gap-3 pt-2">
-                <button type="submit" class="rounded-lg bg-emerald-700 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
+            {{-- TASLAK — "Taslak" durumu enum'da, rozeti hazır, ilan listesinde
+                 gösteriliyordu; ama GERÇEK BİR KULLANICI o duruma hiçbir zaman
+                 giremiyordu: store() her zaman Aktif yazıyor, formda tek düğme
+                 vardı. Yarım kalan ilan kaydedilemiyor, ya bitirilecek ya
+                 kaybedilecekti.
+
+                 Yayınlama yolu da AYNI TURDA eklendi (İlanlarım satırındaki
+                 "Yayınla" düğmesi) — aksi hâlde taslak bir hapishane olurdu. --}}
+            <div class="flex flex-wrap items-center gap-3 pt-2">
+                <button type="submit" name="eylem" value="yayinla" class="rounded-lg bg-emerald-700 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
                     İlanı Yayınla
+                </button>
+                <button type="submit" name="eylem" value="taslak" class="rounded-lg border border-stone-300 px-5 py-2.5 font-semibold text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">
+                    Taslak olarak kaydet
                 </button>
                 <a href="{{ route('panel.listings.index') }}" class="text-sm font-medium text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200">Vazgeç</a>
             </div>

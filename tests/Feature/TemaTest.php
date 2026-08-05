@@ -276,10 +276,12 @@ class TemaTest extends TestCase
     {
         Settings::setMany(['gorunum.tema' => 'vitrin']);
 
-        // Sonuç yokken klasikle AYNI boş-durum sözleşmesi (EmptyStateTest ile aynı dizeler)
+        // Sonuç yokken klasikle AYNI boş-durum sözleşmesi (EmptyStateTest ile
+        // aynı dizeler). 2026-08-05: metin değişti — filtreli/filtresiz iki
+        // ayrı durum ayrıldı; SÖZLEŞME (iki temada aynı dize) korunuyor.
         $this->get('/ilanlar?q=kesinliklebulunmayanbirsey')->assertOk()
-            ->assertSee('Sonuç bulunamadı', false)
-            ->assertSee('Tüm ilanları gör', false)
+            ->assertSee('Bu filtrelerle sonuç yok', false)
+            ->assertSee('Filtreleri temizle', false)
             ->assertSee('viewBox="0 0 120 90"', false);
     }
 

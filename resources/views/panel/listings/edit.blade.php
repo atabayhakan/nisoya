@@ -3,7 +3,7 @@
         <x-panel.back-link :href="route('panel.listings.index')" label="İlanlarım" />
         <h1 class="mt-2 text-2xl font-bold text-stone-900 dark:text-stone-50">İlanı Düzenle</h1>
 
-        <form method="POST" action="{{ route('panel.listings.update', $listing) }}" enctype="multipart/form-data" class="mt-6 space-y-5">
+        <form method="POST" action="{{ route('panel.listings.update', $listing) }}" enctype="multipart/form-data" class="mt-6 space-y-5" x-data="gonderimKilidi('Kaydediliyor...')" @submit="kilitle">
             @csrf
             @method('PUT')
             @include('panel.listings.partials.form-fields', ['listing' => $listing])

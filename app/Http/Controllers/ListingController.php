@@ -82,12 +82,22 @@ class ListingController extends Controller
             'stock' => $type === 'urun' ? ($data['stock'] ?? null) : null,
             'width_cm' => $type === 'urun' ? ($data['width_cm'] ?? null) : null,
             'height_cm' => $type === 'urun' ? ($data['height_cm'] ?? null) : null,
-            'status' => ListingStatus::Aktif->value,
+            // Taslak mı yayın mı: formdaki hangi düğmeye basıldığı belirler.
+            // Beklenmedik bir değer gelirse YAYIN DEĞİL taslak seçilmez —
+            // varsayılan davranış değişmemeli (geriye dönük uyum).
+            'status' => $request->input('eylem') === 'taslak'
+                ? ListingStatus::Taslak->value
+                : ListingStatus::Aktif->value,
         ]);
 
         $this->syncPropertyDetail($listing, $request);
         $this->syncVehicleDetail($listing, $request);
         $this->storeImages($listing, $request);
+
+        if ($request->input('eylem') === 'taslak') {
+            return redirect()->route('panel.listings.index')
+                ->with('status', 'Taslak kaydedildi. Hazır olunca "Yayınla" ile herkese açabilirsin.');
+        }
 
         return redirect()->route('panel.listings.index')
             ->with('status', match ($type) {
@@ -173,6 +183,33 @@ class ListingController extends Controller
         ]);
 
         return response()->json(['status' => 'ok']);
+    }
+
+    /**
+     * Taslağı yayına alır.
+     *
+     * Taslak kaydetme aynı turda eklendi; bu metot onun ÇIKIŞ YOLU. Olmasaydı
+     * kullanıcı taslağı kaydedip bir daha yayınlayamazdı — düzenleme
+     * sayfasında durum alanı yok. Yarım özellik, hiç özellik olmamasından
+     * kötüdür.
+     *
+     * Yetki `update` yeteneğiyle: kendi ilanını düzenleyebilen yayınlayabilir.
+     * Yalnız TASLAK yayına alınır — pasif/reddedilmiş ilanı buradan diriltmek
+     * moderasyon kararını atlatmak olurdu.
+     */
+    public function yayinla(Listing $listing): RedirectResponse
+    {
+        Gate::authorize('update', $listing);
+
+        if ($listing->status !== ListingStatus::Taslak) {
+            return redirect()->route('panel.listings.index')
+                ->with('status', 'Bu ilan zaten taslak değil.');
+        }
+
+        $listing->update(['status' => ListingStatus::Aktif]);
+
+        return redirect()->route('panel.listings.index')
+            ->with('status', 'İlanın yayınlandı! 🎉');
     }
 
     public function destroy(Listing $listing): RedirectResponse
