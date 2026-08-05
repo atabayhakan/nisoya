@@ -56,7 +56,19 @@ class MailAyarlari extends Page
             'host' => Settings::get('mail.host') ?: config('mail.mailers.smtp.host'),
             'port' => Settings::get('mail.port') ?: (string) config('mail.mailers.smtp.port'),
             'username' => Settings::get('mail.username') ?: config('mail.mailers.smtp.username'),
-            'password' => Settings::get('mail.password') ?: '',
+            /*
+             * PAROLA FORMA HİÇ DOLDURULMAZ (2026-08-05).
+             *
+             * Eskiden kayıtlı parola alana yazılıyordu. Alan `->password()`
+             * olduğu için ekranda noktalar görünüyordu ama DEĞER HTML'e
+             * basılıyordu: her sayfa görüntülemesinde sır tarayıcıya gidiyor,
+             * "kaynağı görüntüle" ya da geliştirici araçlarıyla okunuyordu.
+             *
+             * Buna gerek de yoktu: save() zaten boş bırakılan parolayı
+             * "değiştirme" olarak yorumluyor (bkz. aşağısı). Yani doldurmanın
+             * tek etkisi sırrı gereksiz yere dolaştırmaktı.
+             */
+            'password' => '',
             'encryption' => Settings::get('mail.encryption') ?: $this->schemeToEncryption(config('mail.mailers.smtp.scheme')),
             'from_address' => Settings::get('mail.from_address') ?: config('mail.from.address'),
             'from_name' => Settings::get('mail.from_name') ?: config('mail.from.name'),
@@ -102,7 +114,11 @@ class MailAyarlari extends Page
                             ->password()
                             ->revealable()
                             ->autocomplete('new-password')
-                            ->helperText('E-posta hesabının SMTP parolası. Boş bırakırsan kayıtlı parola korunur.')
+                            // Alan artık hiç doldurulmuyor (gerekçe mount()'ta),
+                            // o yüzden kullanıcıya durumu metinle söylemek şart:
+                            // boş bir kutu "parola silinmiş" gibi okunabilir.
+                            ->placeholder(Settings::get('mail.password') ? '•••••••• (kayıtlı)' : 'Henüz parola girilmedi')
+                            ->helperText('Değiştirmek için yeni parolayı yaz. Boş bırakırsan kayıtlı parola aynen korunur.')
                             ->columnSpanFull(),
                     ]),
 

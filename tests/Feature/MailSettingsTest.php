@@ -79,7 +79,11 @@ class MailSettingsTest extends TestCase
 
         $this->assertDatabaseHas('site_settings', ['key' => 'mail.host', 'value' => 'smtp.hostinger.com']);
         $this->assertDatabaseHas('site_settings', ['key' => 'mail.port', 'value' => '465']);
-        $this->assertDatabaseHas('site_settings', ['key' => 'mail.password', 'value' => 'gizli-parola']);
+        // Parola artık DB'de ŞİFRELİ durur (bkz. Settings::SIRLI_ANAHTARLAR):
+        // ham satırı kontrol etmek yanlış katman olurdu. Anlamlı iddia, yazma
+        // ve okumanın aynı değeri vermesi — ve ham değerin düz metin OLMAMASI.
+        $this->assertSame('gizli-parola', Settings::get('mail.password'));
+        $this->assertDatabaseMissing('site_settings', ['key' => 'mail.password', 'value' => 'gizli-parola']);
         $this->assertDatabaseHas('site_settings', ['key' => 'mail.encryption', 'value' => 'ssl']);
     }
 
@@ -100,7 +104,7 @@ class MailSettingsTest extends TestCase
             ])
             ->call('save');
 
-        $this->assertDatabaseHas('site_settings', ['key' => 'mail.password', 'value' => 'eski-parola']);
+        $this->assertSame('eski-parola', Settings::get('mail.password'));
         $this->assertDatabaseHas('site_settings', ['key' => 'mail.host', 'value' => 'smtp.yeni.com']);
     }
 
