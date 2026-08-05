@@ -52,7 +52,40 @@ class ElKitabiRehberi
             return $this->oku();
         }
 
-        return Cache::remember(self::CACHE_ANAHTARI, self::CACHE_SANIYE, fn () => $this->oku());
+        /*
+         * ÖNBELLEĞE DÜZ DİZİ YAZILIR, NESNE DEĞİL (2026-08-05 canlı hatası).
+         *
+         * Eskiden Collection<RehberSayfasi> serileştiriliyordu ve canlıda
+         * `__PHP_Incomplete_Class` dönüyordu — serileştirilmiş nesne, sınıfın
+         * o anki şekline bağımlıdır.
+         *
+         * Bu hata YERELDE GÖRÜNMEZDİ: yukarıdaki `isLocal()` dalı yüzünden
+         * önbellek yolu testlerde hiç çalışmıyordu. Kırılan yol, test
+         * edilmeyen yoldu — o yüzden artık ayrı bir test doğrudan bu dalı
+         * zorluyor (ElKitabiOnbellekTest).
+         *
+         * Beklenmedik bir şey okunursa (eski sürümden kalan nesne, bozuk
+         * satır) SESSİZCE YENİDEN HESAPLANIR: El Kitabı'nın açılmaması,
+         * önbelleğin ıskalanmasından çok daha pahalı.
+         */
+        $ham = Cache::get(self::CACHE_ANAHTARI);
+
+        if (is_array($ham)) {
+            return collect($ham)
+                ->filter(fn ($satir) => is_array($satir))
+                ->map(fn (array $satir) => RehberSayfasi::fromDizi($satir))
+                ->values();
+        }
+
+        $sayfalar = $this->oku();
+
+        Cache::put(
+            self::CACHE_ANAHTARI,
+            $sayfalar->map(fn (RehberSayfasi $s) => $s->toDizi())->all(),
+            self::CACHE_SANIYE,
+        );
+
+        return $sayfalar;
     }
 
     public function bul(string $slug): ?RehberSayfasi
