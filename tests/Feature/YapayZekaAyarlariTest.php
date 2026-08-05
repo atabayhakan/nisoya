@@ -57,7 +57,11 @@ class YapayZekaAyarlariTest extends TestCase
             ->assertHasNoFormErrors();
 
         $this->assertDatabaseHas('site_settings', ['key' => 'ai.saglayici', 'value' => 'openrouter']);
-        $this->assertDatabaseHas('site_settings', ['key' => 'ai.api_anahtari', 'value' => 'sk-or-test-key']);
+        // API anahtarı artık DB'de ŞİFRELİ durur (bkz. Settings::SIRLI_ANAHTARLAR):
+        // ham satırı kontrol etmek yanlış katman olurdu. Anlamlı iddia, yazma ve
+        // okumanın aynı değeri vermesi — ve ham değerin düz metin OLMAMASI.
+        $this->assertSame('sk-or-test-key', Settings::get('ai.api_anahtari'));
+        $this->assertDatabaseMissing('site_settings', ['key' => 'ai.api_anahtari', 'value' => 'sk-or-test-key']);
         $this->assertDatabaseHas('site_settings', ['key' => 'ai.model', 'value' => 'openai/gpt-4o-mini']);
         $this->assertDatabaseHas('site_settings', ['key' => 'ai.hizli_ilan_aktif', 'value' => '1']);
     }
