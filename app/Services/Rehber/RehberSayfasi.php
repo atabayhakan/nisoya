@@ -32,6 +32,59 @@ class RehberSayfasi
     ) {}
 
     /**
+     * Önbellek için düz dizi gösterimi.
+     *
+     * -----------------------------------------------------------------------
+     * NEDEN NESNE DEĞİL DİZİ ÖNBELLEKLENİR (2026-08-05 canlı hatası)
+     *
+     * El Kitabı canlıda 500 veriyordu:
+     *
+     *   TypeError: tumSayfalar(): Return value must be of type Collection,
+     *   __PHP_Incomplete_Class returned
+     *
+     * Önbellekte SERİLEŞTİRİLMİŞ RehberSayfasi nesneleri duruyordu. Serileştirme
+     * sınıfın o anki şekline bağlıdır: sınıf taşınır, yeniden adlandırılır ya da
+     * alanı değişirse eski satır çözülemez ve PHP `__PHP_Incomplete_Class`
+     * döndürür — yani ÖNBELLEK, KOD DEĞİŞİKLİĞİNE KARŞI KIRILGAN bir bağ kurar.
+     *
+     * Düz dizi bu bağı koparır: dizi her sürümde aynı şeydir. Alan eklenirse
+     * `fromDizi` varsayılanla doldurur, patlamaz.
+     *
+     * @return array<string, mixed>
+     */
+    public function toDizi(): array
+    {
+        return [
+            'slug' => $this->slug,
+            'baslik' => $this->baslik,
+            'ozet' => $this->ozet,
+            'govde' => $this->govde,
+            'sira' => $this->sira,
+            'ekran' => $this->ekran,
+            'etiketler' => $this->etiketler,
+        ];
+    }
+
+    /**
+     * Düz diziden geri kurar. Eksik alan patlatmaz — eski bir önbellek
+     * satırı yeni bir alanı bilmiyorsa varsayılanla doldurulur.
+     *
+     * @param  array<string, mixed>  $d
+     */
+    public static function fromDizi(array $d): self
+    {
+        return new self(
+            slug: (string) ($d['slug'] ?? ''),
+            baslik: (string) ($d['baslik'] ?? ''),
+            ozet: (string) ($d['ozet'] ?? ''),
+            govde: (string) ($d['govde'] ?? ''),
+            sira: (int) ($d['sira'] ?? 0),
+            ekran: isset($d['ekran']) ? (string) $d['ekran'] : null,
+            etiketler: is_array($d['etiketler'] ?? null) ? array_values($d['etiketler']) : [],
+        );
+    }
+
+    /**
      * Markdown gövdesinin HTML'i (El Kitabı ekranı ve slide-over için).
      *
      * `{{surec:ilan-yasam-dongusu}}` yer tutucusu bir Blade bileşenine
