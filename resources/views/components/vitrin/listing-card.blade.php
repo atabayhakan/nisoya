@@ -6,6 +6,7 @@
      isCurrentlyFeatured() ÜCRETLİ öne-çıkarma rozeti ve çerçevesi,
      emlak (oda/m²) ve vasıta (yıl/km) koşullu metası (relationLoaded korumalı),
      "Görüşülür" fiyat metni. Yalnız görsel dil değişir. --}}
+<div class="relative">
 <a href="{{ route('listings.show', [$listing, $listing->slug]) }}"
    class="group block rounded-2xl border bg-white p-3 shadow-brand transition duration-150 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-brand-lg dark:bg-stone-900 dark:hover:border-emerald-700 {{ $listing->isCurrentlyFeatured() ? 'border-amber-300 ring-1 ring-amber-200 dark:border-amber-700 dark:ring-amber-900/40' : 'border-stone-200/60 dark:border-stone-800' }}">
     <div class="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] bg-stone-100 dark:bg-stone-800">
@@ -94,3 +95,35 @@
         </div>
     </div>
 </a>
+    {{-- FAVORİ KALBİ — kartın KARDEŞİ, çocuğu DEĞİL.
+
+         Kart tek bir <a> ile sarılı; içine <form>/<button> koymak iç içe
+         etkileşimli öge demek olurdu (geçersiz HTML, tarayıcılar arasında
+         öngörülemez davranış). Bu yüzden kart `relative` bir kapsayıcıya
+         alındı ve kalp mutlak konumla üstüne bindirildi.
+
+         JS YOK: `favorites.toggle` `back()` döndüğü için düz form yeterli.
+         Bir Alpine bileşeni daha hızlı hissettirirdi ama giriş gerektiren bir
+         akışı burada tarayıcıda test edemiyorum — çalıştığını kanıtlayamadığım
+         bir optimizasyon yerine kanıtlayabildiğim sade çözüm.
+
+         Yalnız giriş yapmışa görünür: favori zaten hesap gerektiriyor,
+         misafire kalp göstermek tutulamayacak bir vaat olurdu. --}}
+    @auth
+        @php($favorili = auth()->user()->favorilerindeMi($listing->id))
+        <form method="POST" action="{{ route('favorites.toggle', $listing) }}" class="absolute right-2 top-2 z-10">
+            @csrf
+            <button type="submit"
+                    class="grid h-9 w-9 place-items-center rounded-full bg-white/90 shadow-sm backdrop-blur transition hover:bg-white dark:bg-stone-900/90 dark:hover:bg-stone-900 {{ $favorili ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-stone-300' }}"
+                    title="{{ $favorili ? 'Favorilerden çıkar' : 'Favorilere ekle' }}"
+                    aria-label="{{ $favorili ? 'Favorilerden çıkar' : 'Favorilere ekle' }}">
+                @if ($favorili)
+                    <x-heroicon-s-heart class="h-5 w-5" />
+                @else
+                    <x-heroicon-o-heart class="h-5 w-5" />
+                @endif
+            </button>
+        </form>
+    @endauth
+</div>
+
