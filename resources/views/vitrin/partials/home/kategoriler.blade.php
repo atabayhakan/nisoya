@@ -19,6 +19,18 @@
 
                  Aynı kategoriler, aynı bağlantılar — yalnız yerleşim değişti.
                  sm:'den itibaren mevcut kart ızgarası aynen korunur. --}}
+            {{-- Şeridin başlığı — mobilde bölüm etiketsiz duruyordu; ne
+                 olduğunu söylemeyen bir ikon sırası ziyaretçiye "bu ne?"
+                 dedirtir.
+
+                 "En çok aranan hizmetler" DEMİYORUZ: arama istatistiğine göre
+                 sıralanmıyorlar, panelden verilen sıraya göre diziliyorlar.
+                 Doğru olmayan bir üstünlük iddiası yerine dürüst bir soru. --}}
+            <div class="mb-3 flex items-baseline justify-between sm:hidden">
+                <h2 class="text-lg font-extrabold text-stone-900 dark:text-stone-50">Ne arıyorsun?</h2>
+                <a href="{{ url('/ilanlar') }}" class="text-xs font-bold text-emerald-700 dark:text-emerald-400">Tümünü gör →</a>
+            </div>
+
             <div class="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 @foreach ($categories->take(10) as $category)
                     <a href="{{ route('listings.category', $category) }}"

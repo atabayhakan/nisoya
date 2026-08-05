@@ -85,7 +85,10 @@
             <div class="flex items-center gap-2">
                 <x-command-palette :nav-links="$navLinks" />
 
-                <x-visitor-country-badge :country="$visitorCountry" />
+                {{-- Ülke seçici: eski `x-visitor-country-badge` mobilde hiç
+                     görünmüyor, masaüstünde de tıklanamıyordu (gerekçe
+                     x-ulke-secici'de). --}}
+                <x-ulke-secici :country="$visitorCountry" :countries="$emergencyCountries" />
 
                 <x-emergency-button
                     :categories="$emergencyCategories"
@@ -95,11 +98,16 @@
 
                 {{-- Dark mode toggle — obsidian teması koyu moda kilitli olduğu
                      için o modda gizlenir (aksi hâlde no-op buton kalırdı). --}}
+                {{-- Mobilde GİZLİ: 390px'lik başlıkta yer ülke seçici, arama,
+                     acil yardım, favoriler ve hesap düğmesi arasında paylaşılıyor.
+                     Bir kez ayarlanan tema tercihi, her ekranda yer kaplayan bir
+                     düğmeyi hak etmiyor — mobilde hesap sayfasının içinde
+                     (x-mobil-hesap). --}}
                 @unless (\App\Support\Tema::koyuKilit())
                     <button
                         type="button"
                         onclick="window.toggleTheme && window.toggleTheme()"
-                        class="inline-flex rounded-lg p-2 text-stone-600 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+                        class="hidden rounded-lg p-2 text-stone-600 transition hover:bg-stone-100 md:inline-flex dark:text-stone-300 dark:hover:bg-stone-800"
                         title="Temayı değiştir"
                         aria-label="Karanlık/aydınlık tema değiştir"
                     >
@@ -107,6 +115,17 @@
                         <x-heroicon-o-sun class="hidden h-5 w-5 dark:inline" />
                     </button>
                 @endunless
+
+                {{-- Favoriler — mobilde başlıkta, yalnız giriş yapmışken
+                     (favori eklemek zaten hesap gerektiriyor). --}}
+                @auth
+                    <a href="{{ route('panel.favorites.index') }}" class="rounded-lg p-2 text-stone-600 transition hover:bg-stone-100 md:hidden dark:text-stone-300 dark:hover:bg-stone-800" title="Favorilerim" aria-label="Favorilerim">
+                        <x-heroicon-o-heart class="h-5 w-5" />
+                    </a>
+                @endauth
+
+                {{-- Mobilde kimlik + çıkış (gerekçe bileşenin içinde). --}}
+                <x-mobil-hesap />
 
                 {{-- Faz H3: bildirim/profil/Panelim/İlan Ver/Giriş-Kayıt-Çıkış
                      mobilde alt sekme çubuğuna taşındı (bkz. x-mobile-tab-bar) —

@@ -26,7 +26,12 @@
              edilebildiyse). Mobilde aramanın en sık yapılan elle düzeltmesi
              buydu: kutuyu aç, listeyi kaydır, ülkeni bul. Tespit yoksa
              "Tüm ülkeler"de kalır — uydurulmaz. --}}
-        <select name="ulke" aria-label="Ülke seç" class="h-12 w-full shrink-0 truncate rounded-2xl border-0 bg-stone-100 px-3 text-sm font-semibold text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 sm:w-36 sm:rounded-xl dark:bg-stone-800 dark:text-stone-200">
+        {{-- Mobilde kart hücresi görünümü: beyaz zemin + kenarlık + daha uzun
+             dokunma alanı. Yerli <select> BİLİNÇLE korunuyor — özel bir açılır
+             liste erişilebilirlik ve klavye davranışını sıfırdan yazmayı
+             gerektirirdi; kazanç yalnız görseldi. Bayrak zaten seçenek
+             metninde olduğu için kapalı hâlde de görünüyor. --}}
+        <select name="ulke" aria-label="Ülke seç" class="h-14 w-full shrink-0 truncate rounded-2xl border border-stone-200 bg-white px-4 text-base font-semibold text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 sm:h-12 sm:w-36 sm:rounded-xl sm:border-0 sm:bg-stone-100 sm:px-3 sm:text-sm dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 sm:dark:bg-stone-800">
             <option value="">Tüm ülkeler</option>
             @foreach ($countries as $country)
                 <option value="{{ $country->code }}" @selected($ziyaretciUlke?->code === $country->code)>{{ $country->emoji }} {{ $country->name_tr }}</option>
@@ -34,7 +39,10 @@
         </select>
         {{-- Mobilde tam genişlik ve daha uzun (h-14): başparmakla ulaşılan
              birincil eylem. Masaüstünde eski ölçüsüne döner. --}}
-        <button type="submit" class="inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-6 text-base font-bold text-white shadow-[0_12px_22px_-12px_rgba(62,99,240,1)] transition hover:bg-emerald-800 sm:h-12 sm:w-auto sm:rounded-xl sm:text-sm dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none dark:hover:bg-emerald-400">
+        {{-- Degrade yalnız mobilde: tam genişlikte düz bir renk yassı duruyor,
+             hafif bir geçiş düğmeye derinlik veriyor. Masaüstünde düğme küçük;
+             orada degrade fark edilmeden karmaşa ekler. --}}
+        <button type="submit" class="inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-800 to-emerald-600 px-6 text-base font-bold text-white shadow-[0_12px_22px_-12px_rgba(62,99,240,1)] transition hover:brightness-95 sm:h-12 sm:w-auto sm:rounded-xl sm:bg-emerald-700 sm:bg-none sm:text-sm sm:hover:bg-emerald-800 dark:from-emerald-500 dark:to-emerald-400 dark:text-stone-900 dark:shadow-none sm:dark:bg-emerald-500">
             <span class="sm:hidden">Hemen bul</span>
             <span class="hidden sm:inline">Ara</span>
             <x-heroicon-o-arrow-right class="h-4 w-4" />
