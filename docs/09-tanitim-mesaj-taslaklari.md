@@ -4,28 +4,55 @@
 taslaklar hazır, gönderim ertelendi. Gönderimi HER ZAMAN sahip yapar (Claude göndermez).
 
 **Gönderim notları:**
-- TUSU mesajındaki rehber linki sayfa yayınlanmadan 404 verir — önce GB öğrenci rehberi panelden yayınlanmalı.
+- ~~TUSU mesajındaki rehber linki sayfa yayınlanmadan 404 verir~~ → **2026-08-05'te DOĞRULANDI: sayfa yayında, HTTP 200.**
+  Sayfadaki bölüm başlıkları mesajın dört iddiasıyla birebir örtüşüyor (ev kurma listesi ·
+  ikinci el · dolandırıcılıktan korunma · mezun olurken devretme). Sayfa üyelik istemiyor,
+  anonim istek tam içeriği alıyor.
 - ATAA'da üç şubeye aynı gün yerine birkaç gün arayla göndermek daha doğal.
 - Çerçeve bilinçli: "gelin alışveriş yapın" değil "üyeleriniz ücretsiz listelensin" (arz çağrısı — pazaryeri boşken tutulamayacak vaat yok).
 
 ---
 
-## 1) TUSU (Turkish Student Union of the UK) — tusu-uk.org / Facebook
+## 1) TUSU — Turkish Student Union of the UK
+
+**Alıcı:** `info@tusu.uk`
+**Son tarih:** 15 Ağustos 2026 (öğrenci toplulukları freshers planlarını Ağustos'ta kilitler;
+kaçarsa bir sonraki pencere Eylül 2027)
+
+**Alıcı doğrulaması (2026-08-05):** Güncel site **tusu.uk** — belgede yazan `tusu-uk.org` eski
+alan adı. Sitede yayımlı iletişim: `info@tusu.uk`, +44 7884 071072, 4th Floor Hamilton House,
+Mabledon Place, London WC1H 9BB. Kurum **aktif** (2026-2027 yönetim kurulu başvuruları açık),
+2014'te kurulmuş, Oxford ve Hertfordshire gibi üniversitelerdeki Türk topluluklarıyla bağlantılı.
+
+> ⚠️ **Ad karışıklığı:** "TUSU" kısaltmasını **Teesside University Students' Union** da
+> kullanıyor (tees-su.org.uk). Yanlış kuruma gitmemesi için alıcı adresi mutlaka `@tusu.uk`.
+
+**Konu:** Yeni dönem öncesi Türk öğrenciler için ücretsiz rehber (ev kurma & ikinci el)
 
 > Merhaba TUSU ekibi,
 >
 > Ben Hakan — yurtdışında yaşayan Türkler için kurduğum ücretsiz platform **nisoya.com**'un
-> kurucusuyum. Yeni dönem öncesi İngiltere'ye gelecek öğrenciler için hazırladığımız rehberi
-> paylaşmak istedim: **"İngiltere'de İlk Yıl: Türk Öğrenciler İçin Ev Kurma ve İkinci El
-> Rehberi"** — ev kurma listesi, ikinci el eşya nereden alınır, dolandırıcılıktan korunma ve
-> mezun olurken eşya devretme konularını kapsıyor: nisoya.com/ingiltere-ogrenci-ev-kurma-rehberi
+> kurucusuyum.
 >
-> Tamamen ücretsiz, üyelik zorunluluğu yok; işinize yarar derseniz üyelerinizle paylaşmanızdan
-> mutluluk duyarız. Ayrıca mezun olan üyeleriniz eşyalarını platformda ücretsiz listeleyip yeni
-> gelen öğrencilere devredebilir.
+> Yeni dönemde İngiltere'ye gelecek öğrenciler için bir rehber hazırladık:
+> **"İngiltere'de İlk Yıl: Türk Öğrenciler İçin Ev Kurma ve İkinci El Rehberi"**
+> https://nisoya.com/ingiltere-ogrenci-ev-kurma-rehberi
 >
-> Sorularınız olursa buradayım. Sevgiler,
-> Hakan · nisoya.com
+> İçinde ilk hafta ev kurma listesi, ikinci el eşyanın nereden alınacağı, ödeme yaparken
+> dolandırıcılıktan korunma ve mezun olurken eşya devretme var.
+>
+> Sayfa tamamen açık: üyelik istemiyor, ücret yok, arkasında bir kayıt formu da yok.
+> İşinize yarar derseniz üyelerinizle paylaşmanızdan mutluluk duyarız.
+>
+> Bir de şunu eklemek isterim: Nisoya'da mezun olan öğrenciler eşyalarını ücretsiz listeleyip
+> arkadan gelenlere devredebiliyor. Platform komisyon almıyor ve ödemeye aracılık etmiyor —
+> alışveriş doğrudan iki kişi arasında oluyor, biz yalnızca buluşma yeriyiz.
+>
+> Sorularınız olursa memnuniyetle yanıtlarım.
+>
+> Sevgiler,
+> Hakan
+> nisoya.com
 
 ## 2) Dubai Türk Rehberi — dubairehberi.com.tr
 
