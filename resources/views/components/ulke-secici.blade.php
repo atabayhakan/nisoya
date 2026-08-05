@@ -24,7 +24,7 @@
     >
         <span aria-hidden="true" class="text-base leading-none">{{ $country?->emoji ?? '🌍' }}</span>
         <span class="hidden max-w-[92px] truncate sm:inline">{{ $country?->name ?? 'Ülke' }}</span>
-        <x-heroicon-o-chevron-down class="h-3.5 w-3.5 text-stone-400" />
+        <x-heroicon-o-chevron-down class="h-3.5 w-3.5 text-stone-600" />
     </button>
 
     <template x-teleport="body">

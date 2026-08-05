@@ -59,13 +59,13 @@
 
                     <div class="py-2">
                         <a href="{{ route('dashboard') }}" class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-200 dark:hover:bg-stone-800">
-                            <x-heroicon-o-squares-2x2 class="h-5 w-5 text-stone-400" /> Panelim
+                            <x-heroicon-o-squares-2x2 class="h-5 w-5 text-stone-600" /> Panelim
                         </a>
                         <a href="{{ route('panel.favorites.index') }}" class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-200 dark:hover:bg-stone-800">
-                            <x-heroicon-o-heart class="h-5 w-5 text-stone-400" /> Favorilerim
+                            <x-heroicon-o-heart class="h-5 w-5 text-stone-600" /> Favorilerim
                         </a>
                         <a href="{{ route('panel.profile.edit') }}" class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-200 dark:hover:bg-stone-800">
-                            <x-heroicon-o-user-circle class="h-5 w-5 text-stone-400" /> Profil ayarları
+                            <x-heroicon-o-user-circle class="h-5 w-5 text-stone-600" /> Profil ayarları
                         </a>
                         {{-- Karanlık mod başlıktan buraya taşındı: bir kez
                              ayarlanan tercih, her ekranda yer kaplayan bir
@@ -73,8 +73,8 @@
                              gitti. --}}
                         @unless (\App\Support\Tema::koyuKilit())
                             <button type="button" onclick="window.toggleTheme && window.toggleTheme()" class="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-200 dark:hover:bg-stone-800">
-                                <x-heroicon-o-moon class="h-5 w-5 text-stone-400 dark:hidden" />
-                                <x-heroicon-o-sun class="hidden h-5 w-5 text-stone-400 dark:inline" />
+                                <x-heroicon-o-moon class="h-5 w-5 text-stone-600 dark:hidden" />
+                                <x-heroicon-o-sun class="hidden h-5 w-5 text-stone-600 dark:inline" />
                                 Karanlık / aydınlık
                             </button>
                         @endunless
