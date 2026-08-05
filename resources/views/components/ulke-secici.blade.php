@@ -13,10 +13,10 @@
      Mobilde yalnız bayrak + ok basılır (isim sm:'den itibaren): 390px'lik
      başlıkta arama, acil yardım ve hesap düğmesiyle birlikte yer paylaşıyor —
      ülke adı orada taşmaya yol açıyordu. Tam ad listede zaten görünür. --}}
-<div x-data="{ acik: false }" @keydown.escape.window="acik = false" class="shrink-0">
+<div x-data="altSayfa" @keydown.escape.window="kapat()" class="shrink-0">
     <button
         type="button"
-        @click="acik = true"
+        @click="ac()"
         class="inline-flex items-center gap-1 rounded-full border border-stone-200 px-2.5 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
         :aria-expanded="acik ? 'true' : 'false'"
         aria-haspopup="dialog"
@@ -32,7 +32,7 @@
             x-show="acik"
             x-transition.opacity.duration.200ms
             class="fixed inset-0 z-50 bg-stone-900/60"
-            @click.self="acik = false"
+            @click.self="kapat()"
             role="dialog"
             aria-modal="true"
             aria-label="Ülke seç"
@@ -46,7 +46,12 @@
                 class="fixed inset-x-0 bottom-0 max-h-[75vh] overflow-y-auto rounded-t-3xl bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:inset-x-auto sm:bottom-auto sm:right-4 sm:top-16 sm:w-72 sm:rounded-2xl sm:shadow-brand dark:bg-stone-900"
             >
                 <div class="mx-auto mb-3 h-1.5 w-12 rounded-full bg-stone-200 sm:hidden dark:bg-stone-700"></div>
-                <h2 class="mb-1 text-base font-bold text-stone-900 dark:text-stone-50">Hangi ülke?</h2>
+                <div class="mb-1 flex items-center justify-between">
+                    <h2 class="text-base font-bold text-stone-900 dark:text-stone-50">Hangi ülke?</h2>
+                    <button type="button" @click="kapat()" class="-mr-1 grid h-11 w-11 place-items-center rounded-full text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800" aria-label="Kapat">
+                        <x-heroicon-o-x-mark class="h-5 w-5" />
+                    </button>
+                </div>
                 <p class="mb-3 text-xs text-stone-500 dark:text-stone-400">Seçtiğin ülkedeki ilanlara gider.</p>
 
                 <ul class="space-y-0.5">

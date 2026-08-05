@@ -16,10 +16,10 @@
      Yalnız mobil: md:'den itibaren başlıkta zaten avatar + ad + Panelim +
      Çıkış duruyor. --}}
 @auth
-    <div x-data="{ acik: false }" @keydown.escape.window="acik = false" class="md:hidden">
+    <div x-data="altSayfa" @keydown.escape.window="kapat()" class="md:hidden">
         <button
             type="button"
-            @click="acik = true"
+            @click="ac()"
             class="flex items-center rounded-full ring-2 ring-transparent transition hover:ring-emerald-200 dark:hover:ring-emerald-800"
             :aria-expanded="acik ? 'true' : 'false'"
             aria-haspopup="dialog"
@@ -33,7 +33,7 @@
                 x-show="acik"
                 x-transition.opacity.duration.200ms
                 class="fixed inset-0 z-50 bg-stone-900/60 md:hidden"
-                @click.self="acik = false"
+                @click.self="kapat()"
                 role="dialog"
                 aria-modal="true"
                 aria-label="Hesabım"
@@ -46,7 +46,12 @@
                     x-transition:enter-end="translate-y-0"
                     class="fixed inset-x-0 bottom-0 rounded-t-3xl bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] dark:bg-stone-900"
                 >
-                    <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-stone-200 dark:bg-stone-700"></div>
+                    <div class="mx-auto mb-2 h-1.5 w-12 rounded-full bg-stone-200 dark:bg-stone-700"></div>
+                    <div class="mb-2 flex justify-end">
+                        <button type="button" @click="kapat()" class="-mr-1 grid h-11 w-11 place-items-center rounded-full text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800" aria-label="Kapat">
+                            <x-heroicon-o-x-mark class="h-5 w-5" />
+                        </button>
+                    </div>
 
                     {{-- Kimlik satırı: "hangi hesapla girdim?" sorusunun cevabı. --}}
                     <div class="flex items-center gap-3 border-b border-stone-100 pb-4 dark:border-stone-800">

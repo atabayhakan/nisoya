@@ -101,6 +101,41 @@ class MobilBaslikTest extends TestCase
     }
 
     #[DataProvider('temalar')]
+    public function test_alt_sayfalarin_kapatma_yolu_vardir(string $tema): void
+    {
+        /*
+         * Sahibin bildirimi: "Keşfet'i açtığımda tekrar kapatamıyorum, arka
+         * plan hareket ediyor."
+         *
+         * İki kusur birdendi: (1) kapatma düğmesi YOKTU — tek yol arka plana
+         * dokunmaktı, o da panel ekranın %80'ini kaplayınca ince bir şeride
+         * iniyordu; Escape ise telefonda yok. (2) Gövde kaydırma kilidi yoktu.
+         *
+         * Kilit davranışı JavaScript'te (Alpine `altSayfa`) ve tarayıcıda
+         * doğrulandı; burada işaretlemenin gerilemesi mühürleniyor — kapatma
+         * düğmesi silinirse ya da paylaşılan davranıştan çıkılırsa kırılır.
+         */
+        $this->temayiSec($tema);
+        $user = User::factory()->create();
+
+        $icerik = $this->actingAs($user)->get('/')->assertOk()->getContent();
+
+        $this->assertGreaterThanOrEqual(
+            3,
+            substr_count($icerik, 'aria-label="Kapat"'),
+            "[$tema] Alt sayfaların kapatma düğmesi eksik (Keşfet · ülke seçici · hesap)."
+        );
+
+        // Üçü de ortak davranışı kullanmalı: biri elle yazılmış duruma dönerse
+        // kaydırma kilidi o sayfada sessizce kaybolur.
+        $this->assertGreaterThanOrEqual(
+            3,
+            substr_count($icerik, 'x-data="altSayfa"'),
+            "[$tema] Bir alt sayfa ortak kilit davranışını kullanmıyor."
+        );
+    }
+
+    #[DataProvider('temalar')]
     public function test_tanitim_karti_katalog_sayisi_gostermez(string $tema): void
     {
         // "25 ülke · 50 şehir · 97 kategori" katalog büyüklüğüydü, gerçek

@@ -166,6 +166,95 @@ Alpine.data('headerScroll', () => ({
     },
 }));
 
+/**
+ * Mobil alt sayfa (bottom sheet) — Keşfet, ülke seçici, hesap menüsü.
+ *
+ * -------------------------------------------------------------------------
+ * NEDEN ORTAK
+ *
+ * Üç alt sayfa aynı deseni elle tekrarlıyordu ve AYNI İKİ KUSURU taşıyordu
+ * (sahibin 2026-08-05 bildirimi: "Keşfet'i açtığımda tekrar kapatamıyorum,
+ * arka plan hareket ediyor"):
+ *
+ *   1. KAPATMA DÜĞMESİ YOKTU. Tek yol arka plana dokunmaktı; Keşfet paneli
+ *      ekranın %80'ini kapladığı için geriye ince bir şerit kalıyordu.
+ *      Escape ise telefonda yok. Kapanmayan bir örtü, sayfayı kilitli
+ *      hissettirir.
+ *
+ *   2. GÖVDE KAYDIRMA KİLİDİ YOKTU. Sayfa 5556px; örtü açıkken arkadaki
+ *      içerik kayıyordu. iOS'ta bu yalnız çirkin değil, sabit konumlu örtüyü
+ *      görünür alanın dışına taşıyıp gerçekten kapatılamaz hâle getirebilir.
+ *
+ * Kaydırma kilidi `position: fixed` + `top: -scrollY` ile yapılıyor:
+ * `overflow: hidden` iOS Safari'de tek başına YETMEZ, sayfa yine kayar.
+ * Kapanışta kaydırma konumu birebir geri verilir — aksi hâlde kullanıcı
+ * sayfanın başına fırlar ve nerede kaldığını kaybeder.
+ *
+ * Aynı anda birden fazla örtü açılabilir (hesap sayfasından ülke seçiciye);
+ * kilit SAYAÇLA yönetilir, ilki kapanınca kilit erken kalkmasın.
+ */
+let acikOrtuSayisi = 0;
+let kilitliScrollY = 0;
+
+function govdeyiKilitle() {
+    acikOrtuSayisi += 1;
+    if (acikOrtuSayisi > 1) return;
+
+    kilitliScrollY = window.scrollY;
+
+    // Kaydırma çubuğu genişliği telafi edilir: gövde sabitlenince çubuk
+    // kaybolur ve sayfa masaüstünde birkaç piksel YANA SIÇRAR. Telefonda
+    // çubuk katman üstü olduğu için fark 0'dır, yani kod tek yolda kalır.
+    const cubukGenisligi = window.innerWidth - document.documentElement.clientWidth;
+
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${kilitliScrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    if (cubukGenisligi > 0) {
+        document.body.style.paddingRight = `${cubukGenisligi}px`;
+    }
+}
+
+function govdeKilidiniAc() {
+    acikOrtuSayisi = Math.max(0, acikOrtuSayisi - 1);
+    if (acikOrtuSayisi > 0) return;
+
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.paddingRight = '';
+
+    // Konum GERİ VERİLİR. Verilmezse kullanıcı sayfanın en başına fırlar ve
+    // nerede kaldığını kaybeder — uzun ana sayfada bu, örtüyü açmanın
+    // cezası hâline gelir.
+    window.scrollTo(0, kilitliScrollY);
+}
+
+Alpine.data('altSayfa', () => ({
+    acik: false,
+
+    ac() {
+        if (this.acik) return;
+        this.acik = true;
+        govdeyiKilitle();
+    },
+
+    kapat() {
+        if (!this.acik) return;
+        this.acik = false;
+        govdeKilidiniAc();
+    },
+
+    // Bileşen DOM'dan kalkarken (sayfa geçişi) kilit asılı kalmasın.
+    destroy() {
+        if (this.acik) govdeKilidiniAc();
+    },
+}));
+
 // Nabız Haritası (Faz İ2, "2. Tasarım" pilotu). Süs değil veri: her nokta
 // gerçek bir ülkenin enlem/boylamından gelen konumda, boyutu o ülkedeki
 // aktif ilan sayısıyla orantılı (bkz. App\Services\NabizService::countryActivity).
