@@ -164,10 +164,32 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
         return url('/kayit').'?ref='.$this->referral_code;
     }
 
-    /** Filament yönetim paneline erişim kontrolü. */
+    /**
+     * Filament yönetim paneline erişim kontrolü.
+     *
+     * -----------------------------------------------------------------------
+     * NEDEN "AKTİF DEĞİLSE HAYIR" (2026-08-05)
+     *
+     * Burada eskiden yalnız `Silinmis` engelleniyordu; ASKIYA ALINMIŞ bir
+     * yönetici veya moderatör /yonetim'e girmeye devam ediyordu.
+     *
+     * Site tarafında bu boşluk yoktu — `EnsureUserIsActive` middleware'i
+     * askıdaki kullanıcıyı oturumdan atıyor. Ama o middleware `web` grubunda
+     * ve Filament paneli KENDİ yığınını tanımlıyor; oraya hiç uğramıyor.
+     * Yani "askıya al" düğmesi, tam da en çok işe yarayacağı yerde — yetkili
+     * bir hesabı durdurmak istediğinde — çalışmıyordu.
+     *
+     * Düzeltme middleware'e değil buraya kondu: `canAccessPanel()` hem
+     * Filament'in Authenticate middleware'inden hem de panelin kendi
+     * kontrollerinden geçen TEK kapı. Yeni bir panel eklense de kural gelir.
+     *
+     * Beyaz liste (yalnız Aktif) kullanılıyor: yarın yeni bir UserStatus
+     * eklenirse varsayılan davranış "içeri alma" olsun — kara liste olsaydı
+     * yeni durum sessizce erişim kazanırdı.
+     */
     public function canAccessPanel(Panel $panel): bool
     {
-        if ($this->status === UserStatus::Silinmis) {
+        if ($this->status !== UserStatus::Aktif) {
             return false;
         }
 
