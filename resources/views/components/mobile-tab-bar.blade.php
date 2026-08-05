@@ -33,7 +33,14 @@
             Keşfet
         </button>
 
-        <a href="{{ url('/panel/ilan/yeni') }}" class="flex flex-1 flex-col items-center justify-center gap-0.5 py-1 text-2xs font-medium text-stone-500 dark:text-stone-400">
+        {{-- MİSAFİR KAYDA GİDER, GİRİŞE DEĞİL.
+
+             Rota `auth` altında olduğu için misafir /giris'e düşüyordu:
+             "hemen ilan vereyim" diye dokunan, hesabı OLMAYAN kişi kayıt
+             değil giriş formu görüyor ve ne yapacağını bilemiyordu. Kayıt
+             sayfasında "Zaten hesabın var mı? Giriş yap" bağlantısı var,
+             yani dönen kullanıcı da kaybolmuyor. --}}
+        <a href="{{ auth()->check() ? url('/panel/ilan/yeni') : route('register') }}" class="flex flex-1 flex-col items-center justify-center gap-0.5 py-1 text-2xs font-medium text-stone-500 dark:text-stone-400">
             <span class="-mt-5 grid h-11 w-11 place-items-center rounded-full bg-emerald-700 text-white shadow-lg ring-4 ring-white dark:bg-emerald-500 dark:ring-stone-900">
                 <x-heroicon-o-plus class="h-6 w-6" />
             </span>
@@ -116,6 +123,24 @@
                      sayfadan tek dokunuşla açılıyor — çıkış için doğru yer
                      burası; profil ekranındaki "Oturum" bölümü ise aramaya
                      oradan başlayanlar için duruyor. --}}
+                {{-- TEMA — HERKESE AÇIK.
+
+                     2026-08-05'te başlıktaki tema düğmesi mobilde gizlenip
+                     "hesap sayfasında var" denmişti; ama oradaki düğme @auth
+                     bloğunun içindeydi. Sonuç: giriş yapmamış mobil ziyaretçi
+                     temayı HİÇ değiştiremiyordu. Bir eksiği kapatırken açılan
+                     bir gerileme. Keşfet her sayfadan tek dokunuşla açılıyor
+                     ve misafire de açık — doğru yer burası. --}}
+                @unless (\App\Support\Tema::koyuKilit())
+                    <div class="mt-3 border-t border-stone-100 pt-3 dark:border-stone-800">
+                        <button type="button" onclick="window.toggleTheme && window.toggleTheme()" class="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-800">
+                            <x-heroicon-o-moon class="h-4 w-4 dark:hidden" />
+                            <x-heroicon-o-sun class="hidden h-4 w-4 dark:inline" />
+                            Karanlık / aydınlık
+                        </button>
+                    </div>
+                @endunless
+
                 @auth
                     <form method="POST" action="{{ route('logout') }}" class="mt-3 border-t border-stone-100 pt-3 dark:border-stone-800">
                         @csrf
