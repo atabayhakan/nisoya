@@ -173,6 +173,46 @@ class ArsivIlanVeSaticiIlanlariTest extends TestCase
     }
 
     #[DataProvider('temalar')]
+    public function test_mobil_satici_seridi_her_iki_temada_da_basilir(string $tema): void
+    {
+        /*
+         * BU TESTİN OLMAMASI CANLIDA BİR EKSİK ÜRETTİ.
+         *
+         * Şerit ilk yazışta yalnız `vitrin/listings/show.blade.php` içine
+         * gömülmüştü. Canlı ilan detayı KLASİK şablonu basıyor — şerit hiç
+         * görünmedi. Düğmeler görünüyordu, çünkü onların iki temada koşan bir
+         * testi vardı ve o test onları en baştan iki şablona da koydurmuştu.
+         *
+         * Yani eksik kod değil, EKSİK TESTTİ: test edilmeyen taraf kırıldı.
+         */
+        $this->temayiKur($tema);
+        $ilan = $this->ilan(User::factory()->create(['name' => 'Ayşe Demir']));
+
+        $this->get(route('listings.show', [$ilan, $ilan->slug]))
+            ->assertOk()
+            // Şeridin kendisi (mobilde görünür, masaüstünde gizli).
+            ->assertSee('lg:hidden', false)
+            // Kimlik: satıcı adı ve üyelik yılı.
+            ->assertSee('Ayşe Demir')
+            ->assertSee("'ten beri üye", false)
+            // İletişime kısayol ve hedefi.
+            ->assertSee('Satıcıya mesaj yaz')
+            ->assertSee('satici-iletisim', false);
+    }
+
+    #[DataProvider('temalar')]
+    public function test_arsivde_mobil_seritte_mesaj_kisayolu_cikmaz(string $tema): void
+    {
+        // Cevabı gelmeyecek bir mesaja davet etmemeli.
+        $this->temayiKur($tema);
+        $ilan = $this->ilan(User::factory()->create(), ListingStatus::Pasif);
+
+        $this->get(route('listings.show', [$ilan, $ilan->slug]))
+            ->assertOk()
+            ->assertDontSee('Satıcıya mesaj yaz');
+    }
+
+    #[DataProvider('temalar')]
     public function test_gecmis_ilani_olmayan_saticida_dugme_hic_basilmaz(string $tema): void
     {
         // Sıfır gösteren düğme, tıklandığında boş sayfa açar — olmayan bir
