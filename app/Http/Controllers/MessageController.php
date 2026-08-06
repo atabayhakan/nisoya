@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ListingStatus;
 use App\Enums\ListingType;
 use App\Enums\PriceUnit;
 use App\Models\Conversation;
@@ -264,6 +265,21 @@ class MessageController extends Controller
          */
         if ($listing->is_demo) {
             return back()->with('status', 'Bu bir ÖRNEK ilandır — Nisoya demo verisidir, gerçek bir satıcıya ait değildir. Mesaj gönderilemez.');
+        }
+
+        /*
+         * YAYINDA OLMAYAN İLANA MESAJ GÖNDERİLEMEZ (2026-08-06).
+         *
+         * Bu kapı önceden YOKTU ve fark edilmiyordu çünkü ilan detayı aktif
+         * olmayan ilanlarda 404 veriyordu — form hiç görünmüyordu. Arşiv kipi
+         * o sayfaları herkese açtı, yani sınır artık UI'da değil BURADA
+         * olmak zorunda: formu gizlemek POST'u engellemez.
+         *
+         * Gizlemek ile engellemek aynı şey değildir; ilki görünürlük, ikincisi
+         * kuraldır.
+         */
+        if ($listing->status !== ListingStatus::Aktif) {
+            return back()->with('status', 'Bu ilan artık yayında değil — mesaj gönderilemez.');
         }
 
         $data = $request->validate([

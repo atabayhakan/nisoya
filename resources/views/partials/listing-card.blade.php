@@ -27,6 +27,15 @@
     </div>
     <div class="p-4">
         <div class="flex flex-wrap items-center gap-1.5 text-xs">
+            {{-- ARŞİV ROZETİ: profildeki "Geçmiş" sekmesinde kartlar aktif
+                 ilanlarla birebir aynı görünüyordu. Başlık "yayından kalkmış"
+                 dese de kartın kendisi bunu söylemezse, tek bir kartı paylaşan
+                 ya da yeni sekmede açan biri onu yayında sanır. --}}
+            @if ($listing->arsivdeMi())
+                <span class="inline-flex items-center gap-1 rounded-full bg-stone-200 px-2 py-0.5 font-bold text-stone-700 dark:bg-stone-700 dark:text-stone-200">
+                    <x-heroicon-o-archive-box class="h-3 w-3" /> Yayında değil
+                </span>
+            @endif
             @if ($listing->isCurrentlyFeatured())
                 <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
                     <x-heroicon-s-star class="h-3 w-3" /> Öne çıkan
@@ -55,7 +64,7 @@
 
         <div class="mt-2 font-bold text-stone-900 dark:text-stone-50">
             @if ($listing->price !== null)
-                {{ number_format((float) $listing->price, 0) }} {{ $listing->currency }}<span class="text-xs font-normal text-stone-600 dark:text-stone-400">{{ $listing->price_unit->suffix() }}</span>
+                {{ $listing->bicimliFiyat() }} {{ $listing->currency }}<span class="text-xs font-normal text-stone-600 dark:text-stone-400">{{ $listing->price_unit->suffix() }}</span>
             @else
                 <span class="text-emerald-700 dark:text-emerald-400">Görüşülür</span>
             @endif

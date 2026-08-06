@@ -154,7 +154,7 @@
                                 <h3 class="text-sm font-bold text-stone-800 dark:text-stone-100">Fiyat aralığı</h3>
                                 @if (! empty($fiyatDagilimi))
                                     <span class="text-xs font-semibold text-stone-500 dark:text-stone-400">
-                                        {{ number_format($fiyatDagilimi['min'], 0) }}–{{ number_format($fiyatDagilimi['max'], 0) }}
+                                        {{ \App\Support\Para::bicimle($fiyatDagilimi['min']) }}–{{ \App\Support\Para::bicimle($fiyatDagilimi['max']) }}
                                     </span>
                                 @endif
                             </div>

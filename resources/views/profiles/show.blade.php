@@ -100,9 +100,13 @@
         {{-- Sayı kartları. Hepsi GERÇEK veriden türüyor; ilanı/değerlendirmesi
              olmayan kart hiç basılmıyor — sıfır gösteren bir kart kişinin
              aleyhine tanıklık eder. --}}
+        {{-- DİKKAT: burada `$listings->total()` KULLANILMAZ. Sekme "geçmiş"e
+             alındığında o sayı geçmiş ilanları sayar ama etiket "aktif ilan"
+             der — sayfa sessizce yanlış bir şey söylemiş olurdu. Kart her
+             zaman GÜNCEL sayıyı gösterir, hangi sekmede olursak olalım. --}}
         @php
             $kartlar = array_filter([
-                $listings->total() > 0 ? ['deger' => $listings->total(), 'etiket' => 'aktif ilan'] : null,
+                $ilanSayilari['guncel'] > 0 ? ['deger' => $ilanSayilari['guncel'], 'etiket' => 'aktif ilan'] : null,
                 $rating['count'] > 0 ? ['deger' => '★ '.$rating['avg'], 'etiket' => $rating['count'].' değerlendirme'] : null,
                 $anlasma > 0 ? ['deger' => $anlasma, 'etiket' => 'tamamlanan anlaşma'] : null,
             ]);
@@ -263,8 +267,32 @@
                 @endif
 
                 {{-- İlanları --}}
-                <section>
+                <section class="scroll-mt-20" id="ilanlar">
                     <h2 class="text-lg font-bold text-stone-900 dark:text-stone-50">{{ $user->name }} kullanıcısının ilanları</h2>
+
+                    {{-- GÜNCEL / GEÇMİŞ sekmesi. Geçmiş sekmesi yalnız gerçekten
+                         geçmiş ilan varsa basılır: boş bir sekme, tıklandığında
+                         hiçbir şey olmayacak bir söz verirdi. --}}
+                    @if ($ilanSayilari['gecmis'] > 0)
+                        <div class="mt-3 inline-flex rounded-xl border border-stone-200 bg-white p-1 dark:border-stone-800 dark:bg-stone-900" role="tablist">
+                            <a href="{{ route('profiles.show', $user->username) }}#ilanlar"
+                               @if ($durum === 'guncel') aria-current="page" @endif
+                               class="rounded-lg px-3.5 py-1.5 text-sm font-bold transition {{ $durum === 'guncel' ? 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-stone-900' : 'text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800' }}">
+                                Güncel ({{ $ilanSayilari['guncel'] }})
+                            </a>
+                            <a href="{{ route('profiles.show', ['user' => $user->username, 'durum' => 'gecmis']) }}#ilanlar"
+                               @if ($durum === 'gecmis') aria-current="page" @endif
+                               class="rounded-lg px-3.5 py-1.5 text-sm font-bold transition {{ $durum === 'gecmis' ? 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-stone-900' : 'text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800' }}">
+                                Geçmiş ({{ $ilanSayilari['gecmis'] }})
+                            </a>
+                        </div>
+                    @endif
+
+                    @if ($durum === 'gecmis')
+                        <p class="mt-3 text-sm font-medium text-stone-500 dark:text-stone-400">
+                            Bu ilanlar yayından kalkmış. Açılabilirler ama mesaj gönderilemez.
+                        </p>
+                    @endif
 
                     @if ($listings->isNotEmpty())
                         <div class="mt-4 grid gap-5 sm:grid-cols-2">
@@ -275,7 +303,7 @@
                         <div class="mt-6">{{ $listings->links() }}</div>
                     @else
                         <div class="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white p-10 text-center text-stone-500 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-400">
-                            Bu üyenin şu an aktif ilanı yok.
+                            {{ $durum === 'gecmis' ? 'Bu üyenin yayından kalkmış ilanı yok.' : 'Bu üyenin şu an aktif ilanı yok.' }}
                         </div>
                     @endif
                 </section>

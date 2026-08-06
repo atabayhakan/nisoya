@@ -43,6 +43,20 @@
                 <x-heroicon-s-star class="h-3 w-3" /> Öne çıkan
             </span>
         @endif
+
+        {{-- ARŞİV ROZETİ: profildeki "Geçmiş" sekmesinde kartlar aktif
+             ilanlarla birebir aynı görünüyordu. Başlık "yayından kalkmış"
+             dese de kart bunu söylemezse, tek bir kartı paylaşan ya da yeni
+             sekmede açan biri onu yayında sanır.
+
+             KLASİK KARTLA İKİZ: aynı rozet partials/listing-card.blade.php
+             içinde de var. Yalnız birine eklemek, temaya göre değişen bir
+             gerçek üretirdi — bu depoda tam olarak bu tuzağa düşülmüştü. --}}
+        @if ($listing->arsivdeMi())
+            <span class="absolute left-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-stone-800/90 px-2.5 py-1.5 text-2xs font-bold text-white">
+                <x-heroicon-o-archive-box class="h-3 w-3" /> Yayında değil
+            </span>
+        @endif
     </div>
 
     <div class="px-1.5 pb-1 pt-3">
@@ -77,7 +91,7 @@
         <div class="mt-3 flex items-center justify-between gap-2.5">
             <span class="text-lg font-extrabold text-emerald-700 dark:text-emerald-400">
                 @if ($listing->price !== null)
-                    {{ number_format((float) $listing->price, 0) }} {{ $listing->currency }}<span class="text-2xs font-semibold text-stone-600">{{ $listing->price_unit->suffix() }}</span>
+                    {{ $listing->bicimliFiyat() }} {{ $listing->currency }}<span class="text-2xs font-semibold text-stone-600">{{ $listing->price_unit->suffix() }}</span>
                 @else
                     Görüşülür
                 @endif

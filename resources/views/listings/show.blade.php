@@ -1,4 +1,5 @@
-<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage?->enIyiUrl('large')">
+{{-- Arşiv sayfası arama motoruna kapalı — bkz. vitrin/listings/show.blade.php --}}
+<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage?->enIyiUrl('large')" :noindex="$isArchived">
     {{-- JSON-LD: BreadcrumbList --}}
     <x-json-ld type="BreadcrumbList" :data="[
         'itemListElement' => [
@@ -89,7 +90,17 @@
             @endif
         </nav>
 
-        @if ($isOwner && $listing->status->value !== 'aktif')
+        {{-- Arşiv bandı — vitrin temasıyla aynı sözleşme. --}}
+        @if ($isArchived && ! $isOwner)
+            <div class="mt-4 flex items-start gap-3 rounded-2xl border border-stone-300 bg-stone-100 px-4 py-3 text-sm text-stone-700 dark:border-stone-700 dark:bg-stone-800/60 dark:text-stone-300">
+                <x-heroicon-o-archive-box class="mt-0.5 h-5 w-5 shrink-0" />
+                <div>
+                    <strong class="text-stone-900 dark:text-stone-100">Bu ilan artık yayında değil.</strong>
+                    Geçmiş kaydı olarak görüntülüyorsun — mesaj gönderilemez.
+                    <a href="{{ route('profiles.show', $listing->user->username) }}" class="font-semibold text-emerald-700 hover:underline dark:text-emerald-400">{{ $listing->user->name }} kullanıcısının güncel ilanlarına bak →</a>
+                </div>
+            </div>
+        @elseif ($isOwner && $listing->status->value !== 'aktif')
             <div class="mt-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
                 Bu ilan şu an <strong>{{ $listing->status->getLabel() }}</strong> durumunda — yalnızca sen görüyorsun.
             </div>
@@ -315,7 +326,7 @@
                     <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
                         <div class="text-2xl font-bold text-stone-900 dark:text-stone-50">
                             @if ($listing->price !== null)
-                                {{ number_format((float) $listing->price, 2) }} {{ $listing->currency }}
+                                {{ $listing->bicimliFiyat() }} {{ $listing->currency }}
                                 <span class="text-base font-normal text-stone-600 dark:text-stone-400">{{ $listing->price_unit->suffix() }}</span>
                             @else
                                 <span class="text-emerald-700 dark:text-emerald-400">Görüşülür</span>
@@ -323,7 +334,12 @@
                         </div>
 
                         <div class="mt-4 space-y-3">
-                            @if ($isOwner)
+                            {{-- Arşivde iletişim kapalı — vitrin ile aynı sözleşme. --}}
+                            @if ($isArchived && ! $isOwner)
+                                <div class="rounded-lg bg-stone-100 px-4 py-3 text-center text-sm font-semibold text-stone-600 dark:bg-stone-800 dark:text-stone-300">
+                                    Bu ilan yayından kalktığı için mesaj gönderilemez.
+                                </div>
+                            @elseif ($isOwner)
                                 <a href="{{ route('panel.listings.edit', $listing) }}" class="block w-full rounded-lg border border-stone-300 px-4 py-2.5 text-center font-semibold text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">İlanı Düzenle</a>
                             @elseif (auth()->check())
                                 @php($isShortTerm = ($listing->type->value === 'emlak' && ($listing->category?->slug === 'kisa-donem-tatil' || $listing->propertyDetail?->max_guests))
@@ -420,6 +436,8 @@
                                 @endforeach
                             </div>
                         @endif
+                        @include('partials.seller-listing-links', ['seller' => $listing->user, 'counts' => $sellerListingCounts])
+
                         <a href="{{ route('profiles.show', $listing->user->username) }}" class="mt-3 block text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">Profili ve değerlendirmeleri gör →</a>
                         @include('partials.payment-safety-card', ['seller' => $listing->user])
                     </div>

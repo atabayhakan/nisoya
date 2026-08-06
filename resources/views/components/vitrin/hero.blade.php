@@ -292,7 +292,7 @@
                             </div>
                             <div class="mt-1.5 text-base font-extrabold text-emerald-700 dark:text-emerald-400">
                                 @if ($oneCikanIlan->price !== null)
-                                    {{ number_format((float) $oneCikanIlan->price, 0) }} {{ $oneCikanIlan->currency }}<span class="text-2xs font-semibold text-stone-600">{{ $oneCikanIlan->price_unit->suffix() }}</span>
+                                    {{ $oneCikanIlan->bicimliFiyat() }} {{ $oneCikanIlan->currency }}<span class="text-2xs font-semibold text-stone-600">{{ $oneCikanIlan->price_unit->suffix() }}</span>
                                 @else
                                     Görüşülür
                                 @endif

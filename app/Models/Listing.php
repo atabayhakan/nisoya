@@ -6,6 +6,7 @@ use App\Enums\ListingStatus;
 use App\Enums\ListingType;
 use App\Enums\PriceUnit;
 use App\Notifications\ListingStatusNotification;
+use App\Support\Para;
 use Database\Factories\ListingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -174,6 +175,34 @@ class Listing extends Model
     public function isCurrentlyFeatured(): bool
     {
         return $this->is_featured && (is_null($this->featured_until) || $this->featured_until->isFuture());
+    }
+
+    /**
+     * Fiyat, Türkçe biçimde — para birimi HARİÇ (çağıran taraf ekler).
+     *
+     * Fiyatsız ilan `null` döner; sayfalar orada "Görüşülür" basar. Biçim
+     * kuralı ve neden tek yerde durduğu {@see Para} içinde.
+     */
+    public function bicimliFiyat(): ?string
+    {
+        return Para::bicimle($this->price);
+    }
+
+    /**
+     * İlan arşivde mi — yayından kalkmış ama hâlâ görülebilir.
+     *
+     * Arşiv kipi 2026-08-06'da eklendi: satıcının geçmiş ilanlarını
+     * listelemek, o ilanların açılabilmesi demektir (aksi hâlde her kart
+     * 404'e giderdi). Arşiv sayfasında iletişim ve favori kapalıdır ve
+     * sayfa arama motoruna kapatılır.
+     *
+     * DİKKAT: `Pasif` bir MODERASYON aracı değildir. Bir ilanı gizlemek
+     * gerekiyorsa `Reddedildi` kullanılmalı — Pasif olan ilan bu tarihten
+     * sonra herkese açıktır.
+     */
+    public function arsivdeMi(): bool
+    {
+        return $this->status === ListingStatus::Pasif;
     }
 
     /** Yalnızca yayında olan (aktif) ilanlar. */
