@@ -114,11 +114,24 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('panel.listings.destroy', $listing) }}" class="mt-6 border-t border-stone-200 pt-6 dark:border-stone-800"
-              onsubmit="return confirm('Bu ilanı silmek istediğine emin misin? Bu işlem geri alınamaz.');">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">İlanı sil</button>
-        </form>
+        <div class="mt-6 border-t border-stone-200 pt-6 dark:border-stone-800">
+            {{-- Silme kararının verildiği yer BURASI — geri alınabilir seçeneği
+                 de burada söylemek gerekiyor. Yoksa "sattım" diyen üye tek
+                 gördüğü düğmeye basıp ilanı, görüntülenmesini ve paylaştığı
+                 bağlantıyı kalıcı olarak yok ediyor. --}}
+            @if ($listing->status === \App\Enums\ListingStatus::Aktif)
+                <p class="mb-3 text-sm text-stone-600 dark:text-stone-400">
+                    Sattın ya da ara vermek mi istiyorsun? Silmek yerine
+                    <a href="{{ route('panel.listings.index') }}" class="font-medium text-emerald-700 underline dark:text-emerald-400">İlanlarım'dan yayından kaldırabilirsin</a>
+                    — istediğin zaman geri açarsın.
+                </p>
+            @endif
+            <form method="POST" action="{{ route('panel.listings.destroy', $listing) }}"
+                  onsubmit="return confirm('Bu ilanı silmek istediğine emin misin? Bu işlem geri alınamaz.');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">İlanı sil</button>
+            </form>
+        </div>
     </div>
 </x-layouts.app>

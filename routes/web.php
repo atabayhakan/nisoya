@@ -166,6 +166,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/panel/ilan/{listing}/yayinla', [ListingController::class, 'yayinla'])
         ->middleware('throttle:listing-create')
         ->name('panel.listings.publish');
+    // Üyenin kendi yayın kararı: kaldır/geri aç. Silmenin geri alınabilir
+    // alternatifi — bkz. ListingController::yayindanKaldir.
+    Route::post('/panel/ilan/{listing}/yayindan-kaldir', [ListingController::class, 'yayindanKaldir'])
+        ->middleware('throttle:listing-visibility')
+        ->name('panel.listings.unpublish');
+    Route::post('/panel/ilan/{listing}/geri-yayinla', [ListingController::class, 'geriYayinla'])
+        ->middleware('throttle:listing-visibility')
+        ->name('panel.listings.republish');
     Route::delete('/panel/ilan/{listing}', [ListingController::class, 'destroy'])->name('panel.listings.destroy');
     Route::patch('/panel/ilan/{listing}/gorsel/{image}/hizala', [ListingController::class, 'alignImage'])->name('panel.listings.images.align');
     Route::post('/panel/ilan/{listing}/one-cikar', [FeatureController::class, 'store'])->name('panel.listings.feature')->middleware('throttle:listing-feature');

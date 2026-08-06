@@ -40,7 +40,14 @@ class SurecSeridi
         ['durum' => ListingStatus::Taslak, 'dal' => 'ana', 'aciklama' => 'Üye ilanı yazdı, henüz göndermedi.'],
         ['durum' => ListingStatus::Beklemede, 'dal' => 'ana', 'aciklama' => 'Moderasyon kuyruğunda; senin onayını bekliyor.'],
         ['durum' => ListingStatus::Aktif, 'dal' => 'ana', 'aciklama' => 'Sitede görünür, aramada çıkar, mesaj alabilir.'],
-        ['durum' => ListingStatus::Pasif, 'dal' => 'yan', 'aciklama' => 'Üye kendi yayından kaldırdı; geri açabilir.'],
+        // İKİ AYRI YOLDAN gelinir ve şerit ikisini de söylemek zorunda:
+        // üye kendi kaldırdıysa (unpublished_at dolu) düğmeyle geri açar;
+        // hesabı askıya alındığı için sistem kaldırdıysa açamaz. Bu satır
+        // 2026-08-06'ya kadar yalnız birincisini yazıyordu — üstelik o gün o
+        // eylem kodda HİÇ YOKTU; şerit kullanıcıya olmayan bir düğmeyi
+        // anlatıyordu. Metin değişmeden önce eylem eklendi (bkz.
+        // ListingController::yayindanKaldir).
+        ['durum' => ListingStatus::Pasif, 'dal' => 'yan', 'aciklama' => 'Yayında değil: üye kendi kaldırdı (geri açabilir) ya da hesabı askıya alındı.'],
         ['durum' => ListingStatus::Reddedildi, 'dal' => 'yan', 'aciklama' => 'Moderasyonda reddedildi; üyeye bildirildi.'],
     ];
 

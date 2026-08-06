@@ -91,6 +91,34 @@
                             <button type="submit" class="rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">Yayınla</button>
                         </form>
                     @endif
+
+                    {{-- YAYIN DURUMU ANAHTARI (2026-08-06).
+
+                         "Pasif" durumu sistemde vardı ama üyenin ona ulaşacağı
+                         hiçbir düğme yoktu; tek üreteni hesap askıya alma idi.
+                         Yani "sattım / şimdilik kapatayım" diyen üyenin elindeki
+                         tek araç SİLMEK'ti — geri alınamaz, görüntülenmeyi ve
+                         paylaşılmış bağlantıyı da götürür. Bu ikisi onun geri
+                         alınabilir hâli.
+
+                         Pasif ilanın hepsi aynı değil: yönetimin kaldırdığında
+                         "Geri yayınla" GÖRÜNMEZ (unpublished_at boş kalır), yerine
+                         nedenini söyleyen bir satır çıkar — sessiz bir tıkanma
+                         yerine açık bir cevap. --}}
+                    @if ($listing->status === \App\Enums\ListingStatus::Aktif)
+                        <form method="POST" action="{{ route('panel.listings.unpublish', $listing) }}"
+                              onsubmit="return confirm('İlan yayından kaldırılsın mı? Aramada ve profilinde görünmez; istediğin zaman geri açabilirsin.');">
+                            @csrf
+                            <button type="submit" class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-600 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">Yayından kaldır</button>
+                        </form>
+                    @elseif ($listing->isOwnerUnpublished())
+                        <form method="POST" action="{{ route('panel.listings.republish', $listing) }}">
+                            @csrf
+                            <button type="submit" class="rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">Geri yayınla</button>
+                        </form>
+                    @elseif ($listing->status === \App\Enums\ListingStatus::Pasif)
+                        <span class="text-xs text-stone-500 dark:text-stone-400">Yönetim yayından kaldırdı — geri açmak için <a href="{{ route('pages.contact') }}" class="underline hover:text-stone-700 dark:hover:text-stone-200">bize yaz</a>.</span>
+                    @endif
                     <a href="{{ route('panel.listings.edit', $listing) }}" class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">Düzenle</a>
                 </div>
             </div>
