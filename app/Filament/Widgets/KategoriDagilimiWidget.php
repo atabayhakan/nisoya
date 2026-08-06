@@ -17,7 +17,8 @@ class KategoriDagilimiWidget extends Widget
 {
     protected string $view = 'filament.widgets.kategori-dagilimi';
 
-    protected static ?int $sort = -1;
+    /** Sıra merdiveni {@see \App\Providers\Filament\AdminPanelProvider} içinde. */
+    protected static ?int $sort = 60;
 
     protected static bool $isLazy = false;
 

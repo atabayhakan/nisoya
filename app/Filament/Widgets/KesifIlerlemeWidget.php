@@ -18,7 +18,8 @@ use Illuminate\Support\Collection;
  */
 class KesifIlerlemeWidget extends Widget
 {
-    protected static ?int $sort = -1;
+    /** Sıra merdiveni {@see \App\Providers\Filament\AdminPanelProvider} içinde. */
+    protected static ?int $sort = 30;
 
     protected static bool $isLazy = false;
 

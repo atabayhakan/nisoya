@@ -31,6 +31,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property UserStatus $status UserStatus::class cast (bkz. casts())
+ * @property UserRole $role UserRole::class cast (bkz. casts()); sütun NOT NULL, varsayılan 'uye'
  * @property array<int, string>|null $account_recovery_codes encrypted:array cast (bkz. casts())
  */
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail, PasskeyUser

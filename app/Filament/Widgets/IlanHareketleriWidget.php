@@ -21,7 +21,8 @@ class IlanHareketleriWidget extends Widget
 {
     protected string $view = 'filament.widgets.ilan-hareketleri';
 
-    protected static ?int $sort = -2;
+    /** Sıra merdiveni {@see \App\Providers\Filament\AdminPanelProvider} içinde. */
+    protected static ?int $sort = 50;
 
     protected static bool $isLazy = false;
 

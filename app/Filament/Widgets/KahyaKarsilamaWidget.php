@@ -23,7 +23,8 @@ use Throwable;
  */
 class KahyaKarsilamaWidget extends Widget
 {
-    protected static ?int $sort = -3;
+    /** Sıra merdiveni {@see \App\Providers\Filament\AdminPanelProvider} içinde. */
+    protected static ?int $sort = 20;
 
     protected static bool $isLazy = false;
 

@@ -17,7 +17,14 @@ use Illuminate\Support\Facades\Storage;
  */
 class SystemHealthWidget extends BaseWidget
 {
-    protected static ?int $sort = -2; // StatsOverview'un üstünde
+    /**
+     * Sıra merdiveni {@see \App\Providers\Filament\AdminPanelProvider} içinde.
+     *
+     * Eski yorum "StatsOverview'un üstünde" diyordu ama değeri (-2) onu
+     * StatsOverview'un (-3) ALTINA koyuyordu — yorum niyeti anlatıyor, kod
+     * başka şey yapıyordu. Sıra artık testle mühürlü.
+     */
+    protected static ?int $sort = 70;
 
     protected static bool $isLazy = false;
 
