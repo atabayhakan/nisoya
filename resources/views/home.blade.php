@@ -10,8 +10,24 @@
 
         <div class="relative z-10 mx-auto max-w-6xl px-4 py-16 sm:py-24">
             <div class="mx-auto max-w-3xl text-center">
+                {{-- HERO METİNLERİ App\Support\Hero ÜZERİNDEN OKUNUR (2026-08-06).
+
+                     Önceden burada `setting('home.hero_badge')` yazıyordu, yani
+                     klasik ana sayfa ayarları DOĞRUDAN okuyordu. Hero Yöneticisi
+                     ise `hero.*` anahtarlarına yazıyor ve onları yalnızca
+                     App\Support\Hero (dolayısıyla yalnızca VİTRİN hero'su)
+                     okuyordu.
+
+                     Sonuç: canlı site klasik temada olduğu için Hero
+                     Yöneticisi'ne yazılan hiçbir şey ana sayfaya çıkmıyordu.
+                     Sahip "burada değişiklik yapıyorum ana sayfada değişmiyor"
+                     dedi ve bire bir haklıydı — ekran vardı, bağlantısı yoktu.
+
+                     Hero::rozet() zaten `hero.rozet ?: home.hero_badge` diye
+                     okuyor. Yani `hero.*` boşken çıktı ESKİSİYLE BİREBİR AYNI;
+                     doluyken yönetici nihayet işe yarıyor. --}}
                 <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                    {{ setting('home.hero_badge') }}
+                    {{ \App\Support\Hero::rozet() }}
                 </span>
                 {{-- "2. Tasarım" modunda (bkz. /yonetim Tasarım Modu) başlık Instrument
                      Serif italik ile — 2027 vizyon pilotunun tek somut tipografi izi. --}}
@@ -24,11 +40,11 @@
                      harf aralığı artık ölçeğin kendisinde tanımlı (tipografi.css),
                      elle üstüne yazmak o reçeteyi geçersiz kılıyordu. --}}
                 <h1 class="mt-5 text-4xl text-stone-900 sm:text-5xl md:text-6xl dark:text-stone-50 {{ \App\Support\Tema::tasarimModu() === 'yeni' ? 'font-serif italic font-normal' : 'font-bold' }}">
-                    {{ setting('home.hero_satir1') }}<br>
-                    <span class="text-emerald-700 dark:text-emerald-400">{{ setting('home.hero_vurgu') }}</span> {{ setting('home.hero_satir2') }}
+                    {{ \App\Support\Hero::baslik() }}<br>
+                    <span class="text-emerald-700 dark:text-emerald-400">{{ \App\Support\Hero::vurgu() }}</span> {{ setting('home.hero_satir2') }}
                 </h1>
                 <p class="mx-auto mt-5 max-w-2xl text-lg text-stone-600 dark:text-stone-300">
-                    {{ setting('home.hero_aciklama') }}
+                    {{ \App\Support\Hero::altBaslik() }}
                 </p>
 
                 {{-- Arama kutusu --}}
