@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Listing;
+use App\Providers\Filament\AdminPanelProvider;
 use Filament\Widgets\Widget;
 
 /**
@@ -17,7 +18,8 @@ class KategoriDagilimiWidget extends Widget
 {
     protected string $view = 'filament.widgets.kategori-dagilimi';
 
-    protected static ?int $sort = -1;
+    /** Sıra merdiveni {@see AdminPanelProvider} içinde. */
+    protected static ?int $sort = 60;
 
     protected static bool $isLazy = false;
 

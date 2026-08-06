@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Filament\Resources\OutreachTargets\Pages\ListOutreachTargets;
 use App\Models\OutreachTarget;
+use App\Providers\Filament\AdminPanelProvider;
 use App\Support\Growth\KesifIlerlemesi;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Collection;
@@ -18,7 +19,8 @@ use Illuminate\Support\Collection;
  */
 class KesifIlerlemeWidget extends Widget
 {
-    protected static ?int $sort = -1;
+    /** Sıra merdiveni {@see AdminPanelProvider} içinde. */
+    protected static ?int $sort = 30;
 
     protected static bool $isLazy = false;
 

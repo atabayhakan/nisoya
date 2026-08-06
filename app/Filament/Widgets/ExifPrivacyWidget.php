@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\ListingImage;
+use App\Providers\Filament\AdminPanelProvider;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -12,7 +13,14 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  */
 class ExifPrivacyWidget extends BaseWidget
 {
-    protected static ?int $sort = -1; // En üstte
+    /**
+     * Sıra merdiveni {@see AdminPanelProvider} içinde.
+     *
+     * Eski yorum "En üstte" diyordu; değeri (-1) onu panonun EN ALTINA
+     * koyuyordu. Gizlilik denetimi zaten günlük bir iş değil — yeri altta
+     * doğru, yanlış olan yorumdu.
+     */
+    protected static ?int $sort = 90;
 
     protected static bool $isLazy = false;
 

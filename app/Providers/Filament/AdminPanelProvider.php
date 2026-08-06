@@ -4,9 +4,12 @@ namespace App\Providers\Filament;
 
 use App\Filament\Responses\PanelCikisYaniti;
 use App\Filament\Widgets\BekleyenIslerWidget;
+use App\Filament\Widgets\EntegrasyonlarWidget;
 use App\Filament\Widgets\ExifPrivacyWidget;
 use App\Filament\Widgets\IlanHareketleriWidget;
+use App\Filament\Widgets\KahyaKarsilamaWidget;
 use App\Filament\Widgets\KategoriDagilimiWidget;
+use App\Filament\Widgets\KesifIlerlemeWidget;
 use App\Filament\Widgets\StatsOverview;
 use App\Filament\Widgets\SystemHealthWidget;
 use App\Http\Middleware\SecurityHeaders;
@@ -27,8 +30,6 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Icons\Heroicon;
 use Filament\View\PanelsRenderHook;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -111,19 +112,53 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            // Sıra: önce "bugün ne yapmalıyım" (bekleyen işler), sonra sayılar,
-            // sonra eğilim grafikleri, en sonda sistem/hesap kartları.
-            // getSort() değerleri: BekleyenIsler -4, StatsOverview -3,
-            // IlanHareketleri -2, KategoriDagilimi -1.
+            /*
+             * PANO SIRA MERDİVENİ (2026-08-06'da yeniden kuruldu)
+             * -----------------------------------------------------------------
+             * DİKKAT: Aşağıdaki dizinin SIRASI EKRANA YANSIMAZ. Filament kartları
+             * `$sort` değerine göre artan dizer; dizi yalnız "hangi widget'lar
+             * kayıtlı" listesidir. Eski hâlde buradaki yorum "en sonda hesap
+             * kartları" diyordu ama vendor'ın AccountWidget'i kendi sort'unu
+             * (-3) getirdiği için tam ORTAYA düşüyordu — yorum bir niyeti
+             * anlatıyor, kod başka bir şey yapıyordu.
+             *
+             * Üstelik sekiz widget üç değere yığılmıştı (-3'te üç tane, -2'de üç
+             * tane, -1'de üç tane); eşit sort'ta sıra fiilen rastgeleydi.
+             *
+             * Merdiven — "şimdi ne yapmalıyım"dan "makine sağlıklı mı"ya:
+             *
+             *   10  BekleyenIslerWidget    kim girdi (ad·e-posta·rol·2FA) + bekleyen iş
+             *   20  KahyaKarsilamaWidget   kâhyanın kısa özeti
+             *   30  KesifIlerlemeWidget    yarım kalan keşif turu (varsa)
+             *   40  StatsOverview          pazaryeri sayıları
+             *   50  IlanHareketleriWidget  eğilim: açılan/kapanan
+             *   60  KategoriDagilimiWidget eğilim: kategoriler
+             *   70  SystemHealthWidget     makine sağlığı
+             *   80  EntegrasyonlarWidget   AdSense · Analytics · Bağış
+             *   90  ExifPrivacyWidget      gizlilik denetimi
+             *
+             * Onluk aralıklar bilinçli: araya widget eklerken tüm merdiveni
+             * yeniden numaralamak gerekmesin. Benzersizlik testle mühürlü
+             * (PanoSiralamasiTest) — çakışma sessizce geri gelmesin.
+             *
+             * VENDOR KARTLARI KALDIRILDI:
+             * - AccountWidget: "Hoş geldin + ad + çıkış" gösteriyordu, yani
+             *   ilk karttaki selamlamanın tekrarıydı ve e-postayı GÖSTERMİYORDU.
+             *   İki yönetici tanımlandığından beri asıl soru "hangi hesap?" ve
+             *   cevabı e-posta; kimlik ilk karta taşındı, çıkış düğmesi de.
+             * - FilamentInfoWidget: Filament sürüm/marka kartı. Sahibin panosunda
+             *   karar değiştiren bir bilgi değil.
+             */
             ->widgets([
                 BekleyenIslerWidget::class,
-                SystemHealthWidget::class,
-                ExifPrivacyWidget::class,
+                KahyaKarsilamaWidget::class,
+                KesifIlerlemeWidget::class,
                 StatsOverview::class,
                 IlanHareketleriWidget::class,
                 KategoriDagilimiWidget::class,
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+                SystemHealthWidget::class,
+                EntegrasyonlarWidget::class,
+                ExifPrivacyWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
