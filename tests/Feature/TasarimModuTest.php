@@ -156,13 +156,37 @@ class TasarimModuTest extends TestCase
 
     public function test_smooth_animations_off_emits_reduced_motion(): void
     {
-        // Kapalıyken tüm geçişler anlık olur (reduced-motion); açıkken (varsayılan)
-        // böyle bir kural yok.
-        $this->get('/')->assertOk()->assertDontSee('transition-duration: 0.01ms', false);
+        /*
+         * SÖZLEŞME GENİŞLETİLDİ (2026-08-06). Eski hâli "açıkken böyle bir
+         * kural yok" diyordu; artık ziyaretçinin kendi tercihine bağlı bir
+         * kural HER ZAMAN basılıyor (bkz. aşağıdaki test), o yüzden ayrım
+         * dizeyle değil SAYIYLA yapılır — iki blok aynı seçiciyi kullanıyor.
+         *
+         *   açık   → 1 kez (yalnız prefers-reduced-motion içinde)
+         *   kapalı → 2 kez (koşulsuz blok + medya sorgusu)
+         */
+        $acik = (string) $this->get('/')->assertOk()->getContent();
+        $this->assertSame(1, substr_count($acik, 'transition-duration: 0.01ms'));
 
         Settings::setMany(['gorunum.smooth_animations' => '0']);
 
-        $this->get('/')->assertOk()->assertSee('transition-duration: 0.01ms', false);
+        $kapali = (string) $this->get('/')->assertOk()->getContent();
+        $this->assertSame(2, substr_count($kapali, 'transition-duration: 0.01ms'));
+    }
+
+    public function test_ziyaretcinin_hareket_tercihi_ayardan_bagimsiz_uygulanir(): void
+    {
+        /*
+         * ERİŞİLEBİLİRLİK AÇIĞIYDI: `prefers-reduced-motion` sıfırlaması yalnız
+         * sahip "Yumuşak geçişler"i KAPATTIĞINDA basılıyordu. Varsayılan AÇIK
+         * olduğu için canlıda hiç çalışmıyordu — yani işletim sisteminde
+         * "hareketi azalt" açık olan ziyaretçi (vestibüler rahatsızlığı olan
+         * biri) sitede yine de tüm geçişleri alıyordu.
+         *
+         * Sahibin düğmesi "herkese kapat", medya sorgusu "isteyene kapat".
+         * İkisi ayrı sorulardır; biri diğerinin yerini tutmaz.
+         */
+        $this->get('/')->assertOk()->assertSee('@media (prefers-reduced-motion: reduce)', false);
     }
 
     public function test_obsidian_mode_locks_dark_and_hides_theme_toggle(): void
