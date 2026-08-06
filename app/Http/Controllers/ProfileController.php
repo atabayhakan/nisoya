@@ -34,10 +34,12 @@ class ProfileController extends Controller
         $durum = $request->query('durum') === 'gecmis' ? 'gecmis' : 'guncel';
 
         // Tek sorguda iki sayı — bkz. ListingController::show() içindeki not.
+        // "Geçmiş" yalnız üyenin KENDİ kaldırdıkları; yönetimin sustuduğu ilan
+        // herkese açık profilde sayılmaz (bkz. Listing::arsivdeMi()).
         $sayilar = $user->listings()
             ->selectRaw(
                 'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as guncel, '
-                .'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as gecmis',
+                .'SUM(CASE WHEN status = ? AND unpublished_at IS NOT NULL THEN 1 ELSE 0 END) as gecmis',
                 [ListingStatus::Aktif->value, ListingStatus::Pasif->value],
             )
             ->toBase()
@@ -51,7 +53,7 @@ class ProfileController extends Controller
         $listings = $user->listings()
             ->when(
                 $durum === 'gecmis',
-                fn ($q) => $q->where('status', ListingStatus::Pasif->value),
+                fn ($q) => $q->ownerUnpublished(),
                 fn ($q) => $q->active(),
             )
             ->with(['coverImage', 'category.parent', 'country', 'user'])

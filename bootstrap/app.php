@@ -79,6 +79,11 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('listing-feature', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
         );
 
+        // İlanı yayından kaldır / geri yayınla — bir tıklık, ucuz bir UPDATE.
+        // Birkaç ilanını sırayla kapatan üyeye cömert, döngüye sınırlı.
+        RateLimiter::for('listing-visibility', fn (Request $request) => Limit::perMinute(20)->by($request->user()?->id ?: $request->ip())
+        );
+
         RateLimiter::for('job-listing-feature', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
         );
 

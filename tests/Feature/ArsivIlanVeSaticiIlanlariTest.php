@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\ListingStatus;
+use App\Enums\UserStatus;
 use App\Models\Listing;
 use App\Models\User;
 use App\Support\Para;
@@ -49,9 +50,25 @@ class ArsivIlanVeSaticiIlanlariTest extends TestCase
         $this->assertSame($tema === 'vitrin', Tema::vitrinMi());
     }
 
+    /**
+     * ARŞİV = ÜYENİN KENDİ KALDIRDIĞI ilan. Pasif üretirken `unpublished_at`
+     * doldurulur; yönetimin kaldırdığı hâl için `yonetimKaldirdi()` var.
+     */
     private function ilan(User $satici, ListingStatus $durum = ListingStatus::Aktif): Listing
     {
-        return Listing::factory()->for($satici)->create(['status' => $durum]);
+        return Listing::factory()->for($satici)->create([
+            'status' => $durum,
+            'unpublished_at' => $durum === ListingStatus::Pasif ? now() : null,
+        ]);
+    }
+
+    /** Pasif ama `unpublished_at` NULL — yönetim/sistem kaldırdı. */
+    private function yonetimKaldirdi(User $satici): Listing
+    {
+        return Listing::factory()->for($satici)->create([
+            'status' => ListingStatus::Pasif,
+            'unpublished_at' => null,
+        ]);
     }
 
     // -----------------------------------------------------------------
@@ -111,6 +128,102 @@ class ArsivIlanVeSaticiIlanlariTest extends TestCase
             $this->get(route('listings.show', [$ilan, $ilan->slug]))
                 ->assertNotFound();
         }
+    }
+
+    // -----------------------------------------------------------------
+    // MODERASYON DELİĞİ — arşiv kapısı yönetimin kararını geri açmamalı
+    // -----------------------------------------------------------------
+
+    #[DataProvider('temalar')]
+    public function test_yonetimin_kaldirdigi_ilan_arsivde_acilmaz(string $tema): void
+    {
+        /*
+         * KRİTİK. Arşiv ilk yazışta `status === Pasif` diyordu ve öyle canlıya
+         * çıktı (PR #115/#116). Ama `UserObserver::suspendActiveListings()`
+         * ASKIYA ALINAN hesabın ilanlarını da Pasif'e çekiyor — yani yönetimin
+         * sustuduğu içerik, herkese açık profildeki "Geçmiş" sekmesinden geri
+         * sızıyordu.
+         *
+         * Ayrım `unpublished_at`: dolu = üye kendi kaldırdı, NULL = yönetim.
+         */
+        $this->temayiKur($tema);
+        $ilan = $this->yonetimKaldirdi(User::factory()->create());
+
+        $this->get(route('listings.show', [$ilan, $ilan->slug]))
+            ->assertNotFound();
+    }
+
+    public function test_yonetimin_kaldirdigi_ilan_gecmis_listesinde_gorunmez(): void
+    {
+        $satici = User::factory()->create();
+        $uyeKaldirdi = $this->ilan($satici, ListingStatus::Pasif);
+        $yonetimKaldirdi = $this->yonetimKaldirdi($satici);
+
+        $this->get(route('profiles.show', ['user' => $satici->username, 'durum' => 'gecmis']))
+            ->assertOk()
+            ->assertSee($uyeKaldirdi->title)
+            ->assertDontSee($yonetimKaldirdi->title);
+    }
+
+    public function test_yonetimin_kaldirdigi_ilan_gecmis_sayisina_katilmaz(): void
+    {
+        // Sayı da aynı kapıdan geçmeli; yoksa "Geçmiş ilanları (3)" der ama
+        // liste 1 kayıt gösterir — üstelik saklanan 2'yi ele verir.
+        $satici = User::factory()->create();
+        $bakilan = $this->ilan($satici);
+        $this->ilan($satici, ListingStatus::Pasif);
+        $this->yonetimKaldirdi($satici);
+        $this->yonetimKaldirdi($satici);
+
+        $this->get(route('listings.show', [$bakilan, $bakilan->slug]))
+            ->assertOk()
+            ->assertSee('Geçmiş ilanları (1)');
+    }
+
+    public function test_askiya_alinan_hesabin_ilanlari_arsive_dusmez(): void
+    {
+        /*
+         * Uçtan uca: gerçek askıya alma akışı çalıştırılır (UserObserver),
+         * sonra o ilanın herkese açık arşivde OLMADIĞI doğrulanır. Kolonu
+         * elle kurmak yerine tetikleyiciyi kullanmak bilinçli — bu depoda
+         * "yardımcı metodu test etmek tetikleyiciyi test etmek değildir"
+         * dersi tam da bu observer'dan çıktı.
+         */
+        $satici = User::factory()->create(['status' => UserStatus::Aktif]);
+        $ilan = $this->ilan($satici);
+
+        $satici->update(['status' => UserStatus::Askida]);
+
+        $ilan->refresh();
+        $this->assertSame(ListingStatus::Pasif, $ilan->status, 'Askıya alma ilanı susturmalı.');
+        $this->assertNull($ilan->unpublished_at, 'Yönetim kaldırdığında damga basılmamalı.');
+        $this->assertFalse($ilan->arsivdeMi());
+
+        $this->get(route('listings.show', [$ilan, $ilan->slug]))->assertNotFound();
+    }
+
+    public function test_yonetici_ilani_geri_acinca_damga_silinir(): void
+    {
+        /*
+         * KENAR DURUM — deliğin geri açılabildiği dizi:
+         * üye kaldırır (damga basılır) → yönetici panelden Aktif yapar →
+         * yönetici sonra Pasif'e çeker. Damga silinmezse ilan "üye kaldırdı"
+         * gibi görünür ve herkese açık arşive düşerdi.
+         */
+        $satici = User::factory()->create();
+        $ilan = $this->ilan($satici, ListingStatus::Pasif);
+        $this->assertNotNull($ilan->unpublished_at);
+
+        // Yönetim yolu: doğrudan durum değişikliği (Filament'in yaptığı gibi).
+        $ilan->update(['status' => ListingStatus::Aktif]);
+        $this->assertNull($ilan->fresh()->unpublished_at, 'Aktife dönerken damga silinmeli.');
+
+        $ilan->update(['status' => ListingStatus::Pasif]);
+        $ilan->refresh();
+
+        $this->assertNull($ilan->unpublished_at);
+        $this->assertFalse($ilan->arsivdeMi(), 'Yönetimin kaldırdığı ilan arşive düşmemeli.');
+        $this->get(route('listings.show', [$ilan, $ilan->slug]))->assertNotFound();
     }
 
     public function test_sahibi_kendi_pasif_ilanini_arsiv_bandi_olmadan_gorur(): void

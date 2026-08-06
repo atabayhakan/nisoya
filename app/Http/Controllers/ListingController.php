@@ -211,8 +211,10 @@ class ListingController extends Controller
      * kötüdür.
      *
      * Yetki `update` yeteneğiyle: kendi ilanını düzenleyebilen yayınlayabilir.
-     * Yalnız TASLAK yayına alınır — pasif/reddedilmiş ilanı buradan diriltmek
-     * moderasyon kararını atlatmak olurdu.
+     * Yalnız TASLAK yayına alınır — reddedilmiş ilanı buradan diriltmek
+     * moderasyon kararını atlatmak olurdu. Üyenin kendi kaldırdığı PASİF
+     * ilanın ayrı bir kapısı var (`geriYayinla`); oraya da yönetimin
+     * kaldırdığı ilan giremez.
      */
     public function yayinla(Listing $listing): RedirectResponse
     {
@@ -223,11 +225,94 @@ class ListingController extends Controller
                 ->with('status', 'Bu ilan zaten taslak değil.');
         }
 
-        $listing->update(['status' => ListingStatus::Aktif]);
+        return $this->yayinaAl($listing, 'İlanın yayınlandı! 🎉');
+    }
+
+    /**
+     * Üye kendi ilanını yayından kaldırır (Aktif → Pasif).
+     *
+     * NEDEN VAR: "Pasif" durumu sistemde vardı ama üyenin ona ULAŞMASININ
+     * hiçbir yolu yoktu — tek üreteni `UserObserver::suspendActiveListings()`
+     * idi (hesap askıya alınınca). Yani "sattım/şimdilik kapatayım" diyen üye
+     * ilanı SİLMEK zorunda kalıyordu: görüntülenme, değerlendirme bağlamı ve
+     * paylaşılmış bağlantı hep birlikte gidiyordu. Silmek geri alınamaz, bu
+     * geri alınabilir.
+     *
+     * `unpublished_at` DOLDURULUR — geri açma hakkının tek kanıtı o (bkz.
+     * Listing::isOwnerUnpublished).
+     */
+    public function yayindanKaldir(Listing $listing): RedirectResponse
+    {
+        Gate::authorize('manageVisibility', $listing);
+
+        // Yalnız AKTİF ilan kaldırılır. Taslak zaten yayında değil; beklemede
+        // olanı kaldırmak moderasyon kuyruğundan kaçmak, reddedilmişi
+        // "kaldırmak" ise reddi üyenin kendi kararıymış gibi göstermek olurdu.
+        if ($listing->status !== ListingStatus::Aktif) {
+            return redirect()->route('panel.listings.index')
+                ->with('status', 'Yalnızca yayındaki ilanlar yayından kaldırılabilir.');
+        }
+
+        $listing->update([
+            'status' => ListingStatus::Pasif,
+            'unpublished_at' => now(),
+        ]);
+
+        return redirect()->route('panel.listings.index')
+            ->with('status', 'İlanın yayından kaldırıldı. İstediğin zaman geri açabilirsin.');
+    }
+
+    /**
+     * Üye kendi kaldırdığı ilanı geri yayınlar (Pasif → Aktif).
+     *
+     * TEKRAR MODERASYONA GİRMEZ — bilinçli. `yayinla` (Taslak → Aktif) da
+     * doğrudan geçiyor; metin moderasyonu bu projede önden değil, şikâyet ve
+     * AI görsel elemesiyle işliyor. Kendi yayınladığı, zaten bir kez yayında
+     * kalmış ilanı geri açmayı kuyruğa sokmak, üyeye "kendi ilanın sana ait
+     * değil" demek ve sahibe gereksiz bir kuyruk yüklemek olurdu.
+     *
+     * TEK İSTİSNA `yayinaAl()` içinde: işaretli görsel varsa Aktif yerine
+     * "Onay bekliyor". Yoksa yayından kaldır → işaretli görsel yükle → geri
+     * yayınla dizisi AI elemesini tamamen atlatırdı.
+     */
+    public function geriYayinla(Listing $listing): RedirectResponse
+    {
+        Gate::authorize('manageVisibility', $listing);
+
+        if (! $listing->isOwnerUnpublished()) {
+            return redirect()->route('panel.listings.index')
+                ->with('status', $listing->status === ListingStatus::Pasif
+                    ? 'Bu ilan yönetim tarafından yayından kaldırıldı; geri açmak için bizimle iletişime geç.'
+                    : 'Bu ilan yayından kaldırılmış değil.');
+        }
+
+        return $this->yayinaAl($listing, 'İlanın tekrar yayında! 🎉');
+    }
+
+    /**
+     * Yayına alma tek kapı: durum + `unpublished_at` temizliği + işaretli
+     * görsel kontrolü hep birlikte.
+     *
+     * İki çağrısı (`yayinla`, `geriYayinla`) aynı kuralı paylaşmak zorunda:
+     * biri işaretli görsel kontrolünü atlarsa boşluk oradan geri açılır.
+     */
+    private function yayinaAl(Listing $listing, string $mesaj): RedirectResponse
+    {
+        $isaretli = $listing->hasFlaggedImage();
+
+        $listing->update([
+            'status' => $isaretli ? ListingStatus::Beklemede : ListingStatus::Aktif,
+            'unpublished_at' => null,
+        ]);
+
+        if ($isaretli) {
+            return redirect()->route('panel.listings.index')
+                ->with('status', 'İlanın incelemeye alındı: görsellerinden biri otomatik kontrolde işaretlendi. Onaylanınca yayına çıkacak.');
+        }
 
         return redirect()->route('panel.listings.index')
             ->with('yayinlanan', $listing->id)
-            ->with('status', 'İlanın yayınlandı! 🎉');
+            ->with('status', $mesaj);
     }
 
     public function destroy(Listing $listing): RedirectResponse
@@ -345,10 +430,16 @@ class ListingController extends Controller
          * VitrinVeriBloklariTest 32/32). Koşullu toplama ile bir sorguya
          * indi — aynı desen {@see User::trustProfile()} içinde de kullanılıyor.
          */
+        /*
+         * "Geçmiş" sayısı YALNIZ üyenin kendi kaldırdıklarını sayar
+         * (`unpublished_at IS NOT NULL`). Yalnız duruma bakmak, askıya alınmış
+         * bir hesabın ilanlarını herkese açık profilde "Geçmiş" diye saymak
+         * olurdu — bkz. Listing::arsivdeMi() açıklaması.
+         */
         $sayilar = $listing->user->listings()
             ->selectRaw(
                 'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as guncel, '
-                .'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as gecmis',
+                .'SUM(CASE WHEN status = ? AND unpublished_at IS NOT NULL THEN 1 ELSE 0 END) as gecmis',
                 [ListingStatus::Aktif->value, ListingStatus::Pasif->value],
             )
             ->toBase()

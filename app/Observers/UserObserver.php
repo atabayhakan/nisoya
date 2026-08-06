@@ -21,7 +21,18 @@ class UserObserver
             return;
         }
 
-        $old = $user->getOriginal('status');
+        /*
+         * `getRawOriginal` — `getOriginal` DEĞİL (2026-08-06'da bulundu).
+         *
+         * `getOriginal()` cast'i UYGULAR: status alanı UserStatus'a cast
+         * edildiği için geriye string değil ENUM döner. Alttaki karşılaştırma
+         * ise `UserStatus::Aktif->value` (string) ile yapılıyordu — yani koşul
+         * HİÇBİR ZAMAN doğru olmadı ve bu otomatik susturma canlıda hiç
+         * çalışmadı. Sessizdi çünkü mevcut test `suspendActiveListings()`'i
+         * doğrudan çağırıyordu; tetikleyicinin kendisi hiç test edilmemişti
+         * (bkz. IlanYayinDurumuTest — artık uçtan uca mühürlü).
+         */
+        $old = $user->getRawOriginal('status');
         $new = $user->status;
 
         if ($old === UserStatus::Aktif->value && $new !== UserStatus::Aktif) {
