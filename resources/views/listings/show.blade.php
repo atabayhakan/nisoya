@@ -270,6 +270,13 @@
                     {!! nl2br(e($listing->description)) !!}
                 </div>
 
+                {{-- Mobilde satıcı kimliği — vitrin şablonuyla AYNI partial.
+                     Bu şablon canlıda basılan şablondur; şerit ilk yazışta
+                     yalnız vitrin'e eklenmiş ve hiç görünmemişti. --}}
+                <div class="mt-6">
+                    @include('partials.seller-mobile-strip')
+                </div>
+
                 {{-- Faz M5: boyut karşılaştırma (yalnızca ürün + en az bir ölçü girilmişse) --}}
                 @if ($listing->type->value === 'urun' && ($listing->width_cm || $listing->height_cm))
                     <div class="mt-6">
@@ -322,7 +329,8 @@
 
             {{-- Sağ: fiyat + satıcı + iletişim --}}
             <div class="lg:col-span-1">
-                <div class="sticky top-20 space-y-4">
+                {{-- id: mobil şeritteki "Satıcıya mesaj yaz" kısayolunun hedefi. --}}
+                <div id="satici-iletisim" class="scroll-mt-24 sticky top-20 space-y-4">
                     <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
                         <div class="text-2xl font-bold text-stone-900 dark:text-stone-50">
                             @if ($listing->price !== null)
