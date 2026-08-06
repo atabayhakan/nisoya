@@ -277,14 +277,76 @@ class HeroYoneticisiTest extends TestCase
             ->assertSee('Normal alt başlık', false);
     }
 
-    public function test_hero_settings_are_inert_while_klasik_theme_is_active(): void
+    /**
+     * SÖZLEŞME DEĞİŞTİ (2026-08-06) — eski hâli:
+     * `test_hero_settings_are_inert_while_klasik_theme_is_active`, yani
+     * "klasik tema aktifken hero.* ayarları ön yüzü etkilemez".
+     *
+     * O sözleşme kasıtlıydı ama ÜRÜN OLARAK yanlıştı ve sahibin şikâyetiyle
+     * ortaya çıktı: "Hero Yöneticisi'nde değişiklik yapıyorum, ana sayfada
+     * değişmiyor." Ekran kaydediyordu, hiçbir yere bağlanmıyordu — sayfanın
+     * tepesindeki uyarı bandı da kaydırılınca görülmüyordu.
+     *
+     * Yeni sözleşme: METİN alanları iki temada da işler (klasik hero artık
+     * App\Support\Hero üzerinden okuyor). Düzen, bloklar, arka plan, kampanya
+     * ve butonlar Vitrin'e özgü kalır — klasik hero'da karşılıkları yok.
+     *
+     * Geriye dönük uyum korunuyor: `hero.*` boşken Hero zaten `home.*`
+     * metinlerine düşüyor, yani yöneticiye hiç dokunmamış bir site
+     * eskisiyle birebir aynı görünür (bkz. HeroYoneticisiEtkiTest).
+     */
+    public function test_hero_metinleri_klasik_temada_da_isler(): void
     {
-        // Vitrin'e özgü: klasik tema aktifken hero.* ayarları ön yüzü etkilemez.
         Settings::setMany([
             'gorunum.tema' => 'klasik',
             'hero.baslik' => 'Vitrin başlığı',
         ]);
 
-        $this->get('/')->assertOk()->assertDontSee('Vitrin başlığı', false);
+        $this->get('/')->assertOk()->assertSee('Vitrin başlığı', false);
+    }
+
+    public function test_kampanya_metni_klasik_temada_da_isler(): void
+    {
+        /*
+         * BU TESTİ ÖNCE TERS YAZDIM ve düştü — kod değil iddiam yanlıştı.
+         *
+         * Kampanya, Hero içinde AYNI DÖRT METNİN tarih aralıklı hâlidir
+         * (kampanyaliDeger: kampanya > panel değeri > klasik metin); Vitrin'e
+         * özgü görsel bir yanı yok. Metin katmanını klasik temaya açıp
+         * kampanyayı dışarıda bırakmak, "bayram başlığı neden çıkmıyor" diye
+         * geri gelecek yapay bir istisna olurdu.
+         */
+        Settings::setMany([
+            'gorunum.tema' => 'klasik',
+            'hero.baslik' => 'Normal başlık',
+            'hero.kampanya_aktif' => '1',
+            'hero.kampanya_baslik' => 'Bayram kampanyası',
+        ]);
+
+        $this->get('/')->assertOk()
+            ->assertSee('Bayram kampanyası', false)
+            ->assertDontSee('Normal başlık', false);
+    }
+
+    public function test_vitrine_ozgu_gorsel_alanlar_klasik_temada_etkisiz(): void
+    {
+        /*
+         * Sözleşmenin DEĞİŞMEYEN yarısı: klasik hero'da karşılığı OLMAYAN
+         * şeyler. Butonlar ve arka plan görseli klasik tasarımda hiç yok
+         * (orada hero'nun altında arama kutusu var). Bunların sızması
+         * "metin alanlarını açtık" kararını sessizce bir tema karışımına
+         * çevirirdi.
+         */
+        Settings::setMany([
+            'gorunum.tema' => 'klasik',
+            'hero.cta1_etiket' => 'VITRIN-BUTONU',
+            'hero.cta1_url' => '/ilanlar',
+            'hero.arkaplan_tipi' => 'gorsel',
+            'hero.gorsel_masaustu' => 'hero/vitrin-arkaplan.jpg',
+        ]);
+
+        $this->get('/')->assertOk()
+            ->assertDontSee('VITRIN-BUTONU', false)
+            ->assertDontSee('vitrin-arkaplan.jpg', false);
     }
 }

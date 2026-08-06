@@ -1,9 +1,22 @@
 <x-filament-panels::page>
+    {{-- KLASİK TEMADA HANGİSİ İŞLER, HANGİSİ İŞLEMEZ — 2026-08-06.
+
+         Eski metin "buradaki ayarlar kaydedilir ama sitede görünmez" diyordu.
+         O gün sahip "burada değişiklik yapıyorum ana sayfada değişmiyor" dedi;
+         haklıydı ama uyarı da artık DOĞRU DEĞİL: klasik ana sayfa metinleri
+         App\Support\Hero üzerinden okuyor, yani dört metin alanı iki temada da
+         işliyor. "Hiçbiri görünmez" demek, işleyen alanları da denemekten
+         vazgeçirirdi.
+
+         Uyarı bu yüzden mutlak değil AYRIMLI: ne işler, ne işlemez. --}}
     @unless ($this->vitrinAktifMi())
         <div class="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm dark:border-amber-800 dark:bg-amber-950/30">
-            <p class="font-semibold text-amber-800 dark:text-amber-300">Bu sayfa Vitrin temasını yönetir.</p>
-            <p class="mt-1 text-amber-700 dark:text-amber-400">
-                Şu an <strong>Klasik</strong> tema aktif — buradaki ayarlar kaydedilir ama sitede görünmez.
+            <p class="font-semibold text-amber-800 dark:text-amber-300">Şu an <strong>Klasik</strong> tema aktif.</p>
+            <ul class="mt-2 space-y-1 text-amber-700 dark:text-amber-400">
+                <li><strong>Klasik temada da işler:</strong> rozet metni, başlığın iki satırı ve alt başlık.</li>
+                <li><strong>Yalnız Vitrin'de görünür:</strong> hero düzeni, bloklar, arka plan görseli/videosu, kampanya ve butonlar.</li>
+            </ul>
+            <p class="mt-2 text-amber-700 dark:text-amber-400">
                 Vitrin'i açmak için <a href="{{ \App\Filament\Pages\TasarimAyarlari::getUrl() }}" class="font-semibold underline">Tasarım Modu</a> sayfasındaki
                 Klasik/Vitrin seçicisini kullan.
             </p>
