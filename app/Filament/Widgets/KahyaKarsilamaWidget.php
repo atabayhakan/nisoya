@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Providers\Filament\AdminPanelProvider;
 use App\Services\Kahya\Sohbet\KahyaSohbeti;
 use Filament\Widgets\Widget;
 use Throwable;
@@ -23,7 +24,7 @@ use Throwable;
  */
 class KahyaKarsilamaWidget extends Widget
 {
-    /** Sıra merdiveni {@see \App\Providers\Filament\AdminPanelProvider} içinde. */
+    /** Sıra merdiveni {@see AdminPanelProvider} içinde. */
     protected static ?int $sort = 20;
 
     protected static bool $isLazy = false;

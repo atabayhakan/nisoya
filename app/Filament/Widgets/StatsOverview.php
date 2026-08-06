@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Models\Listing;
 use App\Models\Message;
 use App\Models\User;
+use App\Providers\Filament\AdminPanelProvider;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -23,7 +24,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  */
 class StatsOverview extends BaseWidget
 {
-    /** Sıra merdiveni {@see \App\Providers\Filament\AdminPanelProvider} içinde. */
+    /** Sıra merdiveni {@see AdminPanelProvider} içinde. */
     protected static ?int $sort = 40;
 
     protected static bool $isLazy = false;

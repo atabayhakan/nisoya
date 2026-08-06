@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Listing;
+use App\Providers\Filament\AdminPanelProvider;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Carbon;
 
@@ -21,7 +22,7 @@ class IlanHareketleriWidget extends Widget
 {
     protected string $view = 'filament.widgets.ilan-hareketleri';
 
-    /** Sıra merdiveni {@see \App\Providers\Filament\AdminPanelProvider} içinde. */
+    /** Sıra merdiveni {@see AdminPanelProvider} içinde. */
     protected static ?int $sort = 50;
 
     protected static bool $isLazy = false;

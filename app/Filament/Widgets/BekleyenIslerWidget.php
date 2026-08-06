@@ -15,6 +15,7 @@ use App\Models\JobFeatureRequest;
 use App\Models\Report;
 use App\Models\Story;
 use App\Models\User;
+use App\Providers\Filament\AdminPanelProvider;
 use Filament\Widgets\Widget;
 
 /**

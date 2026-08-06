@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Providers\Filament\AdminPanelProvider;
 use App\Services\BackupService;
 use App\Support\Settings;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\Storage;
 class SystemHealthWidget extends BaseWidget
 {
     /**
-     * Sıra merdiveni {@see \App\Providers\Filament\AdminPanelProvider} içinde.
+     * Sıra merdiveni {@see AdminPanelProvider} içinde.
      *
      * Eski yorum "StatsOverview'un üstünde" diyordu ama değeri (-2) onu
      * StatsOverview'un (-3) ALTINA koyuyordu — yorum niyeti anlatıyor, kod

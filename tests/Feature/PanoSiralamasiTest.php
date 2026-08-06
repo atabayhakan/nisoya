@@ -13,6 +13,7 @@ use App\Filament\Widgets\KesifIlerlemeWidget;
 use App\Filament\Widgets\StatsOverview;
 use App\Filament\Widgets\SystemHealthWidget;
 use App\Models\User;
+use App\Providers\Filament\AdminPanelProvider;
 use Filament\Facades\Filament;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
@@ -39,7 +40,7 @@ class PanoSiralamasiTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Belgelenen merdiven — {@see \App\Providers\Filament\AdminPanelProvider}.
+     * Belgelenen merdiven — {@see AdminPanelProvider}.
      *
      * @return list<class-string>
      */

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Providers\Filament\AdminPanelProvider;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -24,7 +25,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  */
 class EntegrasyonlarWidget extends BaseWidget
 {
-    /** Sıra merdiveni {@see \App\Providers\Filament\AdminPanelProvider} içinde. */
+    /** Sıra merdiveni {@see AdminPanelProvider} içinde. */
     protected static ?int $sort = 80;
 
     protected static bool $isLazy = false;
