@@ -125,6 +125,61 @@ final class TemaJetonlari
         return array_map(fn (array $f) => $f['etiket'], self::FONTLAR);
     }
 
+    /**
+     * Köşe yuvarlatma ölçeği — TEK KAYNAK.
+     *
+     * -----------------------------------------------------------------------
+     * NEDEN BURAYA TAŞINDI (2026-08-06)
+     *
+     * Ölçek iki yerde ayrı ayrı yazılıydı: gerçek CSS'i basan
+     * `components/tasarim-theme.blade.php` ve paneldeki "canlı önizleme".
+     * Panelin yanında tam da bunu yasaklayan bir yorum duruyordu — "önizleme,
+     * sitenin gerçekte uygulayacağı CSS'in AYNISINI kullanır; ayrı bir eşleme
+     * tutmak ikisinin sessizce ayrışmasına yol açardı" — ama eşleme yine de
+     * kopyalanmıştı ve ÇOKTAN AYRIŞMIŞTI:
+     *
+     *   modern → önizleme 14px, site 12px
+     *   pill   → önizleme 24px, site 18px
+     *
+     * Yani "anlık önizleme" rozetiyle sunulan kutu, yanlış köşe gösteriyordu.
+     * Yorum doğruyu söylüyordu, kod uymuyordu; artık uyuyor.
+     *
+     * `modern` bilerek Tailwind varsayılanlarına eşittir (dokunulmamış siteler
+     * için no-op); diğerleri belirgin şekilde sapar. `rounded-full` etkilenmez.
+     *
+     * @return array{lg: string, xl: string, '2xl': string, '3xl': string}
+     */
+    public static function koseOlcegi(?string $anahtar): array
+    {
+        return match ($anahtar) {
+            'sharp' => ['lg' => '2px', 'xl' => '3px', '2xl' => '4px', '3xl' => '6px'],
+            'soft' => ['lg' => '6px', 'xl' => '8px', '2xl' => '10px', '3xl' => '14px'],
+            'pill' => ['lg' => '14px', 'xl' => '18px', '2xl' => '24px', '3xl' => '32px'],
+            default => ['lg' => '.5rem', 'xl' => '.75rem', '2xl' => '1rem', '3xl' => '1.5rem'],
+        };
+    }
+
+    /**
+     * Panel açılır menüsü için köşe seçenekleri.
+     *
+     * Etiketlerde PİKSEL YAZILMAZ. Eskiden "Modern (14px)" gibi yazıyordu ve
+     * üç ayrı sorun taşıyordu: (1) 14px hiçbir katmanla eşleşmiyordu, (2) her
+     * etiket başka bir katmandan (lg/xl/2xl) sayı almıştı, (3) ölçek değişince
+     * etiket sessizce yalancı olurdu. Sayı vermeyen ad, yanlış sayı veren
+     * addan iyidir.
+     *
+     * @return array<string, string>
+     */
+    public static function koseSecenekleri(): array
+    {
+        return [
+            'sharp' => 'Keskin',
+            'soft' => 'Yumuşak',
+            'modern' => 'Modern (varsayılan)',
+            'pill' => 'Kapsül',
+        ];
+    }
+
     /** Temaların iskelet dosyaları — bekçi testi bileşenin gerçekten basıldığını buradan doğrular. */
     public const ISKELETLER = [
         'klasik' => 'resources/views/components/layouts/app.blade.php',

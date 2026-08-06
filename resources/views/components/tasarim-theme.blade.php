@@ -32,12 +32,9 @@
     // Köşe yuvarlatma ölçeği — Tailwind --radius-* token'larını hedefler.
     // 'modern' bilerek Tailwind varsayılanlarına eşittir (dokunmamış siteler
     // için no-op); diğerleri belirgin şekilde sapar. rounded-full etkilenmez.
-    $radiusScale = match ($borderRadius) {
-        'sharp' => ['lg' => '2px', 'xl' => '3px', '2xl' => '4px', '3xl' => '6px'],
-        'soft' => ['lg' => '6px', 'xl' => '8px', '2xl' => '10px', '3xl' => '14px'],
-        'pill' => ['lg' => '14px', 'xl' => '18px', '2xl' => '24px', '3xl' => '32px'],
-        default => ['lg' => '.5rem', 'xl' => '.75rem', '2xl' => '1rem', '3xl' => '1.5rem'],
-    };
+    // TEK KAYNAK — panelin önizlemesi de aynı metottan okur. İki yerde ayrı
+    // tutulduğu sürece sessizce ayrışmıştı (modern 14px↔12px, pill 24px↔18px).
+    $radiusScale = \App\Support\TemaJetonlari::koseOlcegi($borderRadius);
 
     // Mod imza aksan rengi (mühür) — app.js, verified-badge ve pulse-map okur.
     $seal = match ($mod) {
@@ -72,31 +69,35 @@
             --color-emerald-700: color-mix(in srgb, {{ $primaryColor }} 80%, black);
             --color-emerald-800: color-mix(in srgb, {{ $primaryColor }} 62%, black);
             --color-emerald-900: color-mix(in srgb, {{ $primaryColor }} 45%, black);
+            /* 950 EKSİKTİ (2026-08-06 denetimi). Sitede 48 yerde kullanılıyor
+               (koyu zeminler, rozetler); türetilmediği için özel renk seçen
+               sahip her yerde MOR görürken bu tonlarda YEŞİL kalıntı
+               kalıyordu. "Tüm emerald tonları tek hex'ten türetilir" iddiası
+               bu satır olmadan doğru değildi. */
+            --color-emerald-950: color-mix(in srgb, {{ $primaryColor }} 30%, black);
         @endif
 
         /* Tipografi motoru (#3). $fontFamilyCss sabit match() çıktısıdır (kullanıcı
            girdisi değil); font adlarındaki tırnaklar Blade kaçışıyla &#039;'e
            dönüşüp style bloğunda bozulmasın diye ham basılır. */
         --font-sans: {!! $fontFamilyCss !!};
-        --nisoya-font: {!! $fontFamilyCss !!};
 
         /* Köşe yuvarlatma (#3) */
         --radius-lg: {{ $radiusScale['lg'] }};
         --radius-xl: {{ $radiusScale['xl'] }};
         --radius-2xl: {{ $radiusScale['2xl'] }};
         --radius-3xl: {{ $radiusScale['3xl'] }};
-        --nisoya-primary: {{ $primaryColor }};
-        --nisoya-radius: {{ $radiusScale['xl'] }};
+        {{-- ÖLÜ DEĞİŞKENLER SİLİNDİ (2026-08-06 denetimi).
+             `--nisoya-primary`, `--nisoya-radius`, `--nisoya-font`,
+             `--nisoya-glass-blur` ve `--nisoya-glass-bg` yazılıyor ama depoda
+             HİÇBİR YERDE `var()` ile okunmuyordu (ölçüldü: 0 kullanım). Gerçek
+             iş `--font-sans`, `--radius-*` ve aşağıdaki backdrop-filter kuralı
+             üzerinden dönüyor. Yalnız `--nisoya-seal` gerçekten tüketiliyor
+             (verified-badge, pulse-map, app.js).
 
-        /* Cam efekti (#3) */
-        @if ($glass)
-            --nisoya-glass-blur: blur(12px);
-            --nisoya-glass-bg: rgba(255, 255, 255, 0.75);
-        @else
-            --nisoya-glass-blur: none;
-            --nisoya-glass-bg: #ffffff;
-        @endif
-
+             Okunmayan bir değişken zararsız görünür ama "cam efekti burada
+             ayarlanıyor" izlenimi verir; bu sayfadaki yanlış etiketin kaynağı
+             tam olarak buydu. --}}
         @if ($seal)
             --nisoya-seal: {{ $seal }};
         @endif
@@ -114,9 +115,8 @@
     @endunless
 
     @unless ($smoothAnimations)
-        /* "Akıcı Geçiş Animasyonları" kapalı → tüm geçiş/animasyonlar anlık olur
-           (reduced-motion modu). Bileşenler çalışmaya devam eder, yalnızca
-           yumuşak geçiş efekti kalkar. */
+        /* "Akıcı Geçiş Animasyonları" kapalı → tüm geçiş/animasyonlar anlık olur.
+           Bileşenler çalışmaya devam eder, yalnızca yumuşak geçiş efekti kalkar. */
         *, *::before, *::after {
             animation-duration: 0.01ms !important;
             animation-iteration-count: 1 !important;
@@ -124,5 +124,30 @@
             scroll-behavior: auto !important;
         }
     @endunless
+
+    /*
+     * ZİYARETÇİNİN KENDİ TERCİHİ — sahibin ayarından BAĞIMSIZ.
+     *
+     * Aynı sıfırlama yukarıda yalnız "yumuşak geçişler KAPALIYSA" dalında
+     * basılıyordu; varsayılan AÇIK olduğu için canlıda hiç çalışmıyordu. Yani
+     *
+     * (DİKKAT: bu yorumun içine Blade direktifi YAZILMAZ — CSS yorumu olması
+     * Blade'i durdurmuyor, direktifi gerçek sanıp derliyor ve kapatılmamış blok
+     * üretiyor. Bu depodaki `@php` tuzağının kardeşi.)
+     *
+     * işletim sisteminde "hareketi azalt" açık olan ziyaretçi — vestibüler
+     * rahatsızlığı olan biri — sitede yine de tüm geçişleri alıyordu.
+     *
+     * Sahibin düğmesi "herkese kapat", bu blok "isteyene kapat" demektir;
+     * ikisi çakışmaz, biri diğerinin yerini tutmaz.
+     */
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
 </style>
 @endunless

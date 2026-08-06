@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\RestrictsToAdmins;
+use App\Http\Controllers\TemaOzellestiriciController;
 use App\Support\Settings;
 use App\Support\Tema;
 use BackedEnum;
@@ -12,18 +13,57 @@ use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
 /**
- * 2027 Ultra Tasarım Komuta Merkezi — 4 imza preset, canlı simülatör,
- * tipografi engine, köşe yuvarlatma ve cam efekti (Glassmorphism) kontrolleri.
+ * Sitenin görünümü: tema seçimi, hazır paketler ve ince ayarlar.
+ *
+ * ---------------------------------------------------------------------------
+ * FABRİKA VARSAYILANI TEK YERDE ({@see VARSAYILANLAR})
+ *
+ * "Varsayılana Sıfırla" eskiden `secPreset('eski')` çağırıyordu; o paket
+ * `border_radius='soft'` ve `glassmorphism='0'` yazıyor, oysa projenin her
+ * yerindeki fabrika varsayılanı `modern` + cam AÇIK. Yani kurtarma refleksi
+ * olması gereken düğme, durumu sessizce daha da kaydırıyordu.
+ *
+ * ---------------------------------------------------------------------------
+ * RENK TEK KONTROLDÜR
+ *
+ * Klasik iskelet hem `brand-theme` (hazır aile: `gorunum.marka_rengi`) hem
+ * `tasarim-theme` (serbest hex: `gorunum.primary_color`) basıyor ve ikincisi
+ * yalnız varsayılandan FARKLIYSA devreye giriyor. İkisini bağımsız bırakmak
+ * ölü kontrol üretir: sahip sitedeki panelden "mor" seçip buradan yeşili
+ * tıklarsa site mor kalır, panel yeşil gösterir.
+ *
+ * {@see TemaOzellestiriciController} bu kuralı zaten
+ * uyguluyordu (biri yazılırken diğeri varsayılana çekilir); bu sayfa
+ * uygulamıyordu. Artık uyguluyor.
  */
 class TasarimAyarlari extends Page
 {
     use RestrictsToAdmins;
 
+    /** Fabrika varsayılanı — sıfırlamanın tek doğruluk kaynağı. */
+    public const VARSAYILANLAR = [
+        'gorunum.tasarim_modu' => 'eski',
+        'gorunum.primary_color' => '#059669',
+        'gorunum.marka_rengi' => 'emerald',
+        'gorunum.font_family' => 'sans',
+        'gorunum.border_radius' => 'modern',
+        'gorunum.glassmorphism' => '1',
+        'gorunum.smooth_animations' => '1',
+    ];
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSwatch;
 
     protected static string|UnitEnum|null $navigationGroup = 'İçerik & Tasarım (CMS)';
 
-    protected static ?string $navigationLabel = 'Tasarım Modu';
+    /**
+     * Menü adı = sayfa başlığı.
+     *
+     * Sayfanın ÜÇ ayrı adı vardı: menüde "Tasarım Modu", başlıkta "2027
+     * Tasarım Komuta Merkezi", sitedeki panelden yönlendirmede "Tasarım
+     * Ayarları". Sahip birinde okuduğu adı diğerinde bulamıyordu. Panelin
+     * geri kalanında böyle bir sapma yok (Duyuru Bandı, Hero Yöneticisi…).
+     */
+    protected static ?string $navigationLabel = 'Görünüm ve Tema';
 
     protected static ?int $navigationSort = 1;
 
@@ -45,7 +85,7 @@ class TasarimAyarlari extends Page
 
     public function getTitle(): string
     {
-        return '2027 Tasarım Komuta Merkezi';
+        return 'Görünüm ve Tema';
     }
 
     public function mount(): void
@@ -96,10 +136,31 @@ class TasarimAyarlari extends Page
             ->send();
     }
 
-    public function secPreset(string $preset): void
-    {
-        $presets = [
-            'eski' => [
+    /**
+     * Hazır paketler — TEK KAYNAK.
+     *
+     * -----------------------------------------------------------------------
+     * AÇIKLAMALAR ARTIK VAAT DEĞİL, ÖZET
+     *
+     * Eski açıklamalar kodun yapmadığı şeyleri anlatıyordu (2026-08-06
+     * denetimi, beş ajan bağımsız olarak buldu):
+     *   · "Mat gece siyahı zemin, neon zümrüt ışımaları" → obsidian zemine
+     *     HİÇ dokunmuyor (bkz. tasarim-theme: $stone50'de obsidian dalı yok),
+     *     mühür rengi kehribar.
+     *   · "0.5px zarif hatlar, İskandinav tipografi" → öyle bir kenarlık yok,
+     *     font Zümrüt ile birebir aynı.
+     *   · "Instrument Serif italik" → hiçbir yerde font-style basılmıyor.
+     *
+     * Sahip bu vaatlere göre seçim yapıp karşılığını bulamıyordu. Açıklamalar
+     * artık paketin gerçekten yazdığı beş değerin özeti.
+     *
+     * @var array<string, array{ad: string, ozet: string, ayarlar: array<string, string>}>
+     */
+    public const PRESETLER = [
+        'eski' => [
+            'ad' => 'Zümrüt Klasik',
+            'ozet' => 'Zümrüt yeşili vurgu, Instrument Sans, yumuşak köşeler. Cam efekti kapalı.',
+            'ayarlar' => [
                 'gorunum.tasarim_modu' => 'eski',
                 'gorunum.primary_color' => '#059669',
                 'gorunum.font_family' => 'sans',
@@ -107,7 +168,11 @@ class TasarimAyarlari extends Page
                 'gorunum.glassmorphism' => '0',
                 'gorunum.smooth_animations' => '1',
             ],
-            'yeni' => [
+        ],
+        'yeni' => [
+            'ad' => 'Neo-Craft',
+            'ozet' => 'Koyu yeşil vurgu, Instrument Serif, sıcak krem zemin. Cam efekti açık.',
+            'ayarlar' => [
                 'gorunum.tasarim_modu' => 'yeni',
                 'gorunum.primary_color' => '#0f5c42',
                 'gorunum.font_family' => 'serif',
@@ -115,7 +180,11 @@ class TasarimAyarlari extends Page
                 'gorunum.glassmorphism' => '1',
                 'gorunum.smooth_animations' => '1',
             ],
-            'obsidian' => [
+        ],
+        'obsidian' => [
+            'ad' => 'Obsidyen',
+            'ozet' => 'Parlak zümrüt vurgu, kehribar mührü, koyu moda kilitli. Cam efekti açık.',
+            'ayarlar' => [
                 'gorunum.tasarim_modu' => 'obsidian',
                 'gorunum.primary_color' => '#10b981',
                 // Eskiden 'inter' yazıyordu; o aile hiçbir yerden yüklenmediği
@@ -126,7 +195,11 @@ class TasarimAyarlari extends Page
                 'gorunum.glassmorphism' => '1',
                 'gorunum.smooth_animations' => '1',
             ],
-            'nordic' => [
+        ],
+        'nordic' => [
+            'ad' => 'Nordik',
+            'ozet' => 'Koyu lacivert vurgu, açık gri zemin, kapsül köşeler. Cam efekti kapalı.',
+            'ayarlar' => [
                 'gorunum.tasarim_modu' => 'nordic',
                 'gorunum.primary_color' => '#0f172a',
                 // Eskiden 'outfit' yazıyordu — bkz. obsidian'daki not.
@@ -135,36 +208,27 @@ class TasarimAyarlari extends Page
                 'gorunum.glassmorphism' => '0',
                 'gorunum.smooth_animations' => '1',
             ],
-        ];
+        ],
+    ];
 
-        if (! isset($presets[$preset])) {
+    public function secPreset(string $preset): void
+    {
+        if (! isset(self::PRESETLER[$preset])) {
             return;
         }
 
-        Settings::setMany($presets[$preset]);
-
-        $this->hydrateFromSettings();
-
-        $names = [
-            'eski' => '1. Zümrüt Klasik',
-            // "Vitrin" adı artık tema ekseninde (secTema) yaşıyor — preset'in
-            // eski "2027 Vitrin & Neo-Craft" etiketi karışıklık yaratmasın
-            // diye yeniden adlandırıldı.
-            'yeni' => '2. Neo-Craft 2027',
-            'obsidian' => '3. Midnight Obsidian',
-            'nordic' => '4. Nordik Minimal',
-        ];
+        $this->yaz(self::PRESETLER[$preset]['ayarlar']);
 
         Notification::make()
-            ->title("{$names[$preset]} teması etkinleştirildi")
-            ->body('Tasarım ayarları canlı sitede anında güncellendi.')
+            ->title(self::PRESETLER[$preset]['ad'].' uygulandı')
+            ->body('Değişiklik canlı sitede anında geçerli.')
             ->success()
             ->send();
     }
 
     public function kaydetCustom(): void
     {
-        Settings::setMany([
+        $this->yaz([
             'gorunum.tasarim_modu' => $this->aktifMod,
             'gorunum.primary_color' => $this->primaryColor,
             'gorunum.font_family' => $this->fontFamily,
@@ -174,14 +238,43 @@ class TasarimAyarlari extends Page
         ]);
 
         Notification::make()
-            ->title('Özel Tasarım Parametreleri Kaydedildi')
-            ->body('Canlı sitedeki stil ve tipografi değişkenleri güncellendi.')
+            ->title('Görünüm ayarları kaydedildi')
+            ->body('Değişiklik canlı sitede anında geçerli.')
             ->success()
             ->send();
     }
 
     public function sifirla(): void
     {
-        $this->secPreset('eski');
+        $this->yaz(self::VARSAYILANLAR);
+
+        Notification::make()
+            ->title('Varsayılana dönüldü')
+            ->body('Renk, yazı tipi, köşe ve efektler fabrika ayarına döndü. Tema seçimi değişmedi.')
+            ->success()
+            ->send();
+    }
+
+    /**
+     * Görünüm ayarlarını yazan TEK kapı.
+     *
+     * `marka_rengi` burada varsayılana çekilir: hazır aile ile serbest hex
+     * aynı CSS değişkenlerini basıyor ve ikincisi birincisini eziyor, o yüzden
+     * ikisinin aynı anda "seçili" olması ölü kontrol üretir. Aynı kural
+     * {@see TemaOzellestiriciController} içinde de var —
+     * bu sayfa onu atlıyordu ve panel siteninkinden farklı bir renk
+     * gösterebiliyordu.
+     *
+     * @param  array<string, string>  $ayarlar
+     */
+    private function yaz(array $ayarlar): void
+    {
+        if (isset($ayarlar['gorunum.primary_color']) && ! isset($ayarlar['gorunum.marka_rengi'])) {
+            $ayarlar['gorunum.marka_rengi'] = 'emerald';
+        }
+
+        Settings::setMany($ayarlar);
+
+        $this->hydrateFromSettings();
     }
 }
