@@ -61,7 +61,7 @@
                         <div class="mt-auto flex flex-wrap items-center justify-between gap-3 pt-4">
                             <div class="text-lg font-extrabold text-stone-800 dark:text-stone-50">
                                 @if ($vitrinOne->price !== null)
-                                    {{ number_format((float) $vitrinOne->price, 0) }} {{ $vitrinOne->currency }}<span class="text-xs font-semibold text-stone-600">{{ $vitrinOne->price_unit->suffix() }}</span>
+                                    {{ $vitrinOne->bicimliFiyat() }} {{ $vitrinOne->currency }}<span class="text-xs font-semibold text-stone-600">{{ $vitrinOne->price_unit->suffix() }}</span>
                                 @else
                                     <span class="text-emerald-700 dark:text-emerald-400">Görüşülür</span>
                                 @endif

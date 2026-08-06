@@ -1,4 +1,7 @@
-<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage?->enIyiUrl('large')">
+{{-- ARŞİV SAYFASI ARAMA MOTORUNA KAPALI: yayından kalkmış bir ilanın arama
+     sonucunda çıkması, tıklayan herkese ölü bir sayfa göstermek demektir.
+     Sayfa insanlar için açık, dizinler için kapalı. --}}
+<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage?->enIyiUrl('large')" :noindex="$isArchived">
     {{-- VİTRİN İLAN DETAYI (P2) — klasik listings/show'un aynı-ad override'ı.
          Korunan sözleşmeler: TÜM JSON-LD blokları birebir (BreadcrumbList +
          tipe göre RealEstateListing/Product/Service), hero görselinde
@@ -98,7 +101,19 @@
             @endif
         </nav>
 
-        @if ($isOwner && $listing->status->value !== 'aktif')
+        {{-- ARŞİV BANDI — ziyaretçiye durumu SAYFANIN BAŞINDA söyler.
+             Yayından kalkmış bir ilanı normal ilan gibi göstermek, kişiyi
+             cevap gelmeyecek bir mesaja sürükler; en pahalı hata bu olurdu. --}}
+        @if ($isArchived && ! $isOwner)
+            <div class="mt-4 flex items-start gap-3 rounded-2xl border border-stone-300 bg-stone-100 px-4 py-3.5 text-sm font-medium text-stone-700 dark:border-stone-700 dark:bg-stone-800/60 dark:text-stone-300">
+                <x-heroicon-o-archive-box class="mt-0.5 h-5 w-5 shrink-0" />
+                <div>
+                    <strong class="text-stone-800 dark:text-stone-100">Bu ilan artık yayında değil.</strong>
+                    Geçmiş kaydı olarak görüntülüyorsun — mesaj gönderilemez.
+                    <a href="{{ route('profiles.show', $listing->user->username) }}" class="font-bold text-emerald-700 hover:underline dark:text-emerald-400">{{ $listing->user->name }} kullanıcısının güncel ilanlarına bak →</a>
+                </div>
+            </div>
+        @elseif ($isOwner && $listing->status->value !== 'aktif')
             <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
                 Bu ilan şu an <strong>{{ $listing->status->getLabel() }}</strong> durumunda — yalnızca sen görüyorsun.
             </div>
@@ -207,7 +222,7 @@
                     <div class="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-2">
                         <span class="text-2xl font-extrabold text-emerald-700 dark:text-emerald-400">
                             @if ($listing->price !== null)
-                                {{ number_format((float) $listing->price, 2) }} {{ $listing->currency }}
+                                {{ $listing->bicimliFiyat() }} {{ $listing->currency }}
                             @else
                                 Görüşülür
                             @endif
@@ -226,6 +241,52 @@
                     </div>
                 </div>
 
+                {{-- MOBİLDE SATICI ŞERİDİ (lg:hidden) — 2026-08-06.
+                     -----------------------------------------------------------
+                     Sayfa masaüstünde iki kolon; mobilde sağ kolon en ALTA
+                     düşüyor. Yani telefonda ilanı açan biri açıklamayı okuyup
+                     bitirdiğinde SATICININ KİM OLDUĞUNU HÂLÂ BİLMİYOR — kimlik,
+                     puan ve iletişim çok aşağıda kalıyordu. Bir pazaryerinde
+                     "kimden alıyorum" sorusu üründen sonra gelen ikinci soru
+                     değil, onunla aynı anda sorulan sorudur.
+
+                     Bu şerit kenar çubuğundaki kartın KOPYASI DEĞİL: orada
+                     olmayan bir işi yapıyor (mobilde erken kimlik + iletişime
+                     kısayol). Ortak olan tek parça — ilan düğmeleri — iki yerde
+                     de aynı partial'dan geliyor. --}}
+                <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-4 shadow-brand lg:hidden dark:border-stone-800 dark:bg-stone-900">
+                    <a href="{{ route('profiles.show', $listing->user->username) }}" class="flex items-center gap-3">
+                        <x-avatar :user="$listing->user" size="h-11 w-11" text="text-base" />
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-1.5 text-sm font-extrabold leading-tight text-stone-800 dark:text-stone-100">
+                                {{ $listing->user->name }}
+                                <x-trust-badge :user="$listing->user" />
+                                @if ($listing->user->is_verified)<x-verified-badge />@endif
+                            </div>
+                            <div class="mt-0.5 text-xs font-semibold text-stone-500 dark:text-stone-400">
+                                @if ($sellerRating['count'] > 0)
+                                    ★ {{ $sellerRating['avg'] }} · {{ $sellerRating['count'] }} değerlendirme ·
+                                @endif
+                                {{ $listing->user->created_at->year }}'ten beri üye
+                            </div>
+                        </div>
+                        {{-- text-stone-400 DEĞİL: MetinKontrastTest onu 2.59:1 ile
+                             yakalıyor (açık zeminde okunmuyor). --}}
+                        <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-stone-600 dark:text-stone-400" />
+                    </a>
+
+                    @include('partials.seller-listing-links', ['seller' => $listing->user, 'counts' => $sellerListingCounts])
+
+                    {{-- İletişim formu mobilde bu şeridin ALTINDA kalıyor; bağlantı
+                         oraya götürür. Formu burada TEKRARLAMAK iki ayrı form,
+                         iki ayrı `old()` durumu ve iki bakım noktası demekti. --}}
+                    @if (! $isArchived && ! $isOwner)
+                        <a href="#satici-iletisim" class="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-[13px] bg-emerald-700 text-sm font-bold text-white transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900">
+                            <x-heroicon-o-chat-bubble-left class="h-4 w-4" /> Satıcıya mesaj yaz
+                        </a>
+                    @endif
+                </div>
+
                 {{-- Emlak özellikleri --}}
                 @if ($listing->type->value === 'emlak' && $listing->propertyDetail)
                     @php $detail = $listing->propertyDetail; @endphp
@@ -238,7 +299,7 @@
                                     ['Brüt alan', $detail->area_m2 ? $detail->area_m2.' m²' : null],
                                     ['Bulunduğu kat', $detail->floor !== null ? (string) $detail->floor : null],
                                     ['Eşyalı', $detail->furnished ? 'Evet' : 'Hayır'],
-                                    ['Depozito', $detail->deposit !== null ? number_format((float) $detail->deposit, 0).' '.$listing->currency : null],
+                                    ['Depozito', $detail->deposit !== null ? \App\Support\Para::bicimle($detail->deposit).' '.$listing->currency : null],
                                     ['Müsait tarih', $detail->available_from?->format('d.m.Y')],
                                     ['Konuk kapasitesi', $detail->max_guests ? $detail->max_guests.' kişi' : null],
                                     ['Min. konaklama', $detail->min_stay_nights ? $detail->min_stay_nights.' gece' : null],
@@ -278,7 +339,7 @@
                                     ['Kasa tipi', $vehicle->bodyTypeLabel() ?: null],
                                     ['Renk', $vehicle->color ?: null],
                                     ['Min. kiralama', $vehicle->min_rental_days ? $vehicle->min_rental_days.' gün' : null],
-                                    ['Depozito', $vehicle->deposit !== null ? number_format((float) $vehicle->deposit, 0).' '.$listing->currency : null],
+                                    ['Depozito', $vehicle->deposit !== null ? \App\Support\Para::bicimle($vehicle->deposit).' '.$listing->currency : null],
                                     ['Günlük km sınırı', $vehicle->km_limit_per_day ? number_format($vehicle->km_limit_per_day, 0, ',', '.').' km' : null],
                                 ])->filter(fn ($alan) => $alan[1] !== null);
                             @endphp
@@ -397,10 +458,10 @@
             {{-- Sağ kolon (yapışkan) --}}
             <div class="grid gap-4 lg:sticky lg:top-[90px] lg:self-start">
                 {{-- Fiyat + aksiyon kartı --}}
-                <div class="rounded-2xl border border-stone-200/60 bg-white p-5 shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                <div id="satici-iletisim" class="scroll-mt-24 rounded-2xl border border-stone-200/60 bg-white p-5 shadow-brand dark:border-stone-800 dark:bg-stone-900">
                     <div class="text-2xl font-extrabold text-stone-800 dark:text-stone-50">
                         @if ($listing->price !== null)
-                            {{ number_format((float) $listing->price, 2) }} {{ $listing->currency }}
+                            {{ $listing->bicimliFiyat() }} {{ $listing->currency }}
                             <span class="text-sm font-semibold text-stone-600 dark:text-stone-400">{{ $listing->price_unit->suffix() }}</span>
                         @else
                             <span class="text-emerald-700 dark:text-emerald-400">Görüşülür</span>
@@ -408,7 +469,14 @@
                     </div>
 
                     <div class="mt-4 space-y-2.5">
-                        @if ($isOwner)
+                        {{-- ARŞİVDE İLETİŞİM KAPALI. Formu göstermek, cevabı hiç
+                             gelmeyecek bir mesajın yazılmasına davet olurdu;
+                             asıl kapı MessageController::start() içinde. --}}
+                        @if ($isArchived && ! $isOwner)
+                            <div class="rounded-[13px] bg-stone-100 px-4 py-3 text-center text-sm font-semibold text-stone-600 dark:bg-stone-800 dark:text-stone-300">
+                                Bu ilan yayından kalktığı için mesaj gönderilemez.
+                            </div>
+                        @elseif ($isOwner)
                             <a href="{{ route('panel.listings.edit', $listing) }}" class="block w-full rounded-[13px] border border-stone-300 px-4 py-3 text-center text-sm font-bold text-stone-800 transition hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">İlanı Düzenle</a>
                         @elseif (auth()->check())
                             @php
@@ -527,6 +595,8 @@
                         </div>
                     @endif
 
+                    @include('partials.seller-listing-links', ['seller' => $listing->user, 'counts' => $sellerListingCounts])
+
                     <a href="{{ route('profiles.show', $listing->user->username) }}" class="mt-3 block text-sm font-bold text-emerald-700 hover:underline dark:text-emerald-400">Profili ve değerlendirmeleri gör →</a>
                     @include('partials.payment-safety-card', ['seller' => $listing->user])
                 </div>
@@ -559,7 +629,7 @@
                                             @endif
                                             <span class="text-xs font-extrabold text-emerald-700 dark:text-emerald-400">
                                                 @if ($benzer->price !== null)
-                                                    {{ number_format((float) $benzer->price, 0) }} {{ $benzer->currency }}
+                                                    {{ $benzer->bicimliFiyat() }} {{ $benzer->currency }}
                                                 @else
                                                     Görüşülür
                                                 @endif

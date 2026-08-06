@@ -2,26 +2,64 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ListingStatus;
 use App\Enums\UserStatus;
 use App\Models\Conversation;
 use App\Models\Deal;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
     /** Herkese açık satıcı profili / vitrini. */
-    public function show(User $user): View
+    public function show(Request $request, User $user): View
     {
         abort_if($user->status === UserStatus::Silinmis, 404);
 
         $user->load('paymentLinks', 'portfolioItems', 'jobCategory');
 
+        /*
+         * GÜNCEL / GEÇMİŞ SEKMESİ (2026-08-06)
+         *
+         * Sahibin isteği: ilan detayından satıcının hem güncel hem eski
+         * ilanlarına gidilebilsin. İki liste için iki ayrı sayfa açmak yerine
+         * profil sayfasına bir süzgeç eklendi — değerlendirmeler, güven
+         * rozetleri ve ödeme yöntemleri zaten burada; satıcıyı iki ayrı
+         * sayfaya bölmek onu tanımayı zorlaştırırdı.
+         *
+         * Beyaz liste ile okunur: bilinmeyen her değer "güncel"e düşer, yani
+         * `?durum=` ile durum sızdırmak mümkün değil.
+         */
+        $durum = $request->query('durum') === 'gecmis' ? 'gecmis' : 'guncel';
+
+        // Tek sorguda iki sayı — bkz. ListingController::show() içindeki not.
+        $sayilar = $user->listings()
+            ->selectRaw(
+                'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as guncel, '
+                .'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as gecmis',
+                [ListingStatus::Aktif->value, ListingStatus::Pasif->value],
+            )
+            ->toBase()
+            ->first();
+
+        $ilanSayilari = [
+            'guncel' => (int) ($sayilar->guncel ?? 0),
+            'gecmis' => (int) ($sayilar->gecmis ?? 0),
+        ];
+
         $listings = $user->listings()
-            ->active()
+            ->when(
+                $durum === 'gecmis',
+                fn ($q) => $q->where('status', ListingStatus::Pasif->value),
+                fn ($q) => $q->active(),
+            )
             ->with(['coverImage', 'category.parent', 'country', 'user'])
             ->latest()
-            ->paginate(12);
+            // Sekme değişince sayfa numarası taşınmasın diye sorgu dizesinde
+            // korunur (bkz. aşağıdaki `withQueryString`).
+            ->paginate(12)
+            ->withQueryString();
 
         // DEĞERLENDİRMELER SAYFALANIR — ama üç şey AYRI sorgudan gelmek zorunda.
         //
@@ -69,6 +107,8 @@ class ProfileController extends Controller
             && (Deal::latestCompletedIdBetween(auth()->id(), $user->id) !== null
                 || Conversation::mutualExistsBetween(auth()->id(), $user->id));
 
-        return view('profiles.show', compact('user', 'listings', 'reviews', 'rating', 'myReview', 'canReview'));
+        return view('profiles.show', compact(
+            'user', 'listings', 'reviews', 'rating', 'myReview', 'canReview', 'durum', 'ilanSayilari'
+        ));
     }
 }

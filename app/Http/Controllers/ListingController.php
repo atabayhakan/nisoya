@@ -250,7 +250,20 @@ class ListingController extends Controller
     {
         $isOwner = $request->user()?->id === $listing->user_id;
 
-        if ($listing->status !== ListingStatus::Aktif && ! $isOwner) {
+        /*
+         * ARŞİV KİPİ (2026-08-06) — yayından kalkmış ilan artık 404 değil.
+         *
+         * Sahip "satıcının geçmiş ilanlarını görebileyim" dedi. Bir listenin
+         * kartları tıklanabiliyorsa hedefleri de açılabilmeli; aksi hâlde
+         * özellik "her kart 404'e gider" demek olurdu.
+         *
+         * Açılan YALNIZ `Pasif`tir. Taslak, onay bekleyen ve reddedilen
+         * ilanlar sahibi dışında kimseye görünmez — biri henüz yayınlanmadı,
+         * diğeri moderasyondan geçmedi, üçüncüsü kasten reddedildi.
+         */
+        $isArchived = $listing->arsivdeMi();
+
+        if (! $isOwner && $listing->status !== ListingStatus::Aktif && ! $isArchived) {
             abort(404);
         }
 
@@ -265,7 +278,9 @@ class ListingController extends Controller
         // Görüntülenme: aynı ziyaretçi (giriş yapmışsa user, değilse oturum)
         // kısa pencerede tekrar açarsa sayacı şişirmesin — hem daha doğru metrik
         // hem her istekte bir UPDATE yerine dedup ile daha az yazma.
-        if (! $isOwner) {
+        // Arşiv görüntülemesi sayılmaz: ölü bir ilanın görüntülenme sayacını
+        // şişirmek, o sayıyı bir talep göstergesi olarak okunamaz hâle getirir.
+        if (! $isOwner && ! $isArchived) {
             $viewerKey = 'viewed:listing:'.$listing->id.':'.(auth()->id() ?? $request->session()->getId());
             if (Cache::add($viewerKey, true, now()->addHours(6))) {
                 $listing->increment('views_count');
@@ -320,8 +335,33 @@ class ListingController extends Controller
                 ->get();
         }
 
+        /*
+         * Satıcının ilan sayıları — "Güncel ilanları (12)" düğmesindeki sayı
+         * gerçek olmalı. Sıfır olan düğme HİÇ basılmaz: tıklandığında boş
+         * sayfa açan bir düğme, olmayan bir şeyin sözünü verir.
+         *
+         * TEK SORGU, iki değil. İlk yazışta iki ayrı `count()` vardı ve İKİ
+         * AYRI sorgu bütçesini birden aştı (PerformanceBenchmarkTest 25/25,
+         * VitrinVeriBloklariTest 32/32). Koşullu toplama ile bir sorguya
+         * indi — aynı desen {@see User::trustProfile()} içinde de kullanılıyor.
+         */
+        $sayilar = $listing->user->listings()
+            ->selectRaw(
+                'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as guncel, '
+                .'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as gecmis',
+                [ListingStatus::Aktif->value, ListingStatus::Pasif->value],
+            )
+            ->toBase()
+            ->first();
+
+        $sellerListingCounts = [
+            'guncel' => (int) ($sayilar->guncel ?? 0),
+            'gecmis' => (int) ($sayilar->gecmis ?? 0),
+        ];
+
         return view('listings.show', compact(
-            'listing', 'isOwner', 'isFavorited', 'sellerRating', 'similarListings', 'recentReviews'
+            'listing', 'isOwner', 'isArchived', 'isFavorited', 'sellerRating',
+            'similarListings', 'recentReviews', 'sellerListingCounts'
         ));
     }
 
