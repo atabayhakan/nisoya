@@ -3,6 +3,8 @@
 namespace Tests\Feature\Growth;
 
 use App\Models\OutreachTarget;
+use App\Services\Growth\Discovery\BusinessDiscoverySource;
+use App\Services\Growth\Discovery\KesifKaynagiHatasi;
 use App\Services\Growth\DiscoveryRunner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -67,5 +69,43 @@ class DiscoveryRunnerTest extends TestCase
 
         // Dolayısıyla "gönderilebilir" havuzunda görünmez.
         $this->assertSame(0, OutreachTarget::query()->sendable()->where('country', 'DE')->count());
+    }
+
+    public function test_kaynak_ariza_verirse_sayilir_ve_tur_durmaz(): void
+    {
+        /*
+         * ARIZA ≠ SONUÇSUZLUK.
+         *
+         * 2026-08-06'da ölçüldü: Overpass sorguları zaman aşımına uğruyordu ama
+         * kaynak sessizce boş liste döndüğü için komut "Bulunan işletme: 0"
+         * yazıyordu. Sahip bundan "orada Türk işletmesi yok" sonucunu çıkarırdı.
+         *
+         * Artık arıza sayılıyor (`failed`) ve komutta kırmızı basılıyor. Ayrıca
+         * bir şehrin arızası turu DURDURMAMALI — diğer şehirler denenmeli.
+         */
+        $this->app->bind(BusinessDiscoverySource::class, fn () => new class implements BusinessDiscoverySource
+        {
+            public function name(): string
+            {
+                return 'patlayan';
+            }
+
+            public function isConfigured(): bool
+            {
+                return true;
+            }
+
+            public function discover(string $city, string $country, array $trade, int $limit = 20): array
+            {
+                throw new KesifKaynagiHatasi('sunucu meşgul');
+            }
+        });
+
+        $stats = app(DiscoveryRunner::class)->runForCountry('US', tradeLimit: 2);
+
+        $this->assertGreaterThan(0, $stats['queries'], 'Tur yürümeli.');
+        $this->assertSame($stats['queries'], $stats['failed'], 'Her sorgu arıza saymalı.');
+        $this->assertSame(0, $stats['discovered']);
+        $this->assertSame(0, $stats['saved']);
     }
 }

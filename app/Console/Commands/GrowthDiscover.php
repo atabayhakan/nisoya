@@ -43,6 +43,19 @@ class GrowthDiscover extends Command
         $this->newLine();
         $this->components->twoColumnDetail('Kaynak', $stats['source']);
         $this->components->twoColumnDetail('Üretilen sorgu', (string) $stats['queries']);
+
+        /*
+         * ARIZA SATIRI SIFIRSA BASILMAZ, sıfır değilse KIRMIZI.
+         * "0 işletme bulundu" ile "15 sorgunun 15'i yanıt alamadı" apayrı
+         * şeyler; ikincisi birincisi gibi görününce sahip yanlış sonuç çıkarır
+         * ("demek ki orada Türk işletmesi yok").
+         */
+        if ($stats['failed'] > 0) {
+            $this->components->twoColumnDetail(
+                '<fg=red>Yanıt alınamayan sorgu</>',
+                $stats['failed'].' / '.$stats['queries'].' — sebep: sunucu kayıtlarında'
+            );
+        }
         $this->components->twoColumnDetail('Bulunan işletme', (string) $stats['discovered']);
         $this->components->twoColumnDetail('<fg=green>Türk</>', (string) $stats['turkish']);
         $this->components->twoColumnDetail('<fg=yellow>Sınırda (inceleme)</>', (string) $stats['ambiguous']);

@@ -2,6 +2,8 @@
 
 namespace App\Support\Growth;
 
+use App\Services\Growth\TurkishBusinessDetector;
+
 /**
  * Türk işletme/kişi tespiti için sözlükler ve metin normalizasyonu.
  *
@@ -78,6 +80,69 @@ final class TurkishLexicon
             'ç' => 'c', 'ş' => 's', 'ğ' => 'g', 'ö' => 'o', 'ü' => 'u',
             'â' => 'a', 'î' => 'i', 'û' => 'u',
         ]);
+    }
+
+    /**
+     * Overpass (OpenStreetMap) sorgusuna gömülecek İSİM DESENİ.
+     *
+     * -----------------------------------------------------------------------
+     * NEDEN VAR (2026-08-06, ölçümle bulundu)
+     *
+     * Overpass metin araması yapamaz; bir alandaki TÜM işletmeleri getirir ve
+     * süzmeyi bize bırakır. Ama New York'ta binlerce lokanta var: 40 tanesini
+     * rastgele çekip Türk olanına denk gelmeyi ummak işe yaramıyordu.
+     * ÖLÇÜLDÜ: New York + New Jersey'de 80 lokanta çekildi, Türk çıkan SIFIR.
+     * Aynı bölgede bu desenle 30 aday geldi (ABA Turkish Restaurant, Istanbul
+     * Kebab House, Rumi Turkish Grill, Efes...).
+     *
+     * -----------------------------------------------------------------------
+     * NEDEN YALNIZ KÜLTÜREL İŞARETLER (ad/soyad YOK)
+     *
+     * Overpass regex'i ALT-DİZE eşler, kelime değil. Sözlükteki ön adları
+     * eklemek "ali" yüzünden "It-ali-an Restaurant"ı, "can" yüzünden
+     * "Ameri-can Diner"ı getirirdi — samanlığı daraltmak yerine geri
+     * genişletirdi.
+     *
+     * İş bölümü: SORGU ucuza daraltır, KARARI {@see TurkishBusinessDetector}
+     * verir. Dedektör ad/soyadları ve diğer sinyalleri zaten kullanıyor ve
+     * "Afghan Kebab House" gibi yanlış pozitifleri o eliyor.
+     *
+     * -----------------------------------------------------------------------
+     * DİAKRİTİK TOLERANSI
+     *
+     * Sözlük ASCII-katlanmış tutulur ama OSM adları katlanmamıştır ("Döner",
+     * "Türk"). Overpass tarafında fold() çalıştıramayız, o yüzden desen
+     * üretilirken katlanabilen harfler karakter sınıfına açılır:
+     * `doner` → `d[oö]ner`. Aksi hâlde "Kotti Berliner Döner Kebab" kaçardı.
+     */
+    public static function overpassIsimDeseni(): string
+    {
+        $terimler = array_unique(array_merge(
+            self::CULTURAL_STRONG,
+            self::CULTURAL_WEAK,
+            // Sözlükte yok ama OSM adlarında sık: doğrudan "Turkish" ibaresi.
+            ['turk', 'turkish', 'turkiye', 'turkiyem'],
+        ));
+
+        // Uzundan kısaya: alt-dize eşlemede kısa terim uzunu zaten kapsar,
+        // ama sıralama deseni okunur ve kararlı tutar (test edilebilirlik).
+        usort($terimler, fn (string $a, string $b) => strlen($b) <=> strlen($a) ?: strcmp($a, $b));
+
+        return implode('|', array_map(self::diakritikSinifi(...), $terimler));
+    }
+
+    /** ASCII-katlanmış bir terimi diakritik toleranslı desene çevirir. */
+    private static function diakritikSinifi(string $terim): string
+    {
+        $sinif = [
+            'c' => '[cç]', 's' => '[sş]', 'g' => '[gğ]',
+            'o' => '[oö]', 'u' => '[uü]', 'i' => '[iı]',
+        ];
+
+        return implode('', array_map(
+            fn (string $harf): string => $sinif[$harf] ?? $harf,
+            mb_str_split($terim),
+        ));
     }
 
     /** Metinde Türkçe'ye özgü diakritik harf (ç/ş/ğ/ı/ö/ü ve büyükleri) var mı? */
