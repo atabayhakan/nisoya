@@ -5,8 +5,10 @@ namespace App\Services\Growth;
 use App\Models\OutreachTarget;
 use App\Services\Growth\Discovery\BusinessDiscoverySource;
 use App\Services\Growth\Discovery\DiscoveredBusiness;
+use App\Services\Growth\Discovery\KesifKaynagiHatasi;
 use App\Support\Growth\GrowthCatalog;
 use App\Support\Growth\RegionPolicy;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Keşif hattını uçtan uca yürütür: sorgu üret → kaynaktan işletme çek →
@@ -28,7 +30,7 @@ final class DiscoveryRunner
      * çalıştırır (senkron — CLI içindir; panel yavaşlamamak için kombo başına
      * kuyruk işi kullanır, bkz. App\Jobs\RunDiscoveryJob).
      *
-     * @return array{source:string, queries:int, discovered:int, turkish:int, ambiguous:int, blocked:int, saved:int, created:int}
+     * @return array{source:string, queries:int, failed:int, discovered:int, turkish:int, ambiguous:int, blocked:int, saved:int, created:int}
      */
     public function runForCountry(string $country, int $tradeLimit = 3, int $perQuery = 20, bool $useLlm = false): array
     {
@@ -36,7 +38,7 @@ final class DiscoveryRunner
         $cities = GrowthCatalog::CITIES[$country] ?? [];
         $trades = array_slice(GrowthCatalog::tradesForCountry($country), 0, $tradeLimit);
 
-        $totals = ['queries' => 0, 'discovered' => 0, 'turkish' => 0, 'ambiguous' => 0, 'blocked' => 0, 'saved' => 0, 'created' => 0];
+        $totals = ['queries' => 0, 'failed' => 0, 'discovered' => 0, 'turkish' => 0, 'ambiguous' => 0, 'blocked' => 0, 'saved' => 0, 'created' => 0];
 
         foreach ($cities as $city) {
             foreach ($trades as $trade) {
@@ -54,21 +56,37 @@ final class DiscoveryRunner
      * Kısa sürer (birkaç ağ çağrısı) — kuyruk işlerinin çalıştırdığı birim budur.
      *
      * @param  array{key: string, tr: string, en: string, osm?: string, local?: string}  $trade
-     * @return array{queries:int, discovered:int, turkish:int, ambiguous:int, blocked:int, saved:int, created:int}
+     * @return array{queries:int, failed:int, discovered:int, turkish:int, ambiguous:int, blocked:int, saved:int, created:int}
      */
     public function runForCityTrade(string $country, string $city, array $trade, int $perQuery = 20, bool $useLlm = false): array
     {
         $country = strtoupper($country);
+        $bos = ['queries' => 1, 'failed' => 0, 'discovered' => 0, 'turkish' => 0, 'ambiguous' => 0, 'blocked' => 0, 'saved' => 0, 'created' => 0];
 
         // Kaynaktan çek + external_id ile tekilleştir (aynı işletme birden çok
         // dil varyantında çıkabilir; tespiti bir kez yapmak için önce toplarız).
         /** @var array<string, DiscoveredBusiness> $found */
         $found = [];
-        foreach ($this->source->discover($city, $country, $trade, $perQuery) as $business) {
-            $found[$business->id()] = $business;
+
+        /*
+         * ARIZA ≠ SONUÇSUZLUK. Kaynak yanıt veremediğinde tur DURMAZ (bir
+         * şehrin arızası diğerlerini iptal etmemeli) ama sayılır ve rapora
+         * kırmızı düşer. Eskiden bu durum sessizce "0 sonuç" olarak
+         * görünüyordu — bkz. KesifKaynagiHatasi.
+         */
+        try {
+            foreach ($this->source->discover($city, $country, $trade, $perQuery) as $business) {
+                $found[$business->id()] = $business;
+            }
+        } catch (KesifKaynagiHatasi $e) {
+            Log::warning('Growth: keşif kaynağı yanıt veremedi', [
+                'sehir' => $city, 'ulke' => $country, 'meslek' => $trade['key'] ?? '?', 'sebep' => $e->getMessage(),
+            ]);
+
+            return [...$bos, 'failed' => 1];
         }
 
-        $stats = ['queries' => 1, 'discovered' => count($found), 'turkish' => 0, 'ambiguous' => 0, 'blocked' => 0, 'saved' => 0, 'created' => 0];
+        $stats = [...$bos, 'discovered' => count($found)];
 
         foreach ($found as $business) {
             $result = $useLlm
