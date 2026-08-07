@@ -137,10 +137,35 @@ else
     fail "  ✗ / → 200 bekleniyordu (deploy başarısız olabilir)"
 fi
 
-if [ "$(smoke /yonetim/login)" = "200" ]; then
-    info "  ✓ /yonetim/login → 200"
+# Yönetim paneli — /yonetim/login DEĞİL, /yonetim + /giris.
+#
+# Eski test `/yonetim/login → 200` bekliyordu. O adres 2026-08-05'te BİLEREK
+# kaldırıldı (Filament'in kendi giriş ekranı 2FA'yı atlatıyordu — gerekçe
+# AdminPanelProvider'da). Yani test o günden beri HER deploy'da uyarı basıyordu.
+#
+# Zararı gürültü değil KÖRLÜK: giriş gerçekten bozulsa test yine aynı uyarıyı
+# basacaktı, ayırt edilemezdi. Hep bağıran bir alarm hiçbir şey ölçmez.
+#
+# Yerine gerçekten ayırt eden iki iddia:
+#   /yonetim → 302  panel route'ları var ve kimlik doğrulama yönlendirmesi
+#                   çalışıyor (404 = panel yok, 500 = panel patlak)
+#   /giris   → 200  giriş sayfası gerçekten render oluyor
+# Curl'e -L verilmiyor, yani yönlendirme İZLENMİYOR; 302 doğrudan okunur.
+#
+# Kod ekrana yazılıyor: "yanıt yok" hiçbir şey söylemiyordu — 404, 500 ve
+# zaman aşımı çok farklı teşhisler.
+YONETIM_KOD=$(smoke /yonetim)
+if [ "$YONETIM_KOD" = "302" ]; then
+    info "  ✓ /yonetim → 302 (giriş sayfasına yönlendiriyor)"
 else
-    warn "  ! /yonetim/login → yanıt yok (admin panel route'ları eksik olabilir)"
+    warn "  ! /yonetim → ${YONETIM_KOD:-yanıt yok} (302 bekleniyordu; panel route'ları eksik/patlak olabilir)"
+fi
+
+GIRIS_KOD=$(smoke /giris)
+if [ "$GIRIS_KOD" = "200" ]; then
+    info "  ✓ /giris → 200"
+else
+    warn "  ! /giris → ${GIRIS_KOD:-yanıt yok} (200 bekleniyordu; giriş sayfası açılmıyor)"
 fi
 
 ELAPSED=$(( $(date +%s) - START ))
