@@ -74,6 +74,52 @@ SES yeni hesapları sandbox'ta açar: yalnız doğrulanmış adreslere göndereb
    Identities → *Create identity* → Email address → kendi adresini
    (atabayhakan@outlook.com) doğrula — sandbox'ta kendine gönderim yapabilirsin.
 
+### Talep reddedilir/kapanırsa
+
+AWS ilk yanıtta neredeyse her zaman **ek soru sorar** (ne sıklıkta
+gönderiyorsun, listeyi nasıl tutuyorsun, bounce/şikâyet/çıkış nasıl
+işleniyor, örnek e-posta). Yanıtlanmazsa talep 7 gün sonra kendiliğinden
+kapanır — 2026-07-31'de açılan talep tam olarak böyle kapandı.
+
+Cevap yazarken dayanabileceğin somut mekanizmalar (hepsi kodda, testli):
+
+| Sorunun konusu | Koddaki karşılığı |
+|---|---|
+| Sıklık / hacim | `kahya.gunluk_gonderim_limiti` (varsayılan 10), gönderimde uygulanır |
+| Liste nereden | OSM/Places'ten herkese açık işletme iletişim bilgisi; satın alınmış liste yok |
+| Onay | Her mesaj tek tek sahip onayından geçer (`BekleyenHamle`) |
+| Çift gönderim | `gonderildi_at` — aynı karttan iki posta çıkmaz |
+| Abonelikten çıkma | `List-Unsubscribe` + `List-Unsubscribe-Post` (RFC 8058 tek tık) + gövdede görünür bağlantı |
+| Bounce / şikâyet | SNS → `/webhook/ses-geri-bildirim` → kalıcı engel listesi (Adım 4b) |
+
+## Adım 4b — Bounce/şikâyet bildirimi (SNS)
+
+Bu adım **üretim erişimi için fiilen zorunlu**: AWS "geri bildirimleri nasıl
+işliyorsun?" diye sorar ve tablo bir cevap değil, çalışan bir uç ister.
+
+1. AWS → **SNS** → *Topics* → **Create topic** → tür `Standard`,
+   ad `nisoya-ses-geri-bildirim`. Bölge **eu-central-1** (SES ile aynı olmalı).
+2. Konu sayfasında **Create subscription**:
+   - Protocol: **HTTPS**
+   - Endpoint: `https://nisoya.com/webhook/ses-geri-bildirim`
+   - *Enable raw message delivery* **KAPALI KALSIN** — uç, SNS zarfını
+     (imza dâhil) bekliyor; ham teslimde imza doğrulanamaz.
+3. Konunun **ARN**'sini kopyala → `/yonetim/kahya-ayarlari` → Dış Eller →
+   **SES geri bildirim konusu** alanına yapıştır → Kaydet.
+   > **ARN girilmeden uç hiçbir şey yapmaz** (HTTP 503 döner). Bilerek:
+   > imza doğru olsa bile hangi konudan geldiğini bilmeden şikâyet kabul
+   > etmek, başkasının kendi AWS hesabından bizim listemizi susturmasına
+   > izin vermek olurdu.
+4. SES → **Identities** → `mail.nisoya.com` → *Notifications* →
+   **Bounce** ve **Complaint** için bu SNS konusunu seç.
+5. Aboneliği onayla: ARN kaydedildikten sonra SNS'te aboneliğin yanındaki
+   **Request confirmation**'a bas. Uç onayı kendiliğinden yapar (imza ve konu
+   doğrulandıktan sonra), abonelik **Confirmed**'a döner.
+
+Bundan sonra kalıcı bounce ve şikâyet adresleri otomatik olarak kalıcı engel
+listesine girer. **Geçici bounce (dolu kutu) engellemez** — birkaç saatliğine
+kutusu dolu olan gerçek bir muhatabı temelli kaybetmemek için.
+
 ## Adım 5 — SMTP kimlik bilgileri
 
 1. SES → **SMTP settings** → *Create SMTP credentials* (bir IAM kullanıcısı

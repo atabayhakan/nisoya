@@ -71,6 +71,7 @@ class KahyaAyarlari extends Page
             'gonderim_adresi' => Settings::get('kahya.gonderim_adresi') ?: '',
             'gonderim_ad' => Settings::get('kahya.gonderim_ad') ?: '',
             'gunluk_gonderim_limiti' => (int) (Settings::get('kahya.gunluk_gonderim_limiti') ?: 10),
+            'ses_konu_arn' => Settings::get('kahya.ses_konu_arn') ?: '',
         ]);
     }
 
@@ -214,6 +215,16 @@ class KahyaAyarlari extends Page
                             ->minValue(0)
                             ->maxValue(500)
                             ->helperText('Yeni gönderim kimliği ilk haftalarda günde 5-10 postayla ısınmalı; aceleyle artırma.'),
+                        TextInput::make('ses_konu_arn')
+                            ->label('SES geri bildirim konusu (SNS Topic ARN)')
+                            ->placeholder('arn:aws:sns:eu-central-1:123456789012:nisoya-ses-geri-bildirim')
+                            ->maxLength(190)
+                            ->columnSpanFull()
+                            ->helperText('AWS\'de SES → bounce/şikâyet bildirimlerini bir SNS konusuna bağla, konuya da '
+                                .'HTTPS aboneliği ekle: '.url('/webhook/ses-geri-bildirim').' — sonra konunun ARN\'sini '
+                                .'buraya yapıştır. BOŞKEN UÇ ÇALIŞMAZ (bilerek): imza doğru olsa bile hangi konudan '
+                                .'geldiğini bilmeden şikâyet kabul etmek, başkasının kendi AWS hesabından bizim '
+                                .'listemizi susturmasına izin vermek olurdu.'),
                     ])
                     ->columns(2),
             ])
@@ -241,6 +252,7 @@ class KahyaAyarlari extends Page
             'kahya.gonderim_adresi' => trim((string) ($state['gonderim_adresi'] ?? '')),
             'kahya.gonderim_ad' => trim((string) ($state['gonderim_ad'] ?? '')),
             'kahya.gunluk_gonderim_limiti' => (string) max(0, (int) ($state['gunluk_gonderim_limiti'] ?? 10)),
+            'kahya.ses_konu_arn' => trim((string) ($state['ses_konu_arn'] ?? '')),
         ]);
 
         Notification::make()

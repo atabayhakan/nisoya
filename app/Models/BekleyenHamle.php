@@ -21,6 +21,7 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $karar_at
  * @property ?Carbon $gonderildi_at
  * @property ?string $gonderim_hata
+ * @property ?string $cikis_jetonu
  */
 class BekleyenHamle extends Model
 {
@@ -35,6 +36,7 @@ class BekleyenHamle extends Model
     protected $fillable = [
         'kahya_gorevi_id', 'baslik', 'gerekce', 'icerik', 'tur', 'alici_eposta',
         'durum', 'karar_notu', 'karar_at', 'gonderildi_at', 'gonderim_hata',
+        'cikis_jetonu',
     ];
 
     /** @return array<string, string> */

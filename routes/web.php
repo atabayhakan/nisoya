@@ -24,6 +24,8 @@ use App\Http\Controllers\JobBrowseController;
 use App\Http\Controllers\JobFeatureController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\JobSavedSearchController;
+use App\Http\Controllers\Kahya\CikisController;
+use App\Http\Controllers\Kahya\SesGeriBildirimController;
 use App\Http\Controllers\ListingAvailabilityController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ManifestController;
@@ -109,6 +111,29 @@ Route::get('/iletisim', [PagesController::class, 'iletisim'])->name('pages.conta
 Route::post('/iletisim', [ContactMessageController::class, 'store'])
     ->middleware(['honeypot', 'throttle:contact-store'])
     ->name('contact.store');
+
+/*
+ * ERİŞİM POSTASI: LİSTEDEN ÇIKIŞ + SES GERİ BİLDİRİMİ (2026-08-07)
+ *
+ * Üçü de herkese açık ve oturumsuz — muhatap üye değil, bizden bir posta almış
+ * bir yabancı ya da doğrudan Amazon SNS. İkinci ve üçüncü rota CSRF'ten muaf
+ * (bkz. bootstrap/app.php): isteği gönderen taraf bizim sayfamız değil,
+ * alıcının posta istemcisi ya da AWS — jeton taşıyamazlar.
+ *
+ * Çok segmentli yollar bilinçli: dosyanın sonundaki tek-segmentli catch-all
+ * (`/{slug}`) ve ülke rotası (`/{ulke}`) bunları gölgeleyemesin.
+ */
+Route::get('/e-posta/cikis/{jeton}', [CikisController::class, 'goster'])
+    ->where('jeton', '[A-Za-z0-9]{16,64}')
+    ->middleware('throttle:eposta-cikis')
+    ->name('kahya.cikis');
+Route::post('/e-posta/cikis/{jeton}', [CikisController::class, 'cik'])
+    ->where('jeton', '[A-Za-z0-9]{16,64}')
+    ->middleware('throttle:eposta-cikis')
+    ->name('kahya.cikis.uygula');
+Route::post('/webhook/ses-geri-bildirim', SesGeriBildirimController::class)
+    ->middleware('throttle:ses-geri-bildirim')
+    ->name('kahya.ses.geri-bildirim');
 
 // Çerez tercihleri (kodda sabit; gizlilik sayfası Faz B'de CMS'e taşındı — bkz. StaticPagesSeeder)
 Route::view('/cerez-tercihleri', 'pages.cerez-tercihleri')->name('pages.cookie-preferences');
