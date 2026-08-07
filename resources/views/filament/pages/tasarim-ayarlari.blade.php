@@ -86,7 +86,7 @@
              görsel hâle getirir; okumadan da anlaşılır. --}}
         <x-slot name="heading">
             <span class="flex items-center gap-2.5">
-                <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-600 text-xs font-bold text-white">1</span>
+                <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-700 text-xs font-bold text-white">1</span>
                 Site teması
             </span>
         </x-slot>
@@ -169,7 +169,7 @@
     <x-filament::section>
         <x-slot name="heading">
             <span class="flex items-center gap-2.5">
-                <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-600 text-xs font-bold text-white">2</span>
+                <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-700 text-xs font-bold text-white">2</span>
                 Hazır tasarım paketleri
                 <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">Klasik temaya ait</span>
             </span>
@@ -254,7 +254,7 @@
             <x-filament::section>
                 <x-slot name="heading">
                     <span class="flex items-center gap-2.5">
-                        <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-600 text-xs font-bold text-white">3</span>
+                        <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-700 text-xs font-bold text-white">3</span>
                         Vurgu rengi
                     </span>
                 </x-slot>
@@ -311,7 +311,7 @@
             <x-filament::section>
                 <x-slot name="heading">
                     <span class="flex items-center gap-2.5">
-                        <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-600 text-xs font-bold text-white">4</span>
+                        <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-700 text-xs font-bold text-white">4</span>
                         Yazı tipi, köşe ve efektler
                     </span>
                 </x-slot>

@@ -104,6 +104,51 @@ class MetinKontrastTest extends TestCase
     }
 
     /**
+     * Panelde ELDE YAZILMIŞ rozet/etiket yeterince koyu zemin kullanır.
+     *
+     * Filament'in kendi bileşenleri (`<x-filament::badge>` vb.) kontrastı
+     * kendi halleder. Tehlike, aynı işi ham Tailwind ile yapan işaretlemede:
+     * `bg-primary-600` + `text-white` çifti, varsayılan palette (emerald)
+     * beyaz/emerald-600 = 3.65:1 demek — AA'nın normal metin için istediği
+     * 4.5'in altında. `marka_rengi` panelden seçilebiliyor ve amber/orange
+     * gibi seçenekler daha da düşük kalıyor.
+     *
+     * NEDEN "AYNI SATIRDA METİN" KOŞULU VAR — yanlış alarm üretmemek için.
+     * Depoda bu sınıf çifti iki yerde daha geçiyor ve İKİSİ DE İHLAL DEĞİL:
+     * biri yalnız ikon taşıyan gönder düğmesi (`sr-only` metinle), diğeri
+     * metinsiz bir grafik çubuğu. Metin olmayan içerikte WCAG eşiği 3:1 ve
+     * 3.65 onu geçiyor. Sürekli bağıran bir bekçi, bakılmayan bir bekçidir.
+     *
+     * Bu yüzden kural dar: sınıflarla AYNI SATIRDA görünür metin de olmalı
+     * (`>1<` gibi). Kendi kendine yeten rozetleri yakalar; çok satıra yayılan
+     * metinli öğeleri kaçırır — bilinen ve kabul edilen sınır.
+     */
+    public function test_panelde_elde_yazilmis_rozet_yeterince_koyu_zemin_kullanir(): void
+    {
+        $ihlaller = [];
+
+        foreach ($this->bladeDosyalari() as $yol => $icerik) {
+            if (! str_contains(str_replace('\\', '/', $yol), '/filament/')) {
+                continue;
+            }
+
+            foreach (explode("\n", $icerik) as $no => $satir) {
+                if (preg_match('/(?<!dark:)\bbg-primary-600\b/', $satir)
+                    && preg_match('/(?<!dark:)\btext-white\b/', $satir)
+                    // `>...metin...<` — öğe görünür metin taşıyor mu?
+                    && preg_match('/>[^<>]*[^\s<>][^<>]*</', $satir)) {
+                    $ihlaller[] = $this->kisaYol($yol).':'.($no + 1);
+                }
+            }
+        }
+
+        $this->assertSame([], $ihlaller, sprintf(
+            "Beyaz metin primary-600 üzerinde 3.65:1 kalıyor (AA 4.5 ister). bg-primary-700 kullanın.\n%s",
+            implode("\n", $ihlaller)
+        ));
+    }
+
+    /**
      * @return array<string, string>
      */
     private function bladeDosyalari(): array
@@ -115,10 +160,30 @@ class MetinKontrastTest extends TestCase
                 continue;
             }
 
-            // Yönetim paneli Filament'in kendi paletini kullanır — kapsam dışı.
-            if (str_contains(str_replace('\\', '/', $dosya->getPathname()), '/filament/')) {
-                continue;
-            }
+            /*
+             * KÖR NOKTA KAPATILDI (2026-08-08).
+             *
+             * Burada `/filament/` altındaki her dosya atlanıyordu; gerekçe
+             * "yönetim paneli Filament'in kendi paletini kullanır" idi.
+             *
+             * Gerekçe Filament'in KENDİ BİLEŞENLERİ için doğru — onların
+             * kontrastını Filament garanti eder. Ama bu klasördeki dosyalar
+             * bizim elimizle yazılmış panel sayfaları ve içlerinde ham
+             * Tailwind sınıfları var. Onlar ne Filament'in garantisine ne bu
+             * testin kapsamına giriyordu: iki bekçinin arasındaki boşluk.
+             *
+             * PR #121'in incelemesinde ortaya çıktı — sayfaya `bg-primary-600
+             * text-white` rozetler eklendi ve bu test, aynı orana (3.65:1)
+             * site tarafında build kırarken panelde hiç ses çıkarmadı.
+             *
+             * ÖLÇÜLDÜ (kaldırmadan önce): atlama kalkınca mevcut kodda yalnız
+             * TEK ihlal çıkıyor (kesif-ilerlemesi.blade.php). Yani kör nokta
+             * daraltılmaya değil kapatılmaya uygundu; maliyeti bir satır.
+             *
+             * NOT: buradaki yasaklar zemin olarak beyazı varsayıyor. Panelin
+             * açık kip zemini de beyaz/gray-50 olduğu için oranlar taşınabilir;
+             * palet değişirse yeniden ölçülmeli (dosya başındaki kural).
+             */
 
             // Yorumlar ayıklanır: bir sınıftan yorumda söz etmek kullanmak değildir.
             $sonuc[$dosya->getPathname()] = preg_replace(

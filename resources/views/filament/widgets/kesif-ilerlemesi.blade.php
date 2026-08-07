@@ -27,7 +27,7 @@
             <div class="mt-3 flex flex-wrap gap-1.5">
                 @for ($i = 0; $i < $durum['toplam']; $i++)
                     @if ($i < $durum['tamamlanan'])
-                        <span class="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">✓</span>
+                        <span class="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">✓</span>
                     @else
                         <span class="h-5 w-5 animate-pulse rounded-full bg-primary-200 dark:bg-primary-500/30"></span>
                     @endif
