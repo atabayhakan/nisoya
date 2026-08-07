@@ -80,7 +80,16 @@
 
     {{-- 1. SİTE TEMASI --}}
     <x-filament::section>
-        <x-slot name="heading">1. Site teması</x-slot>
+        {{-- ADIM MERDİVENİ. Sayfa aslında sıralı bir akış (önce tema, sonra
+             paket, sonra ince ayar) ama bu sıra yalnız başlıktaki "1." "2."
+             rakamlarında yaşıyordu ve göze çarpmıyordu. Numaralı rozet sırayı
+             görsel hâle getirir; okumadan da anlaşılır. --}}
+        <x-slot name="heading">
+            <span class="flex items-center gap-2.5">
+                <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-700 text-xs font-bold text-white">1</span>
+                Site teması
+            </span>
+        </x-slot>
         <x-slot name="description">
             Sitenin tamamının hangi tasarımla sunulacağını seçer. <strong>Etkinleştirdiğin anda tüm ziyaretçiler görür.</strong>
             Geri dönüş de tek tık; hiçbir ayarın kaybolmaz.
@@ -102,6 +111,9 @@
                 ],
             ] as $anahtar => $tema)
                 @php $secili = $aktifTema === $anahtar; @endphp
+                {{-- Ölçek merdiveni: tema kartı p-5/rounded-xl, paket kartı
+                     p-3.5/rounded-lg. Aynı görünüm iki farklı ağırlıktaki
+                     kararı eşitliyordu. --}}
                 <div @class([
                     'relative flex flex-col justify-between rounded-xl border bg-white p-5 transition dark:bg-gray-800',
                     'border-primary-500 ring-2 ring-primary-500/30' => $secili,
@@ -155,7 +167,13 @@
          iki ızgara birebir aynı sınıfları kullandığı için ilişkiyi ancak
          metinle özür dileyerek anlatabiliyordu. --}}
     <x-filament::section>
-        <x-slot name="heading">2. Hazır tasarım paketleri</x-slot>
+        <x-slot name="heading">
+            <span class="flex items-center gap-2.5">
+                <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-700 text-xs font-bold text-white">2</span>
+                Hazır tasarım paketleri
+                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">Klasik temaya ait</span>
+            </span>
+        </x-slot>
         <x-slot name="description">
             Renk, yazı tipi, köşe ve efektleri birlikte değiştirir.
             <strong>"Etkinleştir" der demez canlıya geçer</strong> — aşağıdaki tek tek ayarlardan farklı olarak kaydetmen gerekmez.
@@ -174,7 +192,13 @@
              `opacity-50` uygulanıyordu: metin 1.98:1'e düşüyor ama düğmeler
              çalışmaya devam ediyordu — "kapalı görünen ama çalışan kontrol",
              hem yanıltıcı hem okunmaz. --}}
-        <fieldset @disabled($aktifTema === 'vitrin') class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 disabled:opacity-70">
+        {{-- PAKETLER KLASİK'İN ALTINDA YAŞAR, KARDEŞİ DEĞİL.
+             Eskiden iki ızgara birebir aynı kart sınıflarını kullanıyordu ve
+             bağımlılık yalnız metinle anlatılabiliyordu. Nötr zeminli girintili
+             kapsayıcı (Filament'in ikincil yüzeyi) + bir kademe küçük kartlar
+             bunu yerleşimle söyler; metin özür dilemek zorunda kalmaz. --}}
+        <div class="rounded-xl bg-gray-50 p-4 dark:bg-white/5">
+        <fieldset @disabled($aktifTema === 'vitrin') class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 disabled:opacity-70">
             @foreach (\App\Filament\Pages\TasarimAyarlari::PRESETLER as $anahtar => $paket)
                 @php
                     $secili = $aktifTema !== 'vitrin' && $aktifMod === $anahtar;
@@ -183,8 +207,10 @@
                     $onizlemeFont = \App\Support\TemaJetonlari::fontCss($paket['ayarlar']['gorunum.font_family']);
                 @endphp
 
+                {{-- Tema kartlarından BİR KADEME küçük (p-3.5/rounded-lg vs
+                     p-5/rounded-xl): ölçek farkı bağımlılığı anlatır. --}}
                 <div @class([
-                    'relative flex flex-col justify-between rounded-xl border bg-white p-4 transition dark:bg-gray-800',
+                    'relative flex flex-col justify-between rounded-lg border bg-white p-3.5 transition dark:bg-gray-800',
                     'border-primary-500 ring-2 ring-primary-500/30' => $secili,
                     'border-gray-200 hover:border-gray-300 dark:border-gray-700' => ! $secili,
                 ])>
@@ -219,13 +245,19 @@
                 </div>
             @endforeach
         </fieldset>
+        </div>
     </x-filament::section>
 
     {{-- 3. İNCE AYARLAR + ÖNİZLEME --}}
     <div class="grid gap-6 xl:grid-cols-3">
         <fieldset @disabled($aktifTema === 'vitrin') class="space-y-6 disabled:opacity-70 xl:col-span-2">
             <x-filament::section>
-                <x-slot name="heading">3. Vurgu rengi</x-slot>
+                <x-slot name="heading">
+                    <span class="flex items-center gap-2.5">
+                        <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-700 text-xs font-bold text-white">3</span>
+                        Vurgu rengi
+                    </span>
+                </x-slot>
                 <x-slot name="description">
                     Butonlarda, vurgularda ve rozetlerde kullanılan renk.
                     <strong>"Değişiklikleri kaydet"e basana kadar yayına girmez.</strong>
@@ -277,7 +309,12 @@
             </x-filament::section>
 
             <x-filament::section>
-                <x-slot name="heading">4. Yazı tipi, köşe ve efektler</x-slot>
+                <x-slot name="heading">
+                    <span class="flex items-center gap-2.5">
+                        <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-700 text-xs font-bold text-white">4</span>
+                        Yazı tipi, köşe ve efektler
+                    </span>
+                </x-slot>
                 <x-slot name="description"><strong>"Değişiklikleri kaydet"e basana kadar yayına girmez.</strong></x-slot>
 
                 <div class="grid gap-6 sm:grid-cols-2">
