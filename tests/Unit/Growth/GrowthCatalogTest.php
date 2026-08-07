@@ -81,6 +81,34 @@ class GrowthCatalogTest extends TestCase
         }
     }
 
+    public function test_lokanta_ilk_sirada_kalir(): void
+    {
+        /*
+         * SIRA KOZMETİK DEĞİL. `DiscoveryRunner` diziyi baştan kesiyor
+         * (`--trades=N`, varsayılan 3), yani baştaki meslekler taranan
+         * meslekler demek.
+         *
+         * Overpass sorgusundaki isim deseninin güçlü terimlerinin hepsi yemek
+         * (kebap/döner/lahmacun/baklava...). Bugüne kadarki bütün gerçek
+         * sayılar lokantadan geldi: PR #118 0→37 aday, PR #122 Clifton
+         * ölçümü 18 aday/16 Türk. Lokanta 6. sıradayken varsayılan komut ona
+         * hiç ulaşmıyordu ve sıfır sonuç veriyordu — araç bozuk sanılıyordu.
+         *
+         * Listeyi alfabetik ya da tematik sıralamak bu tuzağı geri getirir ve
+         * hiçbir hata vermez: komut yine çalışır, yine "0 bulundu" der.
+         */
+        $olculmusVerimli = ['lokanta', 'firin'];
+
+        $this->assertSame(
+            $olculmusVerimli,
+            array_column(array_slice(GrowthCatalog::TRADES, 0, 2), 'key'),
+            'Verimi ÖLÇÜLMÜŞ meslekler ilk sıralarda olmalı: varsayılan --trades=3 yalnız baştaki '.
+            'üç mesleği tarar. Overpass isim deseni yemek odaklı olduğu için ölçümde sonuç veren '.
+            'ikisi lokanta (Clifton: 18 aday/16 Türk) ve fırın (Berlin: 12 aday/9 Türk). '.
+            'Sıra bozulursa varsayılan tarama sessizce sıfır sonuç verir.',
+        );
+    }
+
     public function test_her_meslek_bir_osm_etiketi_tasir(): void
     {
         // osm alanı boşsa OverpassDiscoverySource o mesleği sessizce atlar
