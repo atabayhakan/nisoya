@@ -39,7 +39,7 @@ final class FixtureDiscoverySource implements BusinessDiscoverySource
         return [
             // --- ABD ---
             new DiscoveredBusiness('Anadolu Kebap House', 'Restaurant', country: 'US', city: 'New York', website: 'https://anadolukebap.test', externalId: 'fx-us-1', sector: 'lokanta'),
-            new DiscoveredBusiness('Mehmet Yılmaz Auto Repair', 'Auto repair', 'Mehmet Yılmaz', 'US', 'New Jersey', website: 'https://mehmetauto.test', externalId: 'fx-us-2', sector: 'oto'),
+            new DiscoveredBusiness('Mehmet Yılmaz Auto Repair', 'Auto repair', 'Mehmet Yılmaz', 'US', 'Clifton', website: 'https://mehmetauto.test', externalId: 'fx-us-2', sector: 'oto'),
             new DiscoveredBusiness('Kaya Sushi Bar', 'Sushi restaurant', country: 'US', city: 'Los Angeles', externalId: 'fx-us-3', sector: 'lokanta'),
             new DiscoveredBusiness('Sunrise Bakery', 'Bakery', country: 'US', city: 'Chicago', externalId: 'fx-us-4', sector: 'lokanta'),
 

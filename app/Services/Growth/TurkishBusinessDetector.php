@@ -98,22 +98,31 @@ final class TurkishBusinessDetector
             $signals[] = 'öz-tanımlama (Turkish/Türk)';
         }
 
-        // 2) Güçlü kültürel işaret (mutfak/miras).
-        foreach (TurkishLexicon::CULTURAL_STRONG as $token) {
-            if (str_contains($haystack, $token)) {
-                $score += 0.6;
-                $signals[] = "güçlü işaret: {$token}";
-                break;
-            }
+        /*
+         * 2-3) Kültürel işaretler — KELİME FARKINDA eşleşmeyle.
+         *
+         * Eskiden `str_contains` ile alt-dize aranıyordu ve "Romantic"
+         * (·manti·), "Londoner" (·doner·), "Rapide" (·pide·) gibi adlar tek
+         * hamlede 0.6 alıp KESİN TÜRK bandına giriyordu — insan onayına bile
+         * uğramadan. Gerekçesi ve üç kademe {@see TurkishLexicon::terimEslesmesi}.
+         *
+         * Kademeli puan bilinçli: ZAYIF eşleşme (tanımadığımız bir bileşiğin
+         * parçası) adayı ELEMİYOR, yalnız tek başına eşiği geçmesini
+         * engelliyor — "belirsiz" banda düşüp insan onayına gidiyor. Sistemin
+         * geri kalanıyla aynı ilke: emin değilsen atma, sor.
+         */
+        [$token, $kademe] = TurkishLexicon::ilkEslesme($haystack, TurkishLexicon::CULTURAL_STRONG);
+        if ($token !== null) {
+            $tam = $kademe === TurkishLexicon::ESLESME_TAM;
+            $score += $tam ? 0.6 : 0.3;
+            $signals[] = ($tam ? 'güçlü işaret' : 'güçlü işaret (belirsiz bileşik)').": {$token}";
         }
 
-        // 3) Zayıf kültürel işaret (yer/tema adı).
-        foreach (TurkishLexicon::CULTURAL_WEAK as $token) {
-            if (str_contains($haystack, $token)) {
-                $score += 0.4;
-                $signals[] = "zayıf işaret: {$token}";
-                break;
-            }
+        [$token, $kademe] = TurkishLexicon::ilkEslesme($haystack, TurkishLexicon::CULTURAL_WEAK);
+        if ($token !== null) {
+            $tam = $kademe === TurkishLexicon::ESLESME_TAM;
+            $score += $tam ? 0.4 : 0.2;
+            $signals[] = ($tam ? 'zayıf işaret' : 'zayıf işaret (belirsiz bileşik)').": {$token}";
         }
 
         // 4) Türkçe ön ad.

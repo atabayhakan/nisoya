@@ -191,6 +191,14 @@ final class OverpassDiscoverySource implements BusinessDiscoverySource
     {
         $out = [];
 
+        /*
+         * Katalogdaki şehir ARAMA dizesi olabilir ("Clifton, New Jersey" —
+         * adaşı eyalet karışmasın diye nitelenir, bkz. GrowthCatalog::CITIES).
+         * Kayda geçen `city` alanı ise şehir ADI olmalı; OSM kendi
+         * `addr:city` etiketini vermediğinde nitelemeyi kırpıyoruz.
+         */
+        $sehirAdi = trim(explode(',', $city)[0]);
+
         foreach ($elements as $element) {
             $tags = $element['tags'] ?? [];
             $name = $tags['name'] ?? null;
@@ -202,7 +210,7 @@ final class OverpassDiscoverySource implements BusinessDiscoverySource
                 name: $name,
                 category: $trade['en'] ?? null,
                 country: $country,
-                city: $tags['addr:city'] ?? $city,
+                city: $tags['addr:city'] ?? $sehirAdi,
                 website: $tags['website'] ?? $tags['contact:website'] ?? null,
                 externalId: 'osm-'.($element['type'] ?? 'x').'-'.($element['id'] ?? ''),
                 sector: $trade['key'] ?? null,

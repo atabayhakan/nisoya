@@ -38,6 +38,24 @@ class OverpassDiscoverySourceTest extends TestCase
         $this->assertSame('https://ali.example', $result[1]->website);
     }
 
+    public function test_nitelenmis_sehir_dizesi_kayda_ham_gecmez(): void
+    {
+        /*
+         * Katalogdaki ABD şehirleri adaşı eyalet karışmasın diye nitelenir
+         * ("Clifton, New Jersey" — ölçüldü: sade "Union City" Kaliforniya'yı
+         * getiriyordu). O dize bir ARAMA dizesi; aday kaydının `city` alanına
+         * ham geçerse havuz "Clifton, New Jersey" gibi değerlerle kirlenir.
+         */
+        $elements = [
+            ['type' => 'node', 'id' => 9, 'tags' => ['name' => 'Istanbul Kebab House']], // addr:city YOK
+        ];
+        $trade = ['key' => 'lokanta', 'tr' => 'lokanta', 'en' => 'restaurant', 'osm' => 'amenity=restaurant'];
+
+        $result = $this->source()->mapElements($elements, 'US', 'Clifton, New Jersey', $trade);
+
+        $this->assertSame('Clifton', $result[0]->city);
+    }
+
     public function test_discover_returns_empty_without_osm_tag(): void
     {
         $result = $this->source()->discover('Almaty', 'KZ', ['key' => 'x', 'tr' => 'x', 'en' => 'x']);

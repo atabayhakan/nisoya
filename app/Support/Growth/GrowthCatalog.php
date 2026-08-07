@@ -15,10 +15,36 @@ final class GrowthCatalog
     /**
      * Ülke kodu → örnek Türk-yoğun şehirler.
      *
+     * -----------------------------------------------------------------------
+     * BURAYA EYALET/BÖLGE YAZILMAZ — YALNIZ ŞEHİR (2026-08-07, ölçüldü)
+     *
+     * Liste "New Jersey" içeriyordu. Keşif zinciri şehir adını Nominatim'e
+     * verip dönen NOKTA etrafında 15 km'lik bir kutu tarıyor; bir EYALET
+     * adı verildiğinde dönen nokta eyaletin coğrafi merkezi oluyor.
+     * ÖLÇÜLDÜ: "New Jersey" → 40.076,-74.404 (eyaletin ortası, Pine Barrens
+     * kırsalı) → 40 sonuçluk sorgudan **0 aday**. Yani bu satır aylardır
+     * hiçbir şey getirmiyordu ve hata da vermiyordu.
+     *
+     * Yerine "Clifton, New Jersey" kondu: 40.858,-74.164 → **18 aday, 16'sı
+     * Türk** (Istanbul Kebab House, Antepli Baklava, Turkish Cuisine...).
+     * 15 km'lik kutu Paterson'ı — NJ'deki en yoğun Türk hattını — kapsıyor,
+     * o yüzden ayrıca Paterson satırı eklenmedi.
+     *
+     * -----------------------------------------------------------------------
+     * ABD ŞEHİRLERİ EYALETLE NİTELENİR
+     *
+     * Aynı ölçümde ikinci tuzak çıktı: sade "Union City" → 37.587,-122.022,
+     * yani KALİFORNİYA'daki Union City. Hedeflenen New Jersey'deki adaşıydı.
+     * Nominatim'e eyaletsiz giden ad sessizce yanlış kıtaya düşebiliyor;
+     * arama "şehir, ülke" biçiminde kurulduğu için eyalet ancak buraya
+     * yazılırsa sorguya girer. Adaşı riski olan her ABD şehri eyaletiyle
+     * yazılmalı. (Adayın `city` alanı OSM'in kendi `addr:city` etiketinden
+     * gelir — burada eyalet yazması kayıtları kirletmez.)
+     *
      * @var array<string, list<string>>
      */
     public const CITIES = [
-        'US' => ['New York', 'New Jersey', 'Los Angeles', 'Chicago', 'Houston'],
+        'US' => ['New York', 'Clifton, New Jersey', 'Los Angeles', 'Chicago', 'Houston'],
         'KZ' => ['Almaty', 'Astana', 'Shymkent'],
         'KG' => ['Bishkek', 'Osh'],
         'UZ' => ['Tashkent', 'Samarkand'],

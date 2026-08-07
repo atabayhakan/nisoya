@@ -66,6 +66,39 @@ final class TurkishLexicon
         'tekin', 'sari', 'ates', 'atabay',
     ];
 
+    /** Terim metinde hiç geçmiyor ya da yalnız KELİME ORTASINDA geçiyor. */
+    public const ESLESME_YOK = 0;
+
+    /** Terim kelimenin başında/sonunda ama tanımadığımız bir bileşiğin parçası. */
+    public const ESLESME_ZAYIF = 1;
+
+    /** Terim tam kelime ya da bilinen bir bileşik ("Dönerhaus", "Pideci"). */
+    public const ESLESME_TAM = 2;
+
+    /**
+     * Kültürel terimin ardına gelebilen BİLİNEN ekler — işletme adlarında sık.
+     *
+     * Türkçe ekleri (ci/cu/evi/si...) ve Almanca/İngilizce bileşik sonlarını
+     * (haus/laden/house/palace...) kapsar. ASCII-katlanmış yazılır, çünkü
+     * karşılaştırma fold()'lanmış metinde yapılır.
+     *
+     * EKSİK OLMASI TEHLİKELİ DEĞİL: listede olmayan bir ek "eşleşme yok"
+     * demek değil, "ZAYIF eşleşme" demek — aday elenmez, insan onayına düşer.
+     * Bu yüzden liste ihtiyatlı tutulabilir; yanılma maliyeti tek yönlü.
+     *
+     * @var list<string>
+     */
+    public const BILESIK_EKLERI = [
+        // Türkçe yapım/iyelik ekleri
+        'ci', 'cisi', 'cim', 'cilik', 'cu', 'cusu', 'si', 'su', 'im', 'imiz',
+        'evi', 'evim', 'ler', 'lar', 'ligi', 'lik',
+        // Almanca bileşik sonları
+        'haus', 'hause', 'laden', 'stube', 'palast', 'treff', 'eck', 'imbiss',
+        // İngilizce bileşik sonları
+        'house', 'land', 'world', 'place', 'town', 'time', 'palace', 'express',
+        'king', 'grill', 'hut', 'point', 'city',
+    ];
+
     /**
      * Metni eşleştirme için normalize eder: küçük harf + Türkçe diakritikleri
      * ASCII karşılıklarına katlar. Türkçe'nin noktalı/noktasız i ikilemi
@@ -107,6 +140,12 @@ final class TurkishLexicon
      * verir. Dedektör ad/soyadları ve diğer sinyalleri zaten kullanıyor ve
      * "Afghan Kebab House" gibi yanlış pozitifleri o eliyor.
      *
+     * Bu desen BİLEREK gevşek bırakıldı: alt-dize eşlediği için "Romantic"
+     * (·manti·) gibi adları da getirir. Zararsız, çünkü karar mercii artık
+     * kelime farkında ({@see terimEslesmesi}) ve onları eliyor. Deseni
+     * Overpass tarafında sıkılaştırmak, servisin regex lehçesine bağımlılık
+     * yaratırdı — ucuz ağ süzgeci ile pahalı doğru karar ayrı kalsın.
+     *
      * -----------------------------------------------------------------------
      * DİAKRİTİK TOLERANSI
      *
@@ -143,6 +182,95 @@ final class TurkishLexicon
             fn (string $harf): string => $sinif[$harf] ?? $harf,
             mb_str_split($terim),
         ));
+    }
+
+    /**
+     * Bir kültürel terimin metinde NASIL geçtiğini söyler.
+     *
+     * -----------------------------------------------------------------------
+     * NEDEN VAR (2026-08-07, canlı ölçümden sonra)
+     *
+     * Tespit motoru bu terimleri `str_contains` ile arıyordu — yani ALT-DİZE.
+     * Alt-dize eşlemesi kelime tanımaz ve sözlükteki kısa terimler İngilizce
+     * kelimelerin İÇİNDE geçiyor:
+     *
+     *   "Ro·manti·c Restaurant"  → `manti`  → 0.6 puan → KESİN TÜRK (yanlış)
+     *   "The Lon·doner"          → `doner`  → 0.6 puan → KESİN TÜRK (yanlış)
+     *   "Pizza Ra·pide"          → `pide`   → 0.6 puan → KESİN TÜRK (yanlış)
+     *
+     * Üçü de tek bir alt-dizeyle eşiği (0.6) tam olarak geçiyordu; yani insan
+     * onayına bile düşmeden "kesin Türk" havuzuna giriyorlardı.
+     *
+     * -----------------------------------------------------------------------
+     * NEDEN DÜZ "TAM KELİME" YETMEZ
+     *
+     * En büyük hedef pazar Almanya ve orada adlar BİTİŞİK yazılır:
+     * "Dönerhaus", "Kebaphaus", "Baklavaland". Türkçe de eklidir: "Pideci",
+     * "Baklavacı", "Kebapçım". Tam-kelime kuralı bunların hepsini kaybederdi —
+     * arzın darboğaz olduğu bir üründe aday kaybı pahalı.
+     *
+     * Bu yüzden üç kademe var:
+     *   TAM   — tam kelime, ya da kelime başı + BİLİNEN ek ("Dönerhaus")
+     *   ZAYIF — kelime başı/sonu ama ek tanınmıyor ("Pasadena", "Sultana",
+     *           "Stadtdöner"): kanıt sayılır ama tek başına yetmez → onaya
+     *   YOK   — harfler İKİ YANDA da var, terim kelimenin tam ortasında
+     *           ("Romantic"): bu bir kanıt değil, tesadüf
+     *
+     * @param  string  $folded  fold() geçmiş metin
+     */
+    public static function terimEslesmesi(string $folded, string $terim): int
+    {
+        $enIyi = self::ESLESME_YOK;
+        $uzunluk = strlen($terim);
+        $konum = 0;
+
+        while (($konum = strpos($folded, $terim, $konum)) !== false) {
+            $oncesiHarf = $konum > 0 && ctype_alpha($folded[$konum - 1]);
+
+            preg_match('/^[a-z]*/', substr($folded, $konum + $uzunluk), $m);
+            $devam = $m[0];
+
+            if (! $oncesiHarf && ($devam === '' || in_array($devam, self::BILESIK_EKLERI, true))) {
+                return self::ESLESME_TAM; // daha iyisi olamaz, erken çık
+            }
+
+            // Kelime başı (tanınmayan devam) VEYA kelime sonu (bileşiğin ikinci
+            // parçası) → zayıf kanıt. İkisi de değilse terim kelime ortasında.
+            if (! $oncesiHarf || $devam === '') {
+                $enIyi = self::ESLESME_ZAYIF;
+            }
+
+            $konum++;
+        }
+
+        return $enIyi;
+    }
+
+    /**
+     * Terim listesinde ilk anlamlı eşleşmeyi bulur — TAM olanı ZAYIF'a tercih eder.
+     *
+     * @param  list<string>  $terimler
+     * @return array{0: string|null, 1: int} [eşleşen terim, eşleşme kademesi]
+     */
+    public static function ilkEslesme(string $folded, array $terimler): array
+    {
+        $zayifTerim = null;
+
+        foreach ($terimler as $terim) {
+            $kademe = self::terimEslesmesi($folded, $terim);
+
+            if ($kademe === self::ESLESME_TAM) {
+                return [$terim, self::ESLESME_TAM];
+            }
+
+            if ($kademe === self::ESLESME_ZAYIF && $zayifTerim === null) {
+                $zayifTerim = $terim;
+            }
+        }
+
+        return $zayifTerim !== null
+            ? [$zayifTerim, self::ESLESME_ZAYIF]
+            : [null, self::ESLESME_YOK];
     }
 
     /** Metinde Türkçe'ye özgü diakritik harf (ç/ş/ğ/ı/ö/ü ve büyükleri) var mı? */
