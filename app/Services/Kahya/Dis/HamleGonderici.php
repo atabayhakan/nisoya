@@ -4,9 +4,9 @@ namespace App\Services\Kahya\Dis;
 
 use App\Models\BekleyenHamle;
 use App\Support\Settings;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 /**
  * Onaylanan e-posta hamlesini GERÇEKTEN gönderen el (F4 — tasarım §2.2/F4).
@@ -29,10 +29,24 @@ use Illuminate\Support\Facades\Mail;
  * postayla ısınmalı; varsayılan tavan 10 ve panelden yönetilir.
  * Engel listesi: ret/şikâyet gelen adres kalıcı engellidir — istemeyene
  * ikinci kez yazılmaz.
+ *
+ * ---------------------------------------------------------------------------
+ * HER POSTA KENDİ ÇIKIŞ KAPISINI TAŞIR (2026-08-07)
+ *
+ * Giden her mesaja hem GÖRÜNÜR bir "listeden çık" satırı hem de
+ * `List-Unsubscribe` + `List-Unsubscribe-Post` başlıkları ekleniyor. İkincisi
+ * RFC 8058 tek-tık çıkışı: Gmail/Outlook mesajın tepesine kendi "Abonelikten
+ * çık" düğmesini basar ve tıklanınca doğrudan uca POST atar.
+ *
+ * NEDEN İKİSİ BİRDEN: çıkış yolu bulamayan alıcı "spam" düğmesine basar.
+ * Şikâyet, teslim edilebilirlik açısından çıkıştan kat kat pahalıdır — ve
+ * ayrı gönderim alanının itibarını yakar. Kolay çıkış, şikâyeti önleyen şeydir.
  */
 class HamleGonderici
 {
     public const MAILER = 'kahya-gonderim';
+
+    public function __construct(private readonly EngelListesi $engeller) {}
 
     /** Gönderim kimliği panelden eksiksiz girilmiş mi? */
     public function hazirMi(): bool
@@ -60,9 +74,7 @@ class HamleGonderici
 
     public function engelliMi(string $eposta): bool
     {
-        return DB::table('kahya_gonderim_engelleri')
-            ->where('eposta', mb_strtolower(trim($eposta)))
-            ->exists();
+        return $this->engeller->engelliMi($eposta);
     }
 
     /**
@@ -110,14 +122,31 @@ class HamleGonderici
                 .'ya da tavanı Kâhya Ayarları\'ndan artır (yeni gönderim kimliğinde acele etme).';
         }
 
+        /*
+         * Çıkış jetonu GÖNDERİMDEN ÖNCE yazılır: posta çıktıysa bağlantının
+         * mutlaka çalışıyor olması gerekir. Ters sırada, gönderim başarılı
+         * olup kayıt düşerse alıcının elinde ölü bir çıkış bağlantısı kalırdı.
+         */
+        if ($hamle->cikis_jetonu === null) {
+            $hamle->update(['cikis_jetonu' => Str::random(48)]);
+        }
+
+        $cikisUrl = route('kahya.cikis', $hamle->cikis_jetonu);
+
         try {
-            Mail::mailer(self::MAILER)->raw($hamle->icerik, function ($mesaj) use ($hamle, $alici): void {
+            Mail::mailer(self::MAILER)->raw($this->govde($hamle, $cikisUrl), function ($mesaj) use ($hamle, $alici, $cikisUrl): void {
                 $mesaj->to($alici)
                     ->subject($hamle->baslik)
                     ->from(
                         (string) Settings::get('kahya.gonderim_adresi'),
                         (string) (Settings::get('kahya.gonderim_ad') ?: Settings::get('genel.site_adi', 'Nisoya')),
                     );
+
+                // RFC 8058 tek-tık çıkış. İkisi BİRLİKTE olmalı: yalnız
+                // List-Unsubscribe varsa istemciler düğmeyi göstermez.
+                $basliklar = $mesaj->getSymfonyMessage()->getHeaders();
+                $basliklar->addTextHeader('List-Unsubscribe', '<'.$cikisUrl.'>');
+                $basliklar->addTextHeader('List-Unsubscribe-Post', 'List-Unsubscribe=One-Click');
             });
         } catch (\Throwable $e) {
             report($e);
@@ -131,5 +160,24 @@ class HamleGonderici
         Log::info('Kâhya hamle gönderdi', ['hamle_id' => $hamle->id]);
 
         return "Gönderildi: {$alici} ({$hamle->baslik}). Bugün ".($bugun + 1)."/{$limit}.";
+    }
+
+    /**
+     * Mesaj gövdesi + görünür çıkış satırı.
+     *
+     * Başlık (List-Unsubscribe) tek başına yetmez: onu yalnız bazı istemciler
+     * gösterir ve web arayüzü olmayan alıcı hiç görmez. Metindeki satır,
+     * çıkışın HER alıcı için ulaşılabilir olmasını garanti eder — ve gönderenin
+     * kim olduğunu da açıkça söyler (kim olduğunu gizleyen erişim postası
+     * şikâyet toplar).
+     */
+    private function govde(BekleyenHamle $hamle, string $cikisUrl): string
+    {
+        $siteAdi = (string) Settings::get('genel.site_adi', 'Nisoya');
+
+        return $hamle->icerik
+            ."\n\n--\n"
+            ."Bu mesaj {$siteAdi} tarafından, herkese açık iletişim adresinize bir kez gönderildi.\n"
+            ."Bir daha yazılmasını istemiyorsanız tek tıkla çıkabilirsiniz: {$cikisUrl}";
     }
 }

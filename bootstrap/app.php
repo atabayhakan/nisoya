@@ -35,6 +35,26 @@ return Application::configure(basePath: dirname(__DIR__))
             SecurityHeaders::class,
         ]);
 
+        /*
+         * CSRF MUAFİYETİ — YALNIZ BU İKİSİ (2026-08-07).
+         *
+         * İkisinde de isteği gönderen taraf bizim bir sayfamız değil, o yüzden
+         * jeton taşıyamaz:
+         *   · Tek-tık listeden çıkış (RFC 8058) — POST'u alıcının posta
+         *     istemcisi (Gmail/Outlook) atar.
+         *   · SES geri bildirimi — POST'u Amazon SNS atar.
+         *
+         * İkisinin de kendi yetkilendirmesi var ve CSRF'in yerini o tutuyor:
+         * çıkışta tahmin edilemez, tek mesaja bağlı jeton; SES'te SNS imza
+         * doğrulaması + konu (TopicArn) eşleşmesi. Listeye üçüncü bir yol
+         * eklemeden önce "bu isteğin kimliğini ne kanıtlıyor?" sorusunun
+         * cevabı olmalı.
+         */
+        $middleware->validateCsrfTokens(except: [
+            'e-posta/cikis/*',
+            'webhook/ses-geri-bildirim',
+        ]);
+
         $middleware->alias([
             'active.user' => EnsureUserIsActive::class,
             'honeypot' => HoneypotMiddleware::class,
@@ -77,6 +97,17 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         RateLimiter::for('listing-feature', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
+        );
+
+        // Listeden çıkış: gerçek kişi bir kez basar. Cömert ama sınırsız değil —
+        // jeton kaba kuvvetle aranamasın.
+        RateLimiter::for('eposta-cikis', fn (Request $request) => Limit::perMinute(20)->by($request->ip())
+        );
+
+        // SES geri bildirimi: uç herkese açık ve doğrulama her istekte imza
+        // hesaplıyor. SNS gerçek yükte dakikada bu kadarına yaklaşmaz; tavan
+        // sahte isteklerin doğrulama maliyetini sömürmesini engellemek için.
+        RateLimiter::for('ses-geri-bildirim', fn (Request $request) => Limit::perMinute(60)->by($request->ip())
         );
 
         // İlanı yayından kaldır / geri yayınla — bir tıklık, ucuz bir UPDATE.
