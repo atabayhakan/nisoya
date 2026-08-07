@@ -16,6 +16,7 @@ use App\Observers\ListingImageObserver;
 use App\Observers\PortfolioItemObserver;
 use App\Observers\UserObserver;
 use App\Services\Ai\AiManager;
+use App\Services\GeocodingService;
 use App\Services\Growth\Discovery\BusinessDiscoverySource;
 use App\Services\Growth\Discovery\FixtureDiscoverySource;
 use App\Services\Growth\Discovery\GooglePlacesDiscoverySource;
@@ -54,7 +55,12 @@ class AppServiceProvider extends ServiceProvider
         //  fixture → demo, auto → anahtar varsa Google yoksa fixture (güvenli
         //  varsayılan; testler bunu kullanır). Runner yalnızca arayüzü konuşur.
         $this->app->bind(BusinessDiscoverySource::class, function ($app) {
-            $google = fn () => new GooglePlacesDiscoverySource(config('growth.google_places.api_key'));
+            // Geocoder ŞART: Places aramasını şehir kutusuna kısıtlamak için
+            // (kısıtsız metin araması hedef bölge dışından sonuç döndürüyordu).
+            $google = fn () => new GooglePlacesDiscoverySource(
+                config('growth.google_places.api_key'),
+                $app->make(GeocodingService::class),
+            );
 
             return match (config('growth.source', 'auto')) {
                 'overpass' => $app->make(OverpassDiscoverySource::class),
