@@ -163,6 +163,36 @@ class AiProviderTest extends TestCase
         $this->assertStringContainsString('image input', $provider->lastError());
     }
 
+    public function test_openai_provider_returns_null_and_distinct_error_on_refusal(): void
+    {
+        Http::fake(['api.openai.com/*' => Http::response([
+            'choices' => [['finish_reason' => 'stop', 'message' => ['refusal' => 'Bu görsele yardımcı olamam.']]],
+        ])]);
+
+        $provider = new OpenAiProvider(['api_key' => 'k', 'model' => 'gpt-4o-mini']);
+        $result = $provider->analyzeImage('B', 'image/jpeg', 'p');
+
+        $this->assertNull($result);
+        $this->assertStringContainsString('reddetti', $provider->lastError());
+    }
+
+    public function test_openai_provider_resets_last_error_after_success(): void
+    {
+        Http::fake(['api.openai.com/*' => Http::sequence()
+            ->push(['error' => ['message' => 'geçici hata']], 500)
+            ->push(['choices' => [['finish_reason' => 'stop', 'message' => ['content' => '{"ok":true}']]]])]);
+
+        $provider = new OpenAiProvider(['api_key' => 'k', 'model' => 'gpt-4o-mini']);
+
+        $this->assertNull($provider->analyzeImage('B', 'image/jpeg', 'p'));
+        $this->assertNotNull($provider->lastError());
+
+        $result = $provider->analyzeImage('B', 'image/jpeg', 'p');
+
+        $this->assertSame(['ok' => true], $result);
+        $this->assertNull($provider->lastError());
+    }
+
     public function test_gemini_provider_returns_null_when_blocked(): void
     {
         Http::fake(['generativelanguage.googleapis.com/*' => Http::response([
