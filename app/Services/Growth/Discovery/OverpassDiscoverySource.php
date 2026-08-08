@@ -4,6 +4,7 @@ namespace App\Services\Growth\Discovery;
 
 use App\Services\GeocodingService;
 use App\Support\Growth\TurkishLexicon;
+use App\Support\Growth\UlkeTespiti;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -206,10 +207,35 @@ final class OverpassDiscoverySource implements BusinessDiscoverySource
                 continue;
             }
 
+            /*
+             * ÜLKE SONUÇTAN OKUNUR, SORGUDAN DEĞİL.
+             *
+             * Buraya kadar `$country` sorgunun ülkesiydi ("KZ'de ara") ve
+             * bulunan her işletmeye olduğu gibi yazılıyordu. Overpass `around`
+             * yarıçapı sınır tanımaz: Şımkent taramasından Özbekistan,
+             * Bişkek taramasından Hırvatistan kaydı düşebiliyor. Ölçüldü
+             * (2026-08-08): havuzdaki 39 kaydın ülkesi yanlıştı; 21'i
+             * Türkiye'deydi ve TÜRKİYE GÖNDERİME KAPALI (RegionPolicy).
+             * Yani alan kozmetik değil, hukuki kapının dayanağı.
+             *
+             * Google Places tarafı aynı sebeple düzeltilmişti
+             * (countryFromComponents, 2026-08-07) — bu kaynak atlanmıştı ve
+             * her tarama düzeltilmiş kayıtları geri bozacaktı.
+             *
+             * Sıra: OSM'in kendi `addr:country` etiketi > adres/alan adından
+             * tespit > (ikisi de susarsa) sorgunun ülkesi.
+             */
+            $osmUlke = is_string($tags['addr:country'] ?? null) && strlen($tags['addr:country']) === 2
+                ? strtoupper($tags['addr:country'])
+                : null;
+
+            $adres = $tags['addr:city'] ?? $sehirAdi;
+            $site = $tags['website'] ?? $tags['contact:website'] ?? null;
+
             $out[] = new DiscoveredBusiness(
                 name: $name,
                 category: $trade['en'] ?? null,
-                country: $country,
+                country: $osmUlke ?? UlkeTespiti::tespit($adres, $site) ?? $country,
                 city: $tags['addr:city'] ?? $sehirAdi,
                 website: $tags['website'] ?? $tags['contact:website'] ?? null,
                 externalId: 'osm-'.($element['type'] ?? 'x').'-'.($element['id'] ?? ''),
