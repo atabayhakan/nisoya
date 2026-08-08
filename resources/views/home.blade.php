@@ -1,12 +1,71 @@
 <x-layouts.app>
+    {{-- HERO ARKA PLAN MEDYASI — KABLO BAĞLANDI (2026-08-08).
+
+         2026-08-06'da Hero Yöneticisi'nin METİN anahtarları buraya bağlanmıştı
+         (aşağıdaki not). Ama MEDYA anahtarları bağlanmadan kaldı: sahip panelden
+         arka plan görseli yükleyip kırpabiliyor, karartma ayarlayabiliyor,
+         9 noktalı odak seçebiliyordu — ve canlıda hiçbir şey değişmiyordu.
+         `App\Support\Hero` 16 metot sunuyor, bu dosya 4'ünü kullanıyordu.
+
+         Yani PR #119'un düzelttiği hatanın yarım kalmış hâliydi: ekranın bir
+         yarısı bağlıydı, öbür yarısı hâlâ sessizce hiçbir şey yapmıyordu.
+
+         SÖZLEŞME VİTRİN İLE BİREBİR AYNI (components/vitrin/hero.blade.php):
+         aynı `Hero` metotları, aynı `<picture>` + `<video>` işaretlemesi, aynı
+         karartma katmanı. İki temanın medya davranışı ayrışmasın — bu dosyalar
+         zaten bağımsız yeniden yazım, bir de medya sözleşmesi ayrışırsa
+         panelin ne yapacağı temaya göre değişir.
+
+         TEK BİLİNÇLİ FARK — `duzen()` OKUNMUYOR: Vitrin metni medyanın üstüne
+         yalnız "sahne" düzeninde koyar, o yüzden orada `koyu = sahne && medya`.
+         Klasik hero'nun tek bir düzeni var ve metin her zaman ortada, yani
+         medya varsa metin HER ZAMAN onun üstünde. Burada `koyu = medya`.
+
+         GERİYE DÖNÜK UYUM: medya seçilmemişken (`arkaplan_tipi = yok`, varsayılan)
+         çıktı eskisiyle BİREBİR aynı — aynı degrade, aynı üç bulanık daire. --}}
+    @php
+        $hero = \App\Support\Hero::class;
+        $heroTip = $hero::arkaplanTipi();
+        $heroGorsel = $heroTip === 'gorsel' ? $hero::arkaplanGorseli() : null;
+        $heroGorselMobil = $heroTip === 'gorsel' ? $hero::arkaplanGorseli(true) : null;
+        $heroVideo = $heroTip === 'video' ? $hero::videoUrl() : null;
+        $heroMedya = $heroGorsel !== null || $heroVideo !== null;
+        $heroOverlay = $hero::overlay();
+    @endphp
+
     {{-- Hero --}}
-    <section class="relative overflow-hidden bg-gradient-to-b from-emerald-50 to-stone-50 dark:from-emerald-950/30 dark:to-stone-950">
-        {{-- Soyut arka plan dekorasyonu (saf CSS, görsel dosyası yok) --}}
-        <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-            <div class="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-emerald-300/30 blur-3xl dark:bg-emerald-700/20"></div>
-            <div class="absolute -right-16 top-1/4 h-80 w-80 rounded-full bg-amber-200/30 blur-3xl dark:bg-amber-900/10"></div>
-            <div class="absolute -bottom-16 left-1/3 h-64 w-64 rounded-full bg-emerald-200/40 blur-3xl dark:bg-emerald-800/10"></div>
-        </div>
+    <section class="relative overflow-hidden {{ $heroMedya ? 'bg-stone-900' : 'bg-gradient-to-b from-emerald-50 to-stone-50 dark:from-emerald-950/30 dark:to-stone-950' }}">
+        @if ($heroMedya)
+            {{-- Arka plan medyası (Hero Yöneticisi). Dekoratif: alt="" +
+                 aria-hidden — ekran okuyucuya anlatacak bir şeyi yok. --}}
+            <div class="absolute inset-0" aria-hidden="true">
+                @if ($heroGorsel)
+                    <picture>
+                        @if ($heroGorselMobil && $heroGorselMobil !== $heroGorsel)
+                            <source media="(max-width: 639px)" srcset="{{ $heroGorselMobil }}">
+                        @endif
+                        {{-- fetchpriority=high: bu görsel sayfanın LCP adayı. --}}
+                        <img src="{{ $heroGorsel }}" alt="" width="2400" height="1200" fetchpriority="high"
+                             class="h-full w-full object-cover" style="object-position: {{ $hero::odakCss() }}">
+                    </picture>
+                @else
+                    <video class="h-full w-full object-cover" autoplay muted loop playsinline preload="metadata">
+                        <source src="{{ $heroVideo }}" type="video/mp4">
+                    </video>
+                @endif
+                @if ($heroOverlay > 0)
+                    {{-- Karartma metnin okunabilirliği için; yüzdesi panelden. --}}
+                    <div class="absolute inset-0 bg-stone-950" style="opacity: {{ $heroOverlay / 100 }}"></div>
+                @endif
+            </div>
+        @else
+            {{-- Soyut arka plan dekorasyonu (saf CSS, görsel dosyası yok) --}}
+            <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+                <div class="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-emerald-300/30 blur-3xl dark:bg-emerald-700/20"></div>
+                <div class="absolute -right-16 top-1/4 h-80 w-80 rounded-full bg-amber-200/30 blur-3xl dark:bg-amber-900/10"></div>
+                <div class="absolute -bottom-16 left-1/3 h-64 w-64 rounded-full bg-emerald-200/40 blur-3xl dark:bg-emerald-800/10"></div>
+            </div>
+        @endif
 
         <div class="relative z-10 mx-auto max-w-6xl px-4 py-16 sm:py-24">
             <div class="mx-auto max-w-3xl text-center">
@@ -26,7 +85,10 @@
                      Hero::rozet() zaten `hero.rozet ?: home.hero_badge` diye
                      okuyor. Yani `hero.*` boşken çıktı ESKİSİYLE BİREBİR AYNI;
                      doluyken yönetici nihayet işe yarıyor. --}}
-                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                {{-- METİN RENKLERİ MEDYAYA GÖRE DÖNER. Karartılmış bir görselin
+                     üstünde `text-stone-900` okunmaz; medya varken açık renge
+                     geçilir. Medya yokken sınıflar eskisiyle birebir aynı. --}}
+                <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold {{ $heroMedya ? 'bg-white/15 text-white' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' }}">
                     {{ \App\Support\Hero::rozet() }}
                 </span>
                 {{-- "2. Tasarım" modunda (bkz. /yonetim Tasarım Modu) başlık Instrument
@@ -39,11 +101,11 @@
                      Ayrıca elle yazılan dar harf aralığı kaldırıldı: 4xl–6xl basamaklarının
                      harf aralığı artık ölçeğin kendisinde tanımlı (tipografi.css),
                      elle üstüne yazmak o reçeteyi geçersiz kılıyordu. --}}
-                <h1 class="mt-5 text-4xl text-stone-900 sm:text-5xl md:text-6xl dark:text-stone-50 {{ \App\Support\Tema::tasarimModu() === 'yeni' ? 'font-serif italic font-normal' : 'font-bold' }}">
+                <h1 class="mt-5 text-4xl sm:text-5xl md:text-6xl {{ $heroMedya ? 'text-white' : 'text-stone-900 dark:text-stone-50' }} {{ \App\Support\Tema::tasarimModu() === 'yeni' ? 'font-serif italic font-normal' : 'font-bold' }}">
                     {{ \App\Support\Hero::baslik() }}<br>
-                    <span class="text-emerald-700 dark:text-emerald-400">{{ \App\Support\Hero::vurgu() }}</span> {{ setting('home.hero_satir2') }}
+                    <span class="{{ $heroMedya ? 'text-emerald-300' : 'text-emerald-700 dark:text-emerald-400' }}">{{ \App\Support\Hero::vurgu() }}</span> {{ setting('home.hero_satir2') }}
                 </h1>
-                <p class="mx-auto mt-5 max-w-2xl text-lg text-stone-600 dark:text-stone-300">
+                <p class="mx-auto mt-5 max-w-2xl text-lg {{ $heroMedya ? 'text-white/80' : 'text-stone-600 dark:text-stone-300' }}">
                     {{ \App\Support\Hero::altBaslik() }}
                 </p>
 
@@ -61,7 +123,7 @@
                         Ara
                     </button>
                 </form>
-                <p class="mt-3 text-sm text-stone-600 dark:text-stone-400">{{ setting('home.populer_metin') }}</p>
+                <p class="mt-3 text-sm {{ $heroMedya ? 'text-white/70' : 'text-stone-600 dark:text-stone-400' }}">{{ setting('home.populer_metin') }}</p>
             </div>
         </div>
     </section>
