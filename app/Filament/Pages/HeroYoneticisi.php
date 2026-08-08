@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\RestrictsToAdmins;
+use App\Services\Medya\HeroMedyaBaglayici;
 use App\Support\Hero;
 use App\Support\Settings;
 use App\Support\Tema;
@@ -286,12 +287,33 @@ class HeroYoneticisi extends Page
             'hero.kampanya_alt_baslik' => $state['kampanya_alt_baslik'] ?? '',
         ]);
 
+        /*
+         * MEDYA BORU HATTI (2026-08-09). Ayarlar yazıldıktan SONRA çalışır:
+         * yüklenen ham görseli slot boyutuna indirger, mobili aynı ana kopyadan
+         * türetir ve KARARTMAYI ÖLÇEREK yazar.
+         *
+         * Öncesinde 4469×2979 / 402 KB bir dosya olduğu gibi servis ediliyordu
+         * ("2400×1200 önerilir" yalnız bir yardım metniydi), karartma da elle
+         * tahmin ediliyordu.
+         */
+        $medyaSatirlari = app(HeroMedyaBaglayici::class)->isle(auth()->id());
+
+        $govde = $this->vitrinAktifMi()
+            ? 'Değişiklik canlı sitede anında geçerli.'
+            : 'Kaydedildi — Vitrin teması etkinleştirildiğinde geçerli olacak.';
+
+        if ($medyaSatirlari !== []) {
+            $govde .= '
+
+'.implode('
+', $medyaSatirlari);
+        }
+
         Notification::make()
             ->title('Hero ayarları kaydedildi')
-            ->body($this->vitrinAktifMi()
-                ? 'Değişiklik canlı sitede anında geçerli.'
-                : 'Kaydedildi — Vitrin teması etkinleştirildiğinde geçerli olacak.')
+            ->body($govde)
             ->success()
+            ->persistent()
             ->send();
     }
 

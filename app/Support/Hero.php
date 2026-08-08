@@ -196,6 +196,19 @@ final class Hero
         return max(0, min(100, (int) Settings::get('hero.overlay', '58')));
     }
 
+    /**
+     * Metnin arkasına okunabilirlik paneli açılsın mı?
+     *
+     * Karartma üst sınıra (%55) dayandığı hâlde küçük metin eşiği geçemediğinde
+     * `HeroKontrast` bunu açar. Görselin tamamını daha da karartmak yerine
+     * yalnız metnin arkasını koyultmak, seçilen kareyi görünür bırakır —
+     * sahibin kararı (2026-08-09).
+     */
+    public static function metinPaneli(): bool
+    {
+        return Settings::get('hero.metin_paneli') === '1';
+    }
+
     /** Odak noktasının CSS object-position karşılığı. */
     public static function odakCss(): string
     {
