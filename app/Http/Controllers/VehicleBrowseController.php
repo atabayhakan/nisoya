@@ -16,7 +16,8 @@ class VehicleBrowseController extends Controller
     /** /vasita vitrini: araç ilanları + dikeye özgü filtreler. */
     public function index(Request $request): View
     {
-        $query = Listing::query()->active()
+        // gercek(): örnek ilan sayaca ve listeye karışmaz (bkz. Listing::scopeGercek).
+        $query = Listing::query()->active()->gercek()
             ->where('type', 'vasita')
             ->with(['coverImage', 'category', 'country', 'user', 'vehicleDetail']);
 

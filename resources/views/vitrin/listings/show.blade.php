@@ -1,7 +1,7 @@
 {{-- ARŞİV SAYFASI ARAMA MOTORUNA KAPALI: yayından kalkmış bir ilanın arama
      sonucunda çıkması, tıklayan herkese ölü bir sayfa göstermek demektir.
      Sayfa insanlar için açık, dizinler için kapalı. --}}
-<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage?->enIyiUrl('large')" :noindex="$isArchived">
+<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage?->enIyiUrl('large')" :noindex="$noindex">
     {{-- VİTRİN İLAN DETAYI (P2) — klasik listings/show'un aynı-ad override'ı.
          Korunan sözleşmeler: TÜM JSON-LD blokları birebir (BreadcrumbList +
          tipe göre RealEstateListing/Product/Service), hero görselinde

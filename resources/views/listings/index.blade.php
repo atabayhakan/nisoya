@@ -153,6 +153,10 @@
                     />
                 @endif
                 @endif
+
+                {{-- Gerçek sonuç boşsa örnek raf (controller yalnız o durumda
+                     doldurur; doluysa bu blok hiç basılmaz). --}}
+                <x-ornek-raf :listings="$ornekIlanlar ?? null" />
             </main>
         </div>
     </div>

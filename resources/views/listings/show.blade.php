@@ -1,5 +1,5 @@
 {{-- Arşiv sayfası arama motoruna kapalı — bkz. vitrin/listings/show.blade.php --}}
-<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage?->enIyiUrl('large')" :noindex="$isArchived">
+<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage?->enIyiUrl('large')" :noindex="$noindex">
     {{-- JSON-LD: BreadcrumbList --}}
     <x-json-ld type="BreadcrumbList" :data="[
         'itemListElement' => [
