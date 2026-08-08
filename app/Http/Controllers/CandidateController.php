@@ -14,7 +14,10 @@ class CandidateController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = User::query()
+        // gercek(): bugün örnek üyeler is_searchable ayarlamıyor, yani bu
+        // yüzey ÖLÇÜLEN bir sızıntı değil — mühür, ileride demo makinesi o
+        // alanı doldurursa /adaylar'ın sessizce açılmaması için.
+        $query = User::query()->gercek()
             ->where('is_searchable', true)
             ->where('status', UserStatus::Aktif->value)
             ->where('account_type', AccountType::Bireysel->value)

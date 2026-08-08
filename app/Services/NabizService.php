@@ -40,8 +40,12 @@ class NabizService
         $metric = Settings::get('nabiz.hedef_metrik', 'yeni_uye');
 
         $current = Cache::remember("nabiz_progress_{$metric}", self::CACHE_TTL_SECONDS, fn () => match ($metric) {
-            'yeni_ilan' => Listing::query()->where('created_at', '>=', now()->startOfMonth())->count(),
-            default => User::query()->where('created_at', '>=', now()->startOfMonth())->count(),
+            // gercek(): hedef çubuğu bir İDDİADIR ("bu ay 13/50 yeni üye").
+            // Demo partisi üretmek onu zıplatıyordu — üstelik aynı ana
+            // sayfada, 100 piksel yukarıdaki kanıt şeridi demo süzülü
+            // saydığı için ekran kendi kendisiyle çelişiyordu.
+            'yeni_ilan' => Listing::query()->gercek()->where('created_at', '>=', now()->startOfMonth())->count(),
+            default => User::query()->gercek()->where('created_at', '>=', now()->startOfMonth())->count(),
         });
 
         return [

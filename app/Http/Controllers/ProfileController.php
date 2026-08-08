@@ -36,7 +36,22 @@ class ProfileController extends Controller
         // Tek sorguda iki sayı — bkz. ListingController::show() içindeki not.
         // "Geçmiş" yalnız üyenin KENDİ kaldırdıkları; yönetimin sustuduğu ilan
         // herkese açık profilde sayılmaz (bkz. Listing::arsivdeMi()).
+        /*
+         * PROFİL, SAHİBİNİN GERÇEKLİĞİNİ İZLER (2026-08-08).
+         *
+         * Gerçek bir üyenin profilinde örnek ilan SAYILMAZ ve LİSTELENMEZ —
+         * ilan listesine uygulanan kuralın (Listing::scopeGercek) profil
+         * karşılığı. Örnek bir üyenin profilinde ise kendi örnek ilanları
+         * durur: sayfa zaten baştan sona "ÖRNEK" etiketli ve noindex'tir,
+         * oradan da süzmek demo gezintisini bomboş bir profile çevirirdi.
+         *
+         * Aynı desen benzer ilanlarda da kullanılıyor (ListingController):
+         * öneri, bakılan şeyle aynı gerçeklikten gelir.
+         */
+        $ayniGerceklik = fn ($q) => $q->where('is_demo', $user->is_demo);
+
         $sayilar = $user->listings()
+            ->tap($ayniGerceklik)
             ->selectRaw(
                 'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as guncel, '
                 .'SUM(CASE WHEN status = ? AND unpublished_at IS NOT NULL THEN 1 ELSE 0 END) as gecmis',
@@ -51,6 +66,7 @@ class ProfileController extends Controller
         ];
 
         $listings = $user->listings()
+            ->tap($ayniGerceklik)
             ->when(
                 $durum === 'gecmis',
                 fn ($q) => $q->ownerUnpublished(),
@@ -109,8 +125,20 @@ class ProfileController extends Controller
             && (Deal::latestCompletedIdBetween(auth()->id(), $user->id) !== null
                 || Conversation::mutualExistsBetween(auth()->id(), $user->id));
 
+        /*
+         * ÖRNEK SATICI PROFİLİ İNDEKSLENMEZ — ilan detayındaki kararın aynısı
+         * (ListingController::show). Sayfa erişilebilir KALIR; yalnız arama
+         * sonucunda gerçek bir satıcı gibi görünmez.
+         *
+         * Bu kapı yazılmadan sitemap düzeltmesi tek başına yetmezdi: arama
+         * motoru profile iç bağlantılardan da ulaşır (örnek ilan sayfası
+         * `noindex,follow` taşıyor, yani satıcı bağlantısını izlemeye devam
+         * eder). Sitemap ÖNERİ listesidir; asıl kapı sayfanın kendi etiketi.
+         */
+        $noindex = (bool) $user->is_demo;
+
         return view('profiles.show', compact(
-            'user', 'listings', 'reviews', 'rating', 'myReview', 'canReview', 'durum', 'ilanSayilari'
+            'user', 'listings', 'reviews', 'rating', 'myReview', 'canReview', 'durum', 'ilanSayilari', 'noindex'
         ));
     }
 }

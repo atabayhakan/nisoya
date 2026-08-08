@@ -80,7 +80,13 @@ class PanelController extends Controller
         // ilan. Hiçbir ilişki eager yüklenmez (1 sorgu). Ülkede ilan yoksa
         // global/rastgele ilanla DOLDURULMAZ — boş kalır ve öyle söylenir.
         if ($sinyaller->bosDurum() && $user->country_code) {
-            $sinyaller->ulkeIlanlari = Listing::query()->active()
+            // gercek(): bu liste rozet BASMIYOR (yalnız başlık/fiyat/şehir
+            // seçiliyor), yani örnek ilan burada işaretsiz gerçek arz gibi
+            // okunur. Üstelik gösterildiği an, yeni üyenin panosunu ilk kez
+            // açtığı an — sitenin ilk vaadi "ülkende hareket var" olur ve
+            // tıklayınca örnek çıkar. Yukarıdaki yorum zaten "3 GERÇEK ilan"
+            // diyordu; sorgu bunu söylemiyordu.
+            $sinyaller->ulkeIlanlari = Listing::query()->active()->gercek()
                 ->where('country_code', $user->country_code)
                 ->latest()
                 ->limit(3)

@@ -127,8 +127,15 @@ class SitemapController extends Controller
         }
 
         // Aktif ilanı olan ya da Yetenek Havuzu'nda görünür olan üyeler (bkz. Nisoya Jobzilla Esinlenme Planı).
-        foreach (User::query()->where('status', 'aktif')->whereNotNull('username')
-            ->where(fn ($q) => $q->whereHas('listings', fn ($q2) => $q2->active())->orWhere('is_searchable', true))
+        //
+        // İKİ AYRI gercek() ŞART, ikisi de farklı bir deliği kapatır:
+        //   User::gercek()   — örnek SATICININ kendi profili bildirilmesin.
+        //   listings.gercek() — gerçek bir üye, elinde yalnız örnek ilan
+        //                       kaldığı için "aktif ilanı var" sayılmasın.
+        // İlan URL'lerini çıkarıp bunu bırakmak sızıntıyı kapatmaz, yalnız
+        // kapısını değiştirir: profil sayfası da örnek ilanlara bağlanıyor.
+        foreach (User::query()->gercek()->where('status', 'aktif')->whereNotNull('username')
+            ->where(fn ($q) => $q->whereHas('listings', fn ($q2) => $q2->active()->gercek())->orWhere('is_searchable', true))
             ->get() as $user) {
             $urls[] = ['loc' => route('profiles.show', $user->username), 'priority' => '0.5'];
         }

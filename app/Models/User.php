@@ -108,6 +108,24 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
         ];
     }
 
+    /**
+     * ÖRNEK (demo) olmayan üyeler — Listing::scopeGercek()'in üye karşılığı.
+     *
+     * İlan tarafındaki sızıntı kapatılırken bu taraf açık kalmıştı: örnek
+     * ilanları sitemap'ten çıkarmak yetmiyordu, çünkü her örnek ilanın bir
+     * örnek SATICISI var ve o satıcının profili ayrı bir URL olarak
+     * bildiriliyordu (SitemapController, düzeltilen satırın 24 satır altı).
+     * Google kapıyı değiştirip demo içeriğe profil üzerinden gitmeye devam
+     * ediyordu.
+     *
+     * Aynı isim, aynı kural: örnek üye sayılmaz, indekslenmez, gerçeklerin
+     * arasına karışmaz.
+     */
+    public function scopeGercek($query)
+    {
+        return $query->where('is_demo', false);
+    }
+
     /** Avatar görselinin kırpma odağı (bkz. x-avatar bileşeni, "sürükleyerek hizala"). */
     public function avatarObjectPosition(): string
     {

@@ -11,6 +11,15 @@
          paylaş partial'ı, ödeme güvenliği kartı, zone 'ilan_detay_yan'.
          Controller'a dokunulmadığı için veri karşılığı olmayan prototip
          blokları (benzer ilanlar, yorum listesi, yanıt süresi) BASILMAZ. --}}
+    {{-- ÖRNEK İLANDA YAPILANDIRILMIŞ VERİ BASILMAZ.
+
+         `noindex` sayfayı arama sonucundan çıkarır; JSON-LD ise ayrı bir
+         kanaldır — "şu ürün, şu fiyata, şu satıcıdan, stokta" iddiası zengin
+         sonuç beslemelerine sayfa etiketinden bağımsız girebilir. Uydurma bir
+         ilan için fiyat/stok/sağlayıcı yayınlamak, örnek satıcı profilinde
+         AggregateRating basmakla aynı şey (bkz. profiles/show.blade.php).
+         Kaynağında kesilir. --}}
+    @unless ($listing->is_demo)
     {{-- JSON-LD: BreadcrumbList --}}
     <x-json-ld type="BreadcrumbList" :data="[
         'itemListElement' => [
@@ -86,6 +95,7 @@
             ] : null,
         ]" />
     @endif
+    @endunless
 
     <div class="mx-auto max-w-6xl px-4 pb-10 pt-5">
         @if (session('status'))
