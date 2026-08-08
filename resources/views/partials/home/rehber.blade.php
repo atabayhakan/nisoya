@@ -13,7 +13,7 @@
             @if ($rehber['secili'] !== null)
                 {{-- "için" kalıbı bilinçli: "{ülke}'da" eki her ülke adında doğru
                      çekimlenmez (Almanya'da ✓ ama İngiltere'de/ABD'nde ✗). --}}
-                <h2 class="mt-2 text-2xl font-bold text-stone-900 dark:text-stone-50">
+                <h2 class="mt-2 text-3xl font-serif font-normal text-stone-900 md:text-4xl dark:text-stone-50">
                     {{ $rehber['secili']->emoji }} {{ $rehber['secili']->name_tr }} için konsolosluk rehberi
                 </h2>
                 <p class="mt-2 max-w-2xl text-sm text-stone-600 dark:text-stone-300">
@@ -38,7 +38,7 @@
                     <span aria-hidden="true">→</span>
                 </a>
             @else
-                <h2 class="mt-2 text-2xl font-bold text-stone-900 dark:text-stone-50">Konsolosluk işlemleri rehberi</h2>
+                <h2 class="mt-2 text-3xl font-serif font-normal text-stone-900 md:text-4xl dark:text-stone-50">Konsolosluk işlemleri rehberi</h2>
                 <p class="mt-2 max-w-2xl text-sm text-stone-600 dark:text-stone-300">
                     Vekaletname, pasaport, askerlik, Mavi Kart… Hangi evrak lazım, ücret ne, ne kadar sürer —
                     resmî kaynaktan kendi ifademizle özetledik.
