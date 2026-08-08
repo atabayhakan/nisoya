@@ -42,6 +42,56 @@ class MedyaDeposu
         return $this->turetici->turet($asset, $slot);
     }
 
+    /**
+     * DİSKTE HAZIR DURAN bir dosyayı boru hattına alır.
+     *
+     * Filament'in `FileUpload` bileşeni dosyayı zaten `public` diske yazmış
+     * oluyor; onu tekrar "yükleme" olarak yakalamak yerine yazdığı yerden
+     * alıyoruz. Ham dosya ana kopya olarak `local` diske taşınır ve public
+     * diskteki kopyası SİLİNİR — aksi hâlde 402 KB'lik ham dosya, hiçbir yerde
+     * gösterilmediği hâlde indirilebilir kalırdı.
+     *
+     * @param  string  $publicYol  public diskteki yol (ör. "hero/01KZ....jpg")
+     */
+    public function alPublicYoldan(string $publicYol, string $slot, ?int $yukleyenId = null): ?MediaRendition
+    {
+        if (! Storage::disk('public')->exists($publicYol)) {
+            return null;
+        }
+
+        $gercek = Storage::disk('public')->path($publicYol);
+        $ozet = hash_file('sha256', $gercek);
+
+        $asset = MediaAsset::query()->where('ozet', $ozet)->first();
+
+        if (! $asset) {
+            $boyutlar = @getimagesize($gercek);
+            $anaYol = 'medya-ana/'.Str::uuid()->toString().'.'.(pathinfo($publicYol, PATHINFO_EXTENSION) ?: 'bin');
+
+            if (! Storage::disk('local')->put($anaYol, Storage::disk('public')->get($publicYol))) {
+                throw new RuntimeException('Ana kopya diske yazılamadı.');
+            }
+
+            $asset = MediaAsset::query()->create([
+                'yol' => $anaYol,
+                'ad' => basename($publicYol),
+                'mime' => Storage::disk('public')->mimeType($publicYol) ?: null,
+                'en' => $boyutlar[0] ?? null,
+                'boy' => $boyutlar[1] ?? null,
+                'bayt' => Storage::disk('public')->size($publicYol),
+                'ozet' => $ozet,
+                'yukleyen_id' => $yukleyenId,
+            ]);
+        }
+
+        $rendition = $this->turetici->turet($asset, $slot);
+
+        // Ham yükleme artık gereksiz VE istenmez.
+        Storage::disk('public')->delete($publicYol);
+
+        return $rendition;
+    }
+
     /** Ana kopyayı oluşturur ya da aynısı varsa onu döndürür. */
     public function anaKopyaOlustur(UploadedFile $dosya, ?int $yukleyenId = null): MediaAsset
     {

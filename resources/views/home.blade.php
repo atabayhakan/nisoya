@@ -54,8 +54,19 @@
                     </video>
                 @endif
                 @if ($heroOverlay > 0)
-                    {{-- Karartma metnin okunabilirliği için; yüzdesi panelden. --}}
+                    {{-- Karartma metnin okunabilirliği için. Yüzdesi artık ELLE
+                         GİRİLMİYOR: HeroKontrast görselin metin altında kalan
+                         piksellerini örnekleyip WCAG eşiğini geçen EN DÜŞÜK
+                         değeri yazıyor (masaüstü ve mobil ayrı ölçülür). --}}
                     <div class="absolute inset-0 bg-stone-950" style="opacity: {{ $heroOverlay / 100 }}"></div>
+                @endif
+
+                @if ($hero::metinPaneli())
+                    {{-- OKUNABİLİRLİK PANELİ — karartma üst sınıra dayandığı
+                         hâlde küçük metin eşiği geçemediğinde açılır. Görselin
+                         tamamını daha da karartmak yerine yalnız metnin arkasını
+                         koyultur; seçilen kare görünür kalır. --}}
+                    <div class="absolute inset-0 bg-gradient-to-r from-stone-950/80 via-stone-950/45 to-transparent"></div>
                 @endif
             </div>
         @else
