@@ -32,7 +32,10 @@ class QuickSearchController extends Controller
             return response()->json(['results' => []]);
         }
 
-        $listings = Listing::query()->active()
+        // gercek(): hızlı arama açılır listesinde rozet için yer yok ve
+        // sonuç sayısı 5 ile sınırlı — örnekler gerçek sonuçları listeden
+        // iterdi.
+        $listings = Listing::query()->active()->gercek()
             ->where(fn ($sub) => $sub->where('title', 'like', "%{$q}%")
                 ->orWhere('description', 'like', "%{$q}%"))
             ->orderByFeatured()->latest()

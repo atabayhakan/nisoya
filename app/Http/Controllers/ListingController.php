@@ -401,7 +401,11 @@ class ListingController extends Controller
             // Benzer ilanlar: aynı kategori, kendisi hariç, aktif. Aynı
             // şehirdekiler önce gelsin (yakınlık daha alakalı) — tek sorgu.
             $similarListings = $listing->category_id
+                // Benzer ilan, bakılan ilanla AYNI gerçeklikten seçilir:
+                // gerçek ilanın altında örnek ilan önerilmez, örnek ilanın
+                // altında da gerçek satıcı reklamı yapılmaz.
                 ? Listing::query()->active()
+                    ->where('is_demo', $listing->is_demo)
                     ->where('category_id', $listing->category_id)
                     ->whereKeyNot($listing->id)
                     ->with(['coverImage', 'country'])
@@ -450,8 +454,27 @@ class ListingController extends Controller
             'gecmis' => (int) ($sayilar->gecmis ?? 0),
         ];
 
+        /*
+         * ARAMA MOTORU GÖRÜNÜRLÜĞÜ — iki ayrı sebep, tek karar.
+         *
+         * Arşiv (yayından kalkmış) sayfası zaten noindex'ti. ÖRNEK ilanlar
+         * değildi: sitemap'e giren 29 ilanın 28'i örnekti ve hiçbirinde
+         * robots etiketi yoktu (ölçüm 2026-08-08). Sitemap'ten çıkarmak tek
+         * başına yetmez — arama motoru bu sayfalara iç bağlantılardan da
+         * ulaşır, asıl kapı sayfanın kendi etiketidir (aynı gerekçe: boş
+         * kategori sayfaları, BrowseController).
+         *
+         * Sayfa erişilebilir KALIR: rozetli örnek ilan, sahibin ve
+         * ziyaretçinin gezinebildiği bir demo olarak duruyor; yalnız arama
+         * sonucunda gerçek arz gibi görünmüyor.
+         *
+         * Karar burada veriliyor ki klasik ve Vitrin show görünümleri aynı
+         * değişkeni okusun — ikisine ayrı ayrı yazılsaydı biri unutulurdu.
+         */
+        $noindex = $isArchived || (bool) $listing->is_demo;
+
         return view('listings.show', compact(
-            'listing', 'isOwner', 'isArchived', 'isFavorited', 'sellerRating',
+            'listing', 'isOwner', 'isArchived', 'noindex', 'isFavorited', 'sellerRating',
             'similarListings', 'recentReviews', 'sellerListingCounts'
         ));
     }

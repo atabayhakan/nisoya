@@ -24,6 +24,8 @@ class BrowseController extends Controller
 
     protected function render(Request $request, ?Category $category): View
     {
+        // Demo süzgeci burada DEĞİL, süzgeçler kurulduktan sonra uygulanır
+        // (aşağıda `$query->gercek()`) — örnek rafı aynı süzgeçleri paylaşsın diye.
         $query = Listing::query()->active()->with(['coverImage', 'category.parent', 'country', 'user']);
 
         // Kategori: route parametresi öncelikli, yoksa query string (?kategori=slug)
@@ -71,6 +73,23 @@ class BrowseController extends Controller
             $query->where('type', $type);
         }
 
+        /*
+         * SÜZGEÇLER BİTTİ — burada iki dala ayrılıyor.
+         *
+         * gercek(): ÖRNEK ilanlar listeye ve "N ilan bulundu" sayacına
+         * KARIŞMAZ. Kartın üstündeki rozet, sayacın söylediği yalanı
+         * düzeltmiyordu: /ilanlar?ulke=DE "12 ilan bulundu" derken 12'si de
+         * örnekti (ölçüm 2026-08-08). Ana sayfa bu kararı 2026-08-01'de
+         * zaten vermişti (HomeController); liste sayfasında verilmemişti.
+         *
+         * Demo tamamen kaybolmuyor: gerçek sonuç boş kalırsa aşağıda ayrı,
+         * ETİKETLİ bir rafta gösteriliyor. Kopya tam BURADAN alınır —
+         * sıralamadan önce, süzgeçlerden sonra — ki aynı süzgeç zinciri
+         * ikinci kez elle yazılmasın.
+         */
+        $ornekSorgusu = (clone $query)->where('is_demo', true);
+        $query->gercek();
+
         // Öne çıkanlar (süresi geçmemiş) her zaman üstte, sonra seçilen sıralama
         $query->orderByFeatured();
 
@@ -83,6 +102,20 @@ class BrowseController extends Controller
 
         $listings = $query->paginate(12)->withQueryString();
 
+        /*
+         * ÖRNEK RAFI — yalnız gerçek sonuç BOŞKEN.
+         *
+         * Ana sayfadaki kuralın aynısı (HomeController): demo, gerçek arzın
+         * yerine geçmez; gerçek arz yokken tamamen boş bir sayfadan iyidir.
+         * Sayaç bu rafı saymaz, raf kendi başlığıyla örnek olduğunu söyler.
+         *
+         * Sorgu boş-durum dışında HİÇ çalışmaz — dolu sayfanın sorgu bütçesi
+         * (PerformanceBenchmarkTest) değişmez.
+         */
+        $ornekIlanlar = $listings->total() === 0
+            ? $ornekSorgusu->latest()->take(12)->get()
+            : collect();
+
         // Vitrin (Faz P4) — filtre kolonundaki kategori sayaçları ve fiyat
         // histogramı. Yalnız Vitrin aktifken hesaplanır: klasik tema bunları
         // göstermediği için orada ek sorgu maliyeti doğmaz.
@@ -94,7 +127,11 @@ class BrowseController extends Controller
             // HARİÇ diğer tüm filtrelerle hesaplanır — aksi halde "bu
             // kategoride 12 ilan var" derken zaten o kategoriye filtrelenmiş
             // sonucu sayardık ve histogram tek kovaya çökerdi.
-            $temel = fn () => tap(Listing::query()->active(), function ($q) use ($request, $type) {
+            // gercek(): filtre kolonundaki "Nakliyat (12)" rozeti de bir
+            // SAYIDIR; örnek ilanla şişerse kullanıcı boş bir kategoriye
+            // tıklar. Histogram için de aynısı — örnek fiyatlar gerçek fiyat
+            // dağılımı gibi okunmamalı.
+            $temel = fn () => tap(Listing::query()->active()->gercek(), function ($q) use ($request, $type) {
                 if ($keyword = trim((string) $request->input('q'))) {
                     $q->where(function ($sub) use ($keyword) {
                         $sub->where('title', 'like', "%{$keyword}%")
@@ -127,6 +164,7 @@ class BrowseController extends Controller
 
         return view('listings.index', [
             'listings' => $listings,
+            'ornekIlanlar' => $ornekIlanlar,
             'kategoriSayaclari' => $kategoriSayaclari,
             'fiyatDagilimi' => $fiyatDagilimi,
             // BOŞ SONUÇ SAYFASI İNDEKSLENMEZ.

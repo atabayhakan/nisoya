@@ -2,8 +2,34 @@
     :title="$user->name.' — Nisoya'"
     :description="$user->bio ? \Illuminate\Support\Str::limit(strip_tags($user->bio), 150) : ($user->jobCategory ? $user->jobCategory->name.' — '.$user->name.' Nisoya üzerinde hizmet veriyor.' : $user->name.' — Nisoya üzerinde yetenek ve hizmet sunuyor.')"
     :ogImage="$user->avatarDisplayPath() ? \Illuminate\Support\Facades\Storage::url($user->avatarDisplayPath()) : null"
+    :noindex="$noindex"
 >
-    {{-- JSON-LD: Person --}}
+    {{-- ÖRNEK PROFİL BANDI.
+
+         Sayfadaki her sayı (aktif ilan, ★ değerlendirme, tamamlanan anlaşma)
+         bu üyenin kendi verisinden türüyor; örnek bir üyede hepsi örnektir.
+         Kartların üstündeki rozet tek tek doğru söylüyordu ama SAYILAR onu
+         okumuyordu — sayfayı bütün olarak etiketlemek bu boşluğu kapatır,
+         ilan detayındaki bandın yaptığı işin aynısı. --}}
+    @if ($user->is_demo)
+        <div class="mx-auto max-w-6xl px-4 pt-6">
+            <div class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-700 dark:bg-amber-950/50">
+                <p class="text-sm font-semibold text-amber-900 dark:text-amber-100">Bu bir ÖRNEK profildir</p>
+                <p class="mt-1 text-sm text-amber-800 dark:text-amber-200">
+                    Nisoya demo verisidir; gerçek bir kişiye ait değildir. Sayfadaki ilanlar, puanlar ve
+                    anlaşma sayıları örnektir ve mesaj gönderilemez.
+                </p>
+            </div>
+        </div>
+    @endif
+
+    {{-- JSON-LD: Person — ÖRNEK üyede HİÇ basılmaz.
+
+         Yapılandırılmış veri arama motoruna "bu gerçek bir kişi, puanı şu"
+         diye bildirim yapar; uydurma bir kişi için AggregateRating yayınlamak
+         noindex ile bile savunulabilir değil (zengin sonuç beslemeleri sayfa
+         etiketinden bağımsız toplanabiliyor). Kaynağında kesilir. --}}
+    @unless ($user->is_demo)
     <x-json-ld type="Person" :data="array_filter([
         'name' => $user->name,
         'description' => $user->bio ? \Illuminate\Support\Str::limit(strip_tags($user->bio), 300) : null,
@@ -21,6 +47,7 @@
             'reviewCount' => $rating['count'],
         ] : null,
     ])" />
+    @endunless
 
     @php
         $guven = $user->trustProfile();

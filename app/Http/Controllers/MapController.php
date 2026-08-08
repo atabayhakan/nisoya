@@ -34,7 +34,11 @@ class MapController extends Controller
             return view('listings.map', ['points' => $points, 'tip' => 'is']);
         }
 
-        $query = Listing::query()->active()
+        // gercek(): harita pini rozet TAŞIYAMAZ — örnek ilanlar haritada
+        // sahte bir yayılma haritası çizerdi ("Almanya'nın her yerinde ilan
+        // var"). Kart rozetinin çözdüğü sorun burada çözülemediği için
+        // örnekler haritaya hiç girmez.
+        $query = Listing::query()->active()->gercek()
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->with(['category', 'country']);

@@ -86,7 +86,11 @@ class SitemapController extends Controller
         // sayfa kendiliğinden sitemap'e geri döner.
         $kategoriler = Category::query()
             ->where('is_active', true)
-            ->withCount(['listings' => fn ($q) => $q->active()])
+            //
+            // gercek(): örnek ilan bir kategori sayfasını "dolu" yapmaz. Aksi
+            // hâlde yukarıdaki temizliğin tamamı boşa giderdi — 97 kategorinin
+            // 93'ü demo partisiyle sitemap'e geri dönerdi.
+            ->withCount(['listings' => fn ($q) => $q->active()->gercek()])
             ->get();
 
         foreach ($kategoriler as $category) {
@@ -97,7 +101,10 @@ class SitemapController extends Controller
             $urls[] = ['loc' => route('listings.category', $category->slug), 'priority' => '0.7'];
         }
 
-        foreach (Listing::query()->active()->latest()->limit(1000)->get() as $listing) {
+        // gercek(): ÖRNEK ilanlar arama motoruna hiç bildirilmez. Sayfaları
+        // erişilebilir kalır (sahibin gezintisi için) ama kendi robots
+        // etiketiyle noindex'tir — bkz. listings/show.blade.php.
+        foreach (Listing::query()->active()->gercek()->latest()->limit(1000)->get() as $listing) {
             $urls[] = [
                 'loc' => route('listings.show', [$listing, $listing->slug]),
                 'lastmod' => $listing->updated_at?->toAtomString(),
@@ -120,8 +127,15 @@ class SitemapController extends Controller
         }
 
         // Aktif ilanı olan ya da Yetenek Havuzu'nda görünür olan üyeler (bkz. Nisoya Jobzilla Esinlenme Planı).
-        foreach (User::query()->where('status', 'aktif')->whereNotNull('username')
-            ->where(fn ($q) => $q->whereHas('listings', fn ($q2) => $q2->active())->orWhere('is_searchable', true))
+        //
+        // İKİ AYRI gercek() ŞART, ikisi de farklı bir deliği kapatır:
+        //   User::gercek()   — örnek SATICININ kendi profili bildirilmesin.
+        //   listings.gercek() — gerçek bir üye, elinde yalnız örnek ilan
+        //                       kaldığı için "aktif ilanı var" sayılmasın.
+        // İlan URL'lerini çıkarıp bunu bırakmak sızıntıyı kapatmaz, yalnız
+        // kapısını değiştirir: profil sayfası da örnek ilanlara bağlanıyor.
+        foreach (User::query()->gercek()->where('status', 'aktif')->whereNotNull('username')
+            ->where(fn ($q) => $q->whereHas('listings', fn ($q2) => $q2->active()->gercek())->orWhere('is_searchable', true))
             ->get() as $user) {
             $urls[] = ['loc' => route('profiles.show', $user->username), 'priority' => '0.5'];
         }

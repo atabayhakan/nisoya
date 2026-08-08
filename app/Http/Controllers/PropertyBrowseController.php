@@ -16,7 +16,8 @@ class PropertyBrowseController extends Controller
     /** /emlak vitrini: emlak ilanları + dikeye özgü filtreler. */
     public function index(Request $request): View
     {
-        $query = Listing::query()->active()
+        // gercek(): örnek ilan sayaca ve listeye karışmaz (bkz. Listing::scopeGercek).
+        $query = Listing::query()->active()->gercek()
             ->where('type', 'emlak')
             ->with(['coverImage', 'category', 'country', 'user', 'propertyDetail']);
 

@@ -133,12 +133,22 @@ class OrnekVeri extends Page
                 "{$sonuc['uye']} üye, {$sonuc['ilan']} ilan, {$sonuc['gorsel']} görsel, ".
                 "{$sonuc['sohbet']} sohbet, {$sonuc['anlasma']} anlaşma. ".
                 ($this->gorunur
-                    // Vitrin kuralı (2026-08-01): ana sayfa gerçek ilan öncelikli —
-                    // sahip "ürettim ama sayfada yok" diye aramasın, nereye
-                    // bakacağı bildirimde yazsın.
-                    ? 'İlanlar YAYINDA ve "ÖRNEK" işareti taşıyor. İlanlar sayfasında (/ilanlar) '
-                        .'ve kategori sayfalarında görünürler; ana sayfa vitrini gerçek ilan '
-                        .'öncelikli olduğu için orada YALNIZ hiç gerçek ilan yokken çıkarlar.'
+                    // NEREYE BAKACAĞI YAZILI OLMAK ZORUNDA — sahip "ürettim ama
+                    // sayfada yok" diye aramasın.
+                    //
+                    // Bu metin bir kez yanlış hâle geldi: örnek ilanlar liste
+                    // sayfasından çıkarılınca (2026-08-08 demo sızıntısı
+                    // düzeltmesi) burada hâlâ "/ilanlar ve kategori
+                    // sayfalarında görünürler" yazıyordu. Ekran, kodun
+                    // YAPMADIĞI şeyi anlatıyordu. Kural artık tek yerde
+                    // özetleniyor; sızıntı düzeltmesi değişirse burası da
+                    // değişmeli (bkz. Listing::scopeGercek).
+                    ? 'İlanlar YAYINDA ve "ÖRNEK" işareti taşıyor. Gerçek ilanların ARASINA '
+                        .'karışmazlar ve hiçbir sayaca girmezler: /ilanlar (ve /emlak, /vasita) '
+                        .'sayfalarında ancak o süzgeçle hiç GERÇEK ilan bulunamadığında, '
+                        .'"örnek ilanlar" başlıklı ayrı bir rafta çıkarlar; ana sayfa vitrininde '
+                        .'de yalnız hiç gerçek ilan yokken. Haritada, hızlı aramada ve '
+                        .'sitemap\'te hiç yer almazlar, detay sayfaları "noindex" taşır.'
                     : 'İlanlar taslak — sitede görünmüyorlar.')
             )
             ->success()

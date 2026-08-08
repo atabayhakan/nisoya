@@ -328,6 +328,20 @@ class MessageController extends Controller
             return back()->with('status', 'Kendine mesaj gönderemezsin.');
         }
 
+        /*
+         * ÖRNEK ÜYEYE MESAJ GÖNDERİLEMEZ — start()'taki ilan kapısının (yukarı
+         * bkz. `$listing->is_demo`) profil karşılığı.
+         *
+         * İki kapı vardı, biri kapalıydı: ilandan yazmak engelliydi ama aynı
+         * satıcının PROFİLİNDEN yazmak serbestti. Aynı sahte satıcıya
+         * ulaşmanın iki yolu varsa kapalı olan yol kimseyi korumaz — ziyaretçi
+         * konuşmayı açar, hiç yanıt alamaz, üstüne sistem `@demo.invalid`
+         * adresine bildirim kuyruklar (teslim edilemez, bounce üretir).
+         */
+        if ($user->is_demo) {
+            return back()->with('status', 'Bu bir ÖRNEK profildir — Nisoya demo verisidir, gerçek bir kişiye ait değildir. Mesaj gönderilemez.');
+        }
+
         $data = $request->validate(
             ['body' => ['required', 'string', 'max:2000']],
             attributes: ['body' => 'mesaj'],

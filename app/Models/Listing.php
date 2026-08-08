@@ -284,6 +284,29 @@ class Listing extends Model
     }
 
     /**
+     * ÖRNEK (demo) olmayan ilanlar — "gerçek arz".
+     *
+     * Bu süzgeç zaten Kâhya teşhisinde, ana sayfa sayaçlarında ve Nisoya
+     * Dosyası'nda elle yazılıydı; herkese açık LİSTELERDE yoktu. Sonuç
+     * ölçüldü (2026-08-08): sitemap'e giren 29 ilanın 28'i örnekti ve
+     * /ilanlar?ulke=DE "12 ilan bulundu" derken 12'si de örnekti. Rozet
+     * kartın üstündeydi, ama SAYI onu okumuyordu.
+     *
+     * Bir örnek ilanı göstermek dürüst olabilir (rozetli, mesaj kapalı);
+     * onu SAYMAK ya da arama motoruna gerçek arz diye sunmak değildir.
+     * Kural tek cümle: örnek ilan sayılmaz, indekslenmez, gerçeklerin
+     * arasına karışmaz — yalnız kendi etiketli rafında görünür.
+     *
+     * Scope olarak duruyor ki kural tek isimle çağrılsın; `is_demo`
+     * karşılaştırmasını her çağrı yerinde yeniden yazmak, tam da yukarıdaki
+     * deliğin açılma biçimiydi.
+     */
+    public function scopeGercek($query)
+    {
+        return $query->where('is_demo', false);
+    }
+
+    /**
      * Öne çıkanları ÜSTTE sıralar — ama yalnızca SÜRESİ GEÇMEMİŞ olanları.
      * Ham is_featured'a göre sıralamak, süresi dolan ilanları günlük
      * expire komutuna kadar ~24 saate dek haksız yere üstte tutuyordu

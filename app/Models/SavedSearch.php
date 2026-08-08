@@ -34,7 +34,17 @@ class SavedSearch extends Model
     /** Bu aramaya uyan aktif ilanların sorgusu. */
     public function matchingQuery(): Builder
     {
-        $query = Listing::query()->active();
+        /*
+         * gercek(): örnek ilan "yeni ilan" diye E-POSTALANMAZ.
+         *
+         * Bu uç sızıntının en pahalısıydı: uyarı kullanıcıya kendisi
+         * gidiyordu. "Berlin'de 3 yeni ilan" e-postası açılıyor, içinde
+         * `[ÖRNEK] Ev Temizliği` satırları duruyor, düğmesi ise ilanların
+         * artık listelenmediği bir /ilanlar sayfasına çıkıyordu — yani
+         * ilan sayfalarının düzeltilmesi bu ucu iyileştirmek yerine
+         * BOZUYORDU (vaat edilen ilan, gidilen yerde yok).
+         */
+        $query = Listing::query()->active()->gercek();
 
         if ($this->q) {
             $query->where(function ($s) {

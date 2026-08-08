@@ -1,7 +1,7 @@
 {{-- ARŞİV SAYFASI ARAMA MOTORUNA KAPALI: yayından kalkmış bir ilanın arama
      sonucunda çıkması, tıklayan herkese ölü bir sayfa göstermek demektir.
      Sayfa insanlar için açık, dizinler için kapalı. --}}
-<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage?->enIyiUrl('large')" :noindex="$isArchived">
+<x-layouts.app :title="$listing->title.' — Nisoya'" :description="\Illuminate\Support\Str::limit(strip_tags($listing->description), 150)" :ogImage="$listing->coverImage?->enIyiUrl('large')" :noindex="$noindex">
     {{-- VİTRİN İLAN DETAYI (P2) — klasik listings/show'un aynı-ad override'ı.
          Korunan sözleşmeler: TÜM JSON-LD blokları birebir (BreadcrumbList +
          tipe göre RealEstateListing/Product/Service), hero görselinde
@@ -11,6 +11,15 @@
          paylaş partial'ı, ödeme güvenliği kartı, zone 'ilan_detay_yan'.
          Controller'a dokunulmadığı için veri karşılığı olmayan prototip
          blokları (benzer ilanlar, yorum listesi, yanıt süresi) BASILMAZ. --}}
+    {{-- ÖRNEK İLANDA YAPILANDIRILMIŞ VERİ BASILMAZ.
+
+         `noindex` sayfayı arama sonucundan çıkarır; JSON-LD ise ayrı bir
+         kanaldır — "şu ürün, şu fiyata, şu satıcıdan, stokta" iddiası zengin
+         sonuç beslemelerine sayfa etiketinden bağımsız girebilir. Uydurma bir
+         ilan için fiyat/stok/sağlayıcı yayınlamak, örnek satıcı profilinde
+         AggregateRating basmakla aynı şey (bkz. profiles/show.blade.php).
+         Kaynağında kesilir. --}}
+    @unless ($listing->is_demo)
     {{-- JSON-LD: BreadcrumbList --}}
     <x-json-ld type="BreadcrumbList" :data="[
         'itemListElement' => [
@@ -86,6 +95,7 @@
             ] : null,
         ]" />
     @endif
+    @endunless
 
     <div class="mx-auto max-w-6xl px-4 pb-10 pt-5">
         @if (session('status'))
