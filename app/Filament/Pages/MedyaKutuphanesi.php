@@ -3,6 +3,8 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\RestrictsToAdmins;
+use App\Services\Medya\MedyaDeposu;
+use App\Services\Medya\MedyaKullanim;
 use App\Support\MediaLibrary;
 use BackedEnum;
 use Filament\Notifications\Notification;
@@ -202,7 +204,52 @@ class MedyaKutuphanesi extends Page
 
         $this->page = $files['page'];
 
+        /*
+         * KULLANIM VE ÖLÇÜ BİLGİSİ — yalnız EKRANDAKİ 24 dosya için.
+         *
+         * Tarama her dosya için ayarları ve iki tabloyu geziyor; tüm kütüphane
+         * için yapılsaydı sayfa açılışı dosya sayısıyla birlikte yavaşlardı.
+         * Sayfalama zaten sınırı koyuyor, o sınır burada da geçerli.
+         */
+        $kullanim = app(MedyaKullanim::class);
+
+        foreach ($files['items'] as $i => $item) {
+            $files['items'][$i]['kullananlar'] = $kullanim->nerede($item['path']);
+            $files['items'][$i]['turev'] = $kullanim->turevMi($item['path']);
+
+            $olcu = $item['is_image'] ? @getimagesize(MediaLibrary::root().'/'.$item['path']) : false;
+            $files['items'][$i]['en'] = $olcu[0] ?? null;
+            $files['items'][$i]['boy'] = $olcu[1] ?? null;
+
+            // AĞIR: 300 KB üstü. Eşik keyfî değil — slotların en yükseği
+            // 250 KB (hero masaüstü); onun üstü hiçbir yuvaya sığmıyor demek.
+            $files['items'][$i]['agir'] = $item['size'] > 300 * 1024;
+        }
+
         return $files;
+    }
+
+    /**
+     * Ham (boru hattından geçmemiş) bir görseli slota göre yeniden üretir.
+     *
+     * Kütüphanedeki eski dosyalar için: 402 KB'lik bir JPEG'i tek tıkla
+     * WebP türeve çevirir. Ham dosya SİLİNMEZ — kütüphanede eski hâliyle de
+     * durur; sahip neyin değiştiğini görebilsin diye.
+     */
+    public function optimizeEt(string $path, string $slot = 'sayfa_icerik'): void
+    {
+        try {
+            $rendition = app(MedyaDeposu::class)->alPublicYoldan($path, $slot, auth()->id(), hamiSil: false);
+
+            Notification::make()
+                ->title('Optimize edildi')
+                ->body(basename($path).' → '.$rendition->en.'×'.$rendition->boy
+                    .' WebP ('.round($rendition->bayt / 1024).' KB)')
+                ->success()
+                ->send();
+        } catch (\Throwable $e) {
+            Notification::make()->title('Optimize edilemedi')->body($e->getMessage())->danger()->send();
+        }
     }
 
     public function freeSpace(): float

@@ -52,8 +52,15 @@ class MedyaDeposu
      * gösterilmediği hâlde indirilebilir kalırdı.
      *
      * @param  string  $publicYol  public diskteki yol (ör. "hero/01KZ....jpg")
+     * @param  bool  $hamiSil  ham dosya silinsin mi?
+     *
+     * `$hamiSil = false` YALNIZ Medya Kütüphanesi'nden elle optimize ederken
+     * kullanılır: orada sahip dosyayı listede görüyor ve gözünün önünde
+     * kaybolması "sildim mi ben?" hissi verir. Yükleme akışında ise ham dosya
+     * SİLİNİR — hiçbir yerde gösterilmeyen bir kopyayı indirilebilir bırakmak
+     * boru hattının amacına aykırı.
      */
-    public function alPublicYoldan(string $publicYol, string $slot, ?int $yukleyenId = null): ?MediaRendition
+    public function alPublicYoldan(string $publicYol, string $slot, ?int $yukleyenId = null, bool $hamiSil = true): ?MediaRendition
     {
         if (! Storage::disk('public')->exists($publicYol)) {
             return null;
@@ -86,8 +93,10 @@ class MedyaDeposu
 
         $rendition = $this->turetici->turet($asset, $slot);
 
-        // Ham yükleme artık gereksiz VE istenmez.
-        Storage::disk('public')->delete($publicYol);
+        if ($hamiSil) {
+            // Ham yükleme artık gereksiz VE istenmez.
+            Storage::disk('public')->delete($publicYol);
+        }
 
         return $rendition;
     }

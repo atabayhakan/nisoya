@@ -273,7 +273,24 @@
                                             {{ basename($item['path']) }}
                                         </div>
                                         <div class="mt-0.5 text-2xs text-gray-400">
-                                            {{ $human($item['size']) }} · {{ $item['mtime']->format('d.m.Y') }}
+                                            @if (!empty($item['en']))<span>{{ $item['en'] }}×{{ $item['boy'] }} · </span>@endif{{ $human($item['size']) }} · {{ $item['mtime']->format('d.m.Y') }}
+                                        </div>
+
+                                        {{-- KULLANIM — "silinebilir" DEMEZ, "kullanan bulunamadı" der.
+                                             Tarama veritabanındaki içeriği görür; bir Blade'e elle
+                                             yazılmış yolu göremez. Yokluk kanıtı değil, arama sonucu. --}}
+                                        <div class="mt-1.5 flex flex-wrap gap-1">
+                                            @forelse ($item['kullananlar'] ?? [] as $yer)
+                                                <span class="inline-flex items-center rounded bg-emerald-50 px-1.5 py-0.5 text-2xs font-medium text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">{{ $yer }}</span>
+                                            @empty
+                                                <span class="inline-flex items-center rounded bg-gray-100 px-1.5 py-0.5 text-2xs text-gray-600 dark:bg-gray-800 dark:text-gray-300" title="Veritabanında bu dosyayı kullanan bir kayıt bulunamadı. Şablonlara elle yazılmış adresler taranamaz — silmeden önce kontrol et.">kullanan bulunamadı</span>
+                                            @endforelse
+
+                                            @if (!empty($item['turev']))
+                                                <span class="inline-flex items-center rounded bg-sky-50 px-1.5 py-0.5 text-2xs font-medium text-sky-800 dark:bg-sky-950/50 dark:text-sky-200" title="Boru hattından geçmiş türev — ana kopyası saklı, yeniden üretilebilir.">optimize</span>
+                                            @elseif (!empty($item['agir']))
+                                                <span class="inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-2xs font-semibold text-amber-900 dark:bg-amber-950/60 dark:text-amber-100" title="300 KB üstü — hiçbir yuvanın hedefine sığmıyor.">ağır</span>
+                                            @endif
                                         </div>
                                     </div>
 
@@ -295,6 +312,20 @@
                                                 <span class="flex items-center gap-1 text-emerald-700 font-bold">✓ Kopyalandı!</span>
                                             </template>
                                         </button>
+
+                                        @if (empty($item['turev']) && !empty($item['is_image']))
+                                            {{-- Ham görseli slot boyutuna indir. Ham dosya SİLİNMEZ:
+                                                 listede gözünün önünde kaybolması "sildim mi ben?"
+                                                 hissi verir. --}}
+                                            <button
+                                                type="button"
+                                                wire:click="optimizeEt(@js($item['path']))"
+                                                class="rounded-lg p-1 text-gray-400 hover:bg-sky-50 hover:text-sky-600 dark:hover:bg-sky-950/40 dark:hover:text-sky-400 transition"
+                                                title="Optimize et (WebP türev üret)"
+                                            >
+                                                <x-filament::icon icon="heroicon-o-sparkles" class="h-4 w-4" />
+                                            </button>
+                                        @endif
 
                                         {{-- Sil Butonu --}}
                                         <button
