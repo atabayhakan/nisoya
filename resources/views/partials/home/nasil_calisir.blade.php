@@ -2,7 +2,7 @@
     {{-- Nasıl çalışır --}}
     <section class="bg-white py-14 dark:bg-stone-900" x-data x-reveal>
         <div class="mx-auto max-w-6xl px-4">
-            <h2 class="text-center text-2xl font-bold text-stone-900 dark:text-stone-50">{{ setting('home.nasil_baslik') }}</h2>
+            <h2 class="text-center text-3xl font-serif font-normal text-stone-900 md:text-4xl dark:text-stone-50">{{ setting('home.nasil_baslik') }}</h2>
             <div class="mt-10 grid gap-8 md:grid-cols-3">
                 @php
                     $adimlar = [

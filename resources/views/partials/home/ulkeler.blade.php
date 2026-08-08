@@ -1,7 +1,7 @@
     {{-- Popüler ülkeler --}}
     @if (\App\Support\HomeSections::visible('ulkeler') && $countries->isNotEmpty())
         <section class="mx-auto max-w-6xl px-4 pb-2" x-data x-reveal>
-            <h2 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Ülkeler</h2>
+            <h2 class="text-3xl font-serif font-normal text-stone-900 md:text-4xl dark:text-stone-50">Ülkeler</h2>
             <div class="mt-5 flex flex-wrap gap-2">
                 @foreach ($countries as $country)
                     <a href="{{ url('/ilanlar') }}?ulke={{ $country->code }}"

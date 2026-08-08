@@ -3,7 +3,7 @@
     <section class="mt-14 bg-white py-14 dark:bg-stone-900" x-data x-reveal>
         <div class="mx-auto max-w-6xl px-4">
             <div class="flex items-end justify-between">
-                <h2 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Yeni ilanlar</h2>
+                <h2 class="text-3xl font-serif font-normal text-stone-900 md:text-4xl dark:text-stone-50">Yeni ilanlar</h2>
                 <a href="{{ route('listings.index') }}" class="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">Tümünü gör →</a>
             </div>
             @if ($latestListings->isNotEmpty())

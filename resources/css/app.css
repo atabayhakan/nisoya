@@ -28,8 +28,21 @@
        generik gri shadow-md yerine hafif emerald tonlu bir "kalkma" hissi
        verir (2026-27 tasarım dilinde bir marka rengiyle uyumlu gölge, sade
        gri gölgeden daha "premium" algılanır). */
-    --shadow-brand: 0 8px 24px -8px rgba(5, 150, 105, 0.35);
-    --shadow-brand-lg: 0 20px 45px -12px rgba(5, 150, 105, 0.4);
+    /* MARKA RENGİNİ İZLER, SABİT EMERALD DEĞİL (2026-08-08).
+
+       Buradaki değer `rgba(5, 150, 105, …)` diye ELLE YAZILMIŞTI — yani
+       emerald. Ama marka rengi panelden seçilebiliyor ve seçildiğinde
+       `components/tasarim-theme.blade.php` tüm `--color-emerald-*`
+       basamaklarını `$primaryColor`dan yeniden üretiyor. Gölge o zincirin
+       dışında kaldığı için canlıda marka MAVİ, gölgeler hâlâ YEŞİLDİ.
+
+       Görünürdü ve kimse fark etmemişti: iki ayrı tasarım incelemesi bunu
+       birbirinden bağımsız buldu.
+
+       `var()` kullanım anında çözülür, yani panel `--color-emerald-600`ı
+       ezdiğinde gölge de onunla döner — ek bir kablo gerekmez. */
+    --shadow-brand: 0 8px 24px -8px color-mix(in srgb, var(--color-emerald-600) 35%, transparent);
+    --shadow-brand-lg: 0 20px 45px -12px color-mix(in srgb, var(--color-emerald-600) 40%, transparent);
 }
 
 /* Alpine.js henüz başlamadan önce x-cloak'lı elemanları gizle (FOUC önleme). */
