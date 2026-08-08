@@ -56,10 +56,25 @@ return [
         'azami_kb' => 250,
     ],
 
+    /*
+     * MOBİL ORAN ÖLÇÜLDÜ, VARSAYILMADI (2026-08-09 düzeltmesi).
+     *
+     * İlk yazımda 1080×1620 (2:3 = 1:1.5) yazılmıştı — "dikey" olsun diye
+     * seçilmiş makul görünen bir oran. Ama mobil hero kutusu canlıda
+     * 360×672 render oluyor, yani 1:1.87. Aradaki fark %25: 9:16'lık bir
+     * görsel önce boru hattında 2:3'e kırpılıyor, sonra CSS `cover` bir kez
+     * daha kırpıyordu — iki kat kayıp.
+     *
+     * 1080×2016 = 1:1.867, kutuyla birebir.
+     *
+     * (Masaüstü 2400×1200 = 2:1 bilinçli KALDI: gerçek kutu 1265×603, yani
+     * 2.098 — fark %5 ve viewport genişliğine göre zaten oynuyor. Tek bir
+     * ekran genişliğine aşırı uydurmak yerine standart 2:1 tutuluyor.)
+     */
     'hero_mobil' => [
         'etiket' => 'Hero — mobil',
         'en' => 1080,
-        'boy' => 1620,
+        'boy' => 2016,
         'kip' => 'kapla',
         'azami_kb' => 150,
         'turet' => 'hero_masaustu',

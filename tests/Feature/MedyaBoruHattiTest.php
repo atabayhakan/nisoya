@@ -88,7 +88,7 @@ class MedyaBoruHattiTest extends TestCase
          * üretiliyordu — yani slot 2:3 isterken türev 1:1.39 oluyordu ve mobil
          * hero yanlış oranda basılırdı.
          */
-        $this->assertEqualsWithDelta(1080 / 1620, $mobil->en / $mobil->boy, 0.01, 'Mobil türev slotun oranını taşımalı.');
+        $this->assertEqualsWithDelta(1080 / 2016, $mobil->en / $mobil->boy, 0.01, 'Mobil türev slotun oranını taşımalı.');
         $this->assertGreaterThan($mobil->en, $mobil->boy, 'Mobil türev dikey olmalı.');
         $this->assertLessThanOrEqual(1080, $mobil->en, 'Büyütme yapılmamalı.');
     }
