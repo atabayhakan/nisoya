@@ -115,8 +115,9 @@ class GrowthUlkeDuzelt extends Command
         if ($kanitsizAcik > 0) {
             $this->newLine();
             $this->components->warn(
-                "KALAN RİSK: {$kanitsizAcik} kaydın ülkesi kanıtlanamıyor ama gönderime AÇIK. ".
-                'Ülkeleri bilinmediği için hangi hukukun geçerli olduğu da bilinmiyor.'
+                "ÜLKESİ KANITLANAMAYAN {$kanitsizAcik} KAYIT gönderime açıktı — KAPATILIYOR. ".
+                'Ülke bilinmiyorsa hangi hukukun geçerli olduğu da bilinmiyor; '.
+                'bu kayıtlara ticari e-posta gönderilemez.'
             );
         }
 
@@ -184,8 +185,34 @@ class GrowthUlkeDuzelt extends Command
             $yazilan++;
         }
 
+        /*
+         * BİLİNMEYEN ÜLKE = GÖNDERİM YOK.
+         *
+         * Tespit `null` döndüğünde ülke alanına dokunulmaz (doğru: uydurma
+         * yazmayız), ama kapı AÇIK kalıyordu — yani yazma tarafı kapalı
+         * düşerken SİSTEM fail-OPEN çalışıyordu. Ülkesi bilinmeyen bir
+         * işletmeye ticari e-posta göndermek, hangi hukukun geçerli olduğunu
+         * bilmeden göndermektir.
+         *
+         * `country` KASITLI olarak değiştirilmez — yalnız kapı kapanır.
+         * Sonradan kanıt çıkarsa (site eklenir, adres zenginleşir) aynı komut
+         * ülkeyi yazar ve kapı kendiliğinden doğru duruma döner.
+         */
+        $kapatilan = 0;
+        foreach (OutreachTarget::query()->where('marketing_status', RegionPolicy::ALLOWED)->get() as $hedef) {
+            if (UlkeTespiti::tespit($hedef->city, $hedef->website, $hedef->contact_email) !== null) {
+                continue;
+            }
+
+            $hedef->update(['marketing_status' => RegionPolicy::BLOCKED]);
+            $kapatilan++;
+        }
+
         $this->newLine();
         $this->components->info("{$yazilan} kayıt güncellendi.");
+        if ($kapatilan > 0) {
+            $this->components->info("{$kapatilan} kaydın kapısı kapatıldı (ülkesi kanıtlanamadı).");
+        }
         if ($silinenEposta > 0) {
             $this->components->info("{$silinenEposta} kaydın iletişim e-postası silindi (engelli bölgeden toplanmıştı).");
         }

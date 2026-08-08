@@ -71,6 +71,14 @@ class UlkeTespitiTest extends TestCase
             '#14 Kaunas (Litvanya)' => ['44292 Kaunas', null, 'LT'],
             '#90 Prienai (Litvanya)' => ['59126 Prienai', null, 'LT'],
 
+            // --- Katalog dışı ABD şehirleri --------------------------------
+            // Posta kodu yok; "eyalet + ZIP" kalıbı tutmuyor. Tanınmasalardı
+            // "ülkesi bilinmiyor" sayılıp kapıları kapanırdı — oysa apaçık ABD.
+            '#477 Brooklyn' => ['Brooklyn', 'https://www.aksarayrestaurant.com/', 'US'],
+            '#505 Paterson' => ['Paterson', null, 'US'],
+            '#512 Beverly Hills' => ['Beverly Hills', null, 'US'],
+            '#498 East Rutherford' => ['East Rutherford', null, 'US'],
+
             // --- Kiril / yerel yazımlar ------------------------------------
             '#58 Бишкек' => ['Бишкек', null, 'KG'],
             '#113 Алматы' => ['Алматы 050000', null, 'KZ'],

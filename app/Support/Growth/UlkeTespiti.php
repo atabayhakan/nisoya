@@ -111,6 +111,29 @@ final class UlkeTespiti
         'zadar' => 'HR',
         'kaunas' => 'LT',
         'prienai' => 'LT',
+
+        /*
+         * ABD ŞEHİRLERİ — katalogda olmayan ama havuzda geçenler.
+         *
+         * Katalog ABD için yalnız 5 şehir tarıyor (New York, Clifton NJ,
+         * Los Angeles, Chicago, Houston) ama Overpass'ın `around` yarıçapı
+         * komşu şehirleri de getiriyor: Brooklyn, Paterson, Pasadena…
+         * Bu kayıtlarda posta kodu YOK, yani "eyalet + ZIP" kalıbı tutmuyor
+         * ve kural hiçbir şey döndüremiyordu.
+         *
+         * NEDEN ÖNEMLİ: bunlar "ülkesi bilinmiyor" kovasına düşüyordu ve
+         * aşağıdaki kapalı-düşen kural onları kapatacaktı — oysa dokuzu da
+         * apaçık ABD'de (ölçüldü 2026-08-08: #477 Brooklyn, #505 Paterson,
+         * #512 Beverly Hills…). Bilinmeyeni kapatmak doğru; BİLİNEBİLİRİ
+         * bilinmiyor sayıp kapatmak yalnızca hedef kaybı.
+         */
+        'brooklyn' => 'US',
+        'paterson' => 'US',
+        'pasadena' => 'US',
+        'beverly hills' => 'US',
+        'cedar grove' => 'US',
+        'west caldwell' => 'US',
+        'east rutherford' => 'US',
     ];
 
     /**
