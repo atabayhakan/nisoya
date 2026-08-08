@@ -126,6 +126,20 @@ return [
     ],
 
     /*
+     * PAYLAŞIM GÖRSELİ (OG) — WhatsApp/Facebook/X önizlemesi.
+     *
+     * 1200×630 platformların beklediği ölçü; başka oranlar kırpılır ya da
+     * yanlarına şerit eklenir. `kapla` şart.
+     */
+    'seo_og' => [
+        'etiket' => 'Paylaşım görseli (OG)',
+        'en' => 1200,
+        'boy' => 630,
+        'kip' => 'kapla',
+        'azami_kb' => 150,
+    ],
+
+    /*
      * SAYFA İÇERİĞİ — yönetilebilir sayfalara gömülen görseller.
      */
     'sayfa_icerik' => [

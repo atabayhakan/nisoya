@@ -3,9 +3,9 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\RestrictsToAdmins;
+use App\Filament\Support\MedyaAlani;
 use App\Support\Settings;
 use BackedEnum;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -71,14 +71,12 @@ class SeoAyarlari extends Page
                             ->maxLength(200)
                             ->helperText('Arama sonuçlarında başlığın altındaki metin. ~155 karakter idealdir.'),
 
-                        FileUpload::make('og_image')
+                        // Boru hattına bağlı (bkz. MedyaAlani): 1200×630'a
+                        // otomatik getirilir, WebP'ye çevrilir. Eskiden ölçü
+                        // yalnız yardım metnindeydi ve kod onu okumuyordu.
+                        MedyaAlani::make('og_image', 'seo_og')
                             ->label('Paylaşım görseli (OG)')
-                            ->image()
-                            ->disk('public')
-                            ->directory('seo')
-                            ->maxSize(2048)
-                            ->imageEditor()
-                            ->helperText('WhatsApp/Facebook/X’te link paylaşılınca görünen görsel. 1200×630 önerilir. Boşsa varsayılan og.png kullanılır.'),
+                            ->helperText('WhatsApp/Facebook/X’te link paylaşılınca görünen görsel. Otomatik 1200×630 yapılır. Boşsa varsayılan og.png kullanılır.'),
                     ]),
 
                 Section::make('Görünürlük')
