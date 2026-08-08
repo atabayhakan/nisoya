@@ -114,15 +114,31 @@ class GrowthUlkeDuzelt extends Command
 
         if ($kanitsizAcik > 0) {
             $this->newLine();
+            // FİİL KİPİ ÇALIŞMA KİPİNE UYAR. Bu satır bir kez kuru koşuda da
+            // "KAPATILIYOR" diyordu — komut yapmadığı şeyi iddia ediyordu.
             $this->components->warn(
-                "ÜLKESİ KANITLANAMAYAN {$kanitsizAcik} KAYIT gönderime açıktı — KAPATILIYOR. ".
+                "ÜLKESİ KANITLANAMAYAN {$kanitsizAcik} KAYIT gönderime açık".
+                ($uygula ? ' — KAPATILIYOR. ' : 'tı — --uygula ile KAPATILACAK. ').
                 'Ülke bilinmiyorsa hangi hukukun geçerli olduğu da bilinmiyor; '.
                 'bu kayıtlara ticari e-posta gönderilemez.'
             );
         }
 
+        /*
+         * KAPALI DÜŞME, ÜLKE DEĞİŞİKLİĞİNDEN BAĞIMSIZ ÇALIŞIR.
+         *
+         * Bu blok bir kez aşağıdaki "değişecek kayıt yok → erken çıkış"ın
+         * ALTINDAYDI: hiçbir ülke düzelmediği bir koşuda komut, gönderime açık
+         * kanıtsız kayıtları KAPATMADAN çıkıyordu — üstelik yukarıda
+         * "KAPATILIYOR" yazdıktan sonra. İki ayrı iş (ülke düzeltme / bilinmeyeni
+         * kapatma) tek bir koşula bağlanmıştı.
+         */
+        if ($uygula && $kanitsizAcik > 0) {
+            $this->components->info($this->kanitsizlariKapat().' kaydın kapısı kapatıldı (ülkesi kanıtlanamadı).');
+        }
+
         if ($degisecek === []) {
-            $this->components->info('Değişecek kayıt yok.');
+            $this->components->info('Ülkesi değişecek kayıt yok.');
 
             return self::SUCCESS;
         }
@@ -185,21 +201,36 @@ class GrowthUlkeDuzelt extends Command
             $yazilan++;
         }
 
-        /*
-         * BİLİNMEYEN ÜLKE = GÖNDERİM YOK.
-         *
-         * Tespit `null` döndüğünde ülke alanına dokunulmaz (doğru: uydurma
-         * yazmayız), ama kapı AÇIK kalıyordu — yani yazma tarafı kapalı
-         * düşerken SİSTEM fail-OPEN çalışıyordu. Ülkesi bilinmeyen bir
-         * işletmeye ticari e-posta göndermek, hangi hukukun geçerli olduğunu
-         * bilmeden göndermektir.
-         *
-         * `country` KASITLI olarak değiştirilmez — yalnız kapı kapanır.
-         * Sonradan kanıt çıkarsa (site eklenir, adres zenginleşir) aynı komut
-         * ülkeyi yazar ve kapı kendiliğinden doğru duruma döner.
-         */
+        $this->newLine();
+        $this->components->info("{$yazilan} kayıt güncellendi.");
+        if ($silinenEposta > 0) {
+            $this->components->info("{$silinenEposta} kaydın iletişim e-postası silindi (engelli bölgeden toplanmıştı).");
+        }
+        $this->components->info('Geri alma tutamağı: updated_at >= '.$damga->toDateTimeString());
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * BİLİNMEYEN ÜLKE = GÖNDERİM YOK.
+     *
+     * Tespit `null` döndüğünde ülke alanına dokunulmaz (doğru: uydurma ülke
+     * yazmayız), ama kapı AÇIK kalıyordu — yani yazma tarafı kapalı düşerken
+     * SİSTEM fail-OPEN çalışıyordu. Ülkesi bilinmeyen bir işletmeye ticari
+     * e-posta göndermek, hangi hukukun geçerli olduğunu bilmeden göndermektir.
+     *
+     * `country` KASITLI olarak değiştirilmez — yalnız kapı kapanır. Sonradan
+     * kanıt çıkarsa (site eklenir, adres zenginleşir) aynı komut ülkeyi yazar
+     * ve kapı kendiliğinden doğru duruma döner.
+     *
+     * @return int kapatılan kayıt sayısı
+     */
+    private function kanitsizlariKapat(): int
+    {
         $kapatilan = 0;
+
         foreach (OutreachTarget::query()->where('marketing_status', RegionPolicy::ALLOWED)->get() as $hedef) {
+            // KAPALI DÜŞEN DÖNGÜ: yalnız kanıtı OLMAYAN kayıt kapatılır.
             if (UlkeTespiti::tespit($hedef->city, $hedef->website, $hedef->contact_email) !== null) {
                 continue;
             }
@@ -208,16 +239,6 @@ class GrowthUlkeDuzelt extends Command
             $kapatilan++;
         }
 
-        $this->newLine();
-        $this->components->info("{$yazilan} kayıt güncellendi.");
-        if ($kapatilan > 0) {
-            $this->components->info("{$kapatilan} kaydın kapısı kapatıldı (ülkesi kanıtlanamadı).");
-        }
-        if ($silinenEposta > 0) {
-            $this->components->info("{$silinenEposta} kaydın iletişim e-postası silindi (engelli bölgeden toplanmıştı).");
-        }
-        $this->components->info('Geri alma tutamağı: updated_at >= '.$damga->toDateTimeString());
-
-        return self::SUCCESS;
+        return $kapatilan;
     }
 }
