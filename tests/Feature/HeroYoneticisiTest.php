@@ -328,25 +328,43 @@ class HeroYoneticisiTest extends TestCase
             ->assertDontSee('Normal başlık', false);
     }
 
-    public function test_vitrine_ozgu_gorsel_alanlar_klasik_temada_etkisiz(): void
+    public function test_vitrine_ozgu_butonlar_klasik_temada_etkisiz(): void
     {
         /*
          * Sözleşmenin DEĞİŞMEYEN yarısı: klasik hero'da karşılığı OLMAYAN
-         * şeyler. Butonlar ve arka plan görseli klasik tasarımda hiç yok
-         * (orada hero'nun altında arama kutusu var). Bunların sızması
-         * "metin alanlarını açtık" kararını sessizce bir tema karışımına
-         * çevirirdi.
+         * şeyler. Butonların klasik tasarımda yeri yok — orada hero'nun
+         * altında arama kutusu var ve birincil eylem odur. Butonların
+         * sızması "metin alanlarını açtık" kararını sessizce bir tema
+         * karışımına çevirirdi.
+         *
+         * -----------------------------------------------------------------
+         * ARKA PLAN GÖRSELİ BU TESTTEN ÇIKARILDI (2026-08-08)
+         *
+         * Bu test eskiden `hero.gorsel_masaustu`nun da klasikte SIZMAMASINI
+         * mühürlüyordu; yani "klasik hero'nun arka plan görseli yoktur" bir
+         * karardı, kaza değil.
+         *
+         * Karar SAHİBİN İSTEĞİYLE değişti: panel görsel yükleme, kırpma,
+         * karartma ve 9 noktalı odak sunuyor ama hangi temada çalıştığını
+         * hiçbir yerde söylemiyordu — sahip kontrolü kullanıp sonucu canlıda
+         * göremiyordu. İki dürüst çıkış vardı: paneli susturmak ya da kabloyu
+         * bağlamak. Sahip ikincisini seçti.
+         *
+         * Medya artık klasikte de çalışıyor ve pozitif yönde mühürlü:
+         * {@see HeroYoneticisiEtkiTest} "MEDYA KABLOSU" bloğu — görsel, mobil
+         * görsel, video, karartma, odak ve geriye dönük uyum (medya yokken
+         * çıktı birebir eski) İKİ TEMADA BİRDEN sınanıyor.
+         *
+         * Butonlar bilerek dışarıda kaldı: istenen "medya kablosu"ydu,
+         * butonlar ayrı bir tasarım kararı.
          */
         Settings::setMany([
             'gorunum.tema' => 'klasik',
             'hero.cta1_etiket' => 'VITRIN-BUTONU',
             'hero.cta1_url' => '/ilanlar',
-            'hero.arkaplan_tipi' => 'gorsel',
-            'hero.gorsel_masaustu' => 'hero/vitrin-arkaplan.jpg',
         ]);
 
         $this->get('/')->assertOk()
-            ->assertDontSee('VITRIN-BUTONU', false)
-            ->assertDontSee('vitrin-arkaplan.jpg', false);
+            ->assertDontSee('VITRIN-BUTONU', false);
     }
 }
