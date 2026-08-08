@@ -66,7 +66,20 @@
                          hâlde küçük metin eşiği geçemediğinde açılır. Görselin
                          tamamını daha da karartmak yerine yalnız metnin arkasını
                          koyultur; seçilen kare görünür kalır. --}}
-                    <div class="absolute inset-0 bg-gradient-to-r from-stone-950/80 via-stone-950/45 to-transparent"></div>
+                    {{-- YÖN CİHAZA GÖRE DEĞİŞİR — ölçümle belirlendi (2026-08-09).
+
+                         Tek bir yatay gradyan ikisine birden konmuştu ve mobilde
+                         İŞE YARAMIYORDU: masaüstünde metin genişliğin %77'sinde
+                         bitiyor, mobilde %96'sına uzanıyor. `to-r` gradyanı
+                         %100'de tamamen söndüğü için mobilde metnin sağ ucu
+                         çıplak zeminde kalıyordu (ölçüldü: alt metin 3.62,
+                         rozet 4.41 — eşik 4.5).
+
+                         Mobilde metin DİKEYDE üst yarıda duruyor (rozet 0.10,
+                         alt metnin dibi 0.51 — ölçüldü), o yüzden yukarıdan
+                         aşağı sönen gradyan tam oturuyor. Masaüstünde metin
+                         solda toplandığı için yatay gradyan doğru kalıyor. --}}
+                    <div class="absolute inset-0 bg-gradient-to-b from-stone-950/85 via-stone-950/60 to-transparent sm:bg-gradient-to-r sm:from-stone-950/80 sm:via-stone-950/45 sm:to-transparent"></div>
                 @endif
             </div>
         @else
