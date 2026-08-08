@@ -68,9 +68,9 @@ boru hattına **bu turda dokunulmaz** (çalışan şeyi bozmamak için).
 Tek kayıt yeri `config/media_slots.php`:
 
 ```php
-'hero.masaustu' => ['en' => 2400, 'boy' => 1200, 'kip' => 'kapla', 'azami_kb' => 250],
-'hero.mobil'    => ['en' => 1080, 'boy' => 1620, 'kip' => 'kapla', 'azami_kb' => 150,
-                    'turet' => 'hero.masaustu'],
+'hero_masaustu' => ['en' => 2400, 'boy' => 1200, 'kip' => 'kapla', 'azami_kb' => 250],
+'hero_mobil'    => ['en' => 1080, 'boy' => 1620, 'kip' => 'kapla', 'azami_kb' => 150,
+                    'turet' => 'hero_masaustu'],
 ```
 
 Yükleme "bir dosya al"dan **"bu slot için bir dosya al"a** dönüşür.
