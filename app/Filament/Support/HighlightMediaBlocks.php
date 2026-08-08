@@ -5,7 +5,6 @@ namespace App\Filament\Support;
 use App\Support\HighlightMedia;
 use Closure;
 use Filament\Forms\Components\Builder;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 
@@ -29,12 +28,12 @@ class HighlightMediaBlocks
                         ->label('Resim adresi / URL (ör. https://... veya /storage/...)')
                         ->nullable()
                         ->helperText('Medya kütüphanesinden veya sunucudan aldığınız resim linkini buraya yapıştırabilirsiniz.'),
-                    FileUpload::make('path')
+                    // Boru hattına bağlı. `vurgu_buyuk` seçildi: kart hem büyük
+                    // hem küçük yuvada kullanılabiliyor ve ana kopya saklandığı
+                    // için gerekirse küçük türev sonradan üretilebilir —
+                    // büyükten küçüğe inmek mümkün, tersi değil.
+                    MedyaAlani::make('path', 'vurgu_buyuk')
                         ->label('veya Bilgisayardan Resim Yükle')
-                        ->image()
-                        ->disk('public')
-                        ->directory('highlights')
-                        ->maxSize(10240)
                         ->fetchFileInformation(false)
                         ->nullable(),
                 ]),

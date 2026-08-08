@@ -2,9 +2,9 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Support\MedyaAlani;
 use App\Support\Settings;
 use BackedEnum;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -80,12 +80,10 @@ class IcerikAyarlari extends Page
                         ->columnSpanFull(),
                     'textarea' => Textarea::make($name)->rows(3)->maxLength(2000),
                     'select' => Select::make($name)->options($meta['options'] ?? []),
-                    'image' => FileUpload::make($name)
-                        ->image()
-                        ->disk('public')
-                        ->directory('marka')
-                        ->maxSize(2048)
-                        ->imageEditor(),
+                    // Boru hattına bağlı. `marka_logo` slotu `sigdir` kipinde ve
+                    // saydamlığı korur — logo kırpılırsa marka bozulur, koyu
+                    // temada beyaz kutu içinde kalırsa da öyle.
+                    'image' => MedyaAlani::make($name, 'marka_logo'),
                     default => TextInput::make($name)->maxLength(2000),
                 };
 

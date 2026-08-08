@@ -3,7 +3,6 @@
 namespace App\Filament\Support;
 
 use Filament\Forms\Components\Builder;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -42,12 +41,10 @@ class ContentBlocks
                 ->label('Görsel')
                 ->icon('heroicon-o-photo')
                 ->schema([
-                    FileUpload::make('image')
+                    // Boru hattına bağlı: 1600px sınırına indirilir, WebP olur.
+                    // `sigdir` kipi — sayfa içi görseller kırpılmaz.
+                    MedyaAlani::make('image', 'sayfa_icerik')
                         ->label('Görsel')
-                        ->image()
-                        ->disk('public')
-                        ->directory('sayfalar')
-                        ->maxSize(4096)
                         ->required(),
                     TextInput::make('alt')->label('Alternatif metin (erişilebilirlik)'),
                     TextInput::make('caption')->label('Açıklama (ops.)'),
