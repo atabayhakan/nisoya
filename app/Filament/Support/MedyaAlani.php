@@ -49,6 +49,14 @@ class MedyaAlani
              * boyutlar (bellek riski) kesilir.
              */
             ->maxSize(12288)
+            /*
+             * Filament'in "kayıtlı dosyanın bilgisini çek" adımı KAPALI.
+             * Açıkken alan "Yükleniyor · Boyut hesaplanıyor" durumunda sonsuza
+             * dek kalabiliyor (panel `www.` ile açılınca istek çapraz köken
+             * oluyor ve CORS'a takılıyor). Bize bir şey kazandırmıyor: boyutu
+             * zaten boru hattı belirliyor.
+             */
+            ->fetchFileInformation(false)
             ->helperText(self::yardimMetni($spec))
             ->saveUploadedFileUsing(static function (BaseFileUpload $alan, TemporaryUploadedFile $dosya) use ($slot): ?string {
                 try {

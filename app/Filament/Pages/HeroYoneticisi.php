@@ -143,6 +143,25 @@ class HeroYoneticisi extends Page
                             ->default('yok')
                             ->live(),
 
+                        /*
+                         * `fetchFileInformation(false)` — ZORUNLU, kozmetik değil.
+                         *
+                         * Filament kayıtlı bir dosyanın boyut/tür bilgisini almak
+                         * için ona AYRI bir istek atar. O istek dönmezse alan
+                         * "Yükleniyor · Boyut hesaplanıyor" durumunda SONSUZA DEK
+                         * kalır ve "iptal" düğmesi de işe yaramaz — ortada iptal
+                         * edilecek bir yükleme yoktur, dosya zaten kayıtlıdır.
+                         *
+                         * Sahip bunu iki kez bildirdi. İstek, panel `www.` ile
+                         * açıldığında ÇAPRAZ KÖKEN oluyor (APP_URL `nisoya.com`,
+                         * yani www'suz) ve CORS başlığı olmadığı için düşüyor —
+                         * ölçüldü: aynı sayfadan `fetch()` "Failed to fetch"
+                         * verirken `<img>` sorunsuz yükleniyordu.
+                         *
+                         * Bilgi çekme adımı bize hiçbir şey kazandırmıyor: boyutu
+                         * zaten boru hattı belirliyor. Bağımlılığı tamamen kaldır.
+                         * (Aynı düzeltme vurgu kartı alanında da var.)
+                         */
                         FileUpload::make('gorsel_masaustu')
                             ->label('Görsel — masaüstü')
                             ->image()
@@ -150,7 +169,8 @@ class HeroYoneticisi extends Page
                             ->directory('hero')
                             ->maxSize(4096)
                             ->imageEditor()
-                            ->helperText('2400×1200 önerilir (webp).')
+                            ->fetchFileInformation(false)
+                            ->helperText('Otomatik 2400×1200 boyutuna getirilir ve WebP’ye çevrilir. Daha büyük yükleyebilirsin.')
                             ->visible(fn ($get) => $get('arkaplan_tipi') === 'gorsel'),
 
                         FileUpload::make('gorsel_mobil')
@@ -160,7 +180,11 @@ class HeroYoneticisi extends Page
                             ->directory('hero')
                             ->maxSize(4096)
                             ->imageEditor()
-                            ->helperText('Boşsa masaüstü görseli kullanılır. 1080×1080 önerilir.')
+                            ->fetchFileInformation(false)
+                            // Eski metin "1080×1080 önerilir" diyordu ve İKİ KEZ
+                            // yanlıştı: slot 1080×2016 (mobil hero kutusu 1:1.87
+                            // ölçüldü) ve artık "öneri" değil, uygulanan kural.
+                            ->helperText('Boşsa masaüstü görselinden otomatik türetilir. Ayrı yüklersen otomatik 1080×2016 yapılır.')
                             ->visible(fn ($get) => $get('arkaplan_tipi') === 'gorsel'),
 
                         TextInput::make('video_url')
