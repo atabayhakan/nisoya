@@ -3,6 +3,11 @@
 **Durum (2026-08-01):** Sahip "sistem mesaj göndermeye hazır değil, sonra yapacağız" dedi —
 taslaklar hazır, gönderim ertelendi. Gönderimi HER ZAMAN sahip yapar (Claude göndermez).
 
+**Güncelleme (2026-08-09):** AWS SES üretim erişimini reddetti; sahip soğuk e-posta
+otomasyonunu bıraktı. Bu belgedeki mesajlar zaten elle gönderilmek üzere yazılmıştı —
+karar onları etkilemiyor, tersine tek yol hâline getirdi. İşletmelere yazılacak liste ve
+şablon ayrı belgede: `docs/10-elle-erisim-listesi.md`.
+
 **Gönderim notları:**
 - ~~TUSU mesajındaki rehber linki sayfa yayınlanmadan 404 verir~~ → **2026-08-05'te DOĞRULANDI: sayfa yayında, HTTP 200.**
   Sayfadaki bölüm başlıkları mesajın dört iddiasıyla birebir örtüşüyor (ev kurma listesi ·
