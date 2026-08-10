@@ -44,20 +44,46 @@ Mabledon Place, London WC1H 9BB. Kurum **aktif** (2026-2027 yönetim kurulu baş
 > https://nisoya.com/ingiltere-ogrenci-ev-kurma-rehberi
 >
 > İçinde ilk hafta ev kurma listesi, ikinci el eşyanın nereden alınacağı, ödeme yaparken
-> dolandırıcılıktan korunma ve mezun olurken eşya devretme var.
+> dolandırıcılıktan korunma ve mezun olurken eşya devretme var. Örneğin İngiltere yatak
+> ölçüleri (single 90×190, double 135×190) — valizinde nevresim getiren herkesin başına
+> gelen sorun.
 >
 > Sayfa tamamen açık: üyelik istemiyor, ücret yok, arkasında bir kayıt formu da yok.
-> İşinize yarar derseniz üyelerinizle paylaşmanızdan mutluluk duyarız.
 >
-> Bir de şunu eklemek isterim: Nisoya'da mezun olan öğrenciler eşyalarını ücretsiz listeleyip
-> arkadan gelenlere devredebiliyor. Platform komisyon almıyor ve ödemeye aracılık etmiyor —
-> alışveriş doğrudan iki kişi arasında oluyor, biz yalnızca buluşma yeriyiz.
+> Ricam tek bir şey: **eylül karşılama iletişiminizde** bu sayfaya yer verebilir misiniz?
+> İşinizi kolaylaştırmak için hazır bir duyuru metnini aşağıya ekledim, olduğu gibi
+> kullanabilirsiniz.
 >
-> Sorularınız olursa memnuniyetle yanıtlarım.
+> Bir de dürüst olmam gereken bir nokta var: Nisoya yeni bir platform ve İngiltere
+> tarafında ilan sayısı şu an çok az. Bu yüzden ricam "gelin alışveriş yapın" değil,
+> tersi — **mezun olan ya da taşınan üyeleriniz devredecekleri eşyayı ücretsiz
+> listelesin**. Eşyayı bırakan öğrenciyle arayan öğrenci aynı topluluk içinde; önce
+> ilanlar birikirse arayanın işine yarar hâle geliyor. Ters sırada çalışmıyor ve size
+> boş bir sayfa göndermiş olurum.
+>
+> Platform komisyon almıyor, ödemeye aracılık etmiyor — alışveriş doğrudan iki kişi
+> arasında, biz yalnızca buluşma yeriyiz.
+>
+> Rehberde eksik bulduğunuz bir şey olursa söyleyin, eklerim.
 >
 > Sevgiler,
 > Hakan
 > nisoya.com
+
+**Ekte gönderilecek hazır duyuru metni.** Dernek yöneticisinin işini sıfıra indirir —
+"paylaşır mısınız" demek ile paylaşılacak şeyi hazır vermek arasındaki fark, çoğu
+dernek postasının cevapsız kalma sebebidir.
+
+> 🎓 İngiltere'ye yeni gelen arkadaşlar için: ev kurma ve ikinci el rehberi — yatak
+> ölçüleri, Türkiye'den ne getirmeli, güvenli ödeme.
+> nisoya.com/ingiltere-ogrenci-ev-kurma-rehberi
+>
+> Mezun olan / taşınan arkadaşlar: eşyanızı aynı yerde ücretsiz listeleyebilirsiniz,
+> komisyon yok.
+
+**Gönderim kanalı:** yalnız `info@tusu.uk`. Facebook DM 2026-07-29 doğrulamasında en
+zayıf kanal olarak ölçüldü. Sahibin kendi normal posta kutusundan yazılır — otomasyon
+ya da toplu gönderim aracı KULLANILMAZ (gönderim itibarı riski, ATAA dersi).
 
 ## 2) Dubai Türk Rehberi — dubairehberi.com.tr
 
