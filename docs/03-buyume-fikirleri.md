@@ -133,9 +133,11 @@ götürülebilir.
 - *2026-08-04 · öneri 3* (WhatsApp paylaşım kartı) → **yapılmış.** İlan
   detayında **"Durumuma koy"** butonu canlıda (PR #79).
 
-Sahip bu ikisine `YAPILDI` satırı düşerse karar bekleyen sayısı 4'ten 2'ye
-iner. Aşağıdaki 4 öneriyle birlikte toplam 6 olur — sınırın tam üstünde,
-yani karar verilmezse ajan gelecek hafta yeni öneri yazmayacak.
+İkisine de **aynı gün `YAPILDI` satırı düşüldü** (bkz. 2026-08-04 bölümü),
+yani o bölümde karar bekleyen 4 öneriden 2'si kapandı; geriye **öneri 1 (TGD)**
+ve **öneri 4 (Metropol FM)** kaldı. Aşağıdaki 4 yeni öneriyle birlikte karar
+bekleyen toplam **6** — sınırın tam üstünde. Bu 6'ya karar verilmezse ajan
+gelecek hafta yeni öneri yazmaz, yalnız hatırlatır.
 
 ---
 
@@ -325,6 +327,15 @@ yeter; getirmiyorsa kalan 192'yi doğrulamaya hiç girişilmez.
 resmî temsilcilik sayfalarından doğrula ve yayına al. `verified_at` doldur
 (K7 gereği 90 günde bir tazelenecek).
 
+> **KARAR · 2026-08-10 · YAPILDI** — plan yalnız uygulanmadı, **aşıldı**:
+> önerilen 3 Alman şehri yerine DE (Berlin, Köln, Düsseldorf) **ve** US
+> (New York, Los Angeles, Chicago) yayında. Canlı `sitemap.xml`'de
+> **30 işlem sayfası + 6 şehir hub'ı = 36 URL**; `/de/berlin/vekaletname`
+> gerçek içerikli ve `verified_at` = 04.08.2026. Ölçüm: 2026-08-10 turu.
+> **Ama kapının ikinci yarısı hâlâ açık:** bu öneri "getirmiyorsa kalan 192'yi
+> doğrulamaya hiç girişilmez" diyordu ve *getiriyor mu* sorusu henüz
+> ölçülmedi — bkz. 2026-08-10 · öneri 3 (Search Console).
+
 **3. WhatsApp durumu için otomatik ilan paylaşım kartı** *(kategori 3: ürün
 içi viral)*
 
@@ -349,6 +360,11 @@ yeni bağımlılık gerekmez.
 
 *İlk adım:* tek ilan tipinde (hizmet) pilot buton; kartı istek anında üretip
 kısa süreli cache'le, tıklama sayısını ölç.
+
+> **KARAR · 2026-08-10 · YAPILDI** — PR #79 ile uygulandı; ilan detayında
+> **"Durumuma koy"** butonu canlıda (2026-08-10 turunda
+> `/ilan/112/…` üzerinden doğrulandı). Önerinin ilk adımındaki **tıklama
+> ölçümü** ayrıca doğrulanmadı; ürün canlı ama etkisi hakkında elde veri yok.
 
 **4. Metropol FM** *(kategori 4: ortaklık/medya)*
 
