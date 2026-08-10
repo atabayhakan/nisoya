@@ -11,7 +11,7 @@
         @break
 
     @case('metin')
-        <div class="prose prose-stone max-w-none">{!! $renderRich($data['content'] ?? '') !!}</div>
+        <div class="prose prose-stone max-w-none dark:prose-invert dark:text-stone-300">{!! $renderRich($data['content'] ?? '') !!}</div>
         @break
 
     @case('gorsel')
@@ -26,8 +26,8 @@
 
     @case('iki_sutun')
         <div class="grid gap-6 md:grid-cols-2">
-            <div class="prose prose-stone max-w-none">{!! $renderRich($data['left'] ?? '') !!}</div>
-            <div class="prose prose-stone max-w-none">{!! $renderRich($data['right'] ?? '') !!}</div>
+            <div class="prose prose-stone max-w-none dark:prose-invert dark:text-stone-300">{!! $renderRich($data['left'] ?? '') !!}</div>
+            <div class="prose prose-stone max-w-none dark:prose-invert dark:text-stone-300">{!! $renderRich($data['right'] ?? '') !!}</div>
         </div>
         @break
 

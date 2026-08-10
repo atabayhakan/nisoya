@@ -2,22 +2,31 @@
 
 @if ($categories->isNotEmpty())
     <div x-data="{ open: false, ulke: @js($defaultCountry) }" @keydown.escape.window="open = false">
-        {{-- ACİL DÜĞMESİ — Türk bayrağı kırmızısı (#E30A17) + ay-yıldız.
-             Genel `rose-600` + cankurtaran simidi, "yurt dışındaki Türke
-             yardım" fikrini hiç anlatmıyordu. Renk `rose` paletinden değil
-             doğrudan bayrak kırmızısı; ay-yıldız gerekçesi x-ay-yildiz'da.
+        {{-- ACİL DÜĞMESİ — ÖNCE ANLAŞILSIN, SONRA TÜRK OLSUN.
 
-             `shrink-0` + `whitespace-nowrap`: dar başlıkta bu düğme de
-             eziliyor ve etiketi sarıyordu. --}}
+             Önceki tasarım ay-yıldızlıydı ve sahip haklı olarak "kimse bunun
+             acil durum düğmesi olduğunu anlamaz" dedi. İki sebebi vardı:
+
+             1. ETİKET MOBİLDE GİZLİYDİ (`hidden sm:inline`). Telefonda geriye
+                yalnız ikon kalıyordu — ve ay-yıldız "Türk" der, "acil" demez.
+                Bir düğmenin ne yaptığını anlatan en güçlü şey kelimenin
+                kendisidir; artık her ekranda "Acil" yazıyor.
+             2. Bayrak motifi kimlik anlatır, ACİLİYET anlatmaz. Ünlem üçgeni
+                kültürden bağımsız okunur; tehlike/dikkat için evrensel işaret.
+
+             Kırmızı kaldı ve şanslı bir örtüşme: hem acil rengi hem bayrak
+             kırmızısı (#E30A17). Türklüğü renk taşıyor, anlaşılırlığı ikon ve
+             kelime taşıyor. Ay-yıldız modal başlığında duruyor — orada bağlam
+             zaten kurulmuş oluyor ("Acil Yardım" başlığının yanında). --}}
         <button
             type="button"
             @click="open = true"
-            class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-[#E30A17] px-2.5 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-white/20 transition hover:-translate-y-0.5 hover:bg-[#C10914] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+            class="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg bg-[#E30A17] px-2 py-2 sm:gap-1.5 sm:px-2.5 text-sm font-bold text-white shadow-sm ring-1 ring-inset ring-white/20 transition hover:-translate-y-0.5 hover:bg-[#C10914] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
             aria-label="Acil yardım — hızlı erişim"
             title="Acil yardım — hızlı erişim"
         >
-            <x-ay-yildiz class="h-4 w-4" />
-            <span class="hidden sm:inline">Acil</span>
+            <x-heroicon-s-exclamation-triangle class="h-4 w-4 shrink-0" />
+            Acil
         </button>
 
         {{-- x-teleport: modal, header'ın backdrop-blur'unun (position:fixed

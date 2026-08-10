@@ -541,10 +541,25 @@
                     </div>
                 @endif
 
-                {{-- Satıcı kartı --}}
-                <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-brand dark:border-stone-700/70 dark:bg-stone-900">
+                {{-- SATICI KARTI — marka vurgusu.
+
+                     Kenar çubuğundaki kartların hepsi nötr beyazdı; satıcı
+                     kimliği bu sayfada fiyattan sonraki en önemli bilgi ama
+                     görsel olarak "bir kart daha" gibi duruyordu.
+
+                     Vurgu üstteki ince marka şeridiyle veriliyor: renk
+                     `--color-emerald-600` üzerinden geliyor, yani panelden
+                     seçilen marka rengini İZLER (sabit bir renk yazmak,
+                     gölgelerde bir kez yapılan hatanın aynısı olurdu —
+                     marka mavi olur, şerit yeşil kalırdı). Avatar da aynı
+                     renkten ince bir halka alıyor. --}}
+                <div class="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-brand dark:border-stone-700/70 dark:bg-stone-900">
+                    <div class="h-1 w-full bg-emerald-600 dark:bg-emerald-500" aria-hidden="true"></div>
+                    <div class="p-5">
                     <div class="flex items-center gap-3">
-                        <x-avatar :user="$listing->user" size="h-12 w-12" text="text-lg" />
+                        <span class="rounded-full ring-2 ring-emerald-600/25 dark:ring-emerald-400/30">
+                            <x-avatar :user="$listing->user" size="h-12 w-12" text="text-lg" />
+                        </span>
                         <div class="min-w-0">
                             <div class="flex flex-wrap items-center gap-1.5 text-base font-extrabold leading-tight text-stone-800 dark:text-stone-100">
                                 {{ $listing->user->name }}
@@ -600,6 +615,7 @@
                     <div class="lg:hidden">
                         @include('partials.payment-safety-card', ['seller' => $listing->user])
                     </div>
+                    </div>{{-- /p-5 (marka şeridinin altındaki gövde) --}}
                 </div>
 
                 {{-- Benzer ilanlar (Faz P4) — aynı kategori, aynı şehir öncelikli.
