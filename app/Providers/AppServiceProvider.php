@@ -25,6 +25,7 @@ use App\Services\Kahya\Dis\HamleGonderici;
 use App\Services\PerformanceService;
 use App\Services\VisitorLocationService;
 use App\Support\Settings;
+use App\Support\YapilandirmaOnbellegi;
 use Illuminate\Mail\Markdown;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -190,6 +191,40 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function mergeRuntimeConfig(): void
     {
+        /*
+         * ÖNBELLEK KURULURKEN VERİTABANI KATMANI HİÇ UYGULANMAZ.
+         *
+         * `config:cache` yapılandırmayı diske yazmadan önce uygulamayı boot eder,
+         * yani bu metodun yazdığı her şey `bootstrap/cache/config.php`'ye gömülür.
+         * Bunun iki zararı vardı, ikisi de canlıda ölçüldü (2026-08-10):
+         *
+         *  1. SIR SIZINTISI — `Settings::SIRLI_ANAHTARLAR` veritabanında ŞİFRELİ
+         *     durur ama buraya ÇÖZÜLMÜŞ hâlde yazılır. SES SMTP parolası DB'de
+         *     256 hane şifreliyken önbellek dosyasında 44 hane açık metindi
+         *     (dosya izni -rw-r--r--).
+         *
+         *  2. HAYALET AYAR — ayar veritabanından silinse bile gömülü kopya
+         *     yaşamaya devam eder. Gönderim ayarları boşaltıldığı hâlde
+         *     `kahya-gonderim` mailer'ı tanımlı kaldı; "host boşsa mailer hiç
+         *     tanımlanmaz" güvencesi önbellek üzerinden delindi.
+         *
+         * Neden TOPTAN atlıyoruz da yalnız sırları ayıklamıyoruz: yalnız sırrı
+         * atlamak YARIM AYAR bırakır. Ölçülen örnek — parola atlanıp host/kullanıcı
+         * önbellekte kalırsa, sahip panelden SMTP sunucusunu boşalttığı anda
+         * aşağıdaki erken dönüşe düşülür ve geriye host+kullanıcı dolu, parolası
+         * boş bir mailer kalır: SMTP AUTH boş parolayla denenir, işlemsel
+         * e-postanın tamamı sessizce düşer, üstelik sağlık panosu yalnız host'a
+         * baktığı için yeşil görünür. Toptan atlayınca önbellek "yalnız env"
+         * anlamına gelen TUTARLI bir anlık görüntü olur.
+         *
+         * Kayıp yok: bu metot her boot'ta (her istek, her komut) çalışır, yani
+         * veritabanı katmanı zaten her seferinde yeniden bindiriliyor. Önbelleğe
+         * yazılmasının hiçbir faydası yoktu.
+         */
+        if (YapilandirmaOnbellegi::aliniyorMu()) {
+            return;
+        }
+
         // env() DEĞİL config(): deploy/deploy.sh:96 `config:cache` çalıştırıyor
         // ve önbelleklenmiş config yüklendiğinde $_ENV doldurulmaz — config
         // dosyalarının DIŞINDAKİ env() çağrıları canlıda sessizce null döner.
@@ -282,6 +317,7 @@ class AppServiceProvider extends ServiceProvider
         // Kullanıcı adı/parola boş olabilir (kimlik doğrulamasız sunucular) →
         // null olarak yazılır ki eski env değeri sızmasın.
         Config::set('mail.mailers.smtp.username', Settings::get('mail.username') ?: null);
+
         Config::set('mail.mailers.smtp.password', Settings::get('mail.password') ?: null);
 
         // Symfony şeması: SSL (465) → smtps (örtük TLS); TLS (587) → smtp (STARTTLS).
@@ -336,6 +372,12 @@ class AppServiceProvider extends ServiceProvider
          * dokunulmaz ve host boşken mailer hiç tanımlanmaz: yanlışlıkla ana
          * kimlikle erişim postası atmanın yolu KAPALI kalmalı
          * (bkz. App\Services\Kahya\Dis\HamleGonderici sınıf notu).
+         *
+         * Bu güvence bir kez ÖNBELLEK ÜZERİNDEN DELİNDİ (2026-08-10): ayarlar
+         * veritabanından boşaltıldığı hâlde `bootstrap/cache/config.php`'ye
+         * gömülü kopya (host + kullanıcı + düz metin parola) yüzünden mailer
+         * tanımlı kalmaya devam etti. Çare mergeRuntimeConfig'in başındaki
+         * kapıdır — önbellek kurulurken bu metot hiç çalışmaz.
          */
         $gonderimHost = trim((string) Settings::get('kahya.gonderim_host', ''));
         if ($gonderimHost !== '') {
