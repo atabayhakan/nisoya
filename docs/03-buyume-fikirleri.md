@@ -257,6 +257,70 @@ rehberi içeriklerinize link verelim." ATAA dersi geçerli: toplu gönderim YOK.
 
 ---
 
+### Ek — Lalafo ilan ekranı incelemesi (aynı gün, ajan turu dışında)
+
+Sahip, Bişkek'te kullanılan **Lalafo**'nun ilan detay/satıcı ekranından üç
+ekran görüntüsü paylaştı ve incelenmesini istedi. Bu, haftalık ajan turunun
+çıktısı değil; ayrı bir istek. Buraya yazılmasının sebebi: incelemede
+**alınmayan** maddelerin gerekçesi bir yerde durmazsa altı ay sonra aynı
+fikirler sıfırdan tartışılır.
+
+**Ekranın yaptıkları:** galeri sayacı · görüntülenme/favori sayısı · kategori
+çipi · yan yana iki iletişim düğmesi (mesaj + ara) · boş kalmayan fiyat alanı
+("pazarlıklı") · benzer ilan karuseli · satıcı kartında "%73 yanıt verir,
+genelde 3 saat içinde" · çift tarih (yayınlanma + güncellenme) · ilan ID +
+şikayet bayrağı · sabit alt barda **hazır cevap çipleri** · her ekranda ortada
+duran büyük **+ Sat** düğmesi.
+
+**Zaten Nisoya'da olduğu ölçülenler** (yani yeniden önerilmemeli): ortadaki
+"İlan Ver" düğmesi mobil alt barda var · fiyat boşsa "Görüşülür" yazıyor ·
+şikayet formu vardı (giriş yapmış kullanıcıya, kapalı bir bölüm içinde) ·
+"İlan no NS-{id}" Vitrin şablonunda vardı.
+
+> **KARAR · 2026-08-10 · YAPILDI** — iki madde uygulandı (PR #143, CI beş
+> kontrolde de yeşil): **(1) hızlı cevap çipleri** — iletişim kutusu boş bir
+> zorunlu metin alanıydı, çipler cümleyi kutuya düşürür ama **göndermez**;
+> **(2) ilan numarası klasik şablona taşındı + misafire şikayet yolu açıldı**
+> (şikayet bloğu tümüyle giriş şartına bağlıydı, giriş yapmamış biri şüpheli
+> ilanı görüp hiçbir çıkışa sahip değildi). Çipler tek paylaşılan partial;
+> testler her iddiayı **iki temada da** ölçüyor.
+
+**Alınmayan maddeler ve nedenleri.** Ortak gerekçe şu: Lalafo'nunki
+**likiditesi olan** bir pazaryerinin ekranı. Nisoya'da bugün üçüncü taraf ilan
+sıfır (bkz. bu bölümün envanter ölçümü). Bunları şimdi kopyalamak boş odayı
+dekore etmek olurdu — üstelik bazıları **boşluğu ilan ederdi**.
+
+> **KARAR · 2026-08-10 · ERTELE — benzer ilanlar bloğu.** Kod zaten yazılı
+> (`vitrin/listings/show.blade.php`) ama `Tema::vitrinMi()` ile kapalı ve
+> canlıda klasik tema koşuyor. Kapatma bilinçli: ilan detayının **<25 sorgu
+> bütçesi** var. Ayrıca gösterecek benzer ilan yok. **Şart:** aynı kategoride
+> en az birkaç üçüncü taraf ilan biriksin; açılırken sorgu bütçesi ölçülsün.
+
+> **KARAR · 2026-08-10 · ERTELE — görüntülenme sayacı.** Veri var
+> (`listings.views_count` kolonu), gösterim yok. Bugün açılırsa her ilanda
+> "0 görüntülenme" yazar; bu, ziyaretçiye site boş demenin en hızlı yolu.
+> **Şart:** ilan başına görüntülenme anlamlı bir sayıya çıksın.
+
+> **KARAR · 2026-08-10 · ERTELE — satıcı yanıt oranı/süresi kartı.** Nisoya'da
+> bu verinin **hiçbir karşılığı yok** (ölçüldü: kodda yanıt oranı/süresi
+> tutan hiçbir alan yok). Uydurulamaz — Gerçek Bilgi Kuralı: tasarım
+> referansından yerleşim alınır, sayı alınmaz. Üstelik mesaj trafiği
+> yokken hesaplansa da anlamsız çıkar. **Şart:** düzenli mesajlaşma başlasın,
+> önce ölçüm yazılsın, sonra kart.
+
+> **KARAR · 2026-08-10 · KAPAT — VIP rozetleri / ücretli öne çıkarma.**
+> Lalafo'nun ekranındaki kartların çoğu "VIP" etiketli. Nisoya ücretsiz bir
+> platform ve tonu "Hizmet ücretsizdir 💛" — ödemeli görünürlük bu vaadi
+> doğrudan çeler. Gelir modeli kararı zaten alınmış durumda (bağış + reklam;
+> komisyon yok). Koşul değişirse gerekçesi bu satırla birlikte yazılmalı.
+
+> **KARAR · 2026-08-10 · KAPAT — içerik ortasına reklam bloğu.** Lalafo benzer
+> ilanların hemen üstüne reklam koyuyor. Nisoya'da AdSense zaten var; ilan
+> detayının gövdesine ikinci bir reklam yüzeyi eklemek, sayfanın tek işi olan
+> "satıcıya ulaş"ı bulandırır.
+
+---
+
 ## [2026-08-04]
 
 **Envanter ölçümü (bu tur, canlıdan):** `/ilanlar` **31 ilan** — ama görünenlerin
