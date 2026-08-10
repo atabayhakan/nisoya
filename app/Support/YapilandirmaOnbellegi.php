@@ -83,12 +83,24 @@ final class YapilandirmaOnbellegi
 
         $argv = $_SERVER['argv'] ?? [];
 
+        /*
+         * Yalnız `artisan` çağrıları. Yapılandırmayı diske yazan tek yol budur;
+         * dahası bu daraltma ölçülmüş bir yanlış pozitifi kapatır: `phpunit
+         * --filter optimize` çağrısında argv 'optimize' jetonunu taşır ve
+         * aşağıdaki ikinci ağ tetiklenirdi — o testler boyunca veritabanı
+         * katmanı sessizce atlanır, sebebi görünmeyen kırıklar çıkardı.
+         */
+        if (basename((string) ($argv[0] ?? '')) !== 'artisan') {
+            return false;
+        }
+
         // 1) Doğru yol: Symfony komut adını kendisi çözsün (seçenekleri atlar).
         if (in_array((new ArgvInput($argv))->getFirstArgument(), self::KOMUTLAR, true)) {
             return true;
         }
 
-        // 2) İkinci ağ: jeton nerede geçerse geçsin yakala.
+        // 2) İkinci ağ: jeton nerede geçerse geçsin yakala (getFirstArgument'ın
+        //    beklenmedik bir biçimde yanıldığı hâller için).
         return (bool) array_intersect($argv, self::KOMUTLAR);
     }
 }

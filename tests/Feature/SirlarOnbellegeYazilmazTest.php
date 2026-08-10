@@ -68,6 +68,24 @@ class SirlarOnbellegeYazilmazTest extends TestCase
 
         $this->argvKur(['artisan', 'config:clear']);
         $this->assertFalse(YapilandirmaOnbellegi::aliniyorMu(), 'config:clear dosyaya yazmaz, engellenmemeli');
+
+        $this->argvKur(['artisan', 'optimize:clear']);
+        $this->assertFalse(YapilandirmaOnbellegi::aliniyorMu(), 'optimize:clear de yazmaz');
+    }
+
+    /**
+     * ÖLÇÜLMÜŞ YANLIŞ POZİTİF: ikinci ağ (argv'nin tamamına bakış) artisan
+     * dışındaki çağrılarda tetiklenmemeli. `phpunit --filter optimize` argv'sinde
+     * 'optimize' jetonunu taşır; kapı orada kapansaydı o testler boyunca
+     * veritabanı katmanı sessizce atlanır ve sebebi görünmeyen kırıklar çıkardı.
+     */
+    public function test_artisan_disindaki_cagrilar_kapiyi_tetiklemez(): void
+    {
+        $this->argvKur(['vendor/bin/phpunit', '--filter', 'optimize']);
+        $this->assertFalse(YapilandirmaOnbellegi::aliniyorMu());
+
+        $this->argvKur(['vendor/bin/phpunit', '--filter', 'config:cache']);
+        $this->assertFalse(YapilandirmaOnbellegi::aliniyorMu());
     }
 
     /**
