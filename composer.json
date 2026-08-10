@@ -16,6 +16,7 @@
         "laravel/framework": "^13.8",
         "laravel/mcp": "^0.9",
         "laravel/passkeys": "^0.2.1",
+        "laravel/socialite": "^5.29",
         "laravel/tinker": "^3.0",
         "pragmarx/google2fa-laravel": "^0.3.0",
         "spatie/laravel-activitylog": "^4.12"

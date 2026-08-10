@@ -37,6 +37,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Google ile giriş (Socialite)
+    |--------------------------------------------------------------------------
+    | Değerler öncelikle admin panelden gelir (Site Yönetimi → Giriş Yöntemleri);
+    | AppServiceProvider::mergeRuntimeConfig() bunları env'in üzerine yazar.
+    | Buradaki env okumaları yalnız yedek/yerel geliştirme içindir.
+    |
+    | `redirect` SABİT tutulur: Google Cloud Console'a kaydedilen "Authorized
+    | redirect URI" ile HARFİ HARFİNE aynı olmak zorunda, yoksa Google
+    | redirect_uri_mismatch döndürür. Panelde de aynı adres gösterilir.
+    */
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => '/giris/google/callback',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Google AdSense & Analytics
     |--------------------------------------------------------------------------
     | Bu sistem gelirini AdSense reklamlarından elde eder ve Analytics ile

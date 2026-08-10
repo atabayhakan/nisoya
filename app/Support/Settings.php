@@ -36,6 +36,7 @@ class Settings
         'ai.api_anahtari',
         'growth.google_places_api_key',
         'kahya.gonderim_parola',
+        'giris.google_client_secret',
     ];
 
     /** Tüm ayarları (key => value) cache'den döndürür. */

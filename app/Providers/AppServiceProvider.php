@@ -258,6 +258,19 @@ class AppServiceProvider extends ServiceProvider
         Config::set('services.custom_head_code', $headerCustomCode ?: null);
         Config::set('services.custom_footer_code', $footerCustomCode ?: null);
 
+        // Google ile giriş: panelden girilen anahtarlar env'i geçersiz kılar.
+        // `redirect` BİLEREK burada yok — sabit kalmalı ve Google Cloud'a
+        // kaydedilen adresle birebir aynı olmalı (bkz. config/services.php).
+        $googleClientId = Settings::get('giris.google_client_id');
+        $googleClientSecret = Settings::get('giris.google_client_secret');
+
+        if (filled($googleClientId)) {
+            Config::set('services.google.client_id', $googleClientId);
+        }
+        if (filled($googleClientSecret)) {
+            Config::set('services.google.client_secret', $googleClientSecret);
+        }
+
         // Yayıncı ID mevcutsa AdSense'i etkin say (env'den bağımsız)
         if ($adsensePublisher) {
             Config::set('services.adsense.enabled', true);
