@@ -396,7 +396,11 @@
             <div class="lg:col-span-1">
                 {{-- id: mobil şeritteki "Satıcıya mesaj yaz" kısayolunun hedefi. --}}
                 <div id="satici-iletisim" class="scroll-mt-24 sticky top-20 space-y-4">
-                    <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+                    {{-- Birincil eylem kartı bir kademe yukarıda — Vitrin
+                         şablonuyla aynı sözleşme (gerekçe orada). Kenar
+                         çubuğundaki diğer kartlar `shadow-sm`de kalır; hepsi
+                         eşit yükseklikte olsaydı hiçbiri öne çıkmazdı. --}}
+                    <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-lg shadow-stone-900/10 dark:border-stone-700/70 dark:bg-stone-900 dark:shadow-black/40">
                         <div class="text-2xl font-bold text-stone-900 dark:text-stone-50">
                             @if ($listing->price !== null)
                                 {{ $listing->bicimliFiyat() }} {{ $listing->currency }}
