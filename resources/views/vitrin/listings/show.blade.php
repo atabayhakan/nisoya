@@ -432,6 +432,16 @@
                         </a>
                     </p>
                 @endauth
+
+                {{-- Güvenli ödeme kartı masaüstünde BURADA, mobilde yan sütunda —
+                     klasik şablonla AYNI sözleşme, gerekçe orada yazılı
+                     (listings/show.blade.php). Kısaca: yan sütun sol sütundan
+                     uzun olduğu için sol taraf erken bitip altında boşluk
+                     bırakıyordu; boşluk ızgaranın aynı satırı içinde olduğundan
+                     ancak sol sütunun İÇİNE konan bir şeyle dolar. --}}
+                <div class="mt-8 hidden lg:block">
+                    @include('partials.payment-safety-card', ['seller' => $listing->user])
+                </div>
             </div>
 
             {{-- Sağ kolon (yapışkan) --}}
@@ -578,7 +588,10 @@
                     @include('partials.seller-listing-links', ['seller' => $listing->user, 'counts' => $sellerListingCounts])
 
                     <a href="{{ route('profiles.show', $listing->user->username) }}" class="mt-3 block text-sm font-bold text-emerald-700 hover:underline dark:text-emerald-400">Profili ve değerlendirmeleri gör →</a>
-                    @include('partials.payment-safety-card', ['seller' => $listing->user])
+                    {{-- Masaüstünde bu kart sol sütunda basılır (gerekçe orada). --}}
+                    <div class="lg:hidden">
+                        @include('partials.payment-safety-card', ['seller' => $listing->user])
+                    </div>
                 </div>
 
                 {{-- Benzer ilanlar (Faz P4) — aynı kategori, aynı şehir öncelikli.
