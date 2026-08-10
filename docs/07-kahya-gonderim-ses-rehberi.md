@@ -14,6 +14,27 @@ Maliyet: SES $0.10 / 1000 e-posta — günde 10 postayla ayda ~3 cent.
 
 ---
 
+> ## ⛔ DURUM (2026-08-09): AWS ÜRETİM ERİŞİMİNİ REDDETTİ — bu rehber BEKLEMEDE
+>
+> Case **178543966900428** kapandı: *"we are unable to approve a sending limit
+> increase at this time."* AWS hiçbir ölçüt paylaşmadı; AUP'a uyum sağlandıktan
+> sonra yeniden başvurulabileceğini yazdı.
+>
+> **Sahibin kararı:** soğuk e-posta otomasyonu bırakıldı. Arz kanalı artık
+> **elle erişim** → `docs/10-elle-erisim-listesi.md`. Keşif havuzu yalnız
+> kaynak liste olarak kalıyor.
+>
+> **Aşağıdaki kurulumun tamamı yapıldı ve canlıda duruyor** (SES kimliği, SNS
+> konusu, geri bildirim ucu, engel listesi, tek-tık çıkış). Bozuk bir şey yok —
+> yalnız sandbox sınırı var: gönderim doğrulanmış adreslerle kısıtlı. Bu rehber
+> ileride *izinli* bir listeye gerçekten posta gidecekse tekrar açılır.
+>
+> **Reddedilenin ne olmadığı önemli:** Nisoya'nın işlemsel postası (üyelik,
+> bildirim, destek bileti) Hostinger SMTP üzerinden gidiyor ve SES'e hiç bağlı
+> değil. Sitenin çalışması için gereken hiçbir şey bu retten etkilenmedi.
+
+---
+
 ## Adım 1 — AWS hesabı ve SES konsolu
 
 1. [aws.amazon.com](https://aws.amazon.com) → hesap aç (kredi kartı ister;
