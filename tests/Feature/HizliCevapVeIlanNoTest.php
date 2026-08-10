@@ -143,6 +143,31 @@ class HizliCevapVeIlanNoTest extends TestCase
     }
 
     // -----------------------------------------------------------------
+    // GÜVENLİ ÖDEME KARTININ İKİ YERLEŞİMİ
+    // -----------------------------------------------------------------
+
+    #[DataProvider('temalar')]
+    public function test_guvenli_odeme_karti_her_iki_yerlesimde_de_basilir(string $tema): void
+    {
+        /*
+         * Kart masaüstünde sol sütunda, mobilde yan sütunda basılır; her
+         * ekranda CSS yalnız birini gösterir. Test CSS'i çalıştıramaz ama
+         * İKİ SARMALAYICININ DA var olduğunu ölçebilir.
+         *
+         * Bu testin asıl işi tema asimetrisini yakalamak: düzeltme ilk yazışta
+         * yalnız KLASİK şablona kondu, oysa canlıda VİTRİN koşuyordu ve
+         * değişiklik hiç görünmedi. Tek temada geçen bir test bunu kaçırırdı.
+         */
+        $this->temayiKur($tema);
+        $ilan = Listing::factory()->create();
+
+        $this->get(route('listings.show', [$ilan, $ilan->slug]))
+            ->assertOk()
+            ->assertSee('mt-8 hidden lg:block', false)   // masaüstü: sol sütun
+            ->assertSee('lg:hidden', false);             // mobil: yan sütun
+    }
+
+    // -----------------------------------------------------------------
     // ŞİKAYET YOLU
     // -----------------------------------------------------------------
 
