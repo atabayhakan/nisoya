@@ -145,6 +145,11 @@
                     @endphp
                     <div class="grid gap-3 {{ $yanGorseller->isNotEmpty() ? 'sm:grid-cols-[minmax(0,1fr)_176px]' : '' }}">
                         <div class="relative overflow-hidden rounded-2xl bg-stone-100 dark:bg-stone-800">
+                            {{-- Klasik şablonla AYNI sözleşme: görsel kırpılmaz,
+                                 zemini kendi bulanık kopyası doldurur. Gerekçe
+                                 listings/show.blade.php'de yazılı. --}}
+                            <img src="{{ $heroMedium }}" alt="" aria-hidden="true" loading="lazy"
+                                 class="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-2xl saturate-150 opacity-60 dark:opacity-40">
                             <img src="{{ $heroLarge }}"
                                  srcset="{{ $heroMedium }} 800w, {{ $heroLarge }} 1600w"
                                  sizes="(min-width: 1024px) 800px, 100vw"
@@ -152,8 +157,8 @@
                                  width="800"
                                  height="420"
                                  fetchpriority="high"
-                                 style="--listing-transition-name: listing-image-{{ $listing->id }}; object-position: {{ $hero->objectPosition() }}"
-                                 class="listing-cover-transition h-[260px] w-full object-cover sm:h-[352px]">
+                                 style="--listing-transition-name: listing-image-{{ $listing->id }}"
+                                 class="listing-cover-transition relative mx-auto h-[260px] w-full object-contain sm:h-[352px]">
                             @if ($listing->images->count() > 1)
                                 <span class="absolute bottom-3 left-3 rounded-full bg-white/95 px-[11px] py-[7px] text-2xs font-bold text-stone-800 dark:bg-stone-900/95 dark:text-stone-100">
                                     1 / {{ $listing->images->count() }}

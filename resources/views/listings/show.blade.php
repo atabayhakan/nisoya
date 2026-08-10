@@ -120,13 +120,30 @@
             {{-- Sol: görseller + açıklama --}}
             <div class="lg:col-span-2">
                 @if ($listing->images->isNotEmpty())
-                    <div class="overflow-hidden rounded-2xl bg-stone-100 dark:bg-stone-800">
-                        @php
-                            $hero = $listing->coverImage ?? $listing->images->first();
-                            $heroSrcset = $hero->srcset();
-                            $heroLarge = $hero->enIyiUrl('large');
-                            $heroMedium = $hero->enIyiUrl('medium');
-                        @endphp
+                    @php
+                        $hero = $listing->coverImage ?? $listing->images->first();
+                        $heroSrcset = $hero->srcset();
+                        $heroLarge = $hero->enIyiUrl('large');
+                        $heroMedium = $hero->enIyiUrl('medium');
+                    @endphp
+                    {{-- GÖRSEL KIRPILMAZ.
+
+                         Eskiden `object-cover max-h-[420px]` idi: fotoğraflarda
+                         düzgün duruyordu ama satıcıların yüklediği afiş/
+                         infografik türü görsellerin ÜST KISMI kesiliyordu —
+                         canlıda bir ilanın başlığı görselin içinde kaybolmuştu.
+                         İlan görselinin işi bilgi taşımak; kırpmak o bilgiyi yok
+                         eder.
+
+                         Çözüm: görsel `object-contain` ile TAM görünür, arkada
+                         aynı görselin bulanık ve büyütülmüş bir kopyası zemini
+                         doldurur. Böylece ne kırpma olur ne de dar görsellerin
+                         yanında boş gri bantlar kalır. Arka kopya `aria-hidden`
+                         ve `alt=""` — ekran okuyucuya aynı görseli iki kez
+                         okutmaz. --}}
+                    <div class="relative overflow-hidden rounded-2xl bg-stone-100 ring-1 ring-stone-200/70 dark:bg-stone-800 dark:ring-stone-700/60">
+                        <img src="{{ $heroMedium }}" alt="" aria-hidden="true" loading="lazy"
+                             class="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-2xl saturate-150 opacity-60 dark:opacity-40">
                         <img src="{{ $heroLarge }}"
                              srcset="{{ $heroMedium }} 800w, {{ $heroLarge }} 1600w"
                              sizes="(min-width: 1024px) 800px, 100vw"
@@ -134,8 +151,8 @@
                              width="800"
                              height="420"
                              fetchpriority="high"
-                             style="--listing-transition-name: listing-image-{{ $listing->id }}; object-position: {{ $hero->objectPosition() }}"
-                             class="listing-cover-transition max-h-[420px] w-full object-cover">
+                             style="--listing-transition-name: listing-image-{{ $listing->id }}"
+                             class="listing-cover-transition relative mx-auto max-h-[420px] w-full object-contain">
                     </div>
                     @if ($listing->images->count() > 1)
                         <div class="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-5">

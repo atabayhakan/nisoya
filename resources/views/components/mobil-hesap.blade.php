@@ -127,11 +127,16 @@
          SIRA BİLİNÇLİ: yeni gelen için birincil eylem ÜYE OLMAK, o yüzden
          dolu düğme "Üye ol". Giriş, dönen kullanıcı için sade metin —
          390px'lik başlıkta iki dolu düğme yan yana sığmıyor (ölçüldü). --}}
-    <div class="flex items-center gap-1.5 md:hidden">
-        <a href="{{ route('login') }}" class="rounded-full px-2 py-1.5 text-xs font-semibold text-stone-700 transition hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800">
+    {{-- `whitespace-nowrap` ŞART: "Üye ol" ve "Giriş" içindeki boşluk, dar
+         başlıkta satır sonu adayı sayılıyordu ve 360px'lik telefonlarda
+         "Üye ol" iki satıra düşüp düğmeyi yamultuyordu (cihazda görüldü).
+         `shrink-0` ise düğmelerin, yanındaki ülke seçici/acil düğmesi yer
+         istediğinde ezilmesini engeller — küçülen buton yine sarardı. --}}
+    <div class="flex shrink-0 items-center gap-1 md:hidden">
+        <a href="{{ route('login') }}" class="whitespace-nowrap rounded-full px-2 py-1.5 text-xs font-semibold text-stone-700 transition hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800">
             Giriş
         </a>
-        <a href="{{ route('register') }}" class="rounded-full bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900">
+        <a href="{{ route('register') }}" class="whitespace-nowrap rounded-full bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900">
             Üye ol
         </a>
     </div>

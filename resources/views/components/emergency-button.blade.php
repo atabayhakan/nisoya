@@ -2,14 +2,21 @@
 
 @if ($categories->isNotEmpty())
     <div x-data="{ open: false, ulke: @js($defaultCountry) }" @keydown.escape.window="open = false">
+        {{-- ACİL DÜĞMESİ — Türk bayrağı kırmızısı (#E30A17) + ay-yıldız.
+             Genel `rose-600` + cankurtaran simidi, "yurt dışındaki Türke
+             yardım" fikrini hiç anlatmıyordu. Renk `rose` paletinden değil
+             doğrudan bayrak kırmızısı; ay-yıldız gerekçesi x-ay-yildiz'da.
+
+             `shrink-0` + `whitespace-nowrap`: dar başlıkta bu düğme de
+             eziliyor ve etiketi sarıyordu. --}}
         <button
             type="button"
             @click="open = true"
-            class="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-2.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-700 hover:shadow-lg dark:bg-rose-500 dark:text-stone-900 dark:hover:bg-rose-400"
+            class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-[#E30A17] px-2.5 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-white/20 transition hover:-translate-y-0.5 hover:bg-[#C10914] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
             aria-label="Acil yardım — hızlı erişim"
             title="Acil yardım — hızlı erişim"
         >
-            <x-heroicon-s-lifebuoy class="h-4 w-4" />
+            <x-ay-yildiz class="h-4 w-4" />
             <span class="hidden sm:inline">Acil</span>
         </button>
 
@@ -35,8 +42,8 @@
                 >
                     <div class="flex items-start justify-between gap-4 border-b border-rose-100 bg-rose-50 px-5 py-4 dark:border-rose-900/40 dark:bg-rose-950/30">
                         <div class="flex items-center gap-3">
-                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-rose-600 text-white dark:bg-rose-500">
-                                <x-heroicon-s-lifebuoy class="h-5 w-5" />
+                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#E30A17] text-white">
+                                <x-ay-yildiz class="h-5 w-5" />
                             </span>
                             <div>
                                 <h2 id="emergency-title" class="text-lg font-bold text-rose-900 dark:text-rose-200">Acil Yardım</h2>

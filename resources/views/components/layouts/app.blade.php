@@ -63,8 +63,12 @@
         :style="hidden ? 'transform: translateY(-100%)' : ''"
         class="sticky top-0 z-30 border-b border-stone-200 bg-white/90 backdrop-blur transition-transform duration-300 dark:border-stone-800 dark:bg-stone-900/90"
     >
-        <div :class="scrolled ? 'py-2 shadow-sm' : 'py-3'" class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 transition-all duration-300">
-            <a href="{{ url('/') }}" class="group flex items-center gap-2">
+        {{-- Dar ekranda boşluk pahalı: `gap-4` sabitken logo + arama + ülke +
+             acil + giriş + üye-ol altı öğe 360px'e sığmıyor ve düğmeler
+             eziliyordu. Boşluk mobilde 0.5rem, sm'den itibaren eski hâline
+             döner — masaüstünde ferahlık korunur. --}}
+        <div :class="scrolled ? 'py-2 shadow-sm' : 'py-3'" class="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 transition-all duration-300 sm:gap-4">
+            <a href="{{ url('/') }}" class="group flex min-w-0 shrink items-center gap-2">
                 @if ($logoPath = setting('gorunum.logo_path'))
                     <img src="{{ Storage::disk('public')->url($logoPath) }}" alt="{{ setting('genel.site_adi') }}" class="h-9 w-9 rounded-xl object-cover">
                 @else
