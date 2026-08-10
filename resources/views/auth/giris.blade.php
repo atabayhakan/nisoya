@@ -66,6 +66,8 @@
         <p x-show="error" x-text="error" class="mt-2 text-sm text-red-600 dark:text-red-400" x-cloak></p>
     </div>
 
+    <x-google-giris-butonu etiket="Google ile giriş yap" />
+
     <p class="mt-6 text-center text-sm text-stone-500 dark:text-stone-400">
         Hesabın yok mu?
         <a href="{{ route('register') }}" class="font-medium text-emerald-700 hover:underline dark:text-emerald-400">Kayıt ol</a>

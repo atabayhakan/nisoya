@@ -4,6 +4,8 @@ use App\Http\Controllers\Auth\AccountRecoveryController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\GoogleLoginController;
+use App\Http\Controllers\Auth\GoogleRegistrationController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -18,6 +20,29 @@ Route::middleware('guest')->group(function () {
 
     Route::get('giris', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('giris', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:login');
+
+    /*
+     * Google ile giriş / kayıt.
+     *
+     * `callback` yolu config('services.google.redirect') ile HARFİ HARFİNE
+     * aynı olmalı — Google Cloud Console'a kaydedilen adres de bu. Uyuşmazsa
+     * Google redirect_uri_mismatch döndürür.
+     *
+     * Tamamlama adımı da guest grubunda: Google'dan dönen yeni kişi henüz
+     * üye DEĞİL, kaydı o ekranda tamamlanıyor.
+     */
+    Route::get('giris/google', [GoogleLoginController::class, 'redirect'])
+        ->middleware('throttle:login')
+        ->name('login.google');
+    Route::get('giris/google/callback', [GoogleLoginController::class, 'callback'])
+        ->middleware('throttle:login')
+        ->name('login.google.callback');
+
+    Route::get('kayit/google/tamamla', [GoogleRegistrationController::class, 'create'])
+        ->name('register.google.complete');
+    Route::post('kayit/google/tamamla', [GoogleRegistrationController::class, 'store'])
+        ->middleware('throttle:register')
+        ->name('register.google.store');
 
     // İki adımlı doğrulama challenge'ı (parola doğrulandıktan SONRA, tam giriş
     // ÖNCESİ). Kullanıcı henüz "guest"tir; bekleyen kimlik session'da tutulur.

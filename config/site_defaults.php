@@ -21,6 +21,7 @@ return [
         'reklam' => 'Reklam & Analiz',
         'bagis' => 'Bağış',
         'nabiz' => 'Nisoya Nabzı',
+        'giris' => 'Giriş Yöntemleri',
     ],
 
     // key => [group, label, type (text|textarea), default]
@@ -180,6 +181,13 @@ return [
             'gemini' => 'Google Gemini',
         ], 'default' => ''],
         'ai.api_anahtari' => ['group' => 'yapay_zeka', 'label' => 'API anahtarı', 'type' => 'password', 'default' => ''],
+
+        // --- Giriş yöntemleri (Google ile giriş) ---
+        // `giris.google_client_secret` Settings::SIRLI_ANAHTARLAR listesinde:
+        // veritabanında şifreli durur (bkz. Settings::sirliMi).
+        'giris.google_aktif' => ['group' => 'giris', 'label' => 'Google ile giriş açık', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '0'],
+        'giris.google_client_id' => ['group' => 'giris', 'label' => 'Google Client ID', 'type' => 'text', 'default' => ''],
+        'giris.google_client_secret' => ['group' => 'giris', 'label' => 'Google Client Secret', 'type' => 'password', 'default' => ''],
         'ai.model' => ['group' => 'yapay_zeka', 'label' => 'Model', 'type' => 'text', 'default' => ''],
         'ai.hizli_ilan_aktif' => ['group' => 'yapay_zeka', 'label' => 'Fotoğrafla hızlı ilan', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],
         'ai.moderasyon_aktif' => ['group' => 'yapay_zeka', 'label' => 'Görsel moderasyonu (uygunsuz içerik ön-elemesi)', 'type' => 'select', 'options' => ['1' => 'Açık', '0' => 'Kapalı'], 'default' => '1'],

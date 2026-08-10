@@ -1,26 +1,33 @@
-<x-layouts.guest title="Kayıt Ol — Nisoya">
-    <h1 class="text-xl font-bold text-stone-900 dark:text-stone-50">Aramıza katıl 🎉</h1>
-    <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Ücretsiz hesap oluştur, yeteneğini paraya dönüştür.</p>
+{{--
+    Google ile gelen yeni kişinin kaydını tamamlayan ekran.
 
-    <form method="POST" action="{{ route('register') }}" class="mt-6 space-y-4" x-data="gonderimKilidi('Hesap oluşturuluyor...')" @submit="kilitle">
+    Yalnız Google'ın VEREMEDİĞİ alanlar sorulur: ülke, para birimi, koşul
+    onayı (+ opsiyonel şehir). Ad ve e-posta Google'dan geldi, tekrar
+    sorulmaz — sorulsaydı "Google ile devam et"in kazandırdığı adım geri
+    verilmiş olurdu.
+
+    Parola alanı YOK: bu hesabın parolası hiç kurulmuyor. Kullanıcı isterse
+    sonradan "şifremi unuttum" ile kendi parolasını belirleyebilir.
+--}}
+<x-layouts.guest title="Kaydı tamamla — Nisoya">
+    <h1 class="text-xl font-bold text-stone-900 dark:text-stone-50">Neredeyse bitti 👋</h1>
+    <p class="mt-1 text-sm text-stone-600 dark:text-stone-400">
+        Google hesabınla geldin. Sana doğru ilanları gösterebilmemiz için iki şey kaldı.
+    </p>
+
+    <div class="mt-4 flex items-center gap-3 rounded-lg bg-stone-100 px-4 py-3 dark:bg-stone-800">
+        <x-heroicon-o-user-circle class="h-9 w-9 shrink-0 text-stone-500 dark:text-stone-400" />
+        <div class="min-w-0">
+            <div class="truncate font-semibold text-stone-800 dark:text-stone-100">{{ $ad }}</div>
+            <div class="truncate text-sm text-stone-600 dark:text-stone-400">{{ $eposta }}</div>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ route('register.google.store') }}" class="mt-6 space-y-4"
+          x-data="gonderimKilidi('Hesap oluşturuluyor...')" @submit="kilitle">
         @csrf
-        @include('partials.honeypot')
 
-        <div>
-            <label for="name" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Ad Soyad</label>
-            <input id="name" name="name" type="text" value="{{ old('name') }}" required autofocus autocomplete="name"
-                   class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
-            @error('name') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-        </div>
-
-        <div>
-            <label for="email" class="block text-sm font-medium text-stone-700 dark:text-stone-300">E-posta</label>
-            <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="username"
-                   class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
-            @error('email') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid gap-4 sm:grid-cols-2">
             <div>
                 <label for="country_code" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Ülke</label>
                 <select id="country_code" name="country_code" required
@@ -57,19 +64,6 @@
             @error('preferred_currency') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
         </div>
 
-        <div>
-            <label for="password" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Şifre</label>
-            <x-password-input id="password" name="password" required autocomplete="new-password"
-                   class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 pr-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100" />
-            @error('password') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-        </div>
-
-        <div>
-            <label for="password_confirmation" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Şifre (tekrar)</label>
-            <x-password-input id="password_confirmation" name="password_confirmation" required autocomplete="new-password"
-                   class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 pr-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100" />
-        </div>
-
         <label class="flex items-start gap-2 text-sm text-stone-600 dark:text-stone-400">
             <input type="checkbox" name="terms" value="1" @checked(old('terms')) class="mt-0.5 rounded border-stone-300 text-emerald-700 focus:ring-emerald-500 dark:border-stone-700 dark:text-emerald-400">
             <span><a href="{{ url('/kosullar') }}" class="text-emerald-700 hover:underline dark:text-emerald-400" target="_blank">Kullanım koşullarını</a> ve <a href="{{ url('/gizlilik') }}" class="text-emerald-700 hover:underline dark:text-emerald-400" target="_blank">gizlilik politikasını</a> okudum, kabul ediyorum.</span>
@@ -77,14 +71,12 @@
         @error('terms') <p class="-mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
 
         <button type="submit" class="w-full rounded-lg bg-emerald-700 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900">
-            Kayıt Ol
+            Hesabı oluştur
         </button>
     </form>
 
-    <x-google-giris-butonu etiket="Google ile kayıt ol" />
-
     <p class="mt-6 text-center text-sm text-stone-500 dark:text-stone-400">
-        Zaten hesabın var mı?
-        <a href="{{ route('login') }}" class="font-medium text-emerald-700 hover:underline dark:text-emerald-400">Giriş yap</a>
+        Vazgeçtin mi?
+        <a href="{{ route('register') }}" class="font-medium text-emerald-700 hover:underline dark:text-emerald-400">E-posta ile kayıt ol</a>
     </p>
 </x-layouts.guest>
