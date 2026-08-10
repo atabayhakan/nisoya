@@ -369,6 +369,27 @@
                         </a>
                     </p>
                 @endauth
+
+                {{-- GÜVENLİ ÖDEME KARTI — MASAÜSTÜNDE BURADA, MOBİLDE YAN SÜTUNDA.
+
+                     Sorun yerleşimseldi: yan sütun (fiyat + satıcı + ödeme
+                     kartı) sol sütundan uzun olduğu için sol taraf erken
+                     bitiyor ve altında yüzlerce piksel boşluk kalıyordu.
+                     Boşluk ızgaranın AYNI SATIRI içinde olduğundan, alta yeni
+                     bir satır eklemek onu doldurmaz — dolduracak şeyin sol
+                     sütunun İÇİNDE olması gerekir.
+
+                     Kartın en uzun sidebar parçası olması iki işi birden
+                     görüyor: solu doldururken sağı kısaltıyor.
+
+                     Neden iki yerde: mobilde tek sütuna inildiğinde bu kart
+                     fiyat/mesaj kutusundan ÖNCE gelirdi ve birincil eylemi
+                     aşağı iterdi. `hidden lg:block` / `lg:hidden` ile her
+                     ekranda yalnız BİRİ basılır (`hidden` erişilebilirlik
+                     ağacından da çıkarır, ekran okuyucu iki kez okumaz). --}}
+                <div class="mt-8 hidden lg:block">
+                    @include('partials.payment-safety-card', ['seller' => $listing->user])
+                </div>
             </div>
 
             {{-- Sağ: fiyat + satıcı + iletişim --}}
@@ -492,7 +513,10 @@
                         @include('partials.seller-listing-links', ['seller' => $listing->user, 'counts' => $sellerListingCounts])
 
                         <a href="{{ route('profiles.show', $listing->user->username) }}" class="mt-3 block text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">Profili ve değerlendirmeleri gör →</a>
-                        @include('partials.payment-safety-card', ['seller' => $listing->user])
+                        {{-- Masaüstünde bu kart sol sütunda basılır (gerekçe orada). --}}
+                        <div class="lg:hidden">
+                            @include('partials.payment-safety-card', ['seller' => $listing->user])
+                        </div>
                     </div>
 
                     {{-- Alan: sidebar alt (reklam/duyuru) --}}
