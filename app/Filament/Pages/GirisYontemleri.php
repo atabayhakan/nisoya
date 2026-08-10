@@ -52,6 +52,12 @@ class GirisYontemleri extends Page
             'google_aktif' => Settings::get('giris.google_aktif') === '1',
             'google_client_id' => Settings::get('giris.google_client_id') ?: '',
             'google_client_secret' => Settings::get('giris.google_client_secret') ?: '',
+            // Bu alan salt-okunur bir GÖSTERGE, girdi değil — sahibin Google
+            // Cloud'a kopyalayacağı adres. `fill()`'e açık dizi verildiğinde
+            // bileşenlerin `default()` değerleri UYGULANMAZ; ilk sürümde bu
+            // yüzden kutu bomboş çıktı ve sahip "buraya ne yazacağım" diye
+            // sordu. Değer buraya konmalı.
+            'yonlendirme' => GoogleGiris::yonlendirmeAdresi(),
         ]);
     }
 
@@ -82,9 +88,10 @@ class GirisYontemleri extends Page
                     ->schema([
                         TextInput::make('yonlendirme')
                             ->label('Authorized redirect URI')
-                            ->default(fn () => GoogleGiris::yonlendirmeAdresi())
                             ->readOnly()
-                            ->dehydrated(false),
+                            // Kaydedilecek bir ayar değil, yalnız gösterge.
+                            ->dehydrated(false)
+                            ->helperText('Bu kutuya bir şey yazman gerekmez — değer hazır. Kopyalayıp Google Cloud Console\'a yapıştır.'),
                     ]),
             ])
             ->statePath('data');
