@@ -101,6 +101,160 @@ yüksek), ve varsa somut ilk adım.
 
 ---
 
+## [2026-08-10]
+
+**Envanter ölçümü (bu tur, canlıdan):** `/ilanlar` filtresiz **1 ilan** —
+"Web Programlama e Web Sitesi Yapiyorum" (Bişkek, Kırgızistan, 3 gün önce).
+İlan sahibi hesap adı **`nisoya`**, yani sitenin kendisi. `?ulke=DE` **0**,
+`?ulke=GB` **0**, `?ulke=US` **0**. `/isler` boş, `/emlak` **0**,
+`/vasita` **0**. → **Üçüncü taraf arz hâlâ SIFIR.** 2026-07-29'dan bu yana
+üçüncü kez aynı sonuç. Envanter kapısı aynen geçerli.
+
+Değişen tek şey vitrinin dürüstlüğü: PR #130 sonrası demo ilanlar sayıma
+girmiyor, `[ÖRNEK]` kartları "Nisoya demo verisidir" ibaresiyle ayrı bir
+şeritte duruyor. Yani vitrin artık yalan söylemiyor — ama boş.
+
+**Bu turun ayırt edici bulgusu — rehber yayında ve artık sitenin ANA yüzeyi.**
+`sitemap.xml`'de **59 URL var, bunların 36'sı ülke rehberi**:
+
+- **DE:** Berlin (6 işlem), Köln (6), Düsseldorf (3) + 3 şehir hub'ı
+- **US:** New York (6), Los Angeles (6), Chicago (3) + 3 şehir hub'ı
+
+`/de/berlin/vekaletname` açılıyor, gerçek içerik var, `verified_at`
+**04 Ağustos 2026**. Nisoya'nın indekslenebilir yüzeyinin **%61'i** artık demo
+olmayan, gerçek kamu hizmeti içeriği. "Boş pazaryerine davet" sorunu yapısal
+olarak çözülmüş durumda — geri dönülemez kanallara pazaryeri değil rehber
+götürülebilir.
+
+**İki öneri karar satırı olmadan uygulanmış (ölçüldü, canlıdan doğrulandı):**
+
+- *2026-08-04 · öneri 2* (rehberi 18 sayfayla aç) → **yapılmış ve aşılmış.**
+  Planda 3 Alman şehri vardı; canlıda 30 işlem sayfası + 6 hub, ABD dahil.
+- *2026-08-04 · öneri 3* (WhatsApp paylaşım kartı) → **yapılmış.** İlan
+  detayında **"Durumuma koy"** butonu canlıda (PR #79).
+
+Sahip bu ikisine `YAPILDI` satırı düşerse karar bekleyen sayısı 4'ten 2'ye
+iner. Aşağıdaki 4 öneriyle birlikte toplam 6 olur — sınırın tam üstünde,
+yani karar verilmezse ajan gelecek hafta yeni öneri yazmayacak.
+
+---
+
+**1. Posta kodu → bağlı temsilcilik bulucu** *(kategori 2 + 3: SEO + ürün içi)*
+
+*Ölçüm:* `/de/berlin` sayfasında ne bir bulucu var, ne de diğer Alman
+şehirlerine bağlantı — tek çıkış "Almanya Rehberi" geri linki. Yani 36 sayfa
+birbirini görmüyor.
+
+Türkiye'nin Almanya'da Berlin Büyükelçiliği'ne ek olarak **Berlin, Düsseldorf,
+Essen, Frankfurt, Hamburg, Hannover, Karlsruhe, Köln, Mainz, Münih, Münster,
+Nürnberg, Stuttgart** başkonsoloslukları var. Kritik nokta: bağlı olduğun
+temsilcilik **oturduğun şehre değil, ikamet adresinin posta koduna** göre
+belirleniyor.
+
+*Neden işe yarayabilir:* "hangi başkonsolosluğa bağlıyım" arayan kişi işlem
+yapmak üzeredir — bu, rehberin çekebileceği en yüksek niyetli sorgu. Nisoya
+bugün bu soruyu hiç yanıtlamıyor: Berlin sayfasına düşen biri aslında
+Hamburg'a bağlı olabilir ve bunu öğrenemez. Araç üç iş birden yapar:
+(a) 36 sayfanın huni tepesi olur; (b) kapsamı **dürüstçe itiraf eder** —
+"Hamburg'a bağlısın, o sayfa henüz bizde yok, resmî adres şurada";
+(c) **talep ölçer** — hangi şehirlerin sorulduğunu saydığında, kalan 10
+temsilcilikten hangisini yazacağını tahminle değil veriyle seçersin.
+2026-08-04'teki öneri 2 zaten "getirmiyorsa kalan 192'yi doğrulamaya hiç
+girişilmez" diyordu; bu araç o kapının ölçüm aleti.
+
+*Dürüst uyarı:* posta kodu → temsilcilik eşlemesi resmî, tek parça bir tabloda
+yayımlanmıyor ve yeni başkonsolosluk açıldığında sınırlar değişiyor. Araç
+**kesin hüküm vermemeli**: "büyük olasılıkla X" + "randevu alırken
+konsolosluk.gov.tr üzerinden adresine göre teyit et" satırı zorunlu.
+
+*Efor:* orta. Eşleme eyalet düzeyinde başlatılabilir (posta kodunun ilk hanesi
+≈ eyalet), ihtilaflı bölgeler elle düzeltilir. Kod tarafı küçük: tek form +
+arama tablosu.
+
+*İlk adım:* 13 başkonsolosluğun kendi "görev bölgesi" sayfalarından eyalet
+listelerini topla, `/de` hub'ına tek kutu olarak koy, sorgulanan şehirleri
+logla.
+
+**2. Rehberdeki belge listesini paylaşılabilir yap** *(kategori 3: ürün içi
+viral)*
+
+Bugün `/de/berlin/vekaletname`'de gerekli belgeler listesi var ama sayfada onu
+**yanına alma** yolu yok — ne WhatsApp'a gönderme, ne kaydetme. Oysa ilan
+tarafında paylaşım altyapısı (PR #79) hazır ve canlıda çalışıyor.
+
+*Öneri:* her işlem sayfasına **"Belge listemi WhatsApp'a gönder"** butonu.
+Kart görseli bile gerekmiyor, düz metin yeter: "Berlin Başkonsolosluğu ·
+Vekaletname · Gerekenler: 1… 2… 3… · Kaynak: nisoya.com/de/berlin/vekaletname
+· Son doğrulama: 04.08.2026".
+
+*Neden işe yarayabilir:* konsolosluk işlemi neredeyse hiç **tek kişilik**
+değildir — vekaletname Türkiye'deki kardeş için alınır, doğum bildirimi eşle
+beraber yapılır. O liste zaten aile sohbetine gidiyor; bugün **ekran
+görüntüsü** olarak, kaynağı ve tarihi olmadan gidiyor. Buton, aynı davranışı
+kaynaklı ve linkli hale getirir. Spam değil — paylaşan kişi kendi işini
+paylaşıyor, marka tonuna ("kendi insanından") birebir uyuyor. Envantere hiç
+bağlı değil, yani envanter kapısına takılmaz.
+
+*Efor:* düşük-orta. Yeni bağımlılık yok.
+
+*İlk adım:* tek işlem tipinde (vekaletname) pilot buton, tıklama sayısını ölç.
+
+**3. Rehberin gerçekten indekslenip indekslenmediğini ölç** *(kategori 2:
+diğer önerilerin ön koşulu)*
+
+36 rehber sayfası yayında ama **bunların Google'da görünüp görünmediğini
+kimse bilmiyor.** İki gözlem: (a) repoda `google-site-verification` etiketi
+yok — Search Console ya kurulu değil ya da DNS ile doğrulanmış (bu repodan
+görünmez, **önce bu teyit edilmeli**); (b) "nisoya.com vekaletname Berlin
+başkonsolosluğu rehber" araması nisoya.com'u hiç döndürmedi, onun yerine
+almanyadakiturkler.de'nin aynı konudaki sayfasını döndürdü. Tek sorgu kanıt
+değildir, ama uyarı işaretidir.
+
+*Neden işe yarayabilir:* bu, karar bekleyen bir önerinin **açıkça yazılı** ön
+koşulu. 2026-08-04 · öneri 4 (Metropol FM) kelimesi kelimesine "öneri 2 yayına
+girip rehber birkaç yüz ziyaret aldıktan sonra veriye dayalı bir açıyla
+gidilirse şansı artar" diyor. Rehber yayına girdi; **o veri toplanmıyor.**
+Ölçüm kurulmazsa Metropol FM kalıcı olarak beklemede kalır. Ayrıca "kalan 10
+temsilciliğin hangisini yazayım" sorusunun cevabı da burada.
+
+*Efor:* düşük (yarım saat, kod yok).
+
+*İlk adım:* Search Console'da nisoya.com mülkü var mı bak; yoksa aç (DNS TXT
+en kalıcısı), `sitemap.xml`'i gönder. 2 hafta sonra 36 URL'in kaçının
+"İndekslendi" olduğuna ve hangi sorguların geldiğine bak. Bing Webmaster Tools
+aynı sitemap'le ücretsiz — ikisi birden kurulabilir.
+
+**4. almanyadakiturkler.de — karşılıklı içerik ortaklığı** *(kategori 1 + 4)*
+
+almanyadakiturkler.de, Almanya'daki Türklere yönelik günlük güncellenen bir
+rehber/haber portalı. Bu tur bakıldığında en son içeriği **10 Ağustos 2026**
+tarihliydi — yani bugün; site canlı ve aktif. Kategorileri: Almanya'da yaşam,
+maaşlar, göç/oturum, üniversite, finans, ulaşım, etkinlikler. Ve
+**ilan/pazaryeri bölümü yok.**
+
+*Neden işe yarayabilir:* bu, 2026-07-29'da Dubai Rehberi'ni ERTELE'ye
+düşüren çıkar çatışmasının **tam tersi durumu**. Dubai Rehberi aynı kitleye
+aynı içerikle rakipti; burada karşı taraf pazaryeri işine hiç girmiyor,
+Nisoya da haber işine girmiyor. Örtüşme yalnız konsolosluk rehberinde ve orada
+Nisoya'nın elinde onlarda olmayan bir şey var: **temsilcilik × işlem şeklinde
+yapılandırılmış, tarih damgalı 36 sayfa.** Üstelik bu site zaten Nisoya'nın
+hedef sorgularında görünüyor (bkz. öneri 3) — yani kitlesi doğrulanmış.
+
+*Dürüst uyarı:* listedeki en zayıf halka bu. Günlük yayın yapan bir sitenin
+yeni ve bilinmeyen bir siteye link vermek için sebebi olmayabilir; en olası
+sonuç sessizliktir. Bu yüzden teklif "bizi paylaşın" değil **karşılıklı**
+olmalı ve somut bir şey vermelidir.
+
+*Efor:* düşük (tek e-posta). **Ön koşul: öneri 3.** Kendi sayfalarının
+indekslenip indekslenmediğini bilmeden başkasına link önermek anlamsız.
+
+*İlk adım:* şimdi değil. Search Console verisi geldikten sonra sitenin
+iletişim sayfasından **tek kişiselleştirilmiş** mesaj: "konsolosluk işlem
+sayfalarımızı kaynak gösterin, biz de rehber sayfalarımızdan sizin yaşam
+rehberi içeriklerinize link verelim." ATAA dersi geçerli: toplu gönderim YOK.
+
+---
+
 ## [2026-08-04]
 
 **Envanter ölçümü (bu tur, canlıdan):** `/ilanlar` **31 ilan** — ama görünenlerin
