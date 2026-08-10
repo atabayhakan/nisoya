@@ -57,6 +57,8 @@ class OpenAiProvider implements AiProvider
      */
     private function postChat(array $messages, ?array $jsonSchema, ?int $timeoutSeconds): ?array
     {
+        $this->lastError = null;
+
         $body = [
             'model' => $this->config['model'],
             'max_tokens' => 1024,
@@ -89,9 +91,26 @@ class OpenAiProvider implements AiProvider
             return null;
         }
 
-        $decoded = AiJson::decode($choice['message']['content'] ?? null);
+        // Model, görseli/isteği reddedip content yerine "refusal" alanı
+        // döndürebilir (ör. güvenlik sınıflandırıcısı görselden rahatsız
+        // oldu). Bu durumu "JSON döndürmedi" ile karıştırmamak için ayrı
+        // ele alınır — aksi halde yanıltıcı bir hata mesajı görünür.
+        $refusal = $choice['message']['refusal'] ?? null;
+        if (filled($refusal)) {
+            $this->lastError = 'Model isteği reddetti: '.mb_substr((string) $refusal, 0, 200);
+            Log::warning('AI: '.$this->name().' modeli reddetti', ['refusal' => mb_substr((string) $refusal, 0, 200)]);
+
+            return null;
+        }
+
+        $content = $choice['message']['content'] ?? null;
+        $decoded = AiJson::decode($content);
         if ($decoded === null) {
             $this->lastError = 'Yanıt geçerli JSON değil (model JSON döndürmedi).';
+            Log::warning('AI: '.$this->name().' yanıtı geçerli JSON değil', [
+                'finish_reason' => $choice['finish_reason'] ?? null,
+                'content_preview' => mb_substr((string) $content, 0, 200),
+            ]);
         }
 
         return $decoded;
