@@ -191,6 +191,40 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function mergeRuntimeConfig(): void
     {
+        /*
+         * ÖNBELLEK KURULURKEN VERİTABANI KATMANI HİÇ UYGULANMAZ.
+         *
+         * `config:cache` yapılandırmayı diske yazmadan önce uygulamayı boot eder,
+         * yani bu metodun yazdığı her şey `bootstrap/cache/config.php`'ye gömülür.
+         * Bunun iki zararı vardı, ikisi de canlıda ölçüldü (2026-08-10):
+         *
+         *  1. SIR SIZINTISI — `Settings::SIRLI_ANAHTARLAR` veritabanında ŞİFRELİ
+         *     durur ama buraya ÇÖZÜLMÜŞ hâlde yazılır. SES SMTP parolası DB'de
+         *     256 hane şifreliyken önbellek dosyasında 44 hane açık metindi
+         *     (dosya izni -rw-r--r--).
+         *
+         *  2. HAYALET AYAR — ayar veritabanından silinse bile gömülü kopya
+         *     yaşamaya devam eder. Gönderim ayarları boşaltıldığı hâlde
+         *     `kahya-gonderim` mailer'ı tanımlı kaldı; "host boşsa mailer hiç
+         *     tanımlanmaz" güvencesi önbellek üzerinden delindi.
+         *
+         * Neden TOPTAN atlıyoruz da yalnız sırları ayıklamıyoruz: yalnız sırrı
+         * atlamak YARIM AYAR bırakır. Ölçülen örnek — parola atlanıp host/kullanıcı
+         * önbellekte kalırsa, sahip panelden SMTP sunucusunu boşalttığı anda
+         * aşağıdaki erken dönüşe düşülür ve geriye host+kullanıcı dolu, parolası
+         * boş bir mailer kalır: SMTP AUTH boş parolayla denenir, işlemsel
+         * e-postanın tamamı sessizce düşer, üstelik sağlık panosu yalnız host'a
+         * baktığı için yeşil görünür. Toptan atlayınca önbellek "yalnız env"
+         * anlamına gelen TUTARLI bir anlık görüntü olur.
+         *
+         * Kayıp yok: bu metot her boot'ta (her istek, her komut) çalışır, yani
+         * veritabanı katmanı zaten her seferinde yeniden bindiriliyor. Önbelleğe
+         * yazılmasının hiçbir faydası yoktu.
+         */
+        if (YapilandirmaOnbellegi::aliniyorMu()) {
+            return;
+        }
+
         // env() DEĞİL config(): deploy/deploy.sh:96 `config:cache` çalıştırıyor
         // ve önbelleklenmiş config yüklendiğinde $_ENV doldurulmaz — config
         // dosyalarının DIŞINDAKİ env() çağrıları canlıda sessizce null döner.
@@ -247,11 +281,8 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function mergeGrowthConfig(): void
     {
-        // Sır: önbellek kurulurken YAZILMAZ (bkz. YapilandirmaOnbellegi). Atlanır,
-        // null'lanmaz — bu yazım koşullu olduğu için env'den gelen bir anahtar
-        // çalışma anında hayatta kalmalı; null yazsak onu da düşürürdük.
         $placesKey = Settings::get('growth.google_places_api_key');
-        if ($placesKey && ! YapilandirmaOnbellegi::aliniyorMu()) {
+        if ($placesKey) {
             Config::set('growth.google_places.api_key', $placesKey);
         }
 
@@ -287,18 +318,7 @@ class AppServiceProvider extends ServiceProvider
         // null olarak yazılır ki eski env değeri sızmasın.
         Config::set('mail.mailers.smtp.username', Settings::get('mail.username') ?: null);
 
-        /*
-         * Parola önbellek kurulurken NULL yazılır (bkz. YapilandirmaOnbellegi).
-         * Burada `null` yazmak "atlamak"tan daha güçlü: bu satıra gelindiyse DB
-         * yolu zaten etkin demektir (yukarıda host yoksa erken dönülüyor), yani
-         * çalışma anında DB değeri env'i HER durumda eziyor. Dolayısıyla
-         * önbellekteki kopya hiç okunmuyor — null yazmak env'den gelen düz metin
-         * parolayı da dosyadan siler ve davranış hiç değişmez.
-         */
-        Config::set(
-            'mail.mailers.smtp.password',
-            YapilandirmaOnbellegi::aliniyorMu() ? null : (Settings::get('mail.password') ?: null)
-        );
+        Config::set('mail.mailers.smtp.password', Settings::get('mail.password') ?: null);
 
         // Symfony şeması: SSL (465) → smtps (örtük TLS); TLS (587) → smtp (STARTTLS).
         $encryption = Settings::get('mail.encryption');
@@ -353,15 +373,14 @@ class AppServiceProvider extends ServiceProvider
          * kimlikle erişim postası atmanın yolu KAPALI kalmalı
          * (bkz. App\Services\Kahya\Dis\HamleGonderici sınıf notu).
          *
-         * Önbellek kurulurken bu mailer HİÇ TANIMLANMAZ (bkz.
-         * YapilandirmaOnbellegi). 2026-08-10'da canlıda tam olarak bu yüzden bir
-         * "hayalet gönderici" bulundu: ayarlar veritabanından boşaltılmıştı ama
-         * önbellek dosyasına gömülü kopya (host + kullanıcı + DÜZ METİN parola)
-         * yerinde durduğu için mailer hâlâ tanımlıydı — yani "kapalı kalmalı"
-         * güvencesi önbellek üzerinden delinebiliyordu.
+         * Bu güvence bir kez ÖNBELLEK ÜZERİNDEN DELİNDİ (2026-08-10): ayarlar
+         * veritabanından boşaltıldığı hâlde `bootstrap/cache/config.php`'ye
+         * gömülü kopya (host + kullanıcı + düz metin parola) yüzünden mailer
+         * tanımlı kalmaya devam etti. Çare mergeRuntimeConfig'in başındaki
+         * kapıdır — önbellek kurulurken bu metot hiç çalışmaz.
          */
         $gonderimHost = trim((string) Settings::get('kahya.gonderim_host', ''));
-        if ($gonderimHost !== '' && ! YapilandirmaOnbellegi::aliniyorMu()) {
+        if ($gonderimHost !== '') {
             $port = (int) (Settings::get('kahya.gonderim_port') ?: 465);
 
             Config::set('mail.mailers.'.HamleGonderici::MAILER, [
@@ -387,9 +406,8 @@ class AppServiceProvider extends ServiceProvider
         // (boşsa env/config varsayılanı korunur).
         $active = config('ai.default');
 
-        // Sır: önbellek kurulurken YAZILMAZ (bkz. YapilandirmaOnbellegi).
         $apiKey = Settings::get('ai.api_anahtari');
-        if ($apiKey && ! YapilandirmaOnbellegi::aliniyorMu()) {
+        if ($apiKey) {
             Config::set("ai.providers.{$active}.api_key", $apiKey);
             // laravel/ai (Kâhya ajan çekirdeği) aynı sağlayıcıyı `key` adıyla
             // okur — çift şema notu için bkz. config/ai.php üst yorumu.

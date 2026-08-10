@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use Symfony\Component\Console\Input\ArgvInput;
+
 /**
  * `php artisan config:cache` ŞU AN mı koşuyor?
  *
@@ -34,15 +36,44 @@ namespace App\Support;
  * `optimize` DE SAYILIR
  *
  * `php artisan optimize` içeriden `callSilently('config:cache')` çağırır —
- * AYNI süreçte. O yüzden `$_SERVER['argv'][1]` 'config:cache' değil 'optimize'
- * olur. İkisini birden yakalamazsak `optimize` yolundan sızıntı geri gelir.
- * (Laravel'in kendi `runningConsoleCommand()`'ı da argv[1]'e bakar; burada
- * doğrudan okumamızın tek sebebi test edilebilirlik.)
+ * AYNI süreçte. O yüzden komut adı 'config:cache' değil 'optimize' olur.
+ * İkisini birden yakalamazsak `optimize` yolundan sızıntı geri gelir.
+ *
+ * ---------------------------------------------------------------------------
+ * KOMUT ADI `argv[1]` DEĞİLDİR — DÜŞMANCA İNCELEME BUNU YAKALADI (2026-08-10)
+ *
+ * İlk sürüm doğrudan `$_SERVER['argv'][1]`'e bakıyordu. Dört bağımsız inceleyici
+ * aynı deliği ölçtü: Symfony seçenekleri komut adından ÖNCE kabul eder, yani
+ *
+ *     php artisan --env=production config:cache
+ *     php artisan -n config:cache
+ *     php artisan -q optimize
+ *
+ * çağrılarında argv[1] bir SEÇENEKTİR. Kapı false döner, dört sır da düz metin
+ * dosyaya yazılır — üstelik çıkış kodu 0 ve ekranda "Configuration cached
+ * successfully". Yani güvenlik güvencesi, insanın yazması son derece olağan bir
+ * bayrak yüzünden SESSİZCE buharlaşıyordu.
+ *
+ * Çare: komut adını tahmin etmeyi bırak, Symfony'nin kendi ayrıştırıcısına sor.
+ * `ArgvInput::getFirstArgument()` seçenekleri (hem `--env=x` hem `--env x`
+ * biçimini) atlayıp ilk gerçek argümanı döndürür — bu iş için yazılmış metot.
+ *
+ * İkinci ağ olarak argv'nin TAMAMINA da bakılır. Yanlış pozitif riski yok
+ * sayılır (bir komuta birebir "config:cache" değerinde argüman verilmesi
+ * gerekirdi) ve yanlış pozitifin bedeli sızıntının olmaması yönündedir.
+ *
+ * ---------------------------------------------------------------------------
+ * BİLİNEN SINIR
+ *
+ * Süreç içinden `Artisan::call('config:cache')` çağrılırsa argv dış komutu
+ * gösterir ve kapı kapanmaz. Depoda böyle bir çağrı YOK; olmadığını
+ * `SirlarOnbellegeYazilmazTest::test_kod_icinden_config_cache_cagrilmiyor`
+ * mühürlüyor — biri eklerse test kırmızıya döner ve bu notu okur.
  */
 final class YapilandirmaOnbellegi
 {
     /** Önbellek kuran komutlar — ikisi de aynı süreçte config:cache çalıştırır. */
-    private const KOMUTLAR = ['config:cache', 'optimize'];
+    public const KOMUTLAR = ['config:cache', 'optimize'];
 
     public static function aliniyorMu(): bool
     {
@@ -50,6 +81,14 @@ final class YapilandirmaOnbellegi
             return false;
         }
 
-        return in_array($_SERVER['argv'][1] ?? null, self::KOMUTLAR, true);
+        $argv = $_SERVER['argv'] ?? [];
+
+        // 1) Doğru yol: Symfony komut adını kendisi çözsün (seçenekleri atlar).
+        if (in_array((new ArgvInput($argv))->getFirstArgument(), self::KOMUTLAR, true)) {
+            return true;
+        }
+
+        // 2) İkinci ağ: jeton nerede geçerse geçsin yakala.
+        return (bool) array_intersect($argv, self::KOMUTLAR);
     }
 }
