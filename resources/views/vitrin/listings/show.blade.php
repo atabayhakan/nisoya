@@ -418,6 +418,14 @@
                             </form>
                         </details>
                     @endunless
+                @else
+                    {{-- Misafir de şüpheli ilanı bildirebilmeli — klasik şablonla
+                         AYNI sözleşme (bkz. listings/show.blade.php). --}}
+                    <p class="mt-8 text-sm">
+                        <a href="{{ route('login') }}" class="inline-flex items-center gap-1 font-semibold text-stone-600 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200">
+                            <x-heroicon-o-flag class="h-4 w-4" /> Bu ilanı şikayet et
+                        </a>
+                    </p>
                 @endauth
             </div>
 
@@ -466,6 +474,7 @@
                                         @error('cikis') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                                     </div>
                                 @endif
+                                @include('partials.quick-reply-chips')
                                 <textarea name="body" rows="3" required placeholder="{{ $listing->type->value === 'emlak' ? 'İlan sahibine bir mesaj yaz...' : 'Satıcıya bir mesaj yaz...' }}"
                                           class="w-full rounded-[13px] border-stone-300 px-3 py-2.5 text-sm text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">{{ old('body') }}</textarea>
                                 @error('body') <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
