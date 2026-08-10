@@ -330,6 +330,7 @@ class SirlarOnbellegeYazilmazTest extends TestCase
         $sirlar = [
             'SENTINEL-MAIL-PAROLA', 'SENTINEL-AI-ANAHTAR',
             'SENTINEL-PLACES-ANAHTAR', 'SENTINEL-SES-PAROLA',
+            'SENTINEL-GOOGLE-SECRET',
         ];
 
         Settings::setMany([
@@ -340,6 +341,11 @@ class SirlarOnbellegeYazilmazTest extends TestCase
             'growth.google_places_api_key' => 'SENTINEL-PLACES-ANAHTAR',
             'kahya.gonderim_host' => 'email-smtp.eu-central-1.amazonaws.com',
             'kahya.gonderim_parola' => 'SENTINEL-SES-PAROLA',
+            // Google ile giriş: client secret de mergeRuntimeConfig içinde
+            // services.google.client_secret'a yazılıyor, yani aynı sızıntı
+            // yoluna açık.
+            'giris.google_client_id' => 'sizinti-testi.apps.googleusercontent.com',
+            'giris.google_client_secret' => 'SENTINEL-GOOGLE-SECRET',
         ]);
 
         $this->argvKur(['artisan', 'config:cache']);
@@ -362,7 +368,13 @@ class SirlarOnbellegeYazilmazTest extends TestCase
          * büyüdüğünde bu test kırmızıya döner ve unutulmayı engeller.
          */
         $this->assertSame(
-            ['mail.password', 'ai.api_anahtari', 'growth.google_places_api_key', 'kahya.gonderim_parola'],
+            [
+                'mail.password',
+                'ai.api_anahtari',
+                'growth.google_places_api_key',
+                'kahya.gonderim_parola',
+                'giris.google_client_secret',
+            ],
             Settings::SIRLI_ANAHTARLAR,
             'Sır listesi değişti — SirlarOnbellegeYazilmazTest\'e yeni sır için kapak testi ekle.'
         );
