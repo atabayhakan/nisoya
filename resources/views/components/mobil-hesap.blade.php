@@ -133,7 +133,7 @@
          `shrink-0` ise düğmelerin, yanındaki ülke seçici/acil düğmesi yer
          istediğinde ezilmesini engeller — küçülen buton yine sarardı. --}}
     <div class="flex shrink-0 items-center gap-1 md:hidden">
-        <a href="{{ route('login') }}" class="whitespace-nowrap rounded-full px-2 py-1.5 text-xs font-semibold text-stone-700 transition hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800">
+        <a href="{{ route('login') }}" class="hidden whitespace-nowrap rounded-full px-2 py-1.5 text-xs font-semibold text-stone-700 min-[400px]:inline-block transition hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800">
             Giriş
         </a>
         <a href="{{ route('register') }}" class="whitespace-nowrap rounded-full bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900">
