@@ -199,7 +199,7 @@
                 @endif
 
                 {{-- B. İçerik kartı --}}
-                <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-800 dark:bg-stone-900">
+                <div class="rounded-2xl border border-stone-200 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-700/70 dark:bg-stone-900">
                     <div class="flex flex-wrap items-center gap-2 text-2xs font-bold">
                         @if ($listing->category)
                             <span class="rounded-full bg-emerald-50 px-2.5 py-1.5 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">{{ $listing->category->name }}</span>
@@ -261,7 +261,7 @@
                 {{-- Emlak özellikleri --}}
                 @if ($listing->type->value === 'emlak' && $listing->propertyDetail)
                     @php $detail = $listing->propertyDetail; @endphp
-                    <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-800 dark:bg-stone-900">
+                    <div class="rounded-2xl border border-stone-200 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-700/70 dark:bg-stone-900">
                         <h2 class="text-lg font-extrabold tracking-[-0.018em] text-stone-800 dark:text-stone-100">🏡 Emlak Özellikleri</h2>
                         <dl class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                             @php
@@ -296,7 +296,7 @@
                 {{-- Vasıta özellikleri --}}
                 @if ($listing->type->value === 'vasita' && $listing->vehicleDetail)
                     @php $vehicle = $listing->vehicleDetail; @endphp
-                    <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-800 dark:bg-stone-900">
+                    <div class="rounded-2xl border border-stone-200 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-700/70 dark:bg-stone-900">
                         <h2 class="text-lg font-extrabold tracking-[-0.018em] text-stone-800 dark:text-stone-100">🚗 Araç Özellikleri</h2>
                         <dl class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                             @php
@@ -333,7 +333,7 @@
 
                 {{-- Faz M5: boyut karşılaştırma (yalnızca ürün + en az bir ölçü girilmişse) --}}
                 @if ($listing->type->value === 'urun' && ($listing->width_cm || $listing->height_cm))
-                    <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-800 dark:bg-stone-900">
+                    <div class="rounded-2xl border border-stone-200 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-700/70 dark:bg-stone-900">
                         <x-size-compare :width="$listing->width_cm" :height="$listing->height_cm" />
                     </div>
                 @endif
@@ -361,7 +361,7 @@
                      Veri ListingController'da YALNIZ vitrin aktifken yükleniyor;
                      yorum yoksa blok hiç basılmaz. --}}
                 @if ($recentReviews->isNotEmpty())
-                    <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-800 dark:bg-stone-900">
+                    <div class="rounded-2xl border border-stone-200 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-700/70 dark:bg-stone-900">
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <h2 class="text-lg font-extrabold tracking-[-0.018em] text-stone-800 dark:text-stone-100">Değerlendirmeler</h2>
                             @if ($sellerRating['count'] > 0)
@@ -408,7 +408,7 @@
                             <summary class="inline-flex cursor-pointer items-center gap-1 font-semibold text-stone-600 hover:text-stone-600 dark:text-stone-400 dark:hover:text-stone-300">
                                 <x-heroicon-o-flag class="h-4 w-4" /> Bu ilanı şikayet et
                             </summary>
-                            <form method="POST" action="{{ route('reports.store', $listing) }}" class="mt-3 max-w-md space-y-2 rounded-2xl border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                            <form method="POST" action="{{ route('reports.store', $listing) }}" class="mt-3 max-w-md space-y-2 rounded-2xl border border-stone-200 bg-white p-4 shadow-brand dark:border-stone-700/70 dark:bg-stone-900">
                                 @csrf
                                 <select name="reason" required class="w-full rounded-[9px] border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                                     <option value="">Sebep seç...</option>
@@ -447,7 +447,15 @@
             {{-- Sağ kolon (yapışkan) --}}
             <div class="grid gap-4 lg:sticky lg:top-[90px] lg:self-start">
                 {{-- Fiyat + aksiyon kartı --}}
-                <div id="satici-iletisim" class="scroll-mt-24 rounded-2xl border border-stone-200/60 bg-white p-5 shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                {{-- BİRİNCİL EYLEM KARTI — bir kademe yukarıda.
+
+                     Sayfadaki on kart da birebir aynı yüzey reçetesini
+                     kullanıyordu (aynı kenarlık, aynı `shadow-brand`). Hepsi
+                     eşit yükseklikte olunca hiçbiri öne çıkmıyor; göz nereye
+                     bakacağını bulamıyor ve sayfa "düz" görünüyor. Fiyat +
+                     mesaj kutusu bu sayfanın TEK birincil eylemi, o yüzden
+                     `shadow-brand-lg` ile diğerlerinden ayrılıyor. --}}
+                <div id="satici-iletisim" class="scroll-mt-24 rounded-2xl border border-stone-200 bg-white p-5 shadow-brand-lg dark:border-stone-700/70 dark:bg-stone-900">
                     <div class="text-2xl font-extrabold text-stone-800 dark:text-stone-50">
                         @if ($listing->price !== null)
                             {{ $listing->bicimliFiyat() }} {{ $listing->currency }}
@@ -525,7 +533,7 @@
 
                 {{-- Emlak/vasıta müsaitlik takvimi --}}
                 @if (in_array($listing->type->value, ['emlak', 'vasita'], true) && $listing->relationLoaded('unavailableRanges'))
-                    <div class="rounded-2xl border border-stone-200/60 bg-white p-5 shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                    <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-brand dark:border-stone-700/70 dark:bg-stone-900">
                         <h2 class="text-sm font-extrabold tracking-[-0.015em] text-stone-800 dark:text-stone-100">📅 Müsaitlik</h2>
                         <div class="mt-3">
                             <x-availability-calendar :ranges="$listing->unavailableRanges" />
@@ -534,7 +542,7 @@
                 @endif
 
                 {{-- Satıcı kartı --}}
-                <div class="rounded-2xl border border-stone-200/60 bg-white p-5 shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-brand dark:border-stone-700/70 dark:bg-stone-900">
                     <div class="flex items-center gap-3">
                         <x-avatar :user="$listing->user" size="h-12 w-12" text="text-lg" />
                         <div class="min-w-0">
@@ -597,7 +605,7 @@
                 {{-- Benzer ilanlar (Faz P4) — aynı kategori, aynı şehir öncelikli.
                      Veri yalnız vitrin aktifken yükleniyor; yoksa blok basılmaz. --}}
                 @if ($similarListings->isNotEmpty())
-                    <div class="rounded-2xl border border-stone-200/60 bg-white px-5 py-[18px] shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                    <div class="rounded-2xl border border-stone-200 bg-white px-5 py-[18px] shadow-brand dark:border-stone-700/70 dark:bg-stone-900">
                         <h2 class="text-sm font-extrabold tracking-[-0.015em] text-stone-800 dark:text-stone-100">Benzer ilanlar</h2>
                         <div class="mt-3.5 grid gap-3">
                             @foreach ($similarListings as $benzer)
