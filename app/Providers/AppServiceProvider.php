@@ -139,12 +139,23 @@ class AppServiceProvider extends ServiceProvider
                     ->all() ?? [])
                 : [];
 
+            /*
+             * `rehber_var`: o ülkenin rehberi (temsilcilikleri) var mı?
+             * Acil menüsü "ülkendeki temsilcilikler" bağlantısını yalnız
+             * bunlar için gösterir.
+             *
+             * AYRI SORGU DEĞİL, `withExists` ile MEVCUT sorguya iliştiriliyor:
+             * acil düğmesi başlıkta, yani her sayfada. Ayrı bir sorgu olarak
+             * yazıldığında vitrin ilan detayının sorgu bütçesi aşıldı
+             * (VitrinVeriBloklariTest yakaladı, 32 > 32).
+             */
             $countries = Schema::hasTable('countries')
                 ? Cache::rememberForever(Country::ACTIVE_LIST_CACHE_KEY, fn () => Country::query()
                     ->where('is_active', true)
+                    ->withExists('temsilcilikler as rehber_var')
                     ->orderBy('sort_order')
                     ->get(['code', 'name_tr', 'emoji'])
-                    ->map(fn (Country $country) => $country->only(['code', 'name_tr', 'emoji']))
+                    ->map(fn (Country $country) => $country->only(['code', 'name_tr', 'emoji', 'rehber_var']))
                     ->all())
                 : [];
 
