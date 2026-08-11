@@ -5,8 +5,9 @@ namespace Tests\Feature;
 use App\Models\Country;
 use App\Models\IslemTuru;
 use App\Models\TemsilcilikIslemi;
+use Database\Seeders\Rehber\ApostilSeeder;
+use Database\Seeders\Rehber\VefatCenazeSeeder;
 use Database\Seeders\RehberAlmanyaSeeder;
-use Database\Seeders\RehberVefatCenazeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -42,7 +43,7 @@ class RehberVefatCenazeTest extends TestCase
         );
 
         $this->seed(RehberAlmanyaSeeder::class);
-        $this->seed(RehberVefatCenazeSeeder::class);
+        $this->seed(VefatCenazeSeeder::class);
     }
 
     private function kayitlar()
@@ -144,7 +145,7 @@ class RehberVefatCenazeTest extends TestCase
             'dogrulanma_tarihi' => '2026-12-01',
         ]);
 
-        $this->seed(RehberVefatCenazeSeeder::class);   // tekrar koş
+        $this->seed(VefatCenazeSeeder::class);   // tekrar koş
 
         $kayit->refresh();
         $this->assertSame('Sahibin elle doğruladığı özel not.', $kayit->notlar);
@@ -161,5 +162,46 @@ class RehberVefatCenazeTest extends TestCase
             ->assertSee('Cenaze bilgi formu')
             ->assertSee('herhangi bir temsilciliğe')
             ->assertDontSee('başlangıç taslağıdır');   // eski yer tutucu gitti
+    }
+
+    // -----------------------------------------------------------------
+    // APOSTİL — değeri "hayır" demesinde
+    // -----------------------------------------------------------------
+
+    public function test_apostil_konsolosluk_yapmaz_diyor(): void
+    {
+        /*
+         * İnsanlar apostil için konsolosluktan randevu alıp boşuna gidiyor.
+         * Bu sayfanın bütün değeri, doğru cevabın "temsilcilik bunu yapmaz,
+         * şu makama git" olduğunu söylemesinde. Cümle sadeleştirme sırasında
+         * kaybolursa sayfa işe yaramaz bir listeye döner.
+         */
+        $this->iskeletVeIcerik();
+        $this->seed(ApostilSeeder::class);
+
+        $tur = IslemTuru::query()->where('slug', 'apostil')->firstOrFail();
+        $k = TemsilcilikIslemi::query()->where('islem_turu_id', $tur->id)->firstOrFail();
+
+        $this->assertSame(TemsilcilikIslemi::STATUS_YAYIN, $k->status);
+        $this->assertStringContainsString('apostil şerhi düzenlemez', (string) $k->notlar);
+        $this->assertStringContainsString('valilik', (string) $k->notlar);
+        $this->assertStringContainsString('Lahey', (string) $k->notlar);
+        $this->assertStringNotContainsString('**', (string) $k->notlar);
+    }
+
+    public function test_apostilde_de_uydurma_rakam_yok(): void
+    {
+        $this->iskeletVeIcerik();
+        $this->seed(ApostilSeeder::class);
+
+        $tur = IslemTuru::query()->where('slug', 'apostil')->firstOrFail();
+
+        foreach (TemsilcilikIslemi::query()->where('islem_turu_id', $tur->id)->get() as $k) {
+            $this->assertDoesNotMatchRegularExpression(
+                '/\d+\s*(hafta|gün|ay|€|EUR|Euro|TL)/iu',
+                $k->sure_metni.' '.$k->ucret_metni,
+                'Apostil metnine doğrulanmamış bir rakam girmiş'
+            );
+        }
     }
 }

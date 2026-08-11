@@ -1,10 +1,6 @@
 <?php
 
-namespace Database\Seeders;
-
-use App\Models\IslemTuru;
-use App\Models\TemsilcilikIslemi;
-use Illuminate\Database\Seeder;
+namespace Database\Seeders\Rehber;
 
 /**
  * "Vefat ve Cenaze İşlemleri" rehber içeriğini DOĞRULANMIŞ bilgiyle doldurur.
@@ -35,39 +31,13 @@ use Illuminate\Database\Seeder;
  * temsilciliğin sayfasını panelden elle doğruladıysa (tarih dolar), bu seeder
  * ona dokunmaz. Tekrar tekrar çalıştırılabilir.
  */
-class RehberVefatCenazeSeeder extends Seeder
+class VefatCenazeSeeder extends RehberIcerikSeeder
 {
     /** İçeriğin dayandığı resmî sayfa. */
-    private const KAYNAK = 'https://www.konsolosluk.gov.tr/Procedure/ShowProcedure/8';
+    protected const KAYNAK = 'https://www.konsolosluk.gov.tr/Procedure/ShowProcedure/8';
 
     /** Bu turda doğrulanan bilginin tarihi. */
-    private const DOGRULAMA = '2026-08-11';
-
-    public function run(): void
-    {
-        $tur = IslemTuru::query()->where('slug', 'olum-ve-cenaze')->first();
-
-        if (! $tur) {
-            $this->command?->warn('olum-ve-cenaze işlem türü yok — RehberAlmanyaSeeder önce çalışmalı.');
-
-            return;
-        }
-
-        $guncellenen = TemsilcilikIslemi::query()
-            ->where('islem_turu_id', $tur->id)
-            ->whereNull('dogrulanma_tarihi')   // insan doğrulamasını ezme
-            ->update([
-                'evraklar' => json_encode($this->evraklar(), JSON_UNESCAPED_UNICODE),
-                'sure_metni' => $this->sure(),
-                'ucret_metni' => $this->ucret(),
-                'notlar' => $this->notlar(),
-                'resmi_kaynak_url' => self::KAYNAK,
-                'dogrulanma_tarihi' => self::DOGRULAMA,
-                'status' => TemsilcilikIslemi::STATUS_YAYIN,
-            ]);
-
-        $this->command?->info("Vefat ve Cenaze içeriği güncellendi: {$guncellenen} temsilcilik.");
-    }
+    protected const DOGRULAMA = '2026-08-11';
 
     /**
      * Cenaze nakil belgesi başvurusunda istenen belgeler.
@@ -75,7 +45,22 @@ class RehberVefatCenazeSeeder extends Seeder
      *
      * @return list<array{ad: string, not?: string}>
      */
-    private function evraklar(): array
+    protected function slug(): string
+    {
+        return 'olum-ve-cenaze';
+    }
+
+    protected function kaynak(): string
+    {
+        return self::KAYNAK;
+    }
+
+    protected function dogrulamaTarihi(): string
+    {
+        return self::DOGRULAMA;
+    }
+
+    protected function evraklar(): array
     {
         return [
             ['ad' => 'Başvuranın T.C. kimlik kartı', 'not' => 'Aslı ve fotokopisi'],
@@ -85,7 +70,7 @@ class RehberVefatCenazeSeeder extends Seeder
         ];
     }
 
-    private function sure(): string
+    protected function sure(): string
     {
         // Standart süre için doğrulanmış bir rakam bulunamadı; uydurulmadı.
         // Bunun yerine süreyi UZATAN bilinen durum yazıldı.
@@ -94,7 +79,7 @@ class RehberVefatCenazeSeeder extends Seeder
             .'İçişleri Bakanlığı izni gerekir ve süreç normalden uzun sürer.';
     }
 
-    private function ucret(): string
+    protected function ucret(): string
     {
         // Harç tutarı temsilciliğe ve işleme göre değişiyor; doğrulanmış tek
         // bir rakam olmadığı için SAYI YAZILMADI.
@@ -110,7 +95,7 @@ class RehberVefatCenazeSeeder extends Seeder
      * ve sayfada 11 adet ham yıldız göründü (ölçüldü). Rehberin mevcut
      * üslubu da zaten düz akıcı metin.
      */
-    private function notlar(): string
+    protected function notlar(): string
     {
         return implode("\n\n", [
             'Sıra önemli: önce yerel makam, sonra temsilcilik. Vefat önce bulunduğun ülkenin resmî '
