@@ -127,17 +127,112 @@
          SIRA BİLİNÇLİ: yeni gelen için birincil eylem ÜYE OLMAK, o yüzden
          dolu düğme "Üye ol". Giriş, dönen kullanıcı için sade metin —
          390px'lik başlıkta iki dolu düğme yan yana sığmıyor (ölçüldü). --}}
-    {{-- `whitespace-nowrap` ŞART: "Üye ol" ve "Giriş" içindeki boşluk, dar
-         başlıkta satır sonu adayı sayılıyordu ve 360px'lik telefonlarda
-         "Üye ol" iki satıra düşüp düğmeyi yamultuyordu (cihazda görüldü).
-         `shrink-0` ise düğmelerin, yanındaki ülke seçici/acil düğmesi yer
-         istediğinde ezilmesini engeller — küçülen buton yine sarardı. --}}
-    <div class="flex shrink-0 items-center gap-1 md:hidden">
-        <a href="{{ route('login') }}" class="hidden whitespace-nowrap rounded-full px-2 py-1.5 text-xs font-semibold text-stone-700 min-[400px]:inline-block transition hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800">
-            Giriş
-        </a>
-        <a href="{{ route('register') }}" class="whitespace-nowrap rounded-full bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900">
+    {{-- YELPAZE MENÜ — tek düğme, açılınca üç eylem.
+
+         NEDEN: başlıkta yer yoktu. Bir önceki turda "Acil" etiketini geri
+         getirince yer daraldı ve "Giriş" metnini <400px'te GİZLEMEK zorunda
+         kaldım — yani bir eylemi tamamen feda ettim. Yelpaze o takası geri
+         alıyor: başlıkta tek düğme kadar yer kaplıyor ama içinde üç eylem
+         taşıyor, üstelik en dar telefonda bile.
+
+         ÜÇÜNCÜ EYLEM BİLİNÇLİ: "İlan Ver". Nisoya'nın darboğazı talep değil
+         ARZ; ilan verme yolunu başlıkta görünür kılmak, üye olma yolunu
+         görünür kılmak kadar önemli. Misafir bastığında kayda yönlenir,
+         kayıttan sonra ilan formuna döner.
+
+         ERİŞİLEBİLİRLİK: gerçek <button> + aria-expanded/aria-controls,
+         Escape ile kapanır, dışarı tıklayınca kapanır, açılınca ilk öğeye
+         odak gider. Yelpaze hissi sıralı gecikmelerle veriliyor; hareketi
+         azaltılmış cihazlarda gecikmeler devre dışı (prefers-reduced-motion
+         bu depoda ayrı bir tur konusuydu, aynı sözleşmeye uyuyoruz). --}}
+    <div
+        x-data="{
+            acik: false,
+            ac() { this.acik = true; this.$nextTick(() => this.$refs.ilk?.focus()); },
+            kapat(odakla = false) { this.acik = false; if (odakla) this.$refs.tetik?.focus(); },
+        }"
+        @keydown.escape.window="acik && kapat(true)"
+        @click.outside="kapat()"
+        class="relative shrink-0 md:hidden"
+    >
+        <button
+            type="button"
+            x-ref="tetik"
+            @click="acik ? kapat() : ac()"
+            :aria-expanded="acik ? 'true' : 'false'"
+            aria-controls="misafir-yelpaze"
+            class="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400"
+        >
             Üye ol
-        </a>
+            {{-- Döndürme sarmalayıcı span'de: Alpine'in `::class` kısayolunu
+                 Blade bileşenine geçirmek öznitelik birleştirmesine bağlı ve
+                 sessizce çalışmayabilir. --}}
+            <span class="transition-transform duration-200 motion-reduce:transition-none" :class="acik && 'rotate-180'">
+                <x-heroicon-o-chevron-down class="h-3.5 w-3.5 shrink-0" />
+            </span>
+        </button>
+
+        {{-- `x-show` YALNIZ SARMALAYICIDA.
+
+             İlk yazışta her bağlantının da kendi `x-show`'u ve gecikmesi
+             vardı. Sonuç ölçüldü: panel açılırken ilk bağlantı odak anında
+             HENÜZ GÖRÜNÜR DEĞİLDİ (`offsetParent === null`) ve `focus()`
+             sessizce hiçbir şey yapmıyordu — klavye kullanıcısı menüyü açıp
+             içine giremiyordu.
+
+             Yelpaze hissi artık CSS animasyonuyla veriliyor: öğeler
+             görünürlüğü sarmalayıcıdan alır (odak hemen çalışır), sıralı
+             gecikme yalnız GÖRSEL. Hareket azaltılmışsa animasyon kapanır. --}}
+        <div
+            id="misafir-yelpaze"
+            x-show="acik"
+            x-cloak
+            x-transition:enter="transition ease-out duration-150 motion-reduce:transition-none"
+            x-transition:enter-start="opacity-0 -translate-y-1 scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+            x-transition:leave="transition ease-in duration-100 motion-reduce:transition-none"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="absolute right-0 top-full z-40 mt-2 w-44 origin-top-right"
+        >
+            <div class="overflow-hidden rounded-2xl border border-stone-200 bg-white p-1.5 shadow-xl dark:border-stone-700 dark:bg-stone-900">
+                @foreach ([
+                    ['route' => 'register', 'etiket' => 'Üye ol', 'ikon' => 'user-plus', 'birincil' => true],
+                    ['route' => 'login', 'etiket' => 'Giriş yap', 'ikon' => 'arrow-right-on-rectangle', 'birincil' => false],
+                    ['route' => 'panel.listings.create', 'etiket' => 'İlan Ver', 'ikon' => 'plus-circle', 'birincil' => false],
+                ] as $i => $eylem)
+                    <a
+                        href="{{ route($eylem['route']) }}"
+                        @if ($i === 0) x-ref="ilk" @endif
+                        style="animation-delay: {{ $i * 45 }}ms"
+                        class="yelpaze-oge flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition
+                               {{ $eylem['birincil']
+                                    ? 'text-emerald-800 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-900/30'
+                                    : 'text-stone-700 hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800' }}"
+                    >
+                        <x-dynamic-component :component="'heroicon-o-'.$eylem['ikon']" class="h-4 w-4 shrink-0" />
+                        {{ $eylem['etiket'] }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
     </div>
+
+    @once
+        <style>
+            /* Yelpaze: öğeler sırayla belirir. Görünürlüğü DEĞİŞTİRMEZ —
+               yalnız opaklık/kayma canlandırır, böylece odak ilk karede
+               çalışır. */
+            @keyframes yelpazeAc {
+                from { opacity: 0; transform: translateY(-4px) scale(.97); }
+                to   { opacity: 1; transform: none; }
+            }
+            #misafir-yelpaze .yelpaze-oge {
+                animation: yelpazeAc .22s ease-out both;
+            }
+            @media (prefers-reduced-motion: reduce) {
+                #misafir-yelpaze .yelpaze-oge { animation: none; }
+            }
+        </style>
+    @endonce
 @endauth
