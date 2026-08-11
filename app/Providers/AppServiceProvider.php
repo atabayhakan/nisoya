@@ -128,15 +128,48 @@ class AppServiceProvider extends ServiceProvider
         // gadget-chain saldırılarını önlemek için nesne unserialize'ını
         // varsayılan olarak engelliyor (config/cache.php: serializable_classes=false).
         View::composer('components.layouts.app', function ($view) {
+            /*
+             * `gercek_ilan_sayisi`: acil menüsü YALNIZ gerçekten ilanı olan
+             * kategoriyi gösterir (gerekçe emergency-button.blade.php'de).
+             * Süzgeç `active()->gercek()` — BrowseController'ın kategori
+             * sayfasında kullandığının AYNISI (bkz. BrowseController:29,91);
+             * aksi hâlde menü "var" der, sayfa "0 ilan bulundu" derdi.
+             *
+             * `withCount` ayrı sorgu DEĞİL, aynı SELECT'e ilişen alt sorgu —
+             * üstelik tamamı `rememberForever` içinde.
+             *
+             * BURAYA BİR `Schema::hasTable('listings')` DAHA EKLEME. İlk
+             * yazışta ekledim ve iki sorgu bütçesi testini birden kırdı
+             * (PerformanceBenchmarkTest 25>=25, VitrinVeriBloklariTest 32>=32):
+             * `Schema::hasTable` cache'in DIŞINDA, HER istekte çalışan gerçek
+             * bir sorgudur. `categories` varken `listings`in olmadığı bir an
+             * yok — ikisi de aynı migrasyon partisinde oluşuyor.
+             */
             $items = Schema::hasTable('categories')
-                ? Cache::rememberForever(Category::EMERGENCY_CACHE_KEY, fn () => Category::query()
-                    ->where('slug', Category::EMERGENCY_SLUG)
-                    ->first()
-                    ?->children()
-                    ->where('is_active', true)
-                    ->get(['id', 'name', 'slug', 'icon'])
-                    ->map(fn (Category $cat) => $cat->only(['id', 'name', 'slug', 'icon']))
-                    ->all() ?? [])
+                ? Cache::rememberForever(Category::EMERGENCY_CACHE_KEY, function () {
+                    /*
+                     * Sorgu `->children()` ilişkisi üzerinden DEĞİL, doğrudan
+                     * `Category::query()` ile kuruluyor: ilişki kurucusuna
+                     * `withCount` eklenince statik analiz jenerik tipi
+                     * kaybediyor (Collection<Model>) ve `map(fn (Category …))`
+                     * tip hatası veriyordu. `children()`'ın getirdiği
+                     * sıralama burada elle yazıldı.
+                     */
+                    $ana = Category::query()->where('slug', Category::EMERGENCY_SLUG)->first();
+
+                    if ($ana === null) {
+                        return [];
+                    }
+
+                    return Category::query()
+                        ->where('parent_id', $ana->id)
+                        ->where('is_active', true)
+                        ->orderBy('sort_order')
+                        ->withCount(['listings as gercek_ilan_sayisi' => fn ($q) => $q->active()->gercek()])
+                        ->get(['id', 'name', 'slug', 'icon'])
+                        ->map(fn (Category $cat) => $cat->only(['id', 'name', 'slug', 'icon', 'gercek_ilan_sayisi']))
+                        ->all();
+                })
                 : [];
 
             /*
