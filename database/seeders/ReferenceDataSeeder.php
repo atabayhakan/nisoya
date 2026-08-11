@@ -38,6 +38,13 @@ class ReferenceDataSeeder extends Seeder
             // kaydın yalnız ÖLÇÜLMÜŞ kırık adresini onarır, başka alana
             // dokunmaz; panelden yapılan düzeltmeler deploy'da ezilmez.
             RehberTemsilcilikleriSeeder::class,
+
+            // Rehber İÇERİĞİ. Aynı muhafazakâr sözleşme: yalnız
+            // `dogrulanma_tarihi` BOŞ olan (yani hâlâ genel taslak olan)
+            // kayıtları doldurur. Sahip panelden bir sayfayı doğruladıysa
+            // deploy onu EZMEZ.
+            Rehber\VefatCenazeSeeder::class,
+            Rehber\ApostilSeeder::class,
         ]);
     }
 }
