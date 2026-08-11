@@ -1,116 +1,262 @@
 @props(['categories', 'countries', 'defaultCountry' => ''])
 
-@if ($categories->isNotEmpty())
-    <div
-        x-data="{
-            open: false,
-            ulke: @js($defaultCountry),
-            numaralar: @js(\App\Support\AcilNumaralar::harita()),
-            rehberliUlkeler: @js(collect($countries)->filter(fn ($u) => !empty($u->rehber_var))->pluck('code')->values()),
-            konumDurumu: '',
+{{-- KAPI YOK — BİLEREK.
 
-            /* Seçili ülkenin acil numarası; ülke seçili değilse null. */
-            acilNumara() {
-                return (this.ulke && this.numaralar[this.ulke]) ? this.numaralar[this.ulke] : null;
-            },
+     Burada eskiden `@if ($categories->isNotEmpty())` vardı ve TÜM bileşeni
+     sarıyordu: acil düğmesi, 112, konsolosluk çağrı merkezi, konum kopyalama,
+     hepsi "acil-yardim" kategorisinin aktif alt kategorisi olmasına bağlıydı.
 
-            /* Yabancı ülkede adres tarif edememe sorununun ucuz çözümü.
-               Panoya koordinat + harita bağlantısı yazar; kullanıcı bunu
-               telefonda okur ya da yapıştırır. */
-            konumuKopyala() {
-                if (! navigator.geolocation) { this.konumDurumu = 'Bu cihaz konum vermiyor'; return; }
-                this.konumDurumu = 'Konum alınıyor…';
-                navigator.geolocation.getCurrentPosition(
-                    async (p) => {
-                        const e = p.coords.latitude.toFixed(6), b = p.coords.longitude.toFixed(6);
-                        const metin = e + ', ' + b + ' — https://maps.google.com/?q=' + e + ',' + b;
-                        try { await navigator.clipboard.writeText(metin); this.konumDurumu = 'Konum kopyalandı ✓'; }
-                        catch (_) { this.konumDurumu = e + ', ' + b; }
-                        setTimeout(() => { this.konumDurumu = ''; }, 6000);
-                    },
-                    () => { this.konumDurumu = 'Konum izni verilmedi'; setTimeout(() => { this.konumDurumu = ''; }, 4000); },
-                    { enableHighAccuracy: true, timeout: 10000 }
-                );
-            },
-        }"
-        @keydown.escape.window="open = false"
+     Yani biri panelden o kategorileri pasife çekseydi, sitenin acil numarası
+     da sessizce kaybolacaktı. Hayat kurtaran katman (1 ve 2), pazaryeri
+     envanterine bağlanamaz. Kapı kaldırıldı; artık YALNIZ 3. katman
+     (ilan bağlantıları) koşullu. --}}
+
+@php
+    /*
+     * 3. KATMAN SÜZGECİ — "boş vaat verme" kuralı.
+     *
+     * 2026-08-12 ölçümü (canlı): doktorlar/çilingirler/avukatlar, HER ülkede
+     * "0 ilan bulundu" döndürüyordu. Yani acil durumdaki biri panelde üç
+     * büyük dokunulabilir satır görüyor, üçü de onu boş sayfaya götürüyordu.
+     * En kötü anda en kötü his.
+     *
+     * Artık yalnız GERÇEKTEN ilanı olan kategori basılır; hiçbiri yoksa
+     * bölüm hiç açılmaz. Kendi kendine iyileşir: ilk gerçek ilan
+     * yayınlandığında geri gelir (Listing::booted() cache'i düşürür).
+     */
+    $ilanliKategoriler = collect($categories)->filter(fn ($c) => ($c->gercek_ilan_sayisi ?? 0) > 0);
+@endphp
+
+<div
+    x-data="{
+        open: false,
+        ulke: @js($defaultCountry),
+        numaralar: @js(\App\Support\AcilNumaralar::harita()),
+        rehberliUlkeler: @js(collect($countries)->filter(fn ($u) => !empty($u->rehber_var))->pluck('code')->values()),
+        konumDurumu: '',
+        konumKoordinat: '',
+
+        ac() {
+            this.open = true;
+            this.$nextTick(() => this.$refs.kapat?.focus());
+        },
+
+        /* Kapanışta odak tetikleyiciye DÖNER: klavye/ekran okuyucu kullanıcısı
+           modal kapanınca sayfanın başına düşmez, kaldığı yerden devam eder. */
+        kapat() {
+            this.open = false;
+            this.$nextTick(() => this.$refs.tetik?.focus());
+        },
+
+        /* Seçili ülkenin acil numarası; ülke seçili değilse null. */
+        acilNumara() {
+            return (this.ulke && this.numaralar[this.ulke]) ? this.numaralar[this.ulke] : null;
+        },
+
+        /* Genel numaradan FARKLI olan adlandırılmış hatlar. Aynı olanı
+           tekrar göstermek ekranı şişirir ve seçim yaptırır — acil durumda
+           ikisi de zarar. */
+        ekHatlar() {
+            const n = this.acilNumara();
+            if (! n) return [];
+            return [
+                { ad: 'Polis', no: n.polis },
+                { ad: 'Ambulans', no: n.ambulans },
+                { ad: 'İtfaiye', no: n.itfaiye },
+            ].filter((h) => h.no && h.no !== n.genel);
+        },
+
+        /* Yabancı ülkede adres tarif edememe sorununun ucuz çözümü: konumu
+           EKRANDA okunacak biçimde gösterir, ayrıca panoya yazmayı dener.
+
+           ÜÇ ÖLÇÜLEN HATA BURADA DÜZELTİLDİ:
+
+           1. Sonuç 8 saniye sonra kendini siliyordu. Telefonda operatörle
+              konuşurken 8 saniye hiçbir şeydir; koordinat artık SİLİNMİYOR.
+           2. Pano birincil yoldu, ama `clipboard.writeText` burada kullanıcı
+              dokunuşundan kopmuş bir bağlamda (geolocation geri çağrısı)
+              çalışıyor ve iOS Safari bunu reddediyor. Yani iPhone'da her
+              seferinde yedek dala düşüyordu. Artık EKRAN birincil, pano ikramiye.
+           3. Her hata, izin verilmedi diyordu. GPS zaman aşımı da aynı mesajı
+              veriyor ve kullanıcı zaten verdiği izni aramaya ayar ekranına
+              gidiyordu. `code` artık ayrıştırılıyor.
+
+           NOT — BURADA ÇİFT TIRNAK KULLANMA. Burası bir HTML özniteliğinin
+           içi; tek bir çift tırnak özniteliği erkenden kapatır ve Alpine
+           ifadesi sözdizimi hatasıyla ölür. Panelin TAMAMI çalışmaz hâle
+           gelir: ülke seçilemez, numara gösterilemez, modal açılamaz.
+
+           Bu hata arka arkaya İKİ KEZ yapıldı — ikincisi tam da birincisini
+           anlatan uyarı yazılırken. Ve 2000+ testin hepsi ikisinde de yeşil
+           kaldı, çünkü testler basılan metne bakar, JS'in koştuğuna değil.
+           Bekçi: AcilMenusuTest::test_alpine_ifadesi_html_ozniteligini_erken_kapatmiyor
+
+           4 ondalık ~11 metre; acil çağrı için fazlasıyla yeterli ve 6 hane
+           telefonda okunamayacak kadar uzundu.
+
+           `maximumAge`: 30 sn içinde alınmış konum varsa ANINDA döner. */
+        konumuKopyala() {
+            if (! navigator.geolocation) { this.konumDurumu = 'Bu cihaz konum vermiyor'; return; }
+            this.konumDurumu = 'Konum alınıyor…';
+            this.konumKoordinat = '';
+            navigator.geolocation.getCurrentPosition(
+                async (p) => {
+                    const e = p.coords.latitude.toFixed(4), b = p.coords.longitude.toFixed(4);
+                    this.konumKoordinat = e + ', ' + b;
+                    try {
+                        await navigator.clipboard.writeText(this.konumKoordinat + ' — https://maps.google.com/?q=' + e + ',' + b);
+                        this.konumDurumu = 'Panoya da kopyalandı';
+                    } catch (_) {
+                        this.konumDurumu = 'Aşağıdaki koordinatı okuyabilirsin';
+                    }
+                },
+                (hata) => {
+                    this.konumDurumu = hata.code === 1 ? 'Konum izni verilmedi'
+                        : hata.code === 3 ? 'Zaman aşımı — tekrar dene'
+                        : 'Konum şu an alınamıyor';
+                },
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+            );
+        },
+
+        /* Minimal odak tuzağı — yeni bağımlılık eklemeden Tab'ı panel içinde
+           döndürür (app.js'teki Cmd+K paneliyle aynı desen). */
+        odagiTut(event) {
+            const odaklanabilir = this.$refs.panel?.querySelectorAll('a[href], button:not([disabled]), select');
+            if (! odaklanabilir || ! odaklanabilir.length) return;
+            const ilk = odaklanabilir[0], son = odaklanabilir[odaklanabilir.length - 1];
+            if (event.shiftKey && document.activeElement === ilk) { event.preventDefault(); son.focus(); }
+            else if (! event.shiftKey && document.activeElement === son) { event.preventDefault(); ilk.focus(); }
+        },
+    }"
+    @keydown.escape.window="open && kapat()"
+    {{-- Modal açıkken arkadaki sayfa kaymasın: telefonda parmak panelin
+         dışına taştığında sayfa kayıyor, panel yerinde kalıyordu. --}}
+    x-effect="document.body.style.overflow = open ? 'hidden' : ''"
+>
+    {{-- ACİL DÜĞMESİ — ÖNCE ANLAŞILSIN, SONRA TÜRK OLSUN.
+
+         Önceki tasarım ay-yıldızlıydı ve sahip haklı olarak "kimse bunun
+         acil durum düğmesi olduğunu anlamaz" dedi. İki sebebi vardı:
+
+         1. ETİKET MOBİLDE GİZLİYDİ (`hidden sm:inline`). Telefonda geriye
+            yalnız ikon kalıyordu — ve ay-yıldız "Türk" der, "acil" demez.
+            Bir düğmenin ne yaptığını anlatan en güçlü şey kelimenin
+            kendisidir; artık her ekranda "Acil" yazıyor.
+         2. Bayrak motifi kimlik anlatır, ACİLİYET anlatmaz. Ünlem üçgeni
+            kültürden bağımsız okunur; tehlike/dikkat için evrensel işaret.
+
+         Kırmızı kaldı ve şanslı bir örtüşme: hem acil rengi hem bayrak
+         kırmızısı (#E30A17). Türklüğü renk taşıyor, anlaşılırlığı ikon ve
+         kelime taşıyor. Ay-yıldız modal başlığında duruyor — orada bağlam
+         zaten kurulmuş oluyor ("Acil Yardım" başlığının yanında). --}}
+    <button
+        type="button"
+        x-ref="tetik"
+        @click="ac()"
+        {{-- Odak halkası DIŞA taşınıyor: `ring-inset` ile kırmızının üstünde
+             kalan beyaz halka 2.86:1 veriyordu (gereken 3.0). Offset'li hâli
+             sayfa zeminine düşüyor ve net görünüyor. --}}
+        class="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg bg-[#E30A17] px-2 py-2 sm:gap-1.5 sm:px-2.5 text-sm font-bold text-white shadow-sm ring-1 ring-inset ring-white/20 transition hover:-translate-y-0.5 hover:bg-[#C10914] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2"
+        aria-label="Acil yardım — hızlı erişim"
+        title="Acil yardım — hızlı erişim"
     >
-        {{-- ACİL DÜĞMESİ — ÖNCE ANLAŞILSIN, SONRA TÜRK OLSUN.
+        <x-heroicon-s-exclamation-triangle class="h-4 w-4 shrink-0" />
+        Acil
+    </button>
 
-             Önceki tasarım ay-yıldızlıydı ve sahip haklı olarak "kimse bunun
-             acil durum düğmesi olduğunu anlamaz" dedi. İki sebebi vardı:
-
-             1. ETİKET MOBİLDE GİZLİYDİ (`hidden sm:inline`). Telefonda geriye
-                yalnız ikon kalıyordu — ve ay-yıldız "Türk" der, "acil" demez.
-                Bir düğmenin ne yaptığını anlatan en güçlü şey kelimenin
-                kendisidir; artık her ekranda "Acil" yazıyor.
-             2. Bayrak motifi kimlik anlatır, ACİLİYET anlatmaz. Ünlem üçgeni
-                kültürden bağımsız okunur; tehlike/dikkat için evrensel işaret.
-
-             Kırmızı kaldı ve şanslı bir örtüşme: hem acil rengi hem bayrak
-             kırmızısı (#E30A17). Türklüğü renk taşıyor, anlaşılırlığı ikon ve
-             kelime taşıyor. Ay-yıldız modal başlığında duruyor — orada bağlam
-             zaten kurulmuş oluyor ("Acil Yardım" başlığının yanında). --}}
-        <button
-            type="button"
-            @click="open = true"
-            class="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg bg-[#E30A17] px-2 py-2 sm:gap-1.5 sm:px-2.5 text-sm font-bold text-white shadow-sm ring-1 ring-inset ring-white/20 transition hover:-translate-y-0.5 hover:bg-[#C10914] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-            aria-label="Acil yardım — hızlı erişim"
-            title="Acil yardım — hızlı erişim"
+    {{-- x-teleport: modal, header'ın backdrop-blur'unun (position:fixed
+    için yeni bir containing block oluşturur) İÇİNDEN kaçıp <body>
+    sonuna taşınır — aksi halde "fixed inset-0" header'ın küçük
+    yüksekliğine sıkışıp modal neredeyse tamamen ekran dışına taşar. --}}
+    <template x-teleport="body">
+        <div
+            x-show="open"
+            x-transition.opacity.duration.200ms
+            class="fixed inset-0 z-50 flex items-end justify-center bg-stone-900/60 sm:items-center sm:p-6"
+            @click.self="kapat()"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="emergency-title"
+            x-cloak
         >
-            <x-heroicon-s-exclamation-triangle class="h-4 w-4 shrink-0" />
-            Acil
-        </button>
+            {{-- YÜKSEKLİK SINIRI + İÇ KAYDIRMA — bu panelin en kritik iki satırı.
 
-        {{-- x-teleport: modal, header'ın backdrop-blur'unun (position:fixed
-        için yeni bir containing block oluşturur) İÇİNDEN kaçıp <body>
-        sonuna taşınır — aksi halde "fixed inset-0" header'ın küçük
-        yüksekliğine sıkışıp modal neredeyse tamamen ekran dışına taşar. --}}
-        <template x-teleport="body">
+                 ÖLÇÜLEN HATA (sahibin telefonu, 2026-08-12): panelin yükseklik
+                 sınırı yoktu. Kapsayıcı `items-end` olduğu için içerik ekrandan
+                 uzun olunca panel AŞAĞIYA değil YUKARIYA taşıyor; başlık ve
+                 "Kapat" düğmesi ekranın üstünden dışarı çıkıyordu. Kapsayıcı
+                 `fixed inset-0` olduğu için oraya kaydırmak da mümkün değildi
+                 ve panel tüm ekranı kapladığından arkaplana dokunup kapatacak
+                 boşluk da kalmıyordu. Yani panel açıldığında ÇIKIŞ YOKTU.
+
+                 Çözüm üç kapıyı birden geri açar:
+                   · max-height  → üstte her zaman arkaplan görünür (dokun-kapat)
+                   · flex-col    → başlık ve alt not sabit, YALNIZ orta kısım kayar
+                   · shrink-0    → "Kapat" düğmesi hiçbir içerik boyunda kaybolmaz
+
+                 `dvh` mobil tarayıcıda adres çubuğu gizlenince değişen gerçek
+                 yüksekliği verir; `vh` desteklemeyen tarayıcı için yedek olarak
+                 önce yazıldı (CSS kaskadı: sonraki geçerli kural kazanır). --}}
             <div
                 x-show="open"
-                x-transition.opacity.duration.200ms
-                class="fixed inset-0 z-50 flex items-end justify-center bg-stone-900/60 p-3 sm:items-center sm:p-6"
-                @click.self="open = false"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="emergency-title"
-                x-cloak
+                x-transition.duration.200ms
+                x-ref="panel"
+                @keydown.tab="odagiTut($event)"
+                style="max-height: 85vh; max-height: 85dvh;"
+                class="flex w-full max-w-md flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl ring-1 ring-stone-200 sm:rounded-2xl dark:bg-stone-900 dark:ring-stone-800"
             >
-                <div
-                    x-show="open"
-                    x-transition.duration.200ms
-                    class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-stone-200 dark:bg-stone-900 dark:ring-stone-800"
-                >
-                    <div class="flex items-start justify-between gap-4 border-b border-rose-100 bg-rose-50 px-5 py-4 dark:border-rose-900/40 dark:bg-rose-950/30">
+                {{-- BAŞLIK — shrink-0: asla kaydırma alanına girmez --}}
+                <div class="shrink-0 border-b border-rose-100 bg-rose-50 dark:border-rose-900/40 dark:bg-rose-950/30">
+                    {{-- Tutamak: telefonda bunun aşağıdan açılan bir panel
+                         olduğunu söyleyen yaygın işaret. --}}
+                    <div class="flex justify-center pt-2 sm:hidden" aria-hidden="true">
+                        <span class="h-1 w-10 rounded-full bg-rose-300/70 dark:bg-rose-700/70"></span>
+                    </div>
+                    <div class="flex items-start justify-between gap-4 px-5 py-4">
                         <div class="flex items-center gap-3">
                             <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#E30A17] text-white">
                                 <x-ay-yildiz class="h-5 w-5" />
                             </span>
                             <div>
                                 <h2 id="emergency-title" class="text-lg font-bold text-rose-900 dark:text-rose-200">Acil Yardım</h2>
-                                <p class="mt-0.5 text-sm text-rose-800/80 dark:text-rose-300/80">Bulunduğun ülkede hızlıca ulaşabileceğin Türkler</p>
+                                <p class="mt-0.5 text-sm text-rose-800/80 dark:text-rose-300/80">Bulunduğun ülkede hızlıca ulaşabileceğin numaralar</p>
                             </div>
                         </div>
                         <button
                             type="button"
-                            @click="open = false"
-                            class="rounded-full p-1.5 text-rose-700 transition hover:bg-rose-100 dark:text-rose-300 dark:hover:bg-rose-900/40"
+                            x-ref="kapat"
+                            @click="kapat()"
+                            {{-- p-3 → 44×44 dokunma hedefi. Panel açılınca odak
+                                 BURAYA geliyor ve sağ üst köşe tek elle en zor
+                                 erişilen bölge; 32px'lik hedef panik hâlinde,
+                                 titreyen parmakla ıskalanıyordu. --}}
+                            class="shrink-0 rounded-full p-3 text-rose-700 transition hover:bg-rose-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 dark:text-rose-300 dark:hover:bg-rose-900/40"
                             aria-label="Kapat"
                         >
                             <x-heroicon-o-x-mark class="h-5 w-5" />
                         </button>
                     </div>
+                </div>
 
+                {{-- GÖVDE — tek kayan bölge --}}
+                <div class="flex-1 overflow-y-auto overscroll-contain">
                     @if ($countries->isNotEmpty())
                         <div class="border-b border-stone-100 px-5 py-3 dark:border-stone-800">
                             <label for="acil-ulke" class="text-xs font-semibold text-stone-500 dark:text-stone-400">Hangi ülkedesin?</label>
                             <select
                                 id="acil-ulke"
                                 x-model="ulke"
-                                class="mt-1 w-full rounded-lg border-stone-200 bg-stone-50 py-2 text-sm text-stone-700 focus:border-rose-400 focus:ring-rose-400 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200"
+                                {{-- Kenarlık stone-200 iken beyaz üstünde 1.26:1
+                                     idi: panelin KAPISI olan kontrol, az gören
+                                     biri için beyaz üstünde beyaz bir dikdörtgen
+                                     oluyordu. stone-400 = 3.03, WCAG 1.4.11 sınırı. --}}
+                                class="mt-1 w-full rounded-lg border-stone-400 bg-stone-50 py-2 text-sm text-stone-700 focus:border-rose-500 focus:ring-rose-500 dark:border-stone-500 dark:bg-stone-800 dark:text-stone-200"
                             >
-                                <option value="">Tüm ülkeler</option>
+                                {{-- Eskiden "Tüm ülkeler" yazıyordu. Bir acil
+                                     panelinde anlamsız: insan tek bir ülkede
+                                     olur, hepsinde değil. --}}
+                                <option value="">Ülkeni seç</option>
                                 @foreach ($countries as $country)
                                     <option value="{{ $country->code }}">{{ $country->emoji }} {{ $country->name_tr }}</option>
                                 @endforeach
@@ -126,38 +272,98 @@
                          linkler boş sayfaya götürüyordu.
 
                          Sıra hayatî olandan başlar:
-                           1. Bulunduğun ülkenin acil numarası (tek dokunuş)
+                           1. Bulunduğun ülkenin acil numaraları (tek dokunuş)
                            2. Konsolosluk — Türk'e özgü olan katman
-                           3. Türkçe konuşan yardım (ilanlar), dürüst boş hâl
+                           3. Türkçe konuşan yardım — YALNIZ gerçekten varsa
                     --}}
 
-                    {{-- KATMAN 1 — ÜLKENİN ACİL NUMARASI --}}
+                    {{-- KATMAN 1 — ÜLKENİN ACİL NUMARALARI --}}
                     <div class="border-b border-stone-100 px-5 py-4 dark:border-stone-800">
+                        {{-- Ekran okuyucuya haber ver: ülke seçilince aşağıda
+                             yeni bir çağrı düğmesi BELİRİYOR. Görsel kullanıcı
+                             bunu görüyor, kör kullanıcı tek tek gezinmeden
+                             bilemiyordu. --}}
+                        <p class="sr-only" role="status" aria-live="polite"
+                           x-text="acilNumara() ? 'Acil numara hazır: ' + acilNumara().genel_etiket + ' ' + acilNumara().genel : ''"></p>
+
                         <template x-if="acilNumara()">
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Acil servis</p>
-                                <div class="mt-2 flex gap-2">
-                                    <a :href="'tel:' + acilNumara().genel"
-                                       class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#E30A17] px-4 py-3 text-lg font-bold text-white shadow-sm transition hover:bg-[#C10914]">
-                                        <x-heroicon-s-phone class="h-5 w-5 shrink-0" />
-                                        <span x-text="acilNumara().genel"></span>
-                                    </a>
-                                    <template x-if="acilNumara().polis">
-                                        <a :href="'tel:' + acilNumara().polis"
-                                           class="flex items-center justify-center gap-2 rounded-xl border border-stone-300 px-4 py-3 text-base font-bold text-stone-800 transition hover:bg-stone-50 dark:border-stone-600 dark:text-stone-100 dark:hover:bg-stone-800">
-                                            <span>Polis</span><span x-text="acilNumara().polis"></span>
-                                        </a>
-                                    </template>
-                                </div>
-                                <p class="mt-2 text-xs text-stone-600 dark:text-stone-400" x-text="acilNumara().not"></p>
+
+                                {{-- BİRİNCİL HAT — tek dokunuş, en büyük hedef.
+
+                                     ÜSTTEKİ ETİKET HAYATÎ. Eskiden düğmede yalnız
+                                     rakam vardı; Almanya'da panelde görünen tek
+                                     adlandırılmış hat "Polis 110" oluyor,
+                                     "Ambulans" kelimesi ekranda HİÇ geçmiyordu.
+                                     Panik hâlindeki insan kelime tarar, rakam
+                                     taramaz — aradığı kelimeyi bulamayınca ya
+                                     donar ya yanlış hattı arar. --}}
+                                <a :href="'tel:' + acilNumara().genel"
+                                   :aria-label="acilNumara().genel + ' ara — ' + acilNumara().genel_etiket"
+                                   class="mt-2 flex items-center justify-center gap-3 rounded-xl bg-[#E30A17] px-4 py-4 text-white shadow-sm transition hover:bg-[#C10914] focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-stone-900">
+                                    <x-heroicon-s-phone class="h-7 w-7 shrink-0" />
+                                    <span class="text-center leading-tight">
+                                        <span class="block text-xs font-semibold uppercase tracking-wide text-white/90" x-text="acilNumara().genel_etiket"></span>
+                                        <span class="block text-3xl font-bold" x-text="acilNumara().genel"></span>
+                                    </span>
+                                </a>
+
+                                {{-- ADLANDIRILMIŞ HATLAR — okunacak metin değil,
+                                     ARANAN düğme. Yalnız genel numaradan farklı
+                                     olanlar; aynısını iki kez göstermek acil
+                                     durumda gereksiz seçim yaptırır. --}}
+                                <template x-if="ekHatlar().length">
+                                    <div class="mt-2 grid grid-cols-3 gap-2">
+                                        <template x-for="hat in ekHatlar()" :key="hat.ad">
+                                            <a :href="'tel:' + hat.no"
+                                               :aria-label="hat.ad + ' ' + hat.no + ' ara'"
+                                               class="flex min-w-0 flex-col items-center justify-center rounded-xl border border-stone-400 px-2 py-2.5 transition hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 dark:border-stone-500 dark:hover:bg-stone-800">
+                                                {{-- rem tabanlı: tarayıcı yazı boyutunu
+                                                     büyüten kullanıcı da fayda görsün.
+                                                     `break-words`: "AMBULANS" 320px'de
+                                                     kırpılmak yerine sarılsın. --}}
+                                                <span class="break-words text-center text-[0.6875rem] font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400" x-text="hat.ad"></span>
+                                                <span class="text-lg font-bold text-stone-800 dark:text-stone-100" x-text="hat.no"></span>
+                                            </a>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                {{-- Not YALNIZ artık bilgi taşıyorsa basılır;
+                                     düğmelerin söylediğini tekrar etmez. --}}
+                                <template x-if="acilNumara().not">
+                                    <p class="mt-2 text-xs text-stone-600 dark:text-stone-400" x-text="acilNumara().not"></p>
+                                </template>
                             </div>
                         </template>
+
+                        {{-- ÜLKE BİLİNMİYORSA DA DÜĞME BASILIR — paragraf değil.
+
+                             Eskiden burada küçük punto bir cümle ve cümlenin
+                             İÇİNE gömülü bir 112 bağlantısı vardı. Bu durum
+                             sanıldığından sık: misafir + çözümlenemeyen IP, VPN,
+                             ya da `config/acil.php`'de karşılığı olmayan bir ülke.
+                             Hayatının en kötü anındaki insana, çağrı düğmesinin
+                             olması gereken yerde okuması gereken bir metin
+                             çıkıyordu. Artık aynı yerde aynı düğme var. --}}
                         <template x-if="! acilNumara()">
-                            <p class="text-sm text-stone-600 dark:text-stone-400">
-                                Ülkeni seçersen o ülkenin acil numarasını burada gösteririz.
-                                Emin değilsen <a href="tel:112" class="font-bold text-[#E30A17] hover:underline">112</a>'yi dene —
-                                Avrupa'nın tamamında ve pek çok ülkede yönlendirir.
-                            </p>
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Acil servis</p>
+                                <a href="tel:112"
+                                   aria-label="112 ara — Avrupa geneli acil numara"
+                                   class="mt-2 flex items-center justify-center gap-3 rounded-xl bg-[#E30A17] px-4 py-4 text-white shadow-sm transition hover:bg-[#C10914] focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-stone-900">
+                                    <x-heroicon-s-phone class="h-7 w-7 shrink-0" />
+                                    <span class="text-center leading-tight">
+                                        <span class="block text-xs font-semibold uppercase tracking-wide text-white/90">Avrupa geneli</span>
+                                        <span class="block text-3xl font-bold">112</span>
+                                    </span>
+                                </a>
+                                <p class="mt-2 text-xs text-stone-600 dark:text-stone-400">
+                                    Ülkeni seçersen o ülkenin kendi numaralarını gösteririz. 112 Avrupa'nın
+                                    tamamında ve pek çok ülkede yönlendirir — ama her ülkede çalışmaz.
+                                </p>
+                            </div>
                         </template>
                     </div>
 
@@ -190,44 +396,68 @@
                     {{-- KONUM — yabancı ülkede adres tarif edememek gerçek bir
                          sorun; koordinatı kopyalayıp okumak ya da yapıştırmak
                          en hızlı çözüm. İzin istenerek yapılır. --}}
-                    <div class="border-b border-stone-100 px-5 py-3 dark:border-stone-800">
+                    <div class="{{ $ilanliKategoriler->isNotEmpty() ? 'border-b border-stone-100 dark:border-stone-800' : '' }} px-5 py-3">
+                        {{-- Düğmenin ADI SABİT. Eskiden durum metni etiketin
+                             yerine geçiyordu ("Konum alınıyor…"), yani düğmeye
+                             Tab'layan kör kullanıcı düğmenin NE YAPTIĞINI
+                             öğrenemiyordu. Durum artık ayrı canlı bölgede. --}}
                         <button type="button" @click="konumuKopyala()"
-                                class="flex w-full items-center gap-2 rounded-xl px-1 py-1.5 text-sm font-semibold text-stone-700 transition hover:text-stone-900 dark:text-stone-300 dark:hover:text-stone-100">
-                            <x-heroicon-o-map-pin class="h-4 w-4 shrink-0" />
-                            <span x-text="konumDurumu || 'Konumumu kopyala'"></span>
+                                class="flex w-full items-center gap-2 rounded-xl border border-stone-400 px-3 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-600 dark:border-stone-500 dark:text-stone-300 dark:hover:bg-stone-800">
+                            <x-heroicon-o-map-pin class="h-5 w-5 shrink-0" />
+                            Konumumu kopyala
                         </button>
+
+                        <p role="status" aria-live="polite" class="mt-1.5 text-xs text-stone-600 dark:text-stone-400" x-text="konumDurumu"></p>
+
+                        {{-- Koordinat DÜĞMENİN DIŞINDA ve SİLİNMİYOR: pano
+                             yazımı başarısız olduğunda (iOS'ta kural) yedek
+                             bir `<button>` metninin içine düşüyordu — mobilde
+                             düğme metni basılı tutularak seçilemez, yani
+                             yedeğin var olma sebebi ortadan kalkıyordu. --}}
+                        <template x-if="konumKoordinat">
+                            <p class="mt-1 select-all text-lg font-bold tracking-tight text-stone-800 dark:text-stone-100" x-text="konumKoordinat"></p>
+                        </template>
                     </div>
 
-                    {{-- KATMAN 3 — TÜRKÇE KONUŞAN YARDIM --}}
-                    <div class="space-y-2 px-5 py-5">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Türkçe konuşan yardım</p>
-                        @foreach ($categories as $cat)
-                            <a
-                                :href="'{{ route('listings.category', $cat->slug) }}' + (ulke ? '?ulke=' + ulke : '')"
-                                class="flex items-center justify-between gap-3 rounded-xl border border-stone-200 px-4 py-3 transition hover:border-rose-300 hover:bg-rose-50 dark:border-stone-700 dark:hover:border-rose-700 dark:hover:bg-rose-950/20"
-                            >
-                                <span class="flex items-center gap-3">
-                                    <span class="grid h-9 w-9 place-items-center rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-300">
-                                        <x-dynamic-component :component="'heroicon-o-'.\App\Support\CategoryIcon::heroicon($cat->icon)" class="h-5 w-5" />
+                    {{-- KATMAN 3 — TÜRKÇE KONUŞAN YARDIM.
+                         Bölümün tamamı koşullu: ilanı olmayan kategori hiç
+                         basılmaz, hiçbiri yoksa başlık da açılmaz. --}}
+                    @if ($ilanliKategoriler->isNotEmpty())
+                        <div class="space-y-2 px-5 py-5">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Türkçe konuşan yardım</p>
+                            @foreach ($ilanliKategoriler as $cat)
+                                <a
+                                    :href="'{{ route('listings.category', $cat->slug) }}' + (ulke ? '?ulke=' + ulke : '')"
+                                    class="flex items-center justify-between gap-3 rounded-xl border border-stone-200 px-4 py-3 transition hover:border-rose-300 hover:bg-rose-50 dark:border-stone-700 dark:hover:border-rose-700 dark:hover:bg-rose-950/20"
+                                >
+                                    <span class="flex items-center gap-3">
+                                        <span class="grid h-9 w-9 place-items-center rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-300">
+                                            <x-dynamic-component :component="'heroicon-o-'.\App\Support\CategoryIcon::heroicon($cat->icon)" class="h-5 w-5" />
+                                        </span>
+                                        <span class="font-semibold text-stone-800 dark:text-stone-100">{{ $cat->name }}</span>
                                     </span>
-                                    <span class="font-semibold text-stone-800 dark:text-stone-100">{{ $cat->name }}</span>
-                                </span>
-                                <x-heroicon-o-arrow-right class="h-4 w-4 text-stone-600" />
-                            </a>
-                        @endforeach
-                        {{-- DÜRÜST BOŞ HÂL: ilan yoksa bunu ÖNCEDEN söyle.
-                             Acil durumdaki birini boş sonuç sayfasına
-                             göndermek en kötü zamanda hayal kırıklığıdır. --}}
-                        <p class="pt-1 text-xs text-stone-600 dark:text-stone-400">
-                            Nisoya yeni bir platform; seçtiğin ülkede henüz ilan olmayabilir.
-                        </p>
-                    </div>
+                                    {{-- `dark:` karşılığı ŞART: çıplak text-stone-600
+                                         koyu panelde 2.29:1 veriyor (bekçi testinin
+                                         yasakladığı oranın ta kendisi, ama test
+                                         yalnız `dark:text-stone-600` desenini
+                                         aradığı için bu hâli görmüyor). --}}
+                                    <x-heroicon-o-arrow-right class="h-4 w-4 text-stone-600 dark:text-stone-400" />
+                                </a>
+                            @endforeach
+                            {{-- Ülke süzgeci sonucu boşaltabilir: kategoride
+                                 ilan VAR ama seçili ülkede olmayabilir. --}}
+                            <p class="pt-1 text-xs text-stone-600 dark:text-stone-400">
+                                Seçtiğin ülkede henüz ilan olmayabilir.
+                            </p>
+                        </div>
+                    @endif
+                </div>
 
-                    <div class="border-t border-stone-100 bg-stone-50 px-5 py-3 text-center text-xs text-stone-500 dark:border-stone-800 dark:bg-stone-800 dark:text-stone-400">
-                        Nisoya bir ilan platformudur, acil servis değildir — hayatî bir durumda önce yukarıdaki resmî numarayı ara.
-                    </div>
+                {{-- ALT NOT — shrink-0: kaydırmadan bağımsız, hep görünür --}}
+                <div class="shrink-0 border-t border-stone-100 bg-stone-50 px-5 py-3 text-center text-xs text-stone-500 dark:border-stone-800 dark:bg-stone-800 dark:text-stone-400">
+                    Nisoya bir ilan platformudur, acil servis değildir — hayatî bir durumda önce yukarıdaki resmî numarayı ara.
                 </div>
             </div>
-        </template>
-    </div>
-@endif
+        </div>
+    </template>
+</div>

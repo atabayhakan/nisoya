@@ -17,9 +17,36 @@
 | "emin değilsen 112'yi dene" güvenlik ağı ve resmî kaynağa gitme yolu
 | gösterilir. Nisoya bir ilan platformudur, acil servis değildir.
 |
-| `genel`  : tek numara aranacaksa bu aranır (dispatch'e ulaşır)
-| `polis`  : YALNIZ genel numaradan farklıysa yazılır (ör. Almanya 110)
-| `not`    : kullanıcıya gösterilecek kısa açıklama
+| `genel`        : tek numara aranacaksa bu aranır
+| `genel_etiket` : genel numaranın NEYE ulaştığı ("Tüm acil servisler",
+|                  "Ambulans ve itfaiye", "Polis"). ZORUNLU — gerekçe aşağıda.
+| `polis`        : YALNIZ genel numaradan farklıysa yazılır (ör. Almanya 110)
+| `ambulans`     : YALNIZ genel numaradan farklıysa yazılır (ör. İsviçre 144)
+| `itfaiye`      : YALNIZ genel numaradan farklıysa yazılır (ör. Norveç 110)
+| `not`          : düğmelerin ANLATAMADIĞI artık bilgi. Düğmede yazan bir
+|                  numarayı burada tekrar yazma.
+|
+| ---------------------------------------------------------------------------
+| 2026-08-12 — ÜÇ DEĞİŞİKLİK VE BİR DERS
+|
+| 1. DÜĞMELEŞTİRME. `polis`/`ambulans`/`itfaiye` alanları dolduruldu. Bu
+|    numaralar daha önce yalnız `not` metninin İÇİNDE yazılıydı; acil durumda
+|    numarayı okuyup elle tuşlamak saniye kaybettiriyordu. Artık tek dokunuş.
+|
+| 2. `genel_etiket` EKLENDİ. Almanya'da panelde görünen tek adlandırılmış hat
+|    "Polis 110" idi; "Ambulans" kelimesi ekranda HİÇ geçmiyordu. Panik hâlindeki
+|    insan kelime tarar, rakam taramaz — aradığı kelimeyi bulamayınca ya donar ya
+|    yanlış hattı arar. Genel numara artık ne olduğunu söylüyor.
+|
+| 3. DERS — BÖLGESEL ŞABLON DOĞRULAMA DEĞİLDİR. Aşağıdaki "Sovyet mirası
+|    numaralandırma" notu altı ülkeye (AZ/KZ/KG/UZ/TM/RU) TEK KALIPTAN
+|    dolduruldu ve hepsine aynı `dogrulandi` tarihi yazıldı. Bağımsız denetim
+|    (2026-08-12) beşinde doğru, TÜRKMENİSTAN'DA DÖRDÜNÜN DE YANLIŞ olduğunu
+|    buldu: TM üç haneli sisteme hiç geçmemiş ve 112'yi hiç almamış. Şablon,
+|    yanlış olduğu tek yerde de sessizce "doğrulanmış" göründü.
+|
+|    Buradan çıkan kural: `dogrulandi` tarihi ÜLKE BAZINDA kontrolü gösterir.
+|    Bir grubu tek hamlede doldurup hepsine aynı tarihi yazma.
 |
 */
 
@@ -46,38 +73,86 @@ return [
      */
     'ulkeler' => [
         // --- AB / EEA — 112 her yerde geçerli ---
-        'DE' => ['genel' => '112', 'polis' => '110', 'not' => 'Ambulans ve itfaiye 112, polis 110.', 'dogrulandi' => '2026-08-11'],
-        'NL' => ['genel' => '112', 'not' => 'Tüm acil servisler 112.', 'dogrulandi' => '2026-08-11'],
-        'FR' => ['genel' => '112', 'not' => '112 tüm servisler. Ayrıca ambulans 15, polis 17, itfaiye 18.', 'dogrulandi' => '2026-08-11'],
-        'AT' => ['genel' => '112', 'not' => 'Tüm acil servisler 112.', 'dogrulandi' => '2026-08-11'],
-        'BE' => ['genel' => '112', 'not' => 'Tüm acil servisler 112.', 'dogrulandi' => '2026-08-11'],
-        'CH' => ['genel' => '112', 'not' => '112 çalışır. Ayrıca polis 117, itfaiye 118, ambulans 144.', 'dogrulandi' => '2026-08-11'],
-        'SE' => ['genel' => '112', 'not' => 'Tüm acil servisler 112.', 'dogrulandi' => '2026-08-11'],
-        'NO' => ['genel' => '112', 'not' => '112 polis. Ayrıca itfaiye 110, ambulans 113.', 'dogrulandi' => '2026-08-11'],
-        'DK' => ['genel' => '112', 'not' => 'Tüm acil servisler 112.', 'dogrulandi' => '2026-08-11'],
-        'IT' => ['genel' => '112', 'not' => 'Tüm acil servisler 112.', 'dogrulandi' => '2026-08-11'],
-        'ES' => ['genel' => '112', 'not' => 'Tüm acil servisler 112.', 'dogrulandi' => '2026-08-11'],
-        'PL' => ['genel' => '112', 'not' => 'Tüm acil servisler 112.', 'dogrulandi' => '2026-08-11'],
+        'DE' => ['genel' => '112', 'genel_etiket' => 'Ambulans ve itfaiye', 'polis' => '110', 'not' => '', 'dogrulandi' => '2026-08-12'],
+        'NL' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'not' => '', 'dogrulandi' => '2026-08-12'],
+        'FR' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'polis' => '17', 'ambulans' => '15', 'itfaiye' => '18', 'not' => '', 'dogrulandi' => '2026-08-12'],
+        'AT' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'not' => '', 'dogrulandi' => '2026-08-11'],
+
+        /*
+         * BE: 112'nin polisi de yönlendirdiği doğru, ama Belçika'nın KENDİ
+         * resmî portalı (112.be) ikisini ayırıyor: 112 ambulans+itfaiye,
+         * 101 acil polis. Dosyanın kendi kuralı gereği (genel'den farklıysa
+         * yaz) 101 buraya aitti; Almanya'da 110 için yapılan ayrım burada
+         * atlanmıştı.
+         */
+        'BE' => ['genel' => '112', 'genel_etiket' => 'Ambulans ve itfaiye', 'polis' => '101', 'not' => '', 'dogrulandi' => '2026-08-12'],
+
+        'CH' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'polis' => '117', 'ambulans' => '144', 'itfaiye' => '118', 'not' => '', 'dogrulandi' => '2026-08-12'],
+        'SE' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'not' => '', 'dogrulandi' => '2026-08-11'],
+        'NO' => ['genel' => '112', 'genel_etiket' => 'Polis', 'ambulans' => '113', 'itfaiye' => '110', 'not' => '', 'dogrulandi' => '2026-08-12'],
+        'DK' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'not' => '', 'dogrulandi' => '2026-08-11'],
+        'IT' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'not' => '', 'dogrulandi' => '2026-08-11'],
+        'ES' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'not' => '', 'dogrulandi' => '2026-08-11'],
+        'PL' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'not' => '', 'dogrulandi' => '2026-08-11'],
 
         // --- Diğer Avrupa ---
-        'GB' => ['genel' => '999', 'not' => '999 ana numara; 112 de çalışır.', 'dogrulandi' => '2026-08-11'],
+        'GB' => ['genel' => '999', 'genel_etiket' => 'Tüm acil servisler', 'not' => '112 de çalışır.', 'dogrulandi' => '2026-08-11'],
 
         // --- Kuzey Amerika / Okyanusya ---
-        'US' => ['genel' => '911', 'not' => 'Tüm acil servisler 911.', 'dogrulandi' => '2026-08-11'],
-        'CA' => ['genel' => '911', 'not' => 'Tüm acil servisler 911.', 'dogrulandi' => '2026-08-11'],
-        'AU' => ['genel' => '000', 'not' => '000 ana numara; cep telefonundan 112 de çalışır.', 'dogrulandi' => '2026-08-11'],
+        'US' => ['genel' => '911', 'genel_etiket' => 'Tüm acil servisler', 'not' => '', 'dogrulandi' => '2026-08-11'],
+        'CA' => ['genel' => '911', 'genel_etiket' => 'Tüm acil servisler', 'not' => '', 'dogrulandi' => '2026-08-11'],
+        // 112 AU'da YALNIZ cepten çalışır; sabit hat ve uydu telefonundan çalışmaz.
+        'AU' => ['genel' => '000', 'genel_etiket' => 'Tüm acil servisler', 'not' => 'Cep telefonundan 112 de çalışır.', 'dogrulandi' => '2026-08-11'],
 
-        // --- Türk dünyası (Sovyet mirası numaralandırma) ---
-        'AZ' => ['genel' => '112', 'not' => '112 genel. Ayrıca itfaiye 101, polis 102, ambulans 103.', 'dogrulandi' => '2026-08-11'],
-        'KZ' => ['genel' => '112', 'not' => '112 genel. Ayrıca itfaiye 101, polis 102, ambulans 103.', 'dogrulandi' => '2026-08-11'],
-        'KG' => ['genel' => '112', 'not' => '112 genel. Ayrıca itfaiye 101, polis 102, ambulans 103.', 'dogrulandi' => '2026-08-11'],
-        'UZ' => ['genel' => '112', 'not' => '112 genel. Ayrıca itfaiye 101, polis 102, ambulans 103.', 'dogrulandi' => '2026-08-11'],
-        'TM' => ['genel' => '112', 'not' => '112 genel. Ayrıca itfaiye 101, polis 102, ambulans 103.', 'dogrulandi' => '2026-08-11'],
-        'RU' => ['genel' => '112', 'not' => '112 genel. Ayrıca itfaiye 101, polis 102, ambulans 103.', 'dogrulandi' => '2026-08-11'],
+        // --- Türk dünyası ---
+        /*
+         * DİKKAT: burası "Sovyet mirası" diye tek kalıptan doldurulmuştu ve
+         * TM'de dördü de yanlış çıktı. Yeni ülke eklerken kalıbı kopyalama,
+         * o ülkeyi ayrıca doğrula.
+         *
+         * AZ: 112 Fövqəladə Hallar Nazirliyi (afet/kurtarma) hattı; resmî
+         * ifadeyle diğer servislere ULAŞILAMADIĞINDA kullanılır. Rakam yanlış
+         * değil ama "her şeye ulaşır" sözünü vermiyor — bu yüzden etiketi
+         * "Tüm acil servisler" DEĞİL, ve not bunu söylüyor.
+         */
+        'AZ' => ['genel' => '112', 'genel_etiket' => 'Afet ve kurtarma', 'polis' => '102', 'ambulans' => '103', 'itfaiye' => '101', 'not' => 'Genel hat afet ve kurtarma içindir; polis, ambulans ve itfaiye için doğrudan aşağıdaki numaraları ara.', 'dogrulandi' => '2026-08-12'],
+        'KZ' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'polis' => '102', 'ambulans' => '103', 'itfaiye' => '101', 'not' => '', 'dogrulandi' => '2026-08-12'],
+        'KG' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'polis' => '102', 'ambulans' => '103', 'itfaiye' => '101', 'not' => '', 'dogrulandi' => '2026-08-12'],
+        'UZ' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'polis' => '102', 'ambulans' => '103', 'itfaiye' => '101', 'not' => '', 'dogrulandi' => '2026-08-12'],
+
+        /*
+         * TM — DÜZELTİLDİ (2026-08-12). Önceki değerler (112/102/103/101)
+         * bölgesel şablondan gelmişti ve DÖRDÜ DE YANLIŞTI.
+         *
+         * Türkmenistan üç haneli sisteme geçmedi ve 112'yi hiç almadı:
+         * cepten 001 itfaiye / 002 polis / 003 ambulans, sabit hattan
+         * 01 / 02 / 03. Birleşik bir numara olmadığı için `genel` alanına
+         * ambulans konuldu — hayatî çağrıların çoğunluğu odur.
+         *
+         * Kaynaklar: atavatan-turkmenistan.com (ülke içi yayın, "Möhüm
+         * telefon belgileri"), advantour.com, Telephone numbers in
+         * Turkmenistan; ayrıca 112'nin geçerli olduğu ülkeler listesinde
+         * Türkmenistan YOK (AZ/KZ/KG/UZ/RU var). Devlet birincil kaynağına
+         * erişilemedi — bu kayıt yeniden doğrulanmaya AÇIK.
+         */
+        'TM' => ['genel' => '003', 'genel_etiket' => 'Ambulans', 'polis' => '002', 'itfaiye' => '001', 'not' => 'Türkmenistan\'da tek acil numara yok ve 112 çalışmaz. Bu numaralar cep telefonu içindir; sabit hattan ararken baştaki sıfırlardan biri düşer.', 'dogrulandi' => '2026-08-12'],
+
+        'RU' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'polis' => '102', 'ambulans' => '103', 'itfaiye' => '101', 'not' => '', 'dogrulandi' => '2026-08-12'],
 
         // --- Körfez ---
-        'AE' => ['genel' => '999', 'not' => '999 polis. Ayrıca ambulans 998, itfaiye 997.', 'dogrulandi' => '2026-08-11'],
-        'QA' => ['genel' => '999', 'not' => 'Tüm acil servisler 999.', 'dogrulandi' => '2026-08-11'],
-        'SA' => ['genel' => '911', 'not' => '911 birleşik acil numara. Ayrıca polis 999, ambulans 997, itfaiye 998.', 'dogrulandi' => '2026-08-11'],
+        'AE' => ['genel' => '999', 'genel_etiket' => 'Polis', 'ambulans' => '998', 'itfaiye' => '997', 'not' => '', 'dogrulandi' => '2026-08-12'],
+        'QA' => ['genel' => '999', 'genel_etiket' => 'Tüm acil servisler', 'not' => '', 'dogrulandi' => '2026-08-11'],
+
+        /*
+         * SA — `genel` 911'DEN 999'A ÇEKİLDİ (2026-08-12).
+         *
+         * 911 Suudi Arabistan'da birleşik numara olarak tanıtılıyor ama
+         * çağrı merkezleri yalnız DÖRT bölgede kurulu (Riyad, Mekke, Medine,
+         * Doğu Bölgesi). Kalan dokuz bölgedeki kullanıcı en üstteki büyük
+         * kırmızı düğmeye basıyor ve cevap alamayabiliyordu. 999 (polis)
+         * ülke geneli. Resmî Ulusal Numaralandırma Planı (cst.gov.sa):
+         * 999 polis, 998 sivil savunma, 997 Kızılay.
+         */
+        'SA' => ['genel' => '999', 'genel_etiket' => 'Polis', 'ambulans' => '997', 'itfaiye' => '998', 'not' => '911 birleşik hattı yalnız Riyad, Mekke, Medine ve Doğu Bölgesi\'nde cevap veriyor.', 'dogrulandi' => '2026-08-12'],
     ],
 ];

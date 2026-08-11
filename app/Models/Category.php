@@ -8,12 +8,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * @property-read int|null $gercek_ilan_sayisi `withCount` ile iliştirilen
+ *                                             sayım (acil menüsü). Kolon
+ *                                             değil, o yüzden docblock'suz
+ *                                             kalınca statik analiz null sanar.
+ */
 class Category extends Model
 {
     /** Header'daki "Acil" hızlı-erişim butonunun listelediği kategori grubu. */
     public const EMERGENCY_SLUG = 'acil-yardim';
 
-    public const EMERGENCY_CACHE_KEY = 'emergency_categories';
+    /*
+     * ANAHTARDA SÜRÜM VAR (v2, 2026-08-12). Cache `rememberForever`, yani
+     * dizinin ŞEKLİ değiştiğinde eski kayıt kendiliğinden düşmez: deploy
+     * sonrası yeni kod, eski anahtardaki eksik alanlı diziyi okumaya devam
+     * ederdi. Payload'a `gercek_ilan_sayisi` eklendiği için anahtar
+     * yükseltildi. Şekli bir daha değiştiren, sürümü de yükseltsin.
+     */
+    public const EMERGENCY_CACHE_KEY = 'emergency_categories_v2';
 
     protected $fillable = [
         'parent_id',

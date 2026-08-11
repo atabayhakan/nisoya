@@ -16,7 +16,7 @@ class AcilNumaralar
      * değiştikçe gösterilecek, o yüzden tek seferde JSON olarak geçiyoruz
      * (25 kayıt, boyutu ihmal edilebilir).
      *
-     * @return array<string, array{genel: string, polis?: string, not: string}>
+     * @return array<string, array{genel: string, genel_etiket: string, polis?: string, ambulans?: string, itfaiye?: string, not: string}>
      */
     public static function harita(): array
     {
