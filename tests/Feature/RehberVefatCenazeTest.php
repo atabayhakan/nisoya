@@ -126,8 +126,34 @@ class RehberVefatCenazeTest extends TestCase
         $k = $this->kayitlar()->first();
 
         $this->assertStringContainsString('herhangi bir temsilciliğe', (string) $k->notlar);
-        $this->assertStringContainsString('İçişleri Bakanlığı', (string) $k->sure_metni);
+        $this->assertStringContainsString('İçişleri Bakanlığı', (string) $k->notlar);
         $this->assertStringContainsString('292 29 29', (string) $k->notlar);
+    }
+
+    public function test_cip_alanlari_kolona_sigar(): void
+    {
+        /*
+         * CANLIDA ÖLÇÜLEN HATA — bu testin var olma sebebi.
+         *
+         * `sure_metni` ve `ucret_metni` `string(200)`; arayüzde kısa birer çip
+         * olarak basılıyorlar ("⏱ Süre: aynı gün"). İlk yazışta bu alanlara
+         * paragraf koydum. YEREL SQLITE UZUNLUK ZORLAMAZ, üretimdeki MySQL
+         * zorlar: canlıda seeder `SQLSTATE[22001] Data too long for column
+         * 'sure_metni'` ile düştü. Üstelik deploy.sh seed hatasını `|| warn`
+         * ile yuttuğu için deploy YEŞİL göründü ve hiçbir sayfa yayınlanmadı.
+         *
+         * Yani bu hata iki katmanı birden atlattı: tüm testler yeşildi ve
+         * deploy başarılı dedi. Sınırı artık test zorluyor.
+         */
+        $this->iskeletVeIcerik();
+        $this->seed(ApostilSeeder::class);
+
+        foreach (TemsilcilikIslemi::query()->get() as $k) {
+            $this->assertLessThanOrEqual(200, mb_strlen((string) $k->sure_metni),
+                "sure_metni 200 karakteri aştı (kayıt #{$k->id}) — MySQL'de seeder düşer");
+            $this->assertLessThanOrEqual(200, mb_strlen((string) $k->ucret_metni),
+                "ucret_metni 200 karakteri aştı (kayıt #{$k->id}) — MySQL'de seeder düşer");
+        }
     }
 
     public function test_insan_dogrulamasini_ezmez(): void
@@ -162,6 +188,27 @@ class RehberVefatCenazeTest extends TestCase
             ->assertSee('Cenaze bilgi formu')
             ->assertSee('herhangi bir temsilciliğe')
             ->assertDontSee('başlangıç taslağıdır');   // eski yer tutucu gitti
+    }
+
+    public function test_islem_turu_pasifse_seeder_onu_aktive_eder(): void
+    {
+        /*
+         * TEŞHİSİ ZOR TUZAK: `RehberController::islem()` kaydın yayında
+         * olmasının YANINDA `islemTuru.is_active` şartını da arıyor. İçerik
+         * dolu + kayıt yayında ama tür pasifse sayfa yine 404 verir ve
+         * "yayınladım, açılmıyor" denir. Seeder türü de aktive etmeli.
+         */
+        $this->iskeletVeIcerik();
+
+        $tur = IslemTuru::query()->where('slug', 'olum-ve-cenaze')->firstOrFail();
+        $tur->forceFill(['is_active' => false])->save();
+
+        // Doğrulama tarihini sıfırla ki seeder yeniden çalışsın.
+        TemsilcilikIslemi::query()->where('islem_turu_id', $tur->id)->update(['dogrulanma_tarihi' => null]);
+
+        $this->seed(VefatCenazeSeeder::class);
+
+        $this->assertTrue($tur->fresh()->is_active, 'Seeder işlem türünü aktive etmedi — sayfa 404 kalırdı');
     }
 
     // -----------------------------------------------------------------

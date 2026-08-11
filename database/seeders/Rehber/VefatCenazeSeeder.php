@@ -72,19 +72,16 @@ class VefatCenazeSeeder extends RehberIcerikSeeder
 
     protected function sure(): string
     {
-        // Standart süre için doğrulanmış bir rakam bulunamadı; uydurulmadı.
-        // Bunun yerine süreyi UZATAN bilinen durum yazıldı.
-        return 'Belgeler tamamsa işlem temsilcilikte yürütülür. Vefat edenin vatandaşlık durumu özel ise '
-            .'(sığınmacıyken başka bir vatandaşlığa geçmiş ya da vatandaşlıktan çıkarılmış) Türkiye’ye defin için '
-            .'İçişleri Bakanlığı izni gerekir ve süreç normalden uzun sürer.';
+        // KISA ÇİP ALANI (string 200) — "aynı gün" / "2-4 hafta" gibi.
+        // Doğrulanmış bir süre yok; boş bırakılıyor, çip hiç basılmıyor.
+        // Süreyi uzatan durum `notlar`da anlatılıyor.
+        return '';
     }
 
     protected function ucret(): string
     {
-        // Harç tutarı temsilciliğe ve işleme göre değişiyor; doğrulanmış tek
-        // bir rakam olmadığı için SAYI YAZILMADI.
-        return 'Harç tutarları işleme ve temsilciliğe göre değişir. Güncel tutarı başvuru öncesi '
-            .'ilgili temsilciliğin kendi sayfasından ya da Konsolosluk Çağrı Merkezi’nden (+90 312 292 29 29) teyit et.';
+        // Doğrulanmış harç tutarı yok; uydurmak yerine boş.
+        return '';
     }
 
     /**
@@ -113,6 +110,12 @@ class VefatCenazeSeeder extends RehberIcerikSeeder
             'Cenaze fonuna üyeysen önce fonu ara. Yurt dışındaki Türk toplumunda cenaze nakil masraflarını '
                 .'karşılayan yardımlaşma fonları yaygındır (örneğin DİTİB’in cenaze fonu). Üyeysen nakil '
                 .'masrafları kapsanabilir ve fon süreci senin yerine yürütebilir.',
+
+            'Süre ve harç: belgeler tamamsa işlem temsilcilikte yürütülür. Vefat edenin vatandaşlık '
+                .'durumu özel ise (sığınmacıyken başka bir vatandaşlığa geçmiş ya da vatandaşlıktan '
+                .'çıkarılmış) Türkiye’ye defin için İçişleri Bakanlığı izni gerekir ve süreç uzar. Harç '
+                .'tutarları işleme ve temsilciliğe göre değişir; başvuru öncesi temsilciliğin kendi '
+                .'sayfasından ya da Konsolosluk Çağrı Merkezi’nden teyit et.',
 
             'Nisoya bu işlemi yapmaz; bu sayfa yalnız yol gösterir. Başvuru ve belgeler temsilcilik '
                 .'üzerinden yürür. Konsolosluk Çağrı Merkezi 7/24 açıktır: +90 312 292 29 29.',
