@@ -164,6 +164,27 @@ class RehberVefatCenazeTest extends TestCase
             ->assertDontSee('başlangıç taslağıdır');   // eski yer tutucu gitti
     }
 
+    public function test_islem_turu_pasifse_seeder_onu_aktive_eder(): void
+    {
+        /*
+         * TEŞHİSİ ZOR TUZAK: `RehberController::islem()` kaydın yayında
+         * olmasının YANINDA `islemTuru.is_active` şartını da arıyor. İçerik
+         * dolu + kayıt yayında ama tür pasifse sayfa yine 404 verir ve
+         * "yayınladım, açılmıyor" denir. Seeder türü de aktive etmeli.
+         */
+        $this->iskeletVeIcerik();
+
+        $tur = IslemTuru::query()->where('slug', 'olum-ve-cenaze')->firstOrFail();
+        $tur->forceFill(['is_active' => false])->save();
+
+        // Doğrulama tarihini sıfırla ki seeder yeniden çalışsın.
+        TemsilcilikIslemi::query()->where('islem_turu_id', $tur->id)->update(['dogrulanma_tarihi' => null]);
+
+        $this->seed(VefatCenazeSeeder::class);
+
+        $this->assertTrue($tur->fresh()->is_active, 'Seeder işlem türünü aktive etmedi — sayfa 404 kalırdı');
+    }
+
     // -----------------------------------------------------------------
     // APOSTİL — değeri "hayır" demesinde
     // -----------------------------------------------------------------

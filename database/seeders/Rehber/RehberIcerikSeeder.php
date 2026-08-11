@@ -57,6 +57,18 @@ abstract class RehberIcerikSeeder extends Seeder
             return;
         }
 
+        /*
+         * İŞLEM TÜRÜ AKTİF DEĞİLSE SAYFA YİNE 404 VERİR.
+         *
+         * `RehberController::islem()` kaydın `yayinda()` olmasının YANINDA
+         * `islemTuru.is_active = true` şartını da arıyor. İçeriği yayına alıp
+         * türü pasif bırakmak, "yayınladım ama sayfa açılmıyor" gibi teşhisi
+         * zor bir duruma yol açar — içerik dolu, kayıt yayında, sayfa 404.
+         */
+        if (! $tur->is_active) {
+            $tur->forceFill(['is_active' => true])->save();
+        }
+
         $guncellenen = TemsilcilikIslemi::query()
             ->where('islem_turu_id', $tur->id)
             ->whereNull('dogrulanma_tarihi')
