@@ -126,8 +126,34 @@ class RehberVefatCenazeTest extends TestCase
         $k = $this->kayitlar()->first();
 
         $this->assertStringContainsString('herhangi bir temsilciliğe', (string) $k->notlar);
-        $this->assertStringContainsString('İçişleri Bakanlığı', (string) $k->sure_metni);
+        $this->assertStringContainsString('İçişleri Bakanlığı', (string) $k->notlar);
         $this->assertStringContainsString('292 29 29', (string) $k->notlar);
+    }
+
+    public function test_cip_alanlari_kolona_sigar(): void
+    {
+        /*
+         * CANLIDA ÖLÇÜLEN HATA — bu testin var olma sebebi.
+         *
+         * `sure_metni` ve `ucret_metni` `string(200)`; arayüzde kısa birer çip
+         * olarak basılıyorlar ("⏱ Süre: aynı gün"). İlk yazışta bu alanlara
+         * paragraf koydum. YEREL SQLITE UZUNLUK ZORLAMAZ, üretimdeki MySQL
+         * zorlar: canlıda seeder `SQLSTATE[22001] Data too long for column
+         * 'sure_metni'` ile düştü. Üstelik deploy.sh seed hatasını `|| warn`
+         * ile yuttuğu için deploy YEŞİL göründü ve hiçbir sayfa yayınlanmadı.
+         *
+         * Yani bu hata iki katmanı birden atlattı: tüm testler yeşildi ve
+         * deploy başarılı dedi. Sınırı artık test zorluyor.
+         */
+        $this->iskeletVeIcerik();
+        $this->seed(ApostilSeeder::class);
+
+        foreach (TemsilcilikIslemi::query()->get() as $k) {
+            $this->assertLessThanOrEqual(200, mb_strlen((string) $k->sure_metni),
+                "sure_metni 200 karakteri aştı (kayıt #{$k->id}) — MySQL'de seeder düşer");
+            $this->assertLessThanOrEqual(200, mb_strlen((string) $k->ucret_metni),
+                "ucret_metni 200 karakteri aştı (kayıt #{$k->id}) — MySQL'de seeder düşer");
+        }
     }
 
     public function test_insan_dogrulamasini_ezmez(): void

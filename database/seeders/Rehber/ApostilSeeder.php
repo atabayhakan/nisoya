@@ -47,16 +47,15 @@ class ApostilSeeder extends RehberIcerikSeeder
 
     protected function sure(): string
     {
-        // Süre yetkili makama ve ülkeye göre değişiyor; doğrulanmış tek bir
-        // rakam yok, bu yüzden SAYI YAZILMADI.
-        return 'Süre, başvurduğun yetkili makama ve ülkeye göre değişir. Bazı makamlar yalnız posta ile '
-            .'başvuru kabul ettiği için işlem haftalar sürebilir; başvuru öncesi ilgili makamın kendi '
-            .'sayfasından güncel süreyi teyit et.';
+        // KISA ÇİP ALANI (string 200). Doğrulanmış süre yok; boş.
+        return '';
     }
 
     protected function ucret(): string
     {
-        return 'Apostil harcı, şerhi veren makam tarafından belirlenir; temsilciliğin harç listesinde yer almaz.';
+        // Harcı şerhi veren makam belirler, temsilcilik değil; çipte gösterilecek
+        // tek bir tutar yok.
+        return '';
     }
 
     protected function notlar(): string
@@ -79,6 +78,10 @@ class ApostilSeeder extends RehberIcerikSeeder
             'Apostil yalnız Lahey Apostil Sözleşmesi’ne taraf ülkeler arasında geçerlidir. Taraf olmayan '
                 .'bir ülke söz konusuysa apostil yerine konsolosluk tasdiki (legalizasyon) zinciri gerekir; '
                 .'bu ayrı bir işlemdir.',
+
+            'Süre ve harç, apostili veren makama göre değişir; bazı makamlar yalnız posta ile başvuru '
+                .'kabul ettiği için işlem uzayabilir. Güncel süre ve tutarı ilgili makamın kendi sayfasından '
+                .'teyit et.',
 
             'Konsolosluk tasdiki ile apostil aynı şey değildir. Temsilcilik bir belgenin suretini ya da '
                 .'imzasını tasdik edebilir; bu tasdik apostil yerine geçmez.',
