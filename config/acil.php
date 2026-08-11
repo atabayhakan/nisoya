@@ -115,7 +115,7 @@ return [
          * değil ama "her şeye ulaşır" sözünü vermiyor — bu yüzden etiketi
          * "Tüm acil servisler" DEĞİL, ve not bunu söylüyor.
          */
-        'AZ' => ['genel' => '112', 'genel_etiket' => 'Afet ve kurtarma', 'polis' => '102', 'ambulans' => '103', 'itfaiye' => '101', 'not' => 'Genel hat afet ve kurtarma içindir; polis, ambulans ve itfaiye için doğrudan aşağıdaki numaraları ara.', 'dogrulandi' => '2026-08-12'],
+        'AZ' => ['genel' => '112', 'genel_etiket' => 'Afet, yangın ve kurtarma', 'polis' => '102', 'ambulans' => '103', 'itfaiye' => '101', 'not' => 'Genel hat afet, yangın ve kurtarma içindir; ayrıca sabit hattan yalnız Bakü, Sumqayıt ve Abşeron\'dan aranabiliyor. Polis, ambulans ve itfaiye için doğrudan aşağıdaki numaraları ara.', 'dogrulandi' => '2026-08-12'],
         'KZ' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'polis' => '102', 'ambulans' => '103', 'itfaiye' => '101', 'not' => '', 'dogrulandi' => '2026-08-12'],
         'KG' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'polis' => '102', 'ambulans' => '103', 'itfaiye' => '101', 'not' => '', 'dogrulandi' => '2026-08-12'],
         'UZ' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'polis' => '102', 'ambulans' => '103', 'itfaiye' => '101', 'not' => '', 'dogrulandi' => '2026-08-12'],
@@ -129,17 +129,37 @@ return [
          * 01 / 02 / 03. Birleşik bir numara olmadığı için `genel` alanına
          * ambulans konuldu — hayatî çağrıların çoğunluğu odur.
          *
-         * Kaynaklar: atavatan-turkmenistan.com (ülke içi yayın, "Möhüm
-         * telefon belgileri"), advantour.com, Telephone numbers in
-         * Turkmenistan; ayrıca 112'nin geçerli olduğu ülkeler listesinde
-         * Türkmenistan YOK (AZ/KZ/KG/UZ/RU var). Devlet birincil kaynağına
-         * erişilemedi — bu kayıt yeniden doğrulanmaya AÇIK.
+         * BİRİNCİ DERECE KAYNAKLAR (iki bağımsız denetim turu):
+         *  · turkmenistan.gov.tm (resmî devlet portalı, 16.03.2021):
+         *    cumhurbaşkanı 112 ya da 911 gibi tek numaralı bir acil çağrı
+         *    servisinin DENENMESİNİ ÖNERİYOR — yani o tarihte yoktu, ve
+         *    hayata geçtiğine dair kayıt bulunamadı.
+         *  · GOV.UK (İngiltere FCDO, Türkmenistan seyahat tavsiyesi):
+         *    sabit hattan 03, cepten 003 arayıp ambulans isteyin.
+         *  · travel.state.gov (ABD Dışişleri): acil servis için 03.
+         *  · atavatan-turkmenistan.com (ülke içi yayın) sabit/cep ayrımını
+         *    sütun sütun veriyor: 01/001, 02/002, 03/003, 04/004.
+         * Ayrıca 112'nin geçerli olduğu ülkeler listesinde TM yok (AZ/KZ/KG/
+         * UZ/RU var).
+         *
+         * BİLİNÇLİ RİSK: `genel` cep telefonu biçimi (003). Sabit hattan
+         * doğrusu 03 ve düğme bunu bilmiyor; not söylüyor. Mobil öncelikli
+         * bir site için doğru varsayılan kabul edildi.
          */
         'TM' => ['genel' => '003', 'genel_etiket' => 'Ambulans', 'polis' => '002', 'itfaiye' => '001', 'not' => 'Türkmenistan\'da tek acil numara yok ve 112 çalışmaz. Bu numaralar cep telefonu içindir; sabit hattan ararken baştaki sıfırlardan biri düşer.', 'dogrulandi' => '2026-08-12'],
 
         'RU' => ['genel' => '112', 'genel_etiket' => 'Tüm acil servisler', 'polis' => '102', 'ambulans' => '103', 'itfaiye' => '101', 'not' => '', 'dogrulandi' => '2026-08-12'],
 
         // --- Körfez ---
+        /*
+         * DİKKAT — BAE İLE SUUDİ ARABİSTAN'IN 997/998'İ BİRBİRİNİN TERSİ.
+         * Bu bir kopyala-yapıştır hatası DEĞİL, iki ülke gerçekten farklı:
+         *   AE: 998 ambulans, 997 sivil savunma (kaynak: u.ae, resmî devlet
+         *       platformu — Police 999, Ambulance 998, Civil Defence 997)
+         *   SA: 997 Kızılay/ambulans, 998 sivil savunma (kaynak: cst.gov.sa
+         *       Ulusal Numaralandırma Planı)
+         * Birini diğerine benzetmeye çalışan, yangında ambulans çağırtır.
+         */
         'AE' => ['genel' => '999', 'genel_etiket' => 'Polis', 'ambulans' => '998', 'itfaiye' => '997', 'not' => '', 'dogrulandi' => '2026-08-12'],
         'QA' => ['genel' => '999', 'genel_etiket' => 'Tüm acil servisler', 'not' => '', 'dogrulandi' => '2026-08-11'],
 
