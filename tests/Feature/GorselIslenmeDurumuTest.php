@@ -57,10 +57,22 @@ class GorselIslenmeDurumuTest extends TestCase
         $user = $this->uye();
         $ilan = Listing::factory()->create(['user_id' => $user->id]);
 
+        /*
+         * METİN SABİT, FABRİKADAN GELMİYOR — bu test bir kez kararsızdı.
+         *
+         * `Listing::factory()` başlık/açıklamayı Faker'ın Latince lorem
+         * metninden üretiyor ve o metinde ara sıra tek başına "it" geçiyor.
+         * "it" Türkçede hakaret olarak küfür filtresinin listesinde; istek
+         * doğrulamadan dönüyor, ilan güncellenmiyor ve sayaç 0 kalıyordu.
+         * Yerelde 8 koşudan 1'i, CI'da paralel koşuda düştü.
+         *
+         * Rastgele metin, doğrulamadan geçen bir yolu sınayan testlerde
+         * gizli bir zar atışıdır.
+         */
         $this->actingAs($user)->patch(route('panel.listings.update', $ilan), [
             'type' => $ilan->type->value,
-            'title' => $ilan->title,
-            'description' => $ilan->description,
+            'title' => 'Kablosuz kulaklık satılık',
+            'description' => 'Az kullanılmış kablosuz kulaklık, kutusu ve kablosuyla birlikte satılıktır.',
             'category_id' => $ilan->category_id,
             'country_code' => 'DE',
             'city' => 'Berlin',
@@ -68,7 +80,15 @@ class GorselIslenmeDurumuTest extends TestCase
             'currency' => 'EUR',
             'price_unit' => 'saatlik',
             'images' => [UploadedFile::fake()->image('foto.jpg', 800, 600)],
-        ])->assertRedirect();
+        ])
+            /*
+             * `assertSessionHasNoErrors()` ŞART. Hedefsiz `assertRedirect()`
+             * doğrulama hatası yönlendirmesini de kabul ediyor: istek forma
+             * geri dönse bile test yeşil kalıyor, sonra "sayaç 0" diye
+             * anlaşılmaz bir hata veriyordu. Sebebi hatanın kendisi söylesin.
+             */
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('panel.listings.index'));
 
         $ilan->refresh();
 
