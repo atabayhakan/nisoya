@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Enums\ListingStatus;
 use App\Enums\ListingType;
 use App\Enums\PriceUnit;
+use App\Jobs\IlanMetniniDenetle;
 use App\Notifications\ListingStatusNotification;
+use App\Services\DolandiricilikTespiti;
 use App\Support\Para;
 use Database\Factories\ListingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,6 +33,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *                                         sanıyor ve lessThan() çağrısını hata
  *                                         sayıyor.
  * @property bool $images_failed
+ * @property string|null $fraud_reason metin denetimi işareti; null = temiz.
+ *                                     BİLEREK `$fillable` DIŞINDA — hiçbir
+ *                                     form bu alanı set edemesin diye yalnız
+ *                                     forceFill ile yazılır.
+ * @property Carbon|null $fraud_checked_at
  * @property-read User|null $user
  */
 class Listing extends Model
@@ -81,6 +88,7 @@ class Listing extends Model
             'pending_images' => 'integer',
             'images_queued_at' => 'datetime',
             'images_failed' => 'boolean',
+            'fraud_checked_at' => 'datetime',
         ];
     }
 
@@ -132,6 +140,52 @@ class Listing extends Model
         static::saving(function (self $listing) {
             if ($listing->isDirty('status') && $listing->status !== ListingStatus::Pasif) {
                 $listing->unpublished_at = null;
+            }
+        });
+
+        /*
+         * METİN DENETİMİ — her yoldan geçen ilan için.
+         *
+         * Kanca MODELDE, controller'da değil: ilan metni panel formundan da,
+         * yönetim panelinden de, hızlı-ilan akışından da değişebiliyor.
+         * Controller'a koysaydık bir yol unutulur ve o yoldan giren metin hiç
+         * denetlenmezdi — bu depoda görsel moderasyonunda tam olarak bu oldu
+         * (taslak/pasif üzerinden atlatılabiliyordu).
+         *
+         * DURUMA BAKILMIYOR: taslak da, pasif de denetleniyor. Bugün taslak
+         * olan yarın yayına alınıyor.
+         *
+         * `isEnabled()` kapısı burada: anahtar yoksa kuyruğa binlerce boş iş
+         * atmanın anlamı yok (demo/seed üretimlerinde fark ediliyor).
+         */
+        $metniDenetle = function (self $listing): void {
+            if ($listing->is_demo) {
+                return;
+            }
+
+            // Anahtar yoksa kuyruğa boş iş atmanın anlamı yok (demo/seed
+            // üretimlerinde binlerce iş demek).
+            if (! app(DolandiricilikTespiti::class)->isEnabled()) {
+                return;
+            }
+
+            IlanMetniniDenetle::dispatch($listing->id);
+        };
+
+        static::created($metniDenetle);
+
+        /*
+         * `created` + `updated` AYRI — `saved` + `wasRecentlyCreated` DEĞİL.
+         *
+         * `wasRecentlyCreated` model ÖRNEĞİNİN ömrü boyunca true kalıyor.
+         * Tek bir `saved` kancasında o bayrağa bakarsak, aynı istek içinde
+         * ilan kaydedildikten sonra yapılan HER ek kayıt (kapak düzeltme,
+         * emlak/vasıta detayı eşitleme…) denetimi yeniden kuyruğa atar —
+         * yani bir ilan için üç dört AI çağrısı. Testte yakalandı.
+         */
+        static::updated(function (self $listing) use ($metniDenetle) {
+            if ($listing->wasChanged(['title', 'description'])) {
+                $metniDenetle($listing);
             }
         });
 
