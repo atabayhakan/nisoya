@@ -99,6 +99,25 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('listing-feature', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
         );
 
+        /*
+         * AI ile ilan taslağı (metin ve fotoğraf). Diğer sınırlardan farkı:
+         * burada her istek DIŞARIYA PARA HARCIYOR. Nisoya'nın geliri bağış +
+         * reklam, komisyon yok — yani kötüye kullanım doğrudan sahibin cebinden
+         * çıkar.
+         *
+         * Bu yüzden İKİ sınır birden: dakikalık sınır otomatik döngüyü keser,
+         * GÜNLÜK sınır ise yavaş ama sürekli bir sömürüyü keser. Yalnız
+         * dakikalık koysaydık, dakikada 5 istekle günde 7200 çağrı yapılabilirdi.
+         *
+         * Günde 30: gerçek bir kullanıcı bir oturumda birkaç ilan açar; 30
+         * denemeye ulaşan kişi ya kötüye kullanıyor ya da özellik onun için
+         * çalışmıyor demektir (ikisinde de durmak doğru).
+         */
+        RateLimiter::for('ai-listing-draft', fn (Request $request) => [
+            Limit::perMinute(5)->by($request->user()?->id ?: $request->ip()),
+            Limit::perDay(30)->by($request->user()?->id ?: $request->ip()),
+        ]);
+
         // Listeden çıkış: gerçek kişi bir kez basar. Cömert ama sınırsız değil —
         // jeton kaba kuvvetle aranamasın.
         RateLimiter::for('eposta-cikis', fn (Request $request) => Limit::perMinute(20)->by($request->ip())

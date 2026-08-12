@@ -63,12 +63,21 @@ class QuickListingTest extends TestCase
 
     public function test_quick_page_loads_when_enabled(): void
     {
+        /*
+         * Ekran artık YALNIZ fotoğraf kapısı değil: metin kapısı da eklendi
+         * (WhatsApp'tan yapıştır / birkaç kelime yaz) ve başlık buna göre
+         * "Hızlı İlan" oldu. Bu test eski başlığı harfiyen arıyordu.
+         *
+         * İddia artık bölüm başlığına bakıyor — sayfa adı değişse bile
+         * fotoğraf kapısının DURDUĞUNU sınıyor, ki asıl korunması gereken o.
+         */
         $this->enableVision();
 
         $this->actingAs(User::factory()->create())
             ->get('/panel/ilan/hizli')
             ->assertOk()
-            ->assertSee('Fotoğrafla Hızlı İlan');
+            ->assertSee('Hızlı İlan')
+            ->assertSee('Fotoğrafla');
     }
 
     public function test_analyze_prefills_form_from_photo(): void
