@@ -29,6 +29,9 @@ class SystemHealthWidget extends BaseWidget
 
     protected static bool $isLazy = false;
 
+    /** Kuyruğun azalıp azalmadığını izlemek için tutulan gözlem kaydı. */
+    private const KUYRUK_GOZLEM_ANAHTARI = 'kuyruk_gozlem';
+
     protected function getStats(): array
     {
         // DB ping (milisaniye)
@@ -219,6 +222,21 @@ class SystemHealthWidget extends BaseWidget
      * Doğru sinyal yaştır: sağlıklı bir kuyrukta iş saniyeler içinde tükenir.
      * Dakikalarca bekleyen tek bir iş bile "worker çalışmıyor" demektir.
      *
+     * ---------------------------------------------------------------------
+     * İKİ ÖLÇÜM, ÇÜNKÜ TEK ÖLÇÜM ÜRETİMİ KAÇIRDI
+     *
+     * Yaş ölçümü yalnız `database` sürücüsünde mümkün (jobs.available_at).
+     * İlk yazışta yalnız o vardı ve ölçülemeyen sürücülerde "başarılı"
+     * dönüyordu — CANLIDA SÜRÜCÜ REDIS, yani alarm hiç çalışamazdı. Üstelik
+     * eski `>1000` uyarısı da kalktığı için gösterge bir yönden eskisinden
+     * kötü olmuştu. (Testim de geçmişti: sürücüyü `database`e ayarlamıştım,
+     * yani üretimin hiç girmediği dalı sınıyordu.)
+     *
+     * İkinci ölçüm sürücüden BAĞIMSIZ: kuyruk TÜKENİYOR MU? Gördüğümüz en
+     * düşük boyut ve o anın zamanı saklanır; boyut düşmeden dakikalar geçerse
+     * worker iş almıyor demektir. Redis'te işlerin üzerinde zaman damgası
+     * yok, ama "azalmıyor" bilgisi aynı soruya cevap veriyor.
+     *
      * @return array{aciklama: string, ikon: string, renk: string}
      */
     private function kuyrukSagligi(int $boyut): array
@@ -226,27 +244,37 @@ class SystemHealthWidget extends BaseWidget
         $surucu = 'Driver: '.config('queue.default');
 
         if ($boyut === 0) {
+            Cache::forget(self::KUYRUK_GOZLEM_ANAHTARI);
+
             return ['aciklama' => $surucu.' · kuyruk boş', 'ikon' => 'heroicon-m-check-circle', 'renk' => 'success'];
-        }
-
-        $yasDakika = $this->enEskiIsinYasiDakika();
-
-        if ($yasDakika === null) {
-            return ['aciklama' => $surucu, 'ikon' => 'heroicon-m-queue-list', 'renk' => 'success'];
         }
 
         // 5 dakika: normal işlemede asla ulaşılmayacak kadar uzun, geçici
         // yoğunlukta ise yanlış alarm vermeyecek kadar toleranslı.
-        if ($yasDakika >= 5) {
-            return [
-                'aciklama' => $surucu.' · EN ESKİ İŞ '.$yasDakika.' DK BEKLİYOR — worker çalışmıyor olabilir',
-                'ikon' => 'heroicon-m-exclamation-triangle',
-                'renk' => 'danger',
-            ];
+        $alarm = fn (string $sebep) => [
+            'aciklama' => $surucu.' · '.$sebep.' — worker çalışmıyor olabilir',
+            'ikon' => 'heroicon-m-exclamation-triangle',
+            'renk' => 'danger',
+        ];
+
+        // 1) DOĞRUDAN ÖLÇÜM — yalnız `database` sürücüsünde mümkün.
+        $yasDakika = $this->enEskiIsinYasiDakika();
+
+        if ($yasDakika !== null && $yasDakika >= 5) {
+            return $alarm('EN ESKİ İŞ '.$yasDakika.' DK BEKLİYOR');
+        }
+
+        // 2) DOLAYLI ÖLÇÜM — her sürücüde çalışır: kuyruk azalıyor mu?
+        $takiliDakika = $this->kuyrukKacDakikadirAzalmiyor($boyut);
+
+        if ($takiliDakika !== null && $takiliDakika >= 5) {
+            return $alarm('KUYRUK '.$takiliDakika.' DK\'DIR AZALMIYOR');
         }
 
         return [
-            'aciklama' => $surucu.' · en eski iş '.$yasDakika.' dk',
+            'aciklama' => $surucu.' · '.($yasDakika !== null
+                ? 'en eski iş '.$yasDakika.' dk'
+                : $boyut.' iş bekliyor'),
             'ikon' => 'heroicon-m-queue-list',
             'renk' => $boyut > 1000 ? 'warning' : 'success',
         ];
@@ -270,5 +298,32 @@ class SystemHealthWidget extends BaseWidget
         }
 
         return max(0, (int) floor((time() - (int) $enEski) / 60));
+    }
+
+    /**
+     * Kuyruk kaç dakikadır AZALMIYOR? Ölçülemiyorsa null.
+     *
+     * Gördüğümüz en düşük boyutu ve o anı saklar. Boyut daha da düşerse
+     * kuyruk tükeniyor demektir ve sayaç sıfırlanır; düşmeden zaman geçerse
+     * worker iş almıyor demektir.
+     *
+     * Nesne DEĞİL düz dizi saklanıyor — bu depoda cache sürücüsü nesne
+     * unserialize'ını bilerek engelliyor (gadget-chain koruması).
+     */
+    private function kuyrukKacDakikadirAzalmiyor(int $boyut): ?int
+    {
+        try {
+            $kayit = Cache::get(self::KUYRUK_GOZLEM_ANAHTARI);
+
+            if (! is_array($kayit) || ! isset($kayit['en_dusuk'], $kayit['zaman']) || $boyut < (int) $kayit['en_dusuk']) {
+                Cache::put(self::KUYRUK_GOZLEM_ANAHTARI, ['en_dusuk' => $boyut, 'zaman' => time()], now()->addHours(6));
+
+                return 0;
+            }
+
+            return max(0, (int) floor((time() - (int) $kayit['zaman']) / 60));
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }
