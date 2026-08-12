@@ -21,18 +21,46 @@
             {{-- METİN KAPISI ÖNCE: yazmak fotoğraf çekmekten hızlı ve
                  yapıştırma tek hamle. Kamera izni/ışık/çerçeveleme gerektiren
                  yol ikinci sırada. --}}
+            {{-- x-data BURADA NESNE LİTERALİ DEĞİL, KAYITLI BİLEŞEN ADI.
+
+                 Uzun bir ifadeyi öznitelik içine yazmak bu depoda bir kez
+                 canlıya hata gönderdi (yorumdaki çift tırnak özniteliği
+                 erken kapattı, Alpine öldü, 2000+ test yeşil kaldı). Mantık
+                 app.js'te yaşayınca o tuzak yapısal olarak imkânsız. --}}
             <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900"
-                 x-data="{ gonderiliyor: false, metin: '' }">
-                <h2 class="flex items-center gap-2 text-sm font-semibold text-stone-800 dark:text-stone-100">
-                    <x-heroicon-o-pencil-square class="h-5 w-5 shrink-0 text-emerald-700 dark:text-emerald-400" />
-                    Yaz ya da yapıştır
-                </h2>
+                 x-data="metinKapisi">
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="flex items-center gap-2 text-sm font-semibold text-stone-800 dark:text-stone-100">
+                        <x-heroicon-o-pencil-square class="h-5 w-5 shrink-0 text-emerald-700 dark:text-emerald-400" />
+                        Yaz, yapıştır ya da konuş
+                    </h2>
+
+                    {{-- Mikrofon düğmesi YALNIZ tarayıcı destekliyorsa basılır.
+                         Çalışmayan bir düğme göstermek, hiç göstermemekten kötü. --}}
+                    <button type="button" x-show="destekVar" x-cloak @click="dinlemeyiDegistir()"
+                            :aria-pressed="dinliyor ? 'true' : 'false'"
+                            :class="dinliyor
+                                ? 'border-red-400 bg-red-50 text-red-700 dark:border-red-600 dark:bg-red-950/40 dark:text-red-300'
+                                : 'border-stone-400 text-stone-700 hover:bg-stone-50 dark:border-stone-500 dark:text-stone-300 dark:hover:bg-stone-800'"
+                            class="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg border px-3 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">
+                        <x-heroicon-o-microphone class="h-4 w-4 shrink-0 motion-safe:animate-pulse" x-show="dinliyor" x-cloak />
+                        <x-heroicon-o-microphone class="h-4 w-4 shrink-0" x-show="!dinliyor" />
+                        <span x-text="dinliyor ? 'Durdur' : 'Konuş'"></span>
+                    </button>
+                </div>
+
+                {{-- Ses tarayıcının motoruna gidiyor; Chrome bunu kendi
+                     sunucusunda işliyor. Kullanıcı bunu bilmeli. --}}
+                <p x-show="dinliyor" x-cloak role="status" aria-live="polite"
+                   class="mt-2 text-xs font-medium text-red-700 dark:text-red-300">
+                    Dinleniyor… Konuşmayı bitirince "Durdur"a bas. Ses, tarayıcının konuşma tanıma servisine gönderilir.
+                </p>
 
                 <form method="POST" action="{{ route('panel.listings.analyze-text') }}" class="mt-3" @submit="gonderiliyor = true">
                     @csrf
                     <label for="metin" class="sr-only">İlan metni</label>
                     <textarea id="metin" name="metin" rows="4" x-model="metin" maxlength="4000"
-                              placeholder="Örnek: iphone 15 pro max 256gb gri, az kullanılmış&#10;&#10;Ya da WhatsApp'taki ilan metnini buraya yapıştır."
+                              placeholder="Örnek: iphone 15 pro max 256gb gri, az kullanılmış&#10;&#10;WhatsApp'taki ilan metnini yapıştırabilir ya da &quot;Konuş&quot; ile anlatabilirsin."
                               class="w-full rounded-xl border-stone-300 bg-stone-50 text-sm text-stone-800 placeholder-stone-500 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-400">{{ old('metin') }}</textarea>
                     @error('metin') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
 
