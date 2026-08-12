@@ -128,6 +128,16 @@ return Application::configure(basePath: dirname(__DIR__))
             Limit::perDay(10)->by($request->user()?->id ?: $request->ip()),
         ]);
 
+        /*
+         * İlan çevirisi: metin üretimi, görselden ucuz ama bedava değil. Bir
+         * ilana bir kez gerekiyor; metni değiştirip yeniden çevirtmek makul
+         * ama gün içinde onlarca kez değil.
+         */
+        RateLimiter::for('ilan-cevirisi', fn (Request $request) => [
+            Limit::perMinute(3)->by($request->user()?->id ?: $request->ip()),
+            Limit::perDay(30)->by($request->user()?->id ?: $request->ip()),
+        ]);
+
         // Listeden çıkış: gerçek kişi bir kez basar. Cömert ama sınırsız değil —
         // jeton kaba kuvvetle aranamasın.
         RateLimiter::for('eposta-cikis', fn (Request $request) => Limit::perMinute(20)->by($request->ip())

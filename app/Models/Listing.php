@@ -170,6 +170,16 @@ class Listing extends Model
         return $this->hasMany(ListingImage::class)->orderBy('sort_order');
     }
 
+    /**
+     * İlanın yerel dildeki karşılıkları (Almanca, Felemenkçe…).
+     *
+     * @return HasMany<ListingTranslation, $this>
+     */
+    public function translations(): HasMany
+    {
+        return $this->hasMany(ListingTranslation::class);
+    }
+
     /** @return HasOne<ListingImage, $this> */
     public function coverImage(): HasOne
     {

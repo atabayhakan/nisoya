@@ -13,6 +13,7 @@ use App\Models\Currency;
 use App\Models\Listing;
 use App\Models\ListingImage;
 use App\Services\GeocodingService;
+use App\Services\IlanCevirmeni;
 use App\Services\ImageService;
 use App\Services\TemsiliGorselUretici;
 use App\Support\Modules;
@@ -130,7 +131,7 @@ class ListingController extends Controller
     {
         Gate::authorize('update', $listing);
 
-        $listing->load('images');
+        $listing->load('images', 'translations');
 
         return view('panel.listings.edit', array_merge(
             [
@@ -139,6 +140,7 @@ class ListingController extends Controller
                 // aynı kontrol POST tarafında da çalışıyor ve ikisinin ayrı
                 // yerlerde yeniden yazılması, birinin unutulması demek.
                 'temsiliGorselOnerilebilir' => app(TemsiliGorselUretici::class)->uygunMu($listing),
+                'cevirmen' => app(IlanCevirmeni::class),
             ],
             $this->formData($listing->type->value),
         ));
@@ -382,6 +384,20 @@ class ListingController extends Controller
         }
 
         $listing->load(['images', 'user.paymentLinks', 'category', 'country']);
+
+        /*
+         * Çeviriler KOŞULLU yükleniyor.
+         *
+         * Yerel dil bloğu her ilan detayında çalışıyor; koşulsuz yükleseydik
+         * sayfa başına +1 sorgu olurdu — ülkesi dil haritasında OLMAYAN
+         * ilanlarda ise o sorgunun karşılığı hiç yok, çünkü blok zaten
+         * basılmıyor. Haritada dil yoksa hem yükleme hem bileşen erken
+         * çıkıyor (IlanCevirmeni::guncelCeviri de aynı kapıdan geçer), yani
+         * o sayfalarda maliyet SIFIR.
+         */
+        if (app(IlanCevirmeni::class)->hedefDil($listing) !== null) {
+            $listing->load('translations');
+        }
 
         if (in_array($listing->type, [ListingType::Emlak, ListingType::Vasita], true)) {
             $listing->load([

@@ -214,6 +214,13 @@ class PerformanceBenchmarkTest extends TestCase
         \DB::disableQueryLog();
 
         $response->assertOk();
-        $this->assertLessThan(25, count($queries), 'Listing show fazla sorgu: '.count($queries));
+        /*
+         * Bütçe 25 → 26 (2026-08-13): yerel dil çevirisi `translations`
+         * ilişkisini yüklüyor. Bu +1 SABİT bir maliyet, ilan/çeviri sayısıyla
+         * ölçeklenmiyor — ve yalnız ülkesi dil haritasında olan ilanlarda
+         * açılıyor (fabrika varsayılanı DE, yani bu test en pahalı hâli
+         * ölçüyor). 26'yı da aşarsa gerçekten bir N+1 sızmış demektir.
+         */
+        $this->assertLessThan(26, count($queries), 'Listing show fazla sorgu: '.count($queries));
     }
 }
