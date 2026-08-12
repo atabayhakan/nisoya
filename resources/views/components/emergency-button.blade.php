@@ -207,7 +207,7 @@
                 x-transition.duration.200ms
                 x-ref="panel"
                 @keydown.tab="odagiTut($event)"
-                style="max-height: 85vh; max-height: 85dvh;"
+                style="max-height: 95vh; max-height: 95dvh;"
                 class="flex w-full max-w-md flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl ring-1 ring-stone-200 sm:rounded-2xl dark:bg-stone-900 dark:ring-stone-800"
             >
                 {{-- BAŞLIK — shrink-0: asla kaydırma alanına girmez --}}
@@ -217,15 +217,17 @@
                     <div class="flex justify-center pt-2 sm:hidden" aria-hidden="true">
                         <span class="h-1 w-10 rounded-full bg-rose-300/70 dark:bg-rose-700/70"></span>
                     </div>
-                    <div class="flex items-start justify-between gap-4 px-5 py-4">
+                    <div class="flex items-start justify-between gap-4 px-5 py-2.5">
                         <div class="flex items-center gap-3">
-                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#E30A17] text-white">
+                            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#E30A17] text-white">
                                 <x-ay-yildiz class="h-5 w-5" />
                             </span>
-                            <div>
-                                <h2 id="emergency-title" class="text-lg font-bold text-rose-900 dark:text-rose-200">Acil Yardım</h2>
-                                <p class="mt-0.5 text-sm text-rose-800/80 dark:text-rose-300/80">Bulunduğun ülkede hızlıca ulaşabileceğin numaralar</p>
-                            </div>
+                            {{-- Alt satır ("Bulunduğun ülkedeki acil numaralar")
+                                 KALDIRILDI: panelin tek ekrana sığması için 20px
+                                 gerekiyordu ve o satır zaten gereksizdi — hemen
+                                 altında "ACİL SERVİS" etiketi ve kırmızı çağrı
+                                 düğmesi duruyor, panelin ne olduğu tartışmasız. --}}
+                            <h2 id="emergency-title" class="text-base font-bold text-rose-900 dark:text-rose-200">Acil Yardım</h2>
                         </div>
                         <button
                             type="button"
@@ -245,29 +247,6 @@
 
                 {{-- GÖVDE — tek kayan bölge --}}
                 <div class="flex-1 overflow-y-auto overscroll-contain">
-                    @if ($countries->isNotEmpty())
-                        <div class="border-b border-stone-100 px-5 py-3 dark:border-stone-800">
-                            <label for="acil-ulke" class="text-xs font-semibold text-stone-500 dark:text-stone-400">Hangi ülkedesin?</label>
-                            <select
-                                id="acil-ulke"
-                                x-model="ulke"
-                                {{-- Kenarlık stone-200 iken beyaz üstünde 1.26:1
-                                     idi: panelin KAPISI olan kontrol, az gören
-                                     biri için beyaz üstünde beyaz bir dikdörtgen
-                                     oluyordu. stone-400 = 3.03, WCAG 1.4.11 sınırı. --}}
-                                class="mt-1 w-full rounded-lg border-stone-400 bg-stone-50 py-2 text-sm text-stone-700 focus:border-rose-500 focus:ring-rose-500 dark:border-stone-500 dark:bg-stone-800 dark:text-stone-200"
-                            >
-                                {{-- Eskiden "Tüm ülkeler" yazıyordu. Bir acil
-                                     panelinde anlamsız: insan tek bir ülkede
-                                     olur, hepsinde değil. --}}
-                                <option value="">Ülkeni seç</option>
-                                @foreach ($countries as $country)
-                                    <option value="{{ $country->code }}">{{ $country->emoji }} {{ $country->name_tr }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
-
                     {{-- ÜÇ KATMAN, ACİLİYET SIRASINA GÖRE.
 
                          Eskiden modal yalnız ilan kategorisi linkleri
@@ -282,7 +261,7 @@
                     --}}
 
                     {{-- KATMAN 1 — ÜLKENİN ACİL NUMARALARI --}}
-                    <div class="border-b border-stone-100 px-5 py-4 dark:border-stone-800">
+                    <div class="border-b border-stone-100 px-5 py-3 dark:border-stone-800">
                         {{-- Ekran okuyucuya haber ver: ülke seçilince aşağıda
                              yeni bir çağrı düğmesi BELİRİYOR. Görsel kullanıcı
                              bunu görüyor, kör kullanıcı tek tek gezinmeden
@@ -290,9 +269,38 @@
                         <p class="sr-only" role="status" aria-live="polite"
                            x-text="acilNumara() ? 'Acil numara hazır: ' + acilNumara().genel_etiket + ' ' + acilNumara().genel : ''"></p>
 
+                        {{-- ETİKET VE ÜLKE SEÇİCİ AYNI SATIRDA.
+
+                             Seçici eskiden kendi bölümündeydi ve tek başına
+                             69px yer kaplıyordu; panelin tamamı tek ekrana
+                             sığmıyordu. Etiket satırı zaten vardı, seçici
+                             oraya taşındı — iki blok bire indi. Seçicinin
+                             dokunma hedefi `min-h-11` ile 44px'de sabit,
+                             görünür etiket yerini ekran okuyucu etiketi aldı
+                             (seçilen ülke adı zaten seçicinin üstünde yazıyor).
+                        --}}
+                        <div class="flex items-center gap-2">
+                            <p class="shrink-0 text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Acil servis</p>
+                            @if ($countries->isNotEmpty())
+                                <label for="acil-ulke" class="sr-only">Hangi ülkedesin?</label>
+                                <select
+                                    id="acil-ulke"
+                                    x-model="ulke"
+                                    class="ml-auto min-h-9 max-w-[62%] rounded-lg border-stone-400 bg-stone-50 py-1 text-xs text-stone-700 focus:border-rose-500 focus:ring-rose-500 dark:border-stone-500 dark:bg-stone-800 dark:text-stone-200"
+                                >
+                                    {{-- Eskiden "Tüm ülkeler" yazıyordu. Bir acil
+                                         panelinde anlamsız: insan tek bir ülkede
+                                         olur, hepsinde değil. --}}
+                                    <option value="">Ülkeni seç</option>
+                                    @foreach ($countries as $country)
+                                        <option value="{{ $country->code }}">{{ $country->emoji }} {{ $country->name_tr }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
+                        </div>
+
                         <template x-if="acilNumara()">
                             <div>
-                                <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Acil servis</p>
 
                                 {{-- BİRİNCİL HAT — tek dokunuş, en büyük hedef.
 
@@ -305,11 +313,11 @@
                                      donar ya yanlış hattı arar. --}}
                                 <a :href="'tel:' + acilNumara().genel"
                                    :aria-label="acilNumara().genel + ' ara — ' + acilNumara().genel_etiket"
-                                   class="mt-2 flex items-center justify-center gap-3 rounded-xl bg-[#E30A17] px-4 py-4 text-white shadow-sm transition hover:bg-[#C10914] focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-stone-900">
-                                    <x-heroicon-s-phone class="h-7 w-7 shrink-0" />
+                                   class="mt-1.5 flex items-center justify-center gap-2.5 rounded-xl bg-[#E30A17] px-4 py-3 text-white shadow-sm transition hover:bg-[#C10914] focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-stone-900">
+                                    <x-heroicon-s-phone class="h-6 w-6 shrink-0" />
                                     <span class="text-center leading-tight">
                                         <span class="block text-xs font-semibold uppercase tracking-wide text-white/90" x-text="acilNumara().genel_etiket"></span>
-                                        <span class="block text-3xl font-bold" x-text="acilNumara().genel"></span>
+                                        <span class="block text-2xl font-bold" x-text="acilNumara().genel"></span>
                                     </span>
                                 </a>
 
@@ -318,17 +326,17 @@
                                      olanlar; aynısını iki kez göstermek acil
                                      durumda gereksiz seçim yaptırır. --}}
                                 <template x-if="ekHatlar().length">
-                                    <div class="mt-2 grid grid-cols-3 gap-2">
+                                    <div class="mt-1.5 grid grid-cols-3 gap-1.5">
                                         <template x-for="hat in ekHatlar()" :key="hat.ad">
                                             <a :href="'tel:' + hat.no"
                                                :aria-label="hat.ad + ' ' + hat.no + ' ara'"
-                                               class="flex min-w-0 flex-col items-center justify-center rounded-xl border border-stone-400 px-2 py-2.5 transition hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 dark:border-stone-500 dark:hover:bg-stone-800">
+                                               class="flex min-h-11 min-w-0 flex-col items-center justify-center rounded-xl border border-stone-400 px-2 py-1.5 transition hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 dark:border-stone-500 dark:hover:bg-stone-800">
                                                 {{-- rem tabanlı: tarayıcı yazı boyutunu
                                                      büyüten kullanıcı da fayda görsün.
                                                      `break-words`: "AMBULANS" 320px'de
                                                      kırpılmak yerine sarılsın. --}}
                                                 <span class="break-words text-center text-[0.6875rem] font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400" x-text="hat.ad"></span>
-                                                <span class="text-lg font-bold text-stone-800 dark:text-stone-100" x-text="hat.no"></span>
+                                                <span class="text-base font-bold text-stone-800 dark:text-stone-100" x-text="hat.no"></span>
                                             </a>
                                         </template>
                                     </div>
@@ -353,14 +361,13 @@
                              çıkıyordu. Artık aynı yerde aynı düğme var. --}}
                         <template x-if="! acilNumara()">
                             <div>
-                                <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Acil servis</p>
                                 <a href="tel:112"
                                    aria-label="112 ara — Avrupa geneli acil numara"
-                                   class="mt-2 flex items-center justify-center gap-3 rounded-xl bg-[#E30A17] px-4 py-4 text-white shadow-sm transition hover:bg-[#C10914] focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-stone-900">
-                                    <x-heroicon-s-phone class="h-7 w-7 shrink-0" />
+                                   class="mt-1.5 flex items-center justify-center gap-2.5 rounded-xl bg-[#E30A17] px-4 py-3 text-white shadow-sm transition hover:bg-[#C10914] focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-stone-900">
+                                    <x-heroicon-s-phone class="h-6 w-6 shrink-0" />
                                     <span class="text-center leading-tight">
                                         <span class="block text-xs font-semibold uppercase tracking-wide text-white/90">Avrupa geneli</span>
-                                        <span class="block text-3xl font-bold">112</span>
+                                        <span class="block text-2xl font-bold">112</span>
                                     </span>
                                 </a>
                                 <p class="mt-2 text-xs text-stone-600 dark:text-stone-400">
@@ -373,7 +380,7 @@
 
                     {{-- KATMAN 2 — KONSOLOSLUK (Türk'e özgü olan) --}}
                     @php $ccm = \App\Support\AcilNumaralar::konsoloslukCagriMerkezi(); @endphp
-                    <div class="border-b border-stone-100 px-5 py-4 dark:border-stone-800">
+                    <div class="border-b border-stone-100 px-5 py-3 dark:border-stone-800">
                         <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Konsolosluk</p>
 
                         {{-- YEREL ERİŞİM NUMARASI — varsa birincil.
@@ -395,7 +402,7 @@
                         <template x-if="yerelKonsolosluk()">
                             <a :href="'tel:' + yerelKonsolosluk().numara"
                                :aria-label="'Konsolosluk çağrı merkezini ara — ' + yerelKonsolosluk().gosterim"
-                               class="mt-2 flex items-center gap-3 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 transition hover:bg-emerald-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50">
+                               class="mt-2 flex items-center gap-3 rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 py-2.5 transition hover:bg-emerald-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50">
                                 <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                                     <x-ay-yildiz class="h-5 w-5" />
                                 </span>
@@ -414,8 +421,8 @@
                              kaldırmak tek noktalı bağımlılık yaratırdı. --}}
                         <a href="tel:{{ $ccm['numara'] }}"
                            :class="yerelKonsolosluk()
-                               ? 'mt-2 flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition hover:bg-stone-50 dark:hover:bg-stone-800'
-                               : 'mt-2 flex items-center gap-3 rounded-xl border border-stone-400 px-4 py-3 transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-stone-500 dark:hover:border-emerald-700 dark:hover:bg-emerald-950/20'">
+                               ? 'mt-2 flex items-center gap-3 rounded-xl px-3.5 py-2 text-sm transition hover:bg-stone-50 dark:hover:bg-stone-800'
+                               : 'mt-2 flex items-center gap-3 rounded-xl border border-stone-400 px-3.5 py-2.5 transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-stone-500 dark:hover:border-emerald-700 dark:hover:bg-emerald-950/20'">
                             <template x-if="! yerelKonsolosluk()">
                                 <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                                     <x-ay-yildiz class="h-5 w-5" />
@@ -434,7 +441,7 @@
                              kişiyi boş sayfaya götürmek olurdu. --}}
                         <template x-if="rehberliUlkeler.includes(ulke)">
                             <a :href="'/' + ulke.toLowerCase()"
-                               class="mt-2 flex items-center justify-between gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/20">
+                               class="mt-1.5 flex min-h-11 items-center justify-between gap-3 rounded-xl px-3.5 py-1.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/20">
                                 Ülkendeki temsilcilikler ve işlemler
                                 <x-heroicon-o-arrow-right class="h-4 w-4 shrink-0" />
                             </a>
@@ -444,18 +451,18 @@
                     {{-- KONUM — yabancı ülkede adres tarif edememek gerçek bir
                          sorun; koordinatı kopyalayıp okumak ya da yapıştırmak
                          en hızlı çözüm. İzin istenerek yapılır. --}}
-                    <div class="{{ $categories->isNotEmpty() ? 'border-b border-stone-100 dark:border-stone-800' : '' }} px-5 py-3">
+                    <div class="{{ $categories->isNotEmpty() ? 'border-b border-stone-100 dark:border-stone-800' : '' }} px-5 py-2.5">
                         {{-- Düğmenin ADI SABİT. Eskiden durum metni etiketin
                              yerine geçiyordu ("Konum alınıyor…"), yani düğmeye
                              Tab'layan kör kullanıcı düğmenin NE YAPTIĞINI
                              öğrenemiyordu. Durum artık ayrı canlı bölgede. --}}
                         <button type="button" @click="konumuKopyala()"
-                                class="flex w-full items-center gap-2 rounded-xl border border-stone-400 px-3 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-600 dark:border-stone-500 dark:text-stone-300 dark:hover:bg-stone-800">
+                                class="flex min-h-11 w-full items-center gap-2 rounded-xl border border-stone-400 px-3 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-600 dark:border-stone-500 dark:text-stone-300 dark:hover:bg-stone-800">
                             <x-heroicon-o-map-pin class="h-5 w-5 shrink-0" />
                             Konumumu kopyala
                         </button>
 
-                        <p role="status" aria-live="polite" class="mt-1.5 text-xs text-stone-600 dark:text-stone-400" x-text="konumDurumu"></p>
+                        <p role="status" aria-live="polite" :class="konumDurumu ? 'mt-1.5' : ''" class="text-xs text-stone-600 dark:text-stone-400" x-text="konumDurumu"></p>
 
                         {{-- Koordinat DÜĞMENİN DIŞINDA ve SİLİNMİYOR: pano
                              yazımı başarısız olduğunda (iOS'ta kural) yedek
@@ -471,7 +478,7 @@
                          Bölümün tamamı koşullu: ilanı olmayan kategori hiç
                          basılmaz, hiçbiri yoksa başlık da açılmaz. --}}
                     @if ($categories->isNotEmpty())
-                        <div class="px-5 py-5">
+                        <div class="px-5 py-2.5">
                             <div class="flex items-baseline justify-between gap-2">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Türkçe konuşan yardım</p>
                                 {{-- Şehir adı ROZET değil sade metin ve yalnız
@@ -503,11 +510,11 @@
                             {{-- `auto-rows-fr`: "Cenaze Hizmetleri" iki satıra
                                  sarıyor ve o satırı uzatıyordu; eşit yükseklik
                                  olmadan ızgara tırtıklı görünüyor. --}}
-                            <div class="mt-2 grid auto-rows-fr grid-cols-2 gap-2">
+                            <div class="mt-1.5 grid auto-rows-fr grid-cols-2 gap-1.5">
                                 @foreach ($categories as $cat)
                                     <a
                                         :href="kategoriBaglantisi('{{ route('listings.category', $cat->slug) }}')"
-                                        class="flex min-w-0 items-center gap-2 rounded-xl border border-stone-300 px-3 py-2.5 transition hover:border-rose-300 hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 dark:border-stone-600 dark:hover:border-rose-700 dark:hover:bg-rose-950/20"
+                                        class="flex min-h-11 min-w-0 items-center gap-2 rounded-xl border border-stone-300 px-3 py-1.5 transition hover:border-rose-300 hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 dark:border-stone-600 dark:hover:border-rose-700 dark:hover:bg-rose-950/20"
                                     >
                                         <span class="shrink-0 text-lg leading-none" aria-hidden="true">{{ $cat->icon }}</span>
                                         <span class="min-w-0 break-words text-xs font-semibold leading-tight text-stone-800 dark:text-stone-100">{{ $cat->name }}</span>
@@ -521,15 +528,15 @@
                                  bilirse boş sayfa hayal kırıklığı değil, bilgi
                                  olur. Arz geldikçe bu cümle kaldırılabilir. --}}
                             <p class="mt-2 text-xs text-stone-600 dark:text-stone-400">
-                                Nisoya yeni bir platform; {{ filled($city) ? 'şehrinde' : 'ülkende' }} henüz kayıtlı kimse olmayabilir.
+                                {{ filled($city) ? 'Şehrinde' : 'Ülkende' }} henüz kayıtlı kimse olmayabilir.
                             </p>
                         </div>
                     @endif
                 </div>
 
                 {{-- ALT NOT — shrink-0: kaydırmadan bağımsız, hep görünür --}}
-                <div class="shrink-0 border-t border-stone-100 bg-stone-50 px-5 py-3 text-center text-xs text-stone-500 dark:border-stone-800 dark:bg-stone-800 dark:text-stone-400">
-                    Nisoya bir ilan platformudur, acil servis değildir — hayatî bir durumda önce yukarıdaki resmî numarayı ara.
+                <div class="shrink-0 border-t border-stone-100 bg-stone-50 px-5 py-2.5 text-center text-xs text-stone-500 dark:border-stone-800 dark:bg-stone-800 dark:text-stone-400">
+                    Nisoya acil servis değildir — önce resmî numarayı ara.
                 </div>
             </div>
         </div>
