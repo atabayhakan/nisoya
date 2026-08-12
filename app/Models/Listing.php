@@ -38,6 +38,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *                                     form bu alanı set edemesin diye yalnız
  *                                     forceFill ile yazılır.
  * @property Carbon|null $fraud_checked_at
+ * @property Carbon|null $tips_notified_at ipucu bildirimi damgası; `$fillable`
+ *                                         DIŞINDA (yalnız komut yazar).
  * @property-read User|null $user
  */
 class Listing extends Model
@@ -89,6 +91,7 @@ class Listing extends Model
             'images_queued_at' => 'datetime',
             'images_failed' => 'boolean',
             'fraud_checked_at' => 'datetime',
+            'tips_notified_at' => 'datetime',
         ];
     }
 

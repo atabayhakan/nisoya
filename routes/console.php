@@ -57,6 +57,17 @@ Schedule::command('kahya:ders-cikar')
     ->weeklyOn(1, '06:00')
     ->withoutOverlapping();
 
+/*
+ * İlan ipuçları: eksikleri olan aktif ilanların sahiplerine BİR KEZ öneri.
+ *
+ * 10:00 — sabah raporundan sonra ve gün içinde, gece yarısı posta düşmesin.
+ * Günlük + tur başına 50 sınırı: geçmiş birikimi tek seferde herkese
+ * patlamasın, sıraya kendiliğinden yayılsın.
+ */
+Schedule::command('kahya:ilan-ipuclari')
+    ->dailyAt('10:00')
+    ->withoutOverlapping();
+
 // Büyüme Ajanı keşif işlerini (RunDiscoveryJob, 'database' kuyruğu) her dakika
 // işle. Ayrı bir queue worker/supervisor gerektirmez — scheduler kuyruğu
 // boşaltır. --stop-when-empty: iş yoksa hemen çıkar; --max-time: dakikayı aşma;
