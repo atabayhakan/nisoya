@@ -51,7 +51,18 @@
                     Çıkış Yap
                 </button>
             </form>
-            <a href="{{ url('/panel/profil') }}" class="min-h-11 text-sm text-stone-600 hover:text-stone-700 md:min-h-0 dark:text-stone-400 dark:hover:text-stone-200">
+            {{-- `inline-flex items-center` ŞART, süs değil.
+
+                 `min-h-11` dokunma hedefini 44px'e çıkarıyor ama tek başına
+                 metni ortalamıyor: <button> içeriğini kendiliğinden dikey
+                 ortalar, <a> ortalamaz — metin 44px'lik kutunun TEPESİNDE
+                 kalır. Ölçüldü (360px, sahibin bildirdiği hata): iki metin
+                 arasında 11px kayma vardı, "biri aşağıda biri yukarıda"
+                 görüntüsü buradan geliyordu.
+
+                 Masaüstünde görünmemesinin sebebi `md:min-h-0` — orada
+                 yükseklik zorlaması kalkıyor ve kutular metne oturuyor. --}}
+            <a href="{{ url('/panel/profil') }}" class="inline-flex min-h-11 items-center text-sm text-stone-600 hover:text-stone-700 md:min-h-0 dark:text-stone-400 dark:hover:text-stone-200">
                 Profil ayarları
             </a>
         </div>
