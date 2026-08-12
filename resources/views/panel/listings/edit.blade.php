@@ -44,6 +44,25 @@
 
             {{-- Düzenleme ekranı da küçültücüyü kullanır: aynı 4 MB duvarı burada
                  da vardı ve buradan eklenen fotoğraf da aynı şekilde reddediliyordu. --}}
+            {{-- İşlenme durumu BURADA da gösterilir: kullanıcı görseli
+                 göremeyince ilk buraya gelip tekrar yüklemeye çalışıyor.
+                 Yolda olan bir görsel için ikinci kez yüklemesin. --}}
+            @if ($listing->gorselDurumu() === 'isleniyor')
+                <div class="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 dark:border-emerald-700 dark:bg-emerald-950/30">
+                    <p class="flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                        <x-heroicon-o-arrow-path class="h-4 w-4 shrink-0 motion-safe:animate-spin" />
+                        {{ $listing->pending_images }} görsel işleniyor — birkaç dakika içinde görünecek. Sayfayı yenileyebilirsin.
+                    </p>
+                </div>
+            @elseif ($listing->gorselDurumu() === 'hata')
+                <div class="rounded-xl border border-red-300 bg-red-50 px-4 py-3 dark:border-red-700 dark:bg-red-950/30">
+                    <p class="flex items-center gap-2 text-sm font-medium text-red-800 dark:text-red-300">
+                        <x-heroicon-o-exclamation-triangle class="h-4 w-4 shrink-0" />
+                        Son yüklediğin görsel işlenemedi. Aşağıdan tekrar deneyebilirsin.
+                    </p>
+                </div>
+            @endif
+
             <div x-data="gorselKucultucu">
                 <label for="images" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Yeni görsel ekle <span class="text-stone-600">(ops.)</span></label>
                 <input id="images" name="images[]" type="file" accept="image/*" multiple

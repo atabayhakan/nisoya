@@ -62,6 +62,10 @@ class ProcessListingImage implements ShouldQueue
                 'listing_id' => $this->listingId,
                 'exception' => $e->getMessage(),
             ]);
+            // Kullanıcı bunu ekranda görsün: sessizce kaybolan görsel, en kötü
+            // geri bildirimdir. (Bu dal `failed()`'i tetiklemez — istisna
+            // yutuluyor — o yüzden işareti burada kendimiz koymak zorundayız.)
+            $this->sayaciDusur($listing, hata: true);
             Storage::disk($this->rawDisk)->delete($this->rawPath);
 
             return;
@@ -103,7 +107,31 @@ class ProcessListingImage implements ShouldQueue
 
         $this->moderate($listing, $image, $moderation);
 
+        $this->sayaciDusur($listing);
+
         Storage::disk($this->rawDisk)->delete($this->rawPath);
+    }
+
+    /**
+     * Bekleyen görsel sayacını bir azaltır.
+     *
+     * Arayüz "işleniyor / hata / hazır" ayrımını bu sayaçtan okuyor; sayaç
+     * düşmezse ilan sonsuza dek işleniyor görünür. Bu yüzden BAŞARIDA DA,
+     * HATADA DA çağrılması şart — çıkışı olan her dalda.
+     *
+     * `max(0, …)`: sayaç asla negatife düşmesin. Aynı iş iki kez koşarsa
+     * (tries=2 + kısmi başarı) negatif bir sayaç "hazır" ile "işleniyor"
+     * ayrımını sessizce bozardı.
+     */
+    private function sayaciDusur(Listing $listing, bool $hata = false): void
+    {
+        $listing->pending_images = max(0, ($listing->pending_images ?? 0) - 1);
+
+        if ($hata) {
+            $listing->images_failed = true;
+        }
+
+        $listing->save();
     }
 
     /**
@@ -136,9 +164,20 @@ class ProcessListingImage implements ShouldQueue
         }
     }
 
-    /** Tüm denemeler tükendiğinde ham dosyayı diskte bırakma. */
+    /**
+     * Tüm denemeler tükendi: ham dosyayı bırakma VE kullanıcıya söyle.
+     *
+     * Sayaç burada düşmezse ilan sonsuza dek "görsel işleniyor" der — yani
+     * sessiz kayıp, "sonsuza dek bekleyen" kayba dönüşür. İkisi de yalan.
+     */
     public function failed(\Throwable $e): void
     {
+        $listing = Listing::find($this->listingId);
+
+        if ($listing) {
+            $this->sayaciDusur($listing, hata: true);
+        }
+
         Storage::disk($this->rawDisk)->delete($this->rawPath);
     }
 }

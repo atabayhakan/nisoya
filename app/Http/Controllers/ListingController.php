@@ -568,10 +568,12 @@ class ListingController extends Controller
         // (gizlilik: EXIF/GPS temizlenmeden hiçbir görsel yayınlanmaz).
         $hasCover = $listing->images()->where('is_cover', true)->exists();
         $order = (int) $listing->images()->max('sort_order');
+        $kuyruga = 0;
 
         foreach ($request->file('images') as $file) {
             $rawPath = $file->store('pending-listing-images', 'local');
             $order++;
+            $kuyruga++;
 
             ProcessListingImage::dispatch(
                 listingId: $listing->id,
@@ -584,6 +586,30 @@ class ListingController extends Controller
 
             $hasCover = true;
         }
+
+        if ($kuyruga === 0) {
+            return;
+        }
+
+        /*
+         * İŞLENME DURUMUNU İŞARETLE — kullanıcı bekleyeceğini bilsin.
+         *
+         * Kayıt yalnızca kuyruk işinde doğduğu için, buradan çıkıldığında ilan
+         * hâlâ görselsiz. O boşlukta BOŞ KUTU ile ARIZA aynı görünüyordu ve
+         * sahip 2026-08-12'de tam bunu yaşadı. Sayaç işi bitiren job'da düşer
+         * (bkz. ProcessListingImage).
+         *
+         * `images_failed` sıfırlanıyor: yeni bir deneme, eski hatanın uyarısını
+         * ekranda bırakmamalı.
+         *
+         * `fillable`da DEĞİLLER ve olmamalılar — bunlar kullanıcı girdisi değil,
+         * sistemin kendi durumu. Doğrudan atama kütlesel atama korumasını
+         * zaten atlar.
+         */
+        $listing->pending_images = ($listing->pending_images ?? 0) + $kuyruga;
+        $listing->images_queued_at = now();
+        $listing->images_failed = false;
+        $listing->save();
     }
 
     /** En az bir kapak görseli olmasını garanti et. */
