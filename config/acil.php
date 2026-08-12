@@ -69,7 +69,10 @@ return [
     'konsolosluk_cagri_merkezi' => [
         'numara' => '+903122922929',
         'gosterim' => '+90 312 292 29 29',
-        'aciklama' => 'T.C. Dışişleri Konsolosluk Çağrı Merkezi — 7/24, dünyanın her yerinden',
+        // KISA TUTULUYOR: 390px'lik ekranda uzun açıklama iki satıra sarıyor ve
+        // panelin tek ekrana sığmasını bozuyordu. "7/24" kalmalı — insanın gece
+        // arayıp arayamayacağını bilmesi, kurumun tam adını bilmesinden önemli.
+        'aciklama' => 'Konsolosluk Çağrı Merkezi — 7/24',
     ],
 
     /*

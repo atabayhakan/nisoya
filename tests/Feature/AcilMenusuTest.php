@@ -182,8 +182,22 @@ class AcilMenusuTest extends TestCase
          */
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('max-height: 85dvh', $html,
-            'Panelin yükseklik sınırı kalkmış — içerik uzayınca başlık ekran dışına taşar.');
+        /*
+         * SAYIYA DEĞİL KURALA BAKILIYOR. Bu test bir kez `85dvh` dizesini
+         * harfiyen arıyordu ve sınır 95dvh'ye çekilince kırıldı — oysa
+         * korunması gereken şey rakam değil, ŞU İKİ ŞART:
+         *   · bir üst sınır VAR (yoksa panel yukarı taşar)
+         *   · sınır %100'ün ALTINDA (yoksa arkaplan kalmaz, dokun-kapat ölür)
+         */
+        preg_match('/max-height:\s*(\d+)dvh/', $html, $e);
+
+        $this->assertNotEmpty($e,
+            'Panelin dvh yükseklik sınırı kalkmış — içerik uzayınca başlık ekran dışına taşar.');
+        $this->assertLessThanOrEqual(95, (int) $e[1],
+            'Sınır çok yüksek: arkaplan kalmazsa dokunarak kapatma yolu kapanır.');
+
+        $this->assertStringContainsString('max-height: 95vh', $html,
+            'dvh desteklemeyen tarayıcı için vh yedeği yok.');
         $this->assertStringContainsString('overflow-y-auto', $html,
             'Gövdenin kendi kaydırması yok — uzun içeriğe erişilemez.');
         $this->assertStringContainsString('aria-label="Kapat"', $html,
