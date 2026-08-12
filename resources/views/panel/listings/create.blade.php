@@ -40,11 +40,16 @@
             @csrf
             @include('panel.listings.partials.form-fields', ['listing' => null])
 
-            <div>
+            {{-- Telefonla çekilen fotoğraf 4 MB sınırını rahatlıkla aşıyordu ve
+                 ilan hiç oluşmuyordu. Küçültme artık yüklemeden ÖNCE, tarayıcıda
+                 yapılıyor (gerekçe app.js → gorselKucultucu). --}}
+            <div x-data="gorselKucultucu">
                 <label for="images" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Görseller <span class="text-stone-600">(en fazla 8, ops.)</span></label>
                 <input id="images" name="images[]" type="file" accept="image/*" multiple
+                       @change="secildi($event)"
                        class="mt-1 block w-full text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-stone-400 dark:file:bg-emerald-900/30 dark:file:text-emerald-300">
-                <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">JPG, PNG veya WEBP · her biri en fazla 4 MB. İlk görsel kapak olur.</p>
+                <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">JPG, PNG veya WEBP. Büyük fotoğraflar yüklenmeden önce otomatik küçültülür. İlk görsel kapak olur.</p>
+                <p class="mt-1 text-xs font-medium text-emerald-700 dark:text-emerald-400" x-show="durum" x-text="durum" x-cloak></p>
                 @error('images.*') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
 
