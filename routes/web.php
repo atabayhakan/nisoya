@@ -17,6 +17,7 @@ use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\HappyMomentsController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\IlanCevirisiController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\JobApplicationController;
 use App\Http\Controllers\JobBookmarkController;
@@ -214,6 +215,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/panel/ilan/{listing}/temsili-gorsel', [TemsiliGorselController::class, 'store'])
         ->middleware('throttle:temsili-gorsel')
         ->name('panel.listings.representative-image');
+    // İlanı ülkesinin diline çevir (yerel arama trafiği için).
+    Route::post('/panel/ilan/{listing}/ceviri', [IlanCevirisiController::class, 'store'])
+        ->middleware('throttle:ilan-cevirisi')
+        ->name('panel.listings.translate');
     Route::post('/panel/ilan/{listing}/one-cikar', [FeatureController::class, 'store'])->name('panel.listings.feature')->middleware('throttle:listing-feature');
     Route::post('/panel/ilan/{listing}/takvim', [ListingAvailabilityController::class, 'store'])->name('panel.listings.availability.store');
     Route::delete('/panel/ilan/{listing}/takvim/{range}', [ListingAvailabilityController::class, 'destroy'])->name('panel.listings.availability.destroy');

@@ -256,6 +256,9 @@
                     <div class="prose prose-stone mt-4 max-w-none text-sm font-medium leading-[1.7] text-stone-600 dark:prose-invert dark:text-stone-300">
                         {!! nl2br(e($listing->description)) !!}
                     </div>
+
+                    {{-- Yerel dil bloğu — klasik şablonla AYNI bileşen. --}}
+                    <x-ilan-cevirisi :listing="$listing" />
                 </div>
 
                 @include('partials.seller-mobile-strip')

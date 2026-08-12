@@ -40,6 +40,9 @@ return [
         // ilanında fotoğraf bir iddiadır, üretilmiş görsel oraya konamaz.
         // Bkz. App\Services\TemsiliGorselUretici.
         'service_image' => (bool) env('AI_SERVICE_IMAGE', true),
+        // İlanı bulunduğu ülkenin diline çevirme (yerel arama trafiği).
+        // Bkz. App\Services\IlanCevirmeni.
+        'listing_translation' => (bool) env('AI_LISTING_TRANSLATION', true),
         // İlan görselleri + sohbet fotoğrafları için otomatik uygunsuz içerik
         // ön-elemesi. Görsel SİLİNMEZ — yalnızca işaretlenir/incelemeye alınır
         // (bkz. App\Services\ImageModerationService).

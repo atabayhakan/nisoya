@@ -306,6 +306,9 @@
                     {!! nl2br(e($listing->description)) !!}
                 </div>
 
+                {{-- Yerel dil bloğu — vitrin şablonuyla AYNI bileşen. --}}
+                <x-ilan-cevirisi :listing="$listing" />
+
                 {{-- Mobilde satıcı kimliği — vitrin şablonuyla AYNI partial.
                      Bu şablon canlıda basılan şablondur; şerit ilk yazışta
                      yalnız vitrin'e eklenmiş ve hiç görünmemişti. --}}

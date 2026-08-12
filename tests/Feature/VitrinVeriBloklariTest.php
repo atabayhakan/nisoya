@@ -144,11 +144,12 @@ class VitrinVeriBloklariTest extends TestCase
 
         $this->get(route('listings.show', [$ilan, $ilan->slug]))->assertOk();
 
-        // Klasik bütçe <25 (PerformanceBenchmarkTest). Vitrin'in iki ek bloğu
+        // Klasik bütçe <26 (PerformanceBenchmarkTest). Vitrin'in iki ek bloğu
         // sabit 5 sorgu ekler (benzer ilanlar + kapak + ülke, yorumlar +
         // yorumcu) — ilan/yorum sayısıyla ÖLÇEKLENMEZ (N+1 yok). Sınır bunu
         // yansıtır; büyürse N+1 sızmış demektir.
-        $this->assertLessThan(32, count($sorgular), 'Vitrin ilan detayı fazla sorgu: '.count($sorgular));
+        // (32 → 33: klasik bütçedeki +1 çeviri sorgusu buraya da yansıyor.)
+        $this->assertLessThan(33, count($sorgular), 'Vitrin ilan detayı fazla sorgu: '.count($sorgular));
     }
 
     // ---------------------------------------------------- İlan listesi

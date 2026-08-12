@@ -40,6 +40,50 @@
             </div>
         @endif
 
+        {{-- YEREL DİLE ÇEVİRİ — ana formun DIŞINDA (iç içe <form> geçersiz).
+
+             Amaç yerel arama trafiği: Almanya'daki bir terzinin ilanını Alman
+             komşu "Änderungsschneiderei" diye arıyor ve bugün hiçbir zaman
+             bulamıyor.
+
+             Üç durum var ve üçü de ayrı şey söylüyor:
+               güncel çeviri var  → "hazır", yeniden çevirme düğmesi yok
+               çeviri var ama BAYAT → metin değişmiş, yeniden çevir
+               hiç yok            → ilk kez çevir --}}
+        @if (($cevirmen ?? null) && $cevirmen->uygunMu($listing))
+            @php
+                $hedefDil = $cevirmen->dilAdi((string) $cevirmen->hedefDil($listing));
+                $guncelCeviri = $cevirmen->guncelCeviri($listing);
+                $bayatVar = $guncelCeviri === null && $listing->translations->isNotEmpty();
+            @endphp
+            <div class="mt-4 rounded-xl border border-stone-200 bg-stone-50 p-4 dark:border-stone-700 dark:bg-stone-900/40">
+                <p class="text-sm font-medium text-stone-800 dark:text-stone-200">
+                    {{ $hedefDil }} çeviri
+                    @if ($guncelCeviri)
+                        <span class="ml-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">hazır</span>
+                    @endif
+                </p>
+                <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">
+                    @if ($guncelCeviri)
+                        İlan sayfanda “otomatik çeviri” etiketiyle görünüyor. Metni değiştirirsen çeviri gizlenir; buradan yenileyebilirsin.
+                    @elseif ($bayatVar)
+                        <strong>İlan metni değişmiş.</strong> Eski çeviri artık başka bir ilanı anlatıyor, bu yüzden gizlendi. Yeniden çevirirsen tekrar görünür.
+                    @else
+                        İlanını {{ $hedefDil }} da yazalım — çevredeki Türkçe bilmeyen müşteriler ve yerel arama seni bulsun. Metin “otomatik çeviri” etiketiyle görünür.
+                    @endif
+                </p>
+                <form method="POST" action="{{ route('panel.listings.translate', $listing) }}"
+                      class="mt-3" x-data="gonderimKilidi('Çevriliyor...')" @submit="kilitle">
+                    @csrf
+                    <button type="submit"
+                            class="inline-flex min-h-11 items-center gap-2 rounded-lg border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-800 transition hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+                        <x-heroicon-o-language class="h-4 w-4" />
+                        {{ $guncelCeviri || $bayatVar ? 'Çeviriyi yenile' : $hedefDil.' çeviri ekle' }}
+                    </button>
+                </form>
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('panel.listings.update', $listing) }}" enctype="multipart/form-data" class="mt-6 space-y-5" x-data="gonderimKilidi('Kaydediliyor...')" @submit="kilitle">
             @csrf
             @method('PUT')
