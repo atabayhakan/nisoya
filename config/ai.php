@@ -32,6 +32,10 @@ return [
         // Serbest metinden ilan taslağı (birkaç kelime ya da WhatsApp'tan
         // yapıştırılan metin). Bkz. App\Services\ListingTextService.
         'text_listing' => (bool) env('AI_TEXT_LISTING', true),
+        // İşletmeye tanışma postasındaki tek kişisel cümle. Mektubun gövdesi
+        // koddan gelir; model yalnız o cümleyi yazar ve HİÇBİR ŞEY GÖNDERMEZ.
+        // Bkz. App\Services\Growth\ErisimMesajiYazari.
+        'outreach_draft' => (bool) env('AI_OUTREACH_DRAFT', true),
         // İlan görselleri + sohbet fotoğrafları için otomatik uygunsuz içerik
         // ön-elemesi. Görsel SİLİNMEZ — yalnızca işaretlenir/incelemeye alınır
         // (bkz. App\Services\ImageModerationService).

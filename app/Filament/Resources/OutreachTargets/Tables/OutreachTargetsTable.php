@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\OutreachTargets\Tables;
 
 use App\Models\OutreachTarget;
+use App\Services\Growth\ErisimMesajiYazari;
 use App\Support\Growth\GrowthCatalog;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -122,6 +123,35 @@ class OutreachTargetsTable
                     ->requiresConfirmation()
                     ->visible(fn (OutreachTarget $r): bool => $r->needs_review)
                     ->action(fn (OutreachTarget $r) => $r->update(['needs_review' => false, 'status' => 'reddedildi'])),
+                /*
+                 * MESAJ TASLAĞI — Kâhya yazar, SAHİP gönderir.
+                 *
+                 * Aksiyon yalnız GÖNDERİME AÇIK adaylarda görünür: hukuki
+                 * kapı (Türk + izinli bölge) burada da geçerli. Kapalı bir
+                 * aday için taslak göstermek, o kapının varlık sebebini boşa
+                 * çıkarırdı — sahip taslağı görür ve gönderir.
+                 *
+                 * Modal salt-okunur bir metin kutusu: gönderme düğmesi YOK,
+                 * bilerek. Sahip metni okur, kopyalar, kendi posta
+                 * programından gönderir. (AWS üretim erişimi reddedildikten
+                 * sonra soğuk e-posta otomasyonu zaten bırakılmıştı.)
+                 */
+                Action::make('mesaj-taslagi')
+                    ->label('Mesaj taslağı')
+                    ->icon(Heroicon::OutlinedEnvelope)
+                    ->color('primary')
+                    ->modalHeading('Tanışma postası taslağı')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Kapat')
+                    ->visible(fn (OutreachTarget $r): bool => app(ErisimMesajiYazari::class)->uygunMu($r))
+                    ->modalContent(function (OutreachTarget $r) {
+                        $taslak = app(ErisimMesajiYazari::class)->taslak($r);
+
+                        return view('filament.outreach.mesaj-taslagi', [
+                            'aday' => $r,
+                            'taslak' => $taslak,
+                        ]);
+                    }),
                 EditAction::make(),
             ])
             ->toolbarActions([
