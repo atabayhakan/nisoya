@@ -36,6 +36,7 @@ class SystemHealthWidget extends BaseWidget
         $cacheStatus = $this->checkCache();
         $storageStatus = $this->checkStorage();
         $queueSize = $this->getQueueSize();
+        $kuyruk = $this->kuyrukSagligi($queueSize);
 
         // Sahibin "kendi kendine yeten site" sağlığı (Faz 1 · G10)
         $backup = $this->backupStat();
@@ -59,9 +60,9 @@ class SystemHealthWidget extends BaseWidget
                 ->color($storageStatus['ok'] ? 'success' : 'danger'),
 
             Stat::make('Queue Bekleyen', number_format($queueSize))
-                ->description('Driver: '.config('queue.default'))
-                ->descriptionIcon($queueSize > 1000 ? 'heroicon-m-exclamation-triangle' : 'heroicon-m-queue-list')
-                ->color($queueSize > 1000 ? 'warning' : 'success'),
+                ->description($kuyruk['aciklama'])
+                ->descriptionIcon($kuyruk['ikon'])
+                ->color($kuyruk['renk']),
 
             Stat::make('Son Yedek', $backup['label'])
                 ->description($backup['desc'])
@@ -198,5 +199,76 @@ class SystemHealthWidget extends BaseWidget
         }
 
         return 0;
+    }
+
+    /**
+     * Kuyruk sağlığı — SAYIYA DEĞİL, EN ESKİ İŞİN YAŞINA bakar.
+     *
+     * ---------------------------------------------------------------------
+     * NEDEN DEĞİŞTİ
+     *
+     * Eskiden kural `$queueSize > 1000` idi: bin işin altındaki her durum
+     * yeşil "başarılı" görünüyordu. Ama worker ÖLDÜĞÜNDE kuyrukta binlerce iş
+     * birikmez — üç beş iş takılır ve gösterge yeşil kalır. Yani göstergenin
+     * en çok işe yarayacağı arıza, göstergenin göremediği tek arızaydı.
+     *
+     * Bu 2026-08-12'de canlıda bir ilan görselinin kaybolmasıyla ortaya çıktı:
+     * `ListingImage` kaydı YALNIZCA `ProcessListingImage` kuyruk işinde
+     * oluşuyor, iş koşmazsa görsel hiç doğmuyor ve kimse fark etmiyor.
+     *
+     * Doğru sinyal yaştır: sağlıklı bir kuyrukta iş saniyeler içinde tükenir.
+     * Dakikalarca bekleyen tek bir iş bile "worker çalışmıyor" demektir.
+     *
+     * @return array{aciklama: string, ikon: string, renk: string}
+     */
+    private function kuyrukSagligi(int $boyut): array
+    {
+        $surucu = 'Driver: '.config('queue.default');
+
+        if ($boyut === 0) {
+            return ['aciklama' => $surucu.' · kuyruk boş', 'ikon' => 'heroicon-m-check-circle', 'renk' => 'success'];
+        }
+
+        $yasDakika = $this->enEskiIsinYasiDakika();
+
+        if ($yasDakika === null) {
+            return ['aciklama' => $surucu, 'ikon' => 'heroicon-m-queue-list', 'renk' => 'success'];
+        }
+
+        // 5 dakika: normal işlemede asla ulaşılmayacak kadar uzun, geçici
+        // yoğunlukta ise yanlış alarm vermeyecek kadar toleranslı.
+        if ($yasDakika >= 5) {
+            return [
+                'aciklama' => $surucu.' · EN ESKİ İŞ '.$yasDakika.' DK BEKLİYOR — worker çalışmıyor olabilir',
+                'ikon' => 'heroicon-m-exclamation-triangle',
+                'renk' => 'danger',
+            ];
+        }
+
+        return [
+            'aciklama' => $surucu.' · en eski iş '.$yasDakika.' dk',
+            'ikon' => 'heroicon-m-queue-list',
+            'renk' => $boyut > 1000 ? 'warning' : 'success',
+        ];
+    }
+
+    /** Bekleyen en eski işin yaşı (dakika); ölçülemiyorsa null. */
+    private function enEskiIsinYasiDakika(): ?int
+    {
+        if (config('queue.default') !== 'database') {
+            return null;
+        }
+
+        try {
+            $enEski = DB::table('jobs')->min('available_at');
+        } catch (\Throwable) {
+            return null;
+        }
+
+        if (! $enEski) {
+            return null;
+        }
+
+        return max(0, (int) floor((time() - (int) $enEski) / 60));
     }
 }
