@@ -126,28 +126,26 @@
     @endunless
 
     /*
-     * ZİYARETÇİNİN KENDİ TERCİHİ — sahibin ayarından BAĞIMSIZ.
+     * ZİYARETÇİNİN HAREKET-AZALTMA TERCİHİ ARTIK BURADA DEĞİL.
      *
-     * Aynı sıfırlama yukarıda yalnız "yumuşak geçişler KAPALIYSA" dalında
-     * basılıyordu; varsayılan AÇIK olduğu için canlıda hiç çalışmıyordu. Yani
+     * Taşındı: resources/css/app.css (gerekçe orada uzun uzun yazılı).
+     *
+     * Özeti: bu dosyanın TAMAMI unless(vitrinMi()) ile sarılı, yani vitrin
+     * temasında hiç basılmıyor. Sahibin tasarım kontrollerinin vitrinde kapalı
+     * olması bilinçli bir karar; ama hareket-azaltma sahibin ayarı değil,
+     * ziyaretçinin erişilebilirlik tercihi. Aynı kapıya bağlı olduğu için
+     * onlarla birlikte kapanmıştı ve canlıda ölçülene kadar fark edilmedi.
+     *
+     * Buraya geri KOYMA. Her iki temanın da yüklediği tek dosyada durması,
+     * temaya bağlanmasını yapısal olarak imkânsız kılıyor.
+     *
+     * Yukarıdaki unless(smoothAnimations) bloğu FARKLI bir şeydir ve burada
+     * kalmalıdır: o SAHİBİN düğmesi ("herkese kapat"), bu ise ziyaretçinin
+     * tercihi ("isteyene kapat"). Biri diğerinin yerini tutmaz.
      *
      * (DİKKAT: bu yorumun içine Blade direktifi YAZILMAZ — CSS yorumu olması
      * Blade'i durdurmuyor, direktifi gerçek sanıp derliyor ve kapatılmamış blok
-     * üretiyor. Bu depodaki `@php` tuzağının kardeşi.)
-     *
-     * işletim sisteminde "hareketi azalt" açık olan ziyaretçi — vestibüler
-     * rahatsızlığı olan biri — sitede yine de tüm geçişleri alıyordu.
-     *
-     * Sahibin düğmesi "herkese kapat", bu blok "isteyene kapat" demektir;
-     * ikisi çakışmaz, biri diğerinin yerini tutmaz.
+     * üretiyor. Bu yüzden yukarıda "unless" işaretsiz yazıldı.)
      */
-    @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-            scroll-behavior: auto !important;
-        }
-    }
 </style>
 @endunless
