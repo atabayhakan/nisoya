@@ -9,6 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 
 /**
+ * @property CategoryType $type casts() enum'a çeviriyor; docblock'suz kalınca
+ *                              statik analiz kolonu düz `string` sanıyor ve
+ *                              `->type->value` erişimini hata sayıyor. Bu
+ *                              depoda aynı tuzağa Listing modelinde de
+ *                              düşülmüştü — casts() tek başına yetmiyor.
  * @property-read int|null $gercek_ilan_sayisi `withCount` ile iliştirilen
  *                                             sayım (acil menüsü). Kolon
  *                                             değil, o yüzden docblock'suz

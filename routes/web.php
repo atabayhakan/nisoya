@@ -183,6 +183,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/panel/ilan/analiz', [QuickListingController::class, 'analyze'])
         ->middleware('throttle:quick-listing-analyze')
         ->name('panel.listings.analyze');
+    // Serbest metinden taslak: birkaç kelime ya da WhatsApp'tan yapıştırılan
+    // ilan metni. `ai-listing-draft` sınırı dakikalık VE günlük — her çağrı
+    // dışarıya para harcıyor (bkz. bootstrap/app.php).
+    Route::post('/panel/ilan/metin-analiz', [QuickListingController::class, 'analyzeText'])
+        ->middleware('throttle:ai-listing-draft')
+        ->name('panel.listings.analyze-text');
     Route::post('/panel/ilan', [ListingController::class, 'store'])
         ->middleware(['honeypot', 'throttle:listing-create'])
         ->name('panel.listings.store');
