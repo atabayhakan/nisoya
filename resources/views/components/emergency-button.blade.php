@@ -1,4 +1,4 @@
-@props(['categories', 'countries', 'defaultCountry' => ''])
+@props(['categories', 'countries', 'defaultCountry' => '', 'city' => null])
 
 {{-- KAPI YOK — BİLEREK.
 
@@ -11,22 +11,6 @@
      envanterine bağlanamaz. Kapı kaldırıldı; artık YALNIZ 3. katman
      (ilan bağlantıları) koşullu. --}}
 
-@php
-    /*
-     * 3. KATMAN SÜZGECİ — "boş vaat verme" kuralı.
-     *
-     * 2026-08-12 ölçümü (canlı): doktorlar/çilingirler/avukatlar, HER ülkede
-     * "0 ilan bulundu" döndürüyordu. Yani acil durumdaki biri panelde üç
-     * büyük dokunulabilir satır görüyor, üçü de onu boş sayfaya götürüyordu.
-     * En kötü anda en kötü his.
-     *
-     * Artık yalnız GERÇEKTEN ilanı olan kategori basılır; hiçbiri yoksa
-     * bölüm hiç açılmaz. Kendi kendine iyileşir: ilk gerçek ilan
-     * yayınlandığında geri gelir (Listing::booted() cache'i düşürür).
-     */
-    $ilanliKategoriler = collect($categories)->filter(fn ($c) => ($c->gercek_ilan_sayisi ?? 0) > 0);
-@endphp
-
 <div
     x-data="{
         open: false,
@@ -34,6 +18,7 @@
         numaralar: @js(\App\Support\AcilNumaralar::harita()),
         rehberliUlkeler: @js(collect($countries)->filter(fn ($u) => !empty($u->rehber_var))->pluck('code')->values()),
         konsolosluklar: @js(\App\Support\AcilNumaralar::konsoloslukYerelHaritasi()),
+        sehir: @js($city ?? ''),
         konumDurumu: '',
         konumKoordinat: '',
 
@@ -52,6 +37,18 @@
         /* Seçili ülkenin acil numarası; ülke seçili değilse null. */
         acilNumara() {
             return (this.ulke && this.numaralar[this.ulke]) ? this.numaralar[this.ulke] : null;
+        },
+
+        /* Yardım kategorisi bağlantısı — ülke VE şehirle daraltılmış.
+           `URLSearchParams` kaçışı kendisi yapar; şehir adında boşluk ya da
+           Türkçe harf olduğunda elle birleştirme bozulurdu. */
+        kategoriBaglantisi(temel) {
+            const p = new URLSearchParams();
+            if (this.ulke) p.set('ulke', this.ulke);
+            if (this.sehir) p.set('sehir', this.sehir);
+            const q = p.toString();
+
+            return q ? temel + '?' + q : temel;
         },
 
         /* Seçili ülkenin yerel konsolosluk erişim numarası; yoksa null.
@@ -447,7 +444,7 @@
                     {{-- KONUM — yabancı ülkede adres tarif edememek gerçek bir
                          sorun; koordinatı kopyalayıp okumak ya da yapıştırmak
                          en hızlı çözüm. İzin istenerek yapılır. --}}
-                    <div class="{{ $ilanliKategoriler->isNotEmpty() ? 'border-b border-stone-100 dark:border-stone-800' : '' }} px-5 py-3">
+                    <div class="{{ $categories->isNotEmpty() ? 'border-b border-stone-100 dark:border-stone-800' : '' }} px-5 py-3">
                         {{-- Düğmenin ADI SABİT. Eskiden durum metni etiketin
                              yerine geçiyordu ("Konum alınıyor…"), yani düğmeye
                              Tab'layan kör kullanıcı düğmenin NE YAPTIĞINI
@@ -473,32 +470,58 @@
                     {{-- KATMAN 3 — TÜRKÇE KONUŞAN YARDIM.
                          Bölümün tamamı koşullu: ilanı olmayan kategori hiç
                          basılmaz, hiçbiri yoksa başlık da açılmaz. --}}
-                    @if ($ilanliKategoriler->isNotEmpty())
-                        <div class="space-y-2 px-5 py-5">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Türkçe konuşan yardım</p>
-                            @foreach ($ilanliKategoriler as $cat)
-                                <a
-                                    :href="'{{ route('listings.category', $cat->slug) }}' + (ulke ? '?ulke=' + ulke : '')"
-                                    class="flex items-center justify-between gap-3 rounded-xl border border-stone-200 px-4 py-3 transition hover:border-rose-300 hover:bg-rose-50 dark:border-stone-700 dark:hover:border-rose-700 dark:hover:bg-rose-950/20"
-                                >
-                                    <span class="flex items-center gap-3">
-                                        <span class="grid h-9 w-9 place-items-center rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-300">
-                                            <x-dynamic-component :component="'heroicon-o-'.\App\Support\CategoryIcon::heroicon($cat->icon)" class="h-5 w-5" />
-                                        </span>
-                                        <span class="font-semibold text-stone-800 dark:text-stone-100">{{ $cat->name }}</span>
+                    @if ($categories->isNotEmpty())
+                        <div class="px-5 py-5">
+                            <div class="flex items-baseline justify-between gap-2">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Türkçe konuşan yardım</p>
+                                {{-- Şehir adı ROZET değil sade metin ve yalnız
+                                     biliniyorsa basılır: aramanın nereyi
+                                     kapsadığını söylemek, sonuç boş çıktığında
+                                     kullanıcının sebebi anlamasını sağlar.
+                                     Ada Türkçe ek GETİRİLMİYOR ("Berlin'de"
+                                     gibi) — çekim her şehir adında doğru
+                                     çalışmıyor, bu depoda ölçülmüş bir tuzak. --}}
+                                @if (filled($city))
+                                    <span class="inline-flex min-w-0 items-center gap-1 text-xs text-stone-600 dark:text-stone-400">
+                                        <x-heroicon-o-map-pin class="h-3.5 w-3.5 shrink-0" />
+                                        <span class="truncate">{{ $city }}</span>
                                     </span>
-                                    {{-- `dark:` karşılığı ŞART: çıplak text-stone-600
-                                         koyu panelde 2.29:1 veriyor (bekçi testinin
-                                         yasakladığı oranın ta kendisi, ama test
-                                         yalnız `dark:text-stone-600` desenini
-                                         aradığı için bu hâli görmüyor). --}}
-                                    <x-heroicon-o-arrow-right class="h-4 w-4 text-stone-600 dark:text-stone-400" />
-                                </a>
-                            @endforeach
-                            {{-- Ülke süzgeci sonucu boşaltabilir: kategoride
-                                 ilan VAR ama seçili ülkede olmayabilir. --}}
-                            <p class="pt-1 text-xs text-stone-600 dark:text-stone-400">
-                                Seçtiğin ülkede henüz ilan olmayabilir.
+                                @endif
+                            </div>
+
+                            {{-- KÜÇÜK ÇİPLER, BÜYÜK SATIR DEĞİL — bilinçli.
+
+                                 Bu bölüm bir kez BÜYÜK dokunulabilir satırlar
+                                 hâlindeydi ve konsolosluk kartıyla aynı görsel
+                                 ağırlıktaydı; acil durumdaki kişi hayatî katmanla
+                                 dizin aramasını ayırt edemiyordu. Şimdi ikincil:
+                                 hayat kurtaran numaralar üstte ve büyük kalıyor,
+                                 bunlar altta ve küçük.
+
+                                 İki sütun, dört madde: "Cenaze Hizmetleri" dört
+                                 sütuna sığmıyor, ikili ızgarada rahat duruyor. --}}
+                            {{-- `auto-rows-fr`: "Cenaze Hizmetleri" iki satıra
+                                 sarıyor ve o satırı uzatıyordu; eşit yükseklik
+                                 olmadan ızgara tırtıklı görünüyor. --}}
+                            <div class="mt-2 grid auto-rows-fr grid-cols-2 gap-2">
+                                @foreach ($categories as $cat)
+                                    <a
+                                        :href="kategoriBaglantisi('{{ route('listings.category', $cat->slug) }}')"
+                                        class="flex min-w-0 items-center gap-2 rounded-xl border border-stone-300 px-3 py-2.5 transition hover:border-rose-300 hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 dark:border-stone-600 dark:hover:border-rose-700 dark:hover:bg-rose-950/20"
+                                    >
+                                        <span class="shrink-0 text-lg leading-none" aria-hidden="true">{{ $cat->icon }}</span>
+                                        <span class="min-w-0 break-words text-xs font-semibold leading-tight text-stone-800 dark:text-stone-100">{{ $cat->name }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+
+                            {{-- DÜRÜST BEKLENTİ. Bu satır süs değil: üçüncü taraf
+                                 arz şu an sıfır, yani bu düğmeler çoğu şehirde
+                                 boş sonuç döndürecek. Kullanıcı bunu ÖNCEDEN
+                                 bilirse boş sayfa hayal kırıklığı değil, bilgi
+                                 olur. Arz geldikçe bu cümle kaldırılabilir. --}}
+                            <p class="mt-2 text-xs text-stone-600 dark:text-stone-400">
+                                Nisoya yeni bir platform; {{ filled($city) ? 'şehrinde' : 'ülkende' }} henüz kayıtlı kimse olmayabilir.
                             </p>
                         </div>
                     @endif

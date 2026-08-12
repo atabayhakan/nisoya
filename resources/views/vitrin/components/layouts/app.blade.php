@@ -84,6 +84,7 @@
                     :categories="$emergencyCategories"
                     :countries="$emergencyCountries"
                     :default-country="$emergencyDefaultCountry"
+                    :city="$emergencyCity"
                 />
 
                 {{-- Mobilde GİZLİ: 390px'lik başlıkta yer ülke seçici, arama,

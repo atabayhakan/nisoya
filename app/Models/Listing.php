@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -116,24 +115,6 @@ class Listing extends Model
 
     protected static function booted(): void
     {
-        /*
-         * Acil menüsünün "Türkçe konuşan yardım" katmanı, ilanı OLAN
-         * kategorileri gösterir; o liste `Category::EMERGENCY_CACHE_KEY`
-         * altında kalıcı cache'lenir. Sayım ilan tablosundan geldiği için
-         * cache'i ilan değişikliği de düşürmeli — yoksa ilk doktor ilanı
-         * yayınlandığında katman görünmez kalır, son ilan kalkınca da boş
-         * sayfaya götürmeye devam eder.
-         *
-         * BİLİNEN SINIR: Eloquent'te TOPLU işlem (`Listing::query()->delete()`
-         * / `->update()`) model olaylarını tetiklemez, dolayısıyla bu kanca da
-         * çalışmaz. Etkisi sınırlı ve kendi kendine iyileşir — sonraki
-         * herhangi bir ilan/kategori kaydında cache düşer. Toplu bir yol
-         * eklenirse `Cache::forget(Category::EMERGENCY_CACHE_KEY)` elle
-         * çağrılmalı.
-         */
-        static::saved(fn () => Cache::forget(Category::EMERGENCY_CACHE_KEY));
-        static::deleted(fn () => Cache::forget(Category::EMERGENCY_CACHE_KEY));
-
         /*
          * `unpublished_at` YALNIZ "Pasif" iken anlamlıdır — durum başka bir
          * şeye dönerken damga silinir.

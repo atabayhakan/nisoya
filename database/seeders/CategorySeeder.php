@@ -21,7 +21,12 @@ class CategorySeeder extends Seeder
             // hukuki danışmanlık arayan kişinin "Acil Yardım" altına bakmayacağı
             // doğru — o ihtiyaç büyürse "Çeviri & Resmi İşler" altına ayrı bir
             // "Hukuki Danışmanlık" açılır (kategori tek üstlü, ikisi bir arada olmaz).
-            ['Acil Yardım', '🚨', [['Doktorlar', '➕'], ['Çilingirler', '🔑'], ['Avukatlar', '⚖️']]],
+            // Cenaze Hizmetleri buraya AİT: diasporada vefat, ailenin en çaresiz
+            // kaldığı andır — yabancı bir sistemde, yabancı bir dilde, saatler
+            // içinde karar vermek gerekir. Rehberdeki "Vefat ve Cenaze İşlemleri"
+            // sayfası resmî süreci anlatır; burası o süreçte YANINDA olacak
+            // kişiyi aramak içindir. İkisi birbirinin yerine geçmez.
+            ['Acil Yardım', '🚨', [['Doktorlar', '🩺'], ['Çilingirler', '🔑'], ['Avukatlar', '⚖️'], ['Cenaze Hizmetleri', '🕊️']]],
             ['Eğitim & Ders', '📚', ['Yabancı Dil Dersi', 'Çocuklara Türkçe', 'Müzik Dersi', 'Özel Ders & Okul Desteği', 'Sınav Hazırlık', 'Yazılım & Kodlama Eğitimi']],
             ['Ev & Tamir', '🔧', ['Nakliyat & Taşınma', 'Tadilat & Boya', 'Mobilya Montaj', 'Tesisat & Elektrik', 'Ev Temizliği', 'Bahçe & Peyzaj']],
             ['Yemek & İkram', '🍽️', ['Ev Yemeği', 'Pasta & Tatlı', 'Catering', 'Özel Gün Menüleri']],
