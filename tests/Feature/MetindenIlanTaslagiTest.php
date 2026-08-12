@@ -10,6 +10,7 @@ use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 /**
@@ -198,37 +199,65 @@ class MetindenIlanTaslagiTest extends TestCase
         $this->actingAs($this->uye())
             ->get(route('panel.listings.quick'))
             ->assertOk()
-            ->assertSee('Yaz ya da yapıştır')
+            ->assertSee('Yaz, yapıştır ya da konuş')
             ->assertSee('Fotoğrafla')
             ->assertSee('ilana taşınmaz');
     }
 
-    public function test_alpine_ifadesi_html_ozniteligini_erken_kapatmiyor(): void
+    public function test_metin_kapisi_kayitli_bilesene_bagli(): void
     {
         /*
-         * BU DEPODA AYNI HATA CANLIYA GİTTİ (acil paneli, 2026-08-12).
+         * `x-data` NESNE LİTERALİ DEĞİL, KAYITLI BİLEŞEN ADI olmalı.
          *
-         * `x-data="{ … }"` bir HTML özniteliğidir; içine çift tırnak girerse
-         * öznitelik erken kapanır ve Alpine ifadesi sözdizimi hatasıyla ölür.
-         * Burada ölürse gönder düğmesi `:disabled` bağı çözülemediği için
-         * KALICI OLARAK PASİF kalır — özellik sessizce çalışmaz.
+         * Uzun bir ifadeyi öznitelik içine yazmak bu depoda bir kez canlıya
+         * hata gönderdi: yorumdaki çift tırnak özniteliği erken kapattı,
+         * Alpine öldü ve 2000+ testin hepsi yeşil kaldı. Mantık app.js'te
+         * yaşayınca o tuzak YAPISAL olarak imkânsız.
          *
-         * Sunucu tarafı test JS'in koştuğunu kanıtlamaz; bu test yalnız
-         * özniteliğin bütün kaldığını kanıtlar. Gerçek koşma ancak AI açıkken
-         * tarayıcıda görülür.
+         * Bu testin sınırı: kablonun yerinde olduğunu kanıtlar, JS'in
+         * koştuğunu KANITLAMAZ.
          */
         config(['ai.features.text_listing' => true, 'ai.features.quick_listing' => false]);
         $this->sahteAi(null);
 
         $html = $this->actingAs($this->uye())->get(route('panel.listings.quick'))->getContent();
 
-        preg_match_all('/x-data="([^"]*)"/', $html, $eslesmeler);
-        $parca = collect($eslesmeler[1])->first(fn ($p) => str_contains($p, 'gonderiliyor'));
+        $this->assertStringContainsString('x-data="metinKapisi"', $html,
+            'Metin kapısı kayıtlı bileşene bağlı değil — öznitelik içine ifade yazılmış olabilir.');
 
-        $this->assertNotNull($parca, 'Metin kapısının x-data ifadesi bulunamadı.');
-        $this->assertSame(substr_count($parca, '{'), substr_count($parca, '}'),
-            'x-data özniteliği erken kapanmış — içinde çift tırnak var, Alpine ölür.');
-        $this->assertStringContainsString('metin:', $parca);
+        $js = File::get(resource_path('js/app.js'));
+        $this->assertStringContainsString("Alpine.data('metinKapisi'", $js,
+            'Bileşen app.js\'ten kaldırılmış — formdaki x-data ölü kalır.');
+    }
+
+    public function test_sesle_yazdirma_bagli_ve_destek_yoksa_gizli(): void
+    {
+        /*
+         * Ses SUNUCUYA GİTMİYOR: tarayıcının kendi konuşma tanıma motoru
+         * metni doğrudan kutuya yazıyor, oradan sonrası var olan metin yolu.
+         * Bu yüzden yeni bir uç nokta, yeni bir maliyet ve yeni bir yükleme
+         * yüzeyi yok.
+         *
+         * İki şart: motoru desteklemeyen tarayıcıda düğme HİÇ görünmemeli
+         * (çalışmayan düğme, hiç olmayandan kötü) ve sesin tarayıcı
+         * servisine gittiği kullanıcıya SÖYLENMELİ.
+         */
+        config(['ai.features.text_listing' => true, 'ai.features.quick_listing' => false]);
+        $this->sahteAi(null);
+
+        $html = $this->actingAs($this->uye())->get(route('panel.listings.quick'))->getContent();
+
+        $this->assertStringContainsString('dinlemeyiDegistir()', $html, 'Mikrofon düğmesi bağlı değil.');
+        $this->assertStringContainsString('x-show="destekVar"', $html,
+            'Mikrofon düğmesi destek kontrolüne bağlı değil — desteklemeyen tarayıcıda ölü düğme görünür.');
+        $this->assertStringContainsString('konuşma tanıma servisine gönderilir', $html,
+            'Sesin nereye gittiği kullanıcıya söylenmiyor.');
+
+        $js = File::get(resource_path('js/app.js'));
+        $this->assertStringContainsString('webkitSpeechRecognition', $js);
+        $this->assertStringContainsString("lang = 'tr-TR'", $js, 'Tanıma dili Türkçe değil.');
+        $this->assertStringContainsString('onend', $js,
+            'onend işlenmiyor — sessizlikte otomatik kapanınca düğme sonsuza dek dinliyor görünür.');
     }
 
     public function test_metin_kapisi_kapaliyken_fotograf_kapisi_yasar(): void
@@ -244,7 +273,7 @@ class MetindenIlanTaslagiTest extends TestCase
             ->get(route('panel.listings.quick'))
             ->assertOk()
             ->assertSee('Fotoğrafla')
-            ->assertDontSee('Yaz ya da yapıştır');
+            ->assertDontSee('Yaz, yapıştır ya da konuş');
     }
 
     public function test_ikisi_de_kapaliyken_normal_forma_dusulur(): void

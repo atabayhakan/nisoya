@@ -315,6 +315,88 @@ const GORSEL_AZAMI_KENAR = 2048;   // sunucunun en büyük varyantı 1600px; pay
 const GORSEL_ESIK_BAYT = 3 * 1024 * 1024; // 3 MB — 4 MB sınırının altında güvenli marj
 const GORSEL_KALITE = 0.85;
 
+/**
+ * HIZLI İLANIN METİN KAPISI — yazma, yapıştırma ve KONUŞMA.
+ *
+ * ---------------------------------------------------------------------------
+ * SES NEDEN SUNUCUYA GİTMİYOR
+ *
+ * Sesi kaydedip sunucuya yollamak ve orada yazıya çevirmek de mümkündü ama
+ * üç bedeli var: her saniye para (Nisoya'nın komisyon geliri yok), yeni bir
+ * yükleme ucu (yeni saldırı yüzeyi), ve mobil veriyle ses yüklemenin
+ * yavaşlığı.
+ *
+ * Bunun yerine tarayıcının KENDİ konuşma tanıma motoru kullanılıyor. Ses
+ * doğrudan metin kutusuna düşüyor; oradan sonrası zaten var olan metin
+ * yolu. Yani "sesle ilan" yeni bir boru hattı değil, var olan kutunun ikinci
+ * giriş yöntemi. Sunucu tarafında TEK SATIR kod gerekmedi.
+ *
+ * GİZLİLİK: Chrome bu motoru çalıştırırken sesi kendi sunucularına gönderir.
+ * Kullanıcıya bunu söylemek zorundayız — arayüzde yazılı.
+ *
+ * DESTEK YOKSA DÜĞME HİÇ GÖRÜNMEZ. Çalışmayan bir mikrofon düğmesi
+ * göstermek, hiç göstermemekten kötü.
+ */
+Alpine.data('metinKapisi', () => ({
+    gonderiliyor: false,
+    metin: '',
+    dinliyor: false,
+    destekVar: false,
+    tanimlayici: null,
+
+    init() {
+        const Motor = window.SpeechRecognition || window.webkitSpeechRecognition;
+        this.destekVar = typeof Motor === 'function';
+    },
+
+    dinlemeyiDegistir() {
+        if (this.dinliyor) { this.durdur(); return; }
+        this.basla();
+    },
+
+    basla() {
+        const Motor = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (! Motor) return;
+
+        try {
+            const t = new Motor();
+            t.lang = 'tr-TR';
+            t.continuous = true;
+            t.interimResults = true;
+
+            /* Kesinleşmiş metin kutuya EKLENİR, kutuyu EZMEZ: kullanıcı önce
+               yazıp sonra konuşabilir ya da tersi. Ara sonuçlar yazılmaz —
+               konuşurken kelimelerin değişip durması okumayı zorlaştırıyor. */
+            t.onresult = (olay) => {
+                let kesin = '';
+                for (let i = olay.resultIndex; i < olay.results.length; i++) {
+                    if (olay.results[i].isFinal) kesin += olay.results[i][0].transcript;
+                }
+                if (kesin.trim()) {
+                    this.metin = (this.metin ? this.metin.trim() + ' ' : '') + kesin.trim();
+                }
+            };
+
+            /* `onend` KULLANICI DURDURMADAN DA tetiklenir (sessizlik, mobilde
+               otomatik kesme). Durumu burada sıfırlamazsak düğme sonsuza dek
+               "dinliyor" görünür ve ikinci kez başlatılamaz. */
+            t.onend = () => { this.dinliyor = false; };
+            t.onerror = () => { this.dinliyor = false; };
+
+            this.tanimlayici = t;
+            t.start();
+            this.dinliyor = true;
+        } catch (_) {
+            this.dinliyor = false;
+        }
+    },
+
+    durdur() {
+        try { this.tanimlayici?.stop(); } catch (_) { /* zaten durmuş */ }
+        this.dinliyor = false;
+    },
+}));
+
 Alpine.data('gorselKucultucu', () => ({
     durum: '',
     calisiyor: false,
