@@ -164,6 +164,8 @@
                                     1 / {{ $listing->images->count() }}
                                 </span>
                             @endif
+                            {{-- Sol altta sayaç çipi var; etiket SAĞA. --}}
+                            <x-temsili-rozet :gorsel="$hero" buyuk class="absolute bottom-3 right-3" />
                         </div>
 
                         @if ($yanGorseller->isNotEmpty())

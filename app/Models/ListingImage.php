@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 
 /**
  * @property-read Listing|null $listing
+ * @property bool $is_representative
  */
 class ListingImage extends Model
 {
@@ -36,6 +37,7 @@ class ListingImage extends Model
         'focal_x',
         'focal_y',
         'is_cover',
+        'is_representative',
         'is_flagged',
         'flagged_reason',
     ];
@@ -44,6 +46,7 @@ class ListingImage extends Model
     {
         return [
             'is_cover' => 'boolean',
+            'is_representative' => 'boolean',
             'is_flagged' => 'boolean',
             'had_gps' => 'boolean',
             'has_sensitive_exif' => 'boolean',

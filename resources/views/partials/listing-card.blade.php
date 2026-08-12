@@ -1,7 +1,7 @@
 <div class="relative">
 <a href="{{ route('listings.show', [$listing, $listing->slug]) }}"
    class="group block overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-stone-900 dark:shadow-none {{ $listing->isCurrentlyFeatured() ? 'border-amber-300 ring-1 ring-amber-200 dark:border-amber-700 dark:ring-amber-900/40' : 'border-stone-200 dark:border-stone-800' }}">
-    <div class="aspect-[4/3] w-full overflow-hidden bg-stone-100 dark:bg-stone-800">
+    <div class="relative aspect-[4/3] w-full overflow-hidden bg-stone-100 dark:bg-stone-800">
         @if ($listing->coverImage)
             @php
                 $thumbUrl = $listing->coverImage->enIyiUrl('thumb');
@@ -24,6 +24,10 @@
                 <x-dynamic-component :component="'heroicon-o-'.$fallbackIcon" class="h-12 w-12" />
             </div>
         @endif
+
+        {{-- Görselin ÜSTÜNDE durur: kartı paylaşan/ekran görüntüsü alan biri
+             etiketi görselden ayıramasın. --}}
+        <x-temsili-rozet :gorsel="$listing->coverImage" class="absolute bottom-2 left-2" />
     </div>
     <div class="p-4">
         <div class="flex flex-wrap items-center gap-1.5 text-xs">

@@ -14,6 +14,7 @@ use App\Models\Listing;
 use App\Models\ListingImage;
 use App\Services\GeocodingService;
 use App\Services\ImageService;
+use App\Services\TemsiliGorselUretici;
 use App\Support\Modules;
 use App\Support\Tema;
 use Illuminate\Http\JsonResponse;
@@ -129,8 +130,16 @@ class ListingController extends Controller
     {
         Gate::authorize('update', $listing);
 
+        $listing->load('images');
+
         return view('panel.listings.edit', array_merge(
-            ['listing' => $listing->load('images')],
+            [
+                'listing' => $listing,
+                // Kapıyı controller'da soruyoruz ki görünüm karar vermesin:
+                // aynı kontrol POST tarafında da çalışıyor ve ikisinin ayrı
+                // yerlerde yeniden yazılması, birinin unutulması demek.
+                'temsiliGorselOnerilebilir' => app(TemsiliGorselUretici::class)->uygunMu($listing),
+            ],
             $this->formData($listing->type->value),
         ));
     }
