@@ -43,6 +43,9 @@ return [
         // İlanı bulunduğu ülkenin diline çevirme (yerel arama trafiği).
         // Bkz. App\Services\IlanCevirmeni.
         'listing_translation' => (bool) env('AI_LISTING_TRANSLATION', true),
+        // İlan METNİNDE dolandırıcılık deseni ön-elemesi — görsel
+        // moderasyonunun ikizi. Bkz. App\Services\DolandiricilikTespiti.
+        'text_moderation' => (bool) env('AI_TEXT_MODERATION', true),
         // İlan görselleri + sohbet fotoğrafları için otomatik uygunsuz içerik
         // ön-elemesi. Görsel SİLİNMEZ — yalnızca işaretlenir/incelemeye alınır
         // (bkz. App\Services\ImageModerationService).
