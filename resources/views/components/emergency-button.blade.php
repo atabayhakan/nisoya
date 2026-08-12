@@ -212,11 +212,13 @@
             >
                 {{-- BAŞLIK — shrink-0: asla kaydırma alanına girmez --}}
                 <div class="shrink-0 border-b border-rose-100 bg-rose-50 dark:border-rose-900/40 dark:bg-rose-950/30">
-                    {{-- Tutamak: telefonda bunun aşağıdan açılan bir panel
-                         olduğunu söyleyen yaygın işaret. --}}
-                    <div class="flex justify-center pt-2 sm:hidden" aria-hidden="true">
-                        <span class="h-1 w-10 rounded-full bg-rose-300/70 dark:bg-rose-700/70"></span>
-                    </div>
+                    {{-- TUTAMAK ÇUBUĞU KALDIRILDI (12px).
+
+                         "Aşağıdan açılan panel" işareti olarak duruyordu, ama
+                         panelin sağ üstünde zaten görünür bir X var ve kapatma
+                         üç yoldan mümkün (X, arkaplana dokunma, Escape).
+                         Süslü bir işaret için 12px, panelin tek ekrana
+                         sığmasından daha değerli değil. --}}
                     <div class="flex items-start justify-between gap-4 px-5 py-2.5">
                         <div class="flex items-center gap-3">
                             <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#E30A17] text-white">
@@ -261,7 +263,7 @@
                     --}}
 
                     {{-- KATMAN 1 — ÜLKENİN ACİL NUMARALARI --}}
-                    <div class="border-b border-stone-100 px-5 py-3 dark:border-stone-800">
+                    <div class="border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
                         {{-- Ekran okuyucuya haber ver: ülke seçilince aşağıda
                              yeni bir çağrı düğmesi BELİRİYOR. Görsel kullanıcı
                              bunu görüyor, kör kullanıcı tek tek gezinmeden
@@ -380,7 +382,7 @@
 
                     {{-- KATMAN 2 — KONSOLOSLUK (Türk'e özgü olan) --}}
                     @php $ccm = \App\Support\AcilNumaralar::konsoloslukCagriMerkezi(); @endphp
-                    <div class="border-b border-stone-100 px-5 py-3 dark:border-stone-800">
+                    <div class="border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
                         <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Konsolosluk</p>
 
                         {{-- YEREL ERİŞİM NUMARASI — varsa birincil.
@@ -441,7 +443,7 @@
                              kişiyi boş sayfaya götürmek olurdu. --}}
                         <template x-if="rehberliUlkeler.includes(ulke)">
                             <a :href="'/' + ulke.toLowerCase()"
-                               class="mt-1.5 flex min-h-11 items-center justify-between gap-3 rounded-xl px-3.5 py-1.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/20">
+                               class="mt-1.5 flex min-h-9 items-center justify-between gap-3 rounded-xl px-3.5 py-1.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/20">
                                 Ülkendeki temsilcilikler ve işlemler
                                 <x-heroicon-o-arrow-right class="h-4 w-4 shrink-0" />
                             </a>
@@ -480,7 +482,7 @@
                     @if ($categories->isNotEmpty())
                         <div class="px-5 py-2.5">
                             <div class="flex items-baseline justify-between gap-2">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Türkçe konuşan yardım</p>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Türkçe konuşan yardım ara</p>
                                 {{-- Şehir adı ROZET değil sade metin ve yalnız
                                      biliniyorsa basılır: aramanın nereyi
                                      kapsadığını söylemek, sonuç boş çıktığında
@@ -522,20 +524,26 @@
                                 @endforeach
                             </div>
 
-                            {{-- DÜRÜST BEKLENTİ. Bu satır süs değil: üçüncü taraf
-                                 arz şu an sıfır, yani bu düğmeler çoğu şehirde
-                                 boş sonuç döndürecek. Kullanıcı bunu ÖNCEDEN
-                                 bilirse boş sayfa hayal kırıklığı değil, bilgi
-                                 olur. Arz geldikçe bu cümle kaldırılabilir. --}}
-                            <p class="mt-2 text-xs text-stone-600 dark:text-stone-400">
-                                {{ filled($city) ? 'Şehrinde' : 'Ülkende' }} henüz kayıtlı kimse olmayabilir.
-                            </p>
+                            {{-- DÜRÜST BEKLENTİ ARTIK BAŞLIKTA, AYRI SATIRDA DEĞİL.
+
+                                 Burada "henüz kayıtlı kimse olmayabilir" diye bir
+                                 satır vardı. Sahibin telefonunda ÖLÇÜLDÜ: uygulama
+                                 içi tarayıcının kendi başlığı görünür alanı
+                                 kısalttığı için o satır alt bandın altında YARIM
+                                 kalıyordu — kesik bir cümle, bilgi vermek yerine
+                                 arıza gibi görünüyor.
+
+                                 Kaldırıldı ama dürüstlük kaybolmadı: bölüm başlığı
+                                 artık "ara" diyor. "Yardım" bir vaat, "yardım ara"
+                                 bir eylem — sonuç garantisi vermiyor. Sonucun
+                                 kendisi zaten kategori sayfasında dürüst
+                                 ("0 ilan bulundu" + boş hâl). --}}
                         </div>
                     @endif
                 </div>
 
                 {{-- ALT NOT — shrink-0: kaydırmadan bağımsız, hep görünür --}}
-                <div class="shrink-0 border-t border-stone-100 bg-stone-50 px-5 py-2.5 text-center text-xs text-stone-500 dark:border-stone-800 dark:bg-stone-800 dark:text-stone-400">
+                <div class="shrink-0 border-t border-stone-100 bg-stone-50 px-5 py-1.5 text-center text-xs text-stone-500 dark:border-stone-800 dark:bg-stone-800 dark:text-stone-400">
                     Nisoya acil servis değildir — önce resmî numarayı ara.
                 </div>
             </div>
