@@ -4,6 +4,9 @@
             <div class="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ session('status') }}</div>
         @endif
 
+        {{-- Doğal dille arama yorumu — vitrin şablonuyla AYNI bileşen. --}}
+        <x-arama-yorumu :yorum="$aramaYorumu ?? null" :cumle="$aramaCumlesi ?? ''" class="mb-4" />
+
         <div class="flex flex-wrap items-end justify-between gap-2">
             <div>
                 <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">{{ $activeCategory?->name ?? 'Tüm İlanlar' }}</h1>
