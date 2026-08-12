@@ -277,6 +277,149 @@ Alpine.data('gonderimKilidi', (meslugu = 'Gönderiliyor...') => ({
     },
 }));
 
+/**
+ * GÖRSEL KÜÇÜLTÜCÜ — yüklemeden ÖNCE, tarayıcıda.
+ *
+ * ---------------------------------------------------------------------------
+ * NEDEN VAR
+ *
+ * Sunucu tarafında görsel başına sınır 4 MB (ListingRequest: images.* max:4096)
+ * ve PHP upload_max_filesize 5M. Telefonla çekilen bir fotoğraf bunu rahatlıkla
+ * aşıyor: 12 MP bir JPEG tipik olarak 4-8 MB. Sahip 2026-08-12'de tam bunu
+ * yaşadı. Ölçüldü: 5 MB'lık dosya doğrulamada reddediliyor, hata ekranda
+ * görünüyor ve İLAN HİÇ OLUŞMUYOR.
+ *
+ * Sunucu ayarını (php.ini) büyütmek de bir yol ama tek başına yetmez: 1 vCPU'luk
+ * sunucuda 12 MP bir görseli işlemek pahalı, mobil veriyle 8 MB yüklemek yavaş.
+ * Kaynağında küçültmek üç sorunu birden çözer.
+ *
+ * ---------------------------------------------------------------------------
+ * SADECE GEREKTİĞİNDE — bu bilinçli bir kısıtlama
+ *
+ * Canvas'a çizip yeniden kodlamak EXIF'i SİLER. Bu gizlilik açısından iyi (GPS
+ * cihazdan hiç çıkmaz) ama yönetimdeki "EXIF Haritası" ekranı GPS kümelemesiyle
+ * kopya/dolandırıcılık tespiti yapıyor ve o veriyi kaybeder.
+ *
+ * Bu yüzden küçültme KOŞULLU: dosya zaten sınırın altındaysa ve boyutları
+ * makulse dokunulmaz, EXIF'i korunur. Yalnız reddedilecek olan dosyalar
+ * yeniden kodlanır — yani müdahale, sorunu çözen en küçük müdahale.
+ *
+ * `imageOrientation: 'from-image'`: EXIF yönelimi canvas'a çizerken uygulanır.
+ * Olmadan, telefonun dikey çektiği fotoğraf yan yatar — çünkü yönelim bilgisi
+ * EXIF'te tutulur ve biz EXIF'i silmiş oluruz.
+ *
+ * HER HATADA ORİJİNALE DÖNER (fail-safe): küçültme başarısızsa dosya olduğu
+ * gibi gönderilir ve sunucu sınırı yine son söz olur.
+ */
+const GORSEL_AZAMI_KENAR = 2048;   // sunucunun en büyük varyantı 1600px; pay bırakıldı
+const GORSEL_ESIK_BAYT = 3 * 1024 * 1024; // 3 MB — 4 MB sınırının altında güvenli marj
+const GORSEL_KALITE = 0.85;
+
+Alpine.data('gorselKucultucu', () => ({
+    durum: '',
+    calisiyor: false,
+
+    async secildi(olay) {
+        const girdi = olay.target;
+        const dosyalar = Array.from(girdi.files || []);
+        if (!dosyalar.length) { this.durum = ''; return; }
+
+        if (typeof createImageBitmap !== 'function' || typeof DataTransfer !== 'function') {
+            return; // Eski tarayıcı: dokunma, sunucu sınırı geçerli kalsın.
+        }
+
+        this.calisiyor = true;
+        this.durum = 'Görseller hazırlanıyor…';
+        this.gonderimiKilitle(true);
+
+        let kazanc = 0;
+        const sonuc = [];
+
+        for (const dosya of dosyalar) {
+            try {
+                const yeni = await this.kucult(dosya);
+                if (yeni && yeni.size < dosya.size) {
+                    kazanc += dosya.size - yeni.size;
+                    sonuc.push(yeni);
+                } else {
+                    sonuc.push(dosya);
+                }
+            } catch (_) {
+                sonuc.push(dosya); // Bu dosya küçültülemedi; orijinali gönder.
+            }
+        }
+
+        try {
+            const dt = new DataTransfer();
+            sonuc.forEach((d) => dt.items.add(d));
+            girdi.files = dt.files;
+        } catch (_) {
+            // Dosya listesi değiştirilemedi — orijinaller gönderilir.
+        }
+
+        this.calisiyor = false;
+        this.gonderimiKilitle(false);
+        this.durum = kazanc > 0
+            ? `${sonuc.length} görsel hazır · ${this.mb(kazanc)} MB tasarruf edildi`
+            : `${sonuc.length} görsel hazır`;
+    },
+
+    /*
+     * YARIŞ DURUMU: küçültme ~0.5 sn/görsel sürüyor. Kullanıcı 8 fotoğraf
+     * seçip hemen "Yayınla"ya basarsa form HENÜZ KÜÇÜLTÜLMEMİŞ orijinalleri
+     * gönderir ve sunucu 4 MB sınırından reddeder — yani düzeltmenin kendisi
+     * atlanmış olur. İşlem bitene kadar gönderim kapalı.
+     */
+    gonderimiKilitle(kilit) {
+        const form = this.$el.closest('form');
+        if (!form) return;
+
+        form.querySelectorAll('button[type="submit"]').forEach((d) => {
+            d.disabled = kilit;
+            d.classList.toggle('opacity-50', kilit);
+            d.classList.toggle('cursor-not-allowed', kilit);
+        });
+    },
+
+    /** Gerekmiyorsa null döner (dosyaya dokunulmaz, EXIF korunur). */
+    async kucult(dosya) {
+        if (!dosya.type.startsWith('image/')) return null;
+
+        const bitmap = await createImageBitmap(dosya, { imageOrientation: 'from-image' });
+        const enBuyukKenar = Math.max(bitmap.width, bitmap.height);
+
+        // Zaten küçük VE sınırın altındaysa dokunma — EXIF'i korunsun.
+        if (dosya.size <= GORSEL_ESIK_BAYT && enBuyukKenar <= GORSEL_AZAMI_KENAR) {
+            bitmap.close?.();
+
+            return null;
+        }
+
+        const olcek = Math.min(1, GORSEL_AZAMI_KENAR / enBuyukKenar);
+        const g = Math.round(bitmap.width * olcek);
+        const y = Math.round(bitmap.height * olcek);
+
+        const tuval = document.createElement('canvas');
+        tuval.width = g;
+        tuval.height = y;
+        tuval.getContext('2d').drawImage(bitmap, 0, 0, g, y);
+        bitmap.close?.();
+
+        const blob = await new Promise((c) => tuval.toBlob(c, 'image/jpeg', GORSEL_KALITE));
+        if (!blob) return null;
+
+        // Uzantı da .jpg olmalı: sunucu `mimes:jpg,jpeg,png,webp` istiyor ve
+        // biz her hâlükârda JPEG üretiyoruz.
+        const ad = dosya.name.replace(/\.[^.]+$/, '') + '.jpg';
+
+        return new File([blob], ad, { type: 'image/jpeg', lastModified: Date.now() });
+    },
+
+    mb(bayt) {
+        return (bayt / (1024 * 1024)).toFixed(1);
+    },
+}));
+
 Alpine.data('altSayfa', () => ({
     acik: false,
 
