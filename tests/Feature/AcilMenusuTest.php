@@ -125,63 +125,45 @@ class AcilMenusuTest extends TestCase
             ->assertSee('Konumumu kopyala');
     }
 
-    public function test_ucuncu_katman_ilani_olmayan_kategoriyi_basmaz(): void
+    public function test_ucuncu_katman_ilan_olmasa_da_basilir(): void
     {
         /*
-         * KURAL 2'NİN BEKÇİSİ. Kategori var ama ilan yok: acil durumdaki
-         * kişiyi "0 ilan bulundu" sayfasına götürecek bir düğme basılmamalı,
-         * başlık bile açılmamalı.
+         * KURAL DEĞİŞTİ (sahip kararı, 2026-08-12 akşamı).
+         *
+         * Sabah bu testin tersi vardı: ilanı olmayan kategori HİÇ basılmıyordu,
+         * çünkü büyük dokunulabilir satırlar acil durumdaki kişiyi "0 ilan
+         * bulundu" sayfasına götürüyordu.
+         *
+         * Sahip düğmeleri geri istedi ve VAADİ değiştirdi: artık "burada
+         * yardım var" değil, "şehrinde ara" deniyor. Dürüstlük başka yerden
+         * geliyor — düğmeler küçük ve ikincil (hayatî katmanla karışmıyor) ve
+         * altlarında "henüz kayıtlı kimse olmayabilir" yazıyor.
+         *
+         * İddia bölüm başlığı üzerinden kuruluyor; kategori ADI'na bakmak
+         * yanlış ölçüm olurdu (aynı ad ana sayfanın başka yüzeylerinde de
+         * geçiyor, panelle ilgisi olmadan).
          */
         $this->acilKategorisi();
 
-        /*
-         * İddia YALNIZ bölüm başlığı üzerinden kuruluyor. Kategori ADI'na
-         * bakmak yanlış ölçüm olurdu: aynı ad ana sayfanın başka
-         * yüzeylerinde (örnek raf, kategori ızgarası) da geçebiliyor —
-         * panelle hiç ilgisi olmadan. "Türkçe konuşan yardım" bu panele özgü.
-         */
         $this->get('/')
             ->assertOk()
-            ->assertSee('Acil servis')                  // hayatî katman duruyor
-            ->assertDontSee('Türkçe konuşan yardım');   // boş vaat yok
+            ->assertSee('Acil servis')                 // hayatî katman duruyor
+            ->assertSee('Türkçe konuşan yardım')       // düğmeler envanterden bağımsız
+            ->assertSee('henüz kayıtlı kimse olmayabilir'); // ama beklenti dürüst
     }
 
-    public function test_ucuncu_katman_gercek_ilan_varsa_acilir(): void
-    {
-        // Kural tek yönlü değil: ilan gelince katman kendiliğinden dönmeli.
-        $kategori = $this->acilKategorisi();
-        $this->ilanEkle($kategori);
-
-        $this->get('/')
-            ->assertOk()
-            ->assertSee('Türkçe konuşan yardım')
-            ->assertSee('Nöbetçi doktor');
-    }
-
-    public function test_demo_ilan_ucuncu_katmani_acmaz(): void
+    public function test_hayati_katman_yardim_dugmelerinin_ustunde_kaliyor(): void
     {
         /*
-         * Süzgeç `active()->gercek()` — BrowseController'ın kategori
-         * sayfasında kullandığının aynısı. Yalnız `active()` süzseydik menü
-         * "Nöbetçi doktor var" derdi, sayfa "0 ilan bulundu" derdi: örnek
-         * ilanlar listeden zaten dışlanıyor. Menü ile sayfa aynı şeyi
-         * söylemek zorunda.
+         * DÜĞMELER GERİ GELDİ AMA SIRA DEĞİŞMEDİ. Acil numaraları ve
+         * konsolosluk, dizin aramasının ÜSTÜNDE kalmalı: panelin ilk ekranı
+         * hayat kurtaran katman olmalı, pazaryeri gezintisi değil.
          */
-        $kategori = $this->acilKategorisi();
-        $this->ilanEkle($kategori, demo: true);
+        $this->acilKategorisi();
 
         $this->get('/')
             ->assertOk()
-            ->assertDontSee('Türkçe konuşan yardım');
-    }
-
-    public function test_pasif_ilan_ucuncu_katmani_acmaz(): void
-    {
-        $kategori = $this->acilKategorisi();
-        $this->seed(CountrySeeder::class);
-        Listing::factory()->create(['category_id' => $kategori->id, 'status' => 'pasif']);
-
-        $this->get('/')->assertOk()->assertDontSee('Türkçe konuşan yardım');
+            ->assertSeeInOrder(['Acil servis', 'Konsolosluk', 'Türkçe konuşan yardım']);
     }
 
     public function test_panelin_yuksekligi_sinirli_ve_govdesi_kayar(): void

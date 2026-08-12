@@ -102,6 +102,7 @@
                     :categories="$emergencyCategories"
                     :countries="$emergencyCountries"
                     :default-country="$emergencyDefaultCountry"
+                    :city="$emergencyCity"
                 />
 
                 {{-- Dark mode toggle — obsidian teması koyu moda kilitli olduğu

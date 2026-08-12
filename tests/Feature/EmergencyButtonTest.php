@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Country;
-use App\Models\Listing;
 use App\Models\User;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
@@ -13,40 +12,52 @@ use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 /**
- * Acil düğmesi ve 3. katmanın (ilan bağlantıları) görünürlük kuralları.
+ * Acil düğmesi ve 3. katmanın (yardım kategorileri) davranışı.
  *
- * 2026-08-12'de kural değişti: ilan bağlantısı YALNIZ gerçekten ilanı olan
- * kategori için basılır. Gerekçe ve ölçüm [AcilMenusuTest] başlığında.
- * Buradaki testler bu yüzden artık kategoriyle birlikte İLAN da oluşturur —
- * kategori tek başına düğme üretmez.
+ * ---------------------------------------------------------------------------
+ * KURAL BİR KEZ DEĞİŞTİ — ikisini de bilmek gerekiyor
+ *
+ * 2026-08-12 sabahı: kategoriler HER ülkede "0 ilan bulundu" döndürdüğü için
+ * ilanı olmayan kategori hiç basılmıyordu (boş vaat vermeme kuralı).
+ *
+ * 2026-08-12 akşamı, SAHİP KARARIYLA: dört düğme (doktor/avukat/çilingir/
+ * cenaze) HER ZAMAN görünüyor ve şehir süzgeciyle arama sayfasına götürüyor.
+ * Vaat değişti — artık "burada yardım var" değil, "şehrinde ara" deniyor.
+ *
+ * Dürüstlük başka yerden geliyor: düğmeler küçük ve ikincil (hayatî katmanla
+ * karışmıyor) ve altlarında "henüz kayıtlı kimse olmayabilir" yazıyor.
  */
 class EmergencyButtonTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** Verilen slug'lı acil kategorilerine birer gerçek, aktif ilan koyar. */
-    private function ilanla(string ...$slugs): void
+    public function test_dort_yardim_dugmesi_de_basiliyor(): void
     {
-        $this->seed(CountrySeeder::class);
+        /*
+         * İlan YOK ve olmamalı da — bu testin ayırt ettiği şey tam olarak bu:
+         * düğmeler envanterden bağımsız görünür.
+         */
+        $this->seed(CategorySeeder::class);
 
-        foreach ($slugs as $slug) {
-            Listing::factory()->create([
-                'category_id' => Category::where('slug', $slug)->firstOrFail()->id,
-                'status' => 'aktif',
-                'is_demo' => false,
-            ]);
-        }
+        $this->get('/')
+            ->assertOk()
+            ->assertSeeInOrder(['Acil Yardım', 'Doktorlar', 'Çilingirler', 'Avukatlar', 'Cenaze Hizmetleri']);
     }
 
-    public function test_emergency_button_visible_with_doctors_and_locksmiths_in_order(): void
+    public function test_cenaze_hizmetleri_acil_kategorisinin_altinda(): void
     {
+        // Diasporada vefat, ailenin en çaresiz kaldığı an; kategori acil
+        // grubunun altında olmalı ki panelde görünsün.
         $this->seed(CategorySeeder::class);
-        $this->ilanla('doktorlar', 'cilingirler', 'avukatlar');
 
-        $response = $this->get('/');
+        $cenaze = Category::where('slug', 'cenaze-hizmetleri')->first();
 
-        $response->assertOk();
-        $response->assertSeeInOrder(['Acil Yardım', 'Doktorlar', 'Çilingirler', 'Avukatlar']);
+        $this->assertNotNull($cenaze, 'Cenaze Hizmetleri kategorisi yok.');
+        $this->assertSame(
+            Category::where('slug', Category::EMERGENCY_SLUG)->value('id'),
+            $cenaze->parent_id,
+            'Cenaze Hizmetleri, Acil Yardım altında değil — panelde görünmez.'
+        );
     }
 
     public function test_acil_dugmesi_acil_kategorisi_hic_yokken_de_gorunur(): void
@@ -59,8 +70,6 @@ class EmergencyButtonTest extends TestCase
          * merkezi) pazaryeri taksonomisiyle hiç ilgili değil. Eski kuralla,
          * sahip panelden "Acil Yardım" kategorilerini pasife çektiğinde
          * sitedeki tek acil numarası da sessizce kaybolurdu.
-         *
-         * Düğme artık envanterden bağımsız; koşullu olan yalnız 3. katman.
          */
         Category::create([
             'name' => 'Eğitim & Ders',
@@ -80,16 +89,41 @@ class EmergencyButtonTest extends TestCase
         $response->assertSee('+90 312 292 29 29');
     }
 
+    public function test_yardim_baglantisi_ulke_ve_sehri_birlikte_tasiyor(): void
+    {
+        /*
+         * Sahibin istediği davranış: düğmeye basan kişi KENDİ ŞEHRİNDEKİ
+         * kişileri bulsun. Bağlantı Alpine'da kuruluyor çünkü ülke panelden
+         * değiştirilebiliyor; şehir ise sunucudan geliyor.
+         */
+        $this->seed([CategorySeeder::class, CountrySeeder::class]);
+        $user = User::factory()->create(['country_code' => 'DE', 'city' => 'Berlin']);
+
+        $html = $this->actingAs($user)->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('kategoriBaglantisi', $html,
+            'Kategori bağlantısı şehir/ülke birleştiricisini kullanmıyor.');
+        $this->assertStringContainsString("sehir: 'Berlin'", $html,
+            'Üyenin şehri panele geçmemiş — arama ülke geneli kalır.');
+    }
+
+    public function test_sehri_olmayan_uye_icin_sehir_bos_gecer(): void
+    {
+        // Şehir bilinmiyorsa arama ülke geneli olmalı; uydurma şehir gitmemeli.
+        $this->seed([CategorySeeder::class, CountrySeeder::class]);
+        $user = User::factory()->create(['country_code' => 'DE', 'city' => null]);
+
+        $this->actingAs($user)->get('/')->assertOk()->assertSee("sehir: ''", false);
+    }
+
     public function test_emergency_categories_cache_invalidates_when_child_category_saved(): void
     {
         $this->seed(CategorySeeder::class);
-        $this->ilanla('doktorlar');
 
         // Cache'i doldur.
         $this->get('/')->assertSee('Doktorlar');
 
-        $doktorlar = Category::where('slug', 'doktorlar')->firstOrFail();
-        $doktorlar->update(['name' => 'Nöbetçi Doktorlar']);
+        Category::where('slug', 'doktorlar')->firstOrFail()->update(['name' => 'Nöbetçi Doktorlar']);
 
         $response = $this->get('/');
 
@@ -100,13 +134,10 @@ class EmergencyButtonTest extends TestCase
     public function test_emergency_categories_cache_invalidates_when_child_category_deleted(): void
     {
         $this->seed(CategorySeeder::class);
-        $this->ilanla('doktorlar', 'cilingirler');
 
         $this->get('/')->assertSee('Çilingirler');
 
-        $cilingirler = Category::where('slug', 'cilingirler')->firstOrFail();
-        Listing::where('category_id', $cilingirler->id)->delete();
-        $cilingirler->delete();
+        Category::where('slug', 'cilingirler')->firstOrFail()->delete();
 
         $response = $this->get('/');
 
@@ -114,51 +145,9 @@ class EmergencyButtonTest extends TestCase
         $response->assertDontSee('Çilingirler');
     }
 
-    public function test_ilan_yayinlaninca_cache_dusuyor(): void
-    {
-        /*
-         * YENİ KANCA (Listing::booted). 3. katmanın görünürlüğü artık ilan
-         * SAYISINA bağlı, ama liste `rememberForever` ile cache'li. İlan
-         * değişikliği cache'i düşürmezse ilk gerçek doktor ilanı yayınlandığı
-         * hâlde menüde hiç görünmezdi.
-         */
-        $this->seed(CategorySeeder::class);
-
-        // Önce ilansız hâli cache'e girsin.
-        $this->get('/')->assertDontSee('Türkçe konuşan yardım');
-
-        $this->ilanla('doktorlar');
-
-        $this->get('/')
-            ->assertSee('Türkçe konuşan yardım')
-            ->assertSee('Doktorlar');
-    }
-
-    public function test_ilan_kalkinca_kategori_menuden_dusuyor(): void
-    {
-        // Ters yön: son ilan silinince bağlantı boş sayfaya götürmemeli.
-        $this->seed(CategorySeeder::class);
-        $this->ilanla('doktorlar');
-
-        $this->get('/')->assertSee('Doktorlar');
-
-        /*
-         * TEK TEK siliniyor, `Listing::query()->delete()` ile DEĞİL.
-         *
-         * Eloquent'te toplu silme/güncelleme model olaylarını HİÇ tetiklemez;
-         * o yolla silinince cache düşmez ve menü olmayan ilana bağlantı
-         * vermeye devam eder. İlk yazışta toplu sildim, test bunu yakaladı.
-         * Sınırın kendisi Listing::booted() içinde yazılı.
-         */
-        Listing::all()->each->delete();
-
-        $this->get('/')->assertDontSee('Türkçe konuşan yardım');
-    }
-
     public function test_emergency_category_links_to_correct_category_route(): void
     {
         $this->seed(CategorySeeder::class);
-        $this->ilanla('doktorlar');
 
         $doktorlar = Category::where('slug', 'doktorlar')->firstOrFail();
 
@@ -186,21 +175,6 @@ class EmergencyButtonTest extends TestCase
 
         $response->assertOk();
         $response->assertSee("ulke: 'DE'", false);
-    }
-
-    public function test_category_link_appends_selected_country_via_alpine(): void
-    {
-        $this->seed([CategorySeeder::class, CountrySeeder::class]);
-        $this->ilanla('doktorlar');
-
-        $doktorlar = Category::where('slug', 'doktorlar')->firstOrFail();
-
-        $response = $this->get('/');
-
-        $response->assertSee(
-            "'".route('listings.category', $doktorlar->slug)."' + (ulke ? '?ulke=' + ulke : '')",
-            false
-        );
     }
 
     public function test_country_selector_hidden_when_no_active_countries(): void

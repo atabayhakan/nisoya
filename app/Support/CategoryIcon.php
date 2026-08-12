@@ -15,6 +15,9 @@ class CategoryIcon
     private const MAP = [
         '🚨' => 'lifebuoy',
         '➕' => 'plus-circle',
+        '🩺' => 'plus-circle',
+        '⚖️' => 'scale',
+        '🕊️' => 'heart',
         '🔑' => 'key',
         '📚' => 'academic-cap',
         '🔧' => 'wrench-screwdriver',

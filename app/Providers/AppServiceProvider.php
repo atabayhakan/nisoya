@@ -129,32 +129,21 @@ class AppServiceProvider extends ServiceProvider
         // varsayılan olarak engelliyor (config/cache.php: serializable_classes=false).
         View::composer('components.layouts.app', function ($view) {
             /*
-             * `gercek_ilan_sayisi`: acil menüsü YALNIZ gerçekten ilanı olan
-             * kategoriyi gösterir (gerekçe emergency-button.blade.php'de).
-             * Süzgeç `active()->gercek()` — BrowseController'ın kategori
-             * sayfasında kullandığının AYNISI (bkz. BrowseController:29,91);
-             * aksi hâlde menü "var" der, sayfa "0 ilan bulundu" derdi.
+             * Acil menüsünün 3. katmanı bu kategorileri gösterir.
              *
-             * `withCount` ayrı sorgu DEĞİL, aynı SELECT'e ilişen alt sorgu —
-             * üstelik tamamı `rememberForever` içinde.
+             * 2026-08-12: bir ara burada `gercek_ilan_sayisi` sayılıyor ve
+             * ilanı OLMAYAN kategori hiç basılmıyordu. Sahip kararıyla kural
+             * değişti — dört düğme (doktor/avukat/çilingir/cenaze) her zaman
+             * görünüyor ve şehir süzgeciyle arama sayfasına götürüyor. Sayım
+             * artık kullanılmadığı için kaldırıldı; ölü veri cache'te durmasın.
              *
-             * BURAYA BİR `Schema::hasTable('listings')` DAHA EKLEME. İlk
-             * yazışta ekledim ve iki sorgu bütçesi testini birden kırdı
-             * (PerformanceBenchmarkTest 25>=25, VitrinVeriBloklariTest 32>=32):
-             * `Schema::hasTable` cache'in DIŞINDA, HER istekte çalışan gerçek
-             * bir sorgudur. `categories` varken `listings`in olmadığı bir an
-             * yok — ikisi de aynı migrasyon partisinde oluşuyor.
+             * BURAYA BİR `Schema::hasTable(...)` DAHA EKLEME. Bir kez eklendi
+             * ve iki sorgu bütçesi testini birden kırdı (PerformanceBenchmark
+             * 25>=25, VitrinVeriBloklari 32>=32): `Schema::hasTable` cache'in
+             * DIŞINDA, HER istekte çalışan gerçek bir sorgudur.
              */
             $items = Schema::hasTable('categories')
                 ? Cache::rememberForever(Category::EMERGENCY_CACHE_KEY, function () {
-                    /*
-                     * Sorgu `->children()` ilişkisi üzerinden DEĞİL, doğrudan
-                     * `Category::query()` ile kuruluyor: ilişki kurucusuna
-                     * `withCount` eklenince statik analiz jenerik tipi
-                     * kaybediyor (Collection<Model>) ve `map(fn (Category …))`
-                     * tip hatası veriyordu. `children()`'ın getirdiği
-                     * sıralama burada elle yazıldı.
-                     */
                     $ana = Category::query()->where('slug', Category::EMERGENCY_SLUG)->first();
 
                     if ($ana === null) {
@@ -165,9 +154,8 @@ class AppServiceProvider extends ServiceProvider
                         ->where('parent_id', $ana->id)
                         ->where('is_active', true)
                         ->orderBy('sort_order')
-                        ->withCount(['listings as gercek_ilan_sayisi' => fn ($q) => $q->active()->gercek()])
                         ->get(['id', 'name', 'slug', 'icon'])
-                        ->map(fn (Category $cat) => $cat->only(['id', 'name', 'slug', 'icon', 'gercek_ilan_sayisi']))
+                        ->map(fn (Category $cat) => $cat->only(['id', 'name', 'slug', 'icon']))
                         ->all();
                 })
                 : [];
@@ -205,6 +193,14 @@ class AppServiceProvider extends ServiceProvider
             $view->with('emergencyCategories', collect($items)->map(fn (array $item) => (object) $item));
             $view->with('emergencyCountries', collect($countries)->map(fn (array $item) => (object) $item));
             $view->with('emergencyDefaultCountry', $emergencyDefaultCountry);
+
+            /*
+             * Acil menüsündeki yardım düğmeleri aramayı ŞEHİRLE daraltır.
+             * Şehir yalnız üyenin profilinden gelir — GeoIP çözümleyicisi ülke
+             * veriyor, şehir vermiyor. Yoksa arama ülke geneli kalır; bu
+             * yüzden arayüz "şehrinde" sözünü ancak şehir BİLİNİYORSA verir.
+             */
+            $view->with('emergencyCity', auth()->user()?->city);
             $view->with('visitorCountry', $visitorCountry);
 
             // Header menü linkleri (bkz. App\Models\NavigationLink) — admin
