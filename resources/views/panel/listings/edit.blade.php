@@ -3,6 +3,43 @@
         <x-panel.back-link :href="route('panel.listings.index')" label="İlanlarım" />
         <h1 class="mt-2 text-2xl font-bold text-stone-900 dark:text-stone-50">İlanı Düzenle</h1>
 
+        {{-- DURUM MESAJI SAYFANIN ÜSTÜNDE.
+
+             Eskiden yalnız müsaitlik takvimi kutusunun İÇİNDE basılıyordu ve o
+             kutu sadece emlak/vasıta ilanlarında var. Yani hizmet ya da ürün
+             ilanında flash mesajlar hiçbir zaman görünmüyordu — kullanıcı
+             düğmeye basıyor, hiçbir şey olmamış gibi aynı sayfaya dönüyordu. --}}
+        @if (session('status'))
+            <div class="mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">{{ session('status') }}</div>
+        @endif
+
+        {{-- TEMSİLÎ GÖRSEL — yalnız görseli olmayan HİZMET ilanlarında.
+
+             Ana formun DIŞINDA: iç içe <form> geçersiz HTML ve tarayıcı
+             içtekini yok sayar; düğme sessizce ilanı kaydederdi.
+
+             Kapı controller'da (TemsiliGorselUretici::uygunMu) — bu görünüm
+             karar vermiyor, yalnız gösteriyor. --}}
+        @if (($temsiliGorselOnerilebilir ?? false))
+            <div class="mt-6 rounded-xl border border-stone-200 bg-stone-50 p-4 dark:border-stone-700 dark:bg-stone-900/40">
+                <p class="text-sm font-medium text-stone-800 dark:text-stone-200">Bu ilanın görseli yok</p>
+                <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">
+                    Kendi fotoğrafın her zaman daha iyi sonuç verir. Yoksa hizmetini
+                    çağrıştıran <strong>temsilî</strong> bir görsel üretebiliriz —
+                    ilanda “Temsilî görsel” etiketiyle görünür, istediğin an silebilirsin.
+                </p>
+                <form method="POST" action="{{ route('panel.listings.representative-image', $listing) }}"
+                      class="mt-3" x-data="gonderimKilidi('Üretiliyor...')" @submit="kilitle">
+                    @csrf
+                    <button type="submit"
+                            class="inline-flex min-h-11 items-center gap-2 rounded-lg border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-800 transition hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+                        <x-heroicon-o-sparkles class="h-4 w-4" />
+                        Temsilî görsel oluştur
+                    </button>
+                </form>
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('panel.listings.update', $listing) }}" enctype="multipart/form-data" class="mt-6 space-y-5" x-data="gonderimKilidi('Kaydediliyor...')" @submit="kilitle">
             @csrf
             @method('PUT')
@@ -90,9 +127,8 @@
                 <h2 class="font-semibold text-stone-800 dark:text-stone-100">📅 Müsaitlik Takvimi</h2>
                 <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Dolu olduğun tarih aralıklarını işaretle — ziyaretçiler ilanında bu tarihleri "dolu" görür, tarihli aramalarda ilanın o tarihler için listelenmez.</p>
 
-                @if (session('status'))
-                    <div class="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">{{ session('status') }}</div>
-                @endif
+                {{-- Durum mesajı sayfanın en üstüne taşındı (orada her ilan
+                     tipi için görünüyor); burada tekrar basmıyoruz. --}}
 
                 <form method="POST" action="{{ route('panel.listings.availability.store', $listing) }}" class="mt-4 flex flex-wrap items-end gap-3">
                     @csrf

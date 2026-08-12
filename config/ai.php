@@ -36,6 +36,10 @@ return [
         // koddan gelir; model yalnız o cümleyi yazar ve HİÇBİR ŞEY GÖNDERMEZ.
         // Bkz. App\Services\Growth\ErisimMesajiYazari.
         'outreach_draft' => (bool) env('AI_OUTREACH_DRAFT', true),
+        // Hizmet ilanlarına temsilî kapak görseli. YALNIZ hizmet — ürün
+        // ilanında fotoğraf bir iddiadır, üretilmiş görsel oraya konamaz.
+        // Bkz. App\Services\TemsiliGorselUretici.
+        'service_image' => (bool) env('AI_SERVICE_IMAGE', true),
         // İlan görselleri + sohbet fotoğrafları için otomatik uygunsuz içerik
         // ön-elemesi. Görsel SİLİNMEZ — yalnızca işaretlenir/incelemeye alınır
         // (bkz. App\Services\ImageModerationService).

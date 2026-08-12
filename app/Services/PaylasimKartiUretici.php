@@ -268,6 +268,18 @@ class PaylasimKartiUretici
             // buradaki bir TypeError programlama hatasıdır ve yutulmamalı.
             $kart->insert($kapak, 0, 0);
 
+            /*
+             * TEMSİLÎ ETİKETİ KARTA DA BASILIR.
+             *
+             * Bu kart WhatsApp durumuna gidiyor — siteden kopup tek başına
+             * dolaşan tek yüzey burası. Etiket yalnız sitedeki HTML'de
+             * kalsaydı, üretilmiş görsel kartta gerçek fotoğraf gibi
+             * görünürdü ve tam kaçınmak istediğimiz durum bu.
+             */
+            if ($gorsel?->is_representative) {
+                $this->temsiliRozeti($kart, $font);
+            }
+
             return;
         }
 
@@ -407,6 +419,37 @@ class PaylasimKartiUretici
                 });
             }
         }
+    }
+
+    /**
+     * "TEMSİLÎ GÖRSEL" bandı — kapağın SOL ALT köşesine (ölçülen kutu:
+     * x 72..413, y 948..1008).
+     *
+     * Üst köşeler zaman/öne-çıkan rozetlerine, panel ise "ÖRNEK İLAN"a
+     * ayrılmış; kapağın alt kenarı boş ve göz görseli bırakırken oradan
+     * geçiyor.
+     */
+    private function temsiliRozeti(ImageInterface $kart, string $font): void
+    {
+        $metin = 'TEMSİLÎ GÖRSEL';
+        $boyut = 32;
+        $genislik = (int) ($boyut * 0.62 * mb_strlen($metin)) + $boyut * 2;
+        $yukseklik = (int) ($boyut * 1.9);
+        $y = self::KAPAK_YUKSEKLIK - $yukseklik - self::KENAR;
+
+        $kart->drawRectangle(function (RectangleFactory $r) use ($genislik, $yukseklik, $y): void {
+            $r->at(self::KENAR, $y);
+            $r->size($genislik, $yukseklik);
+            $r->background('#000000a6');
+        });
+
+        $kart->text($metin, self::KENAR + (int) ($genislik / 2), $y + (int) ($yukseklik / 2),
+            function (FontFactory $f) use ($font, $boyut): void {
+                $f->filename($font);
+                $f->size($boyut);
+                $f->color('#ffffff');
+                $f->align('center', 'center');
+            });
     }
 
     /**

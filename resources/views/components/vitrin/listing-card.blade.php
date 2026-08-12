@@ -33,6 +33,11 @@
             </div>
         @endif
 
+        {{-- Temsilî görsel etiketi — klasik kartla aynı sözleşme.
+             Sol ALTA konuyor: sol üstte zaman çipi, sağ üstte öne-çıkan
+             rozeti var. --}}
+        <x-temsili-rozet :gorsel="$listing->coverImage" class="absolute bottom-2.5 left-2.5" />
+
         {{-- Zaman çipi (gerçek created_at) --}}
         <span class="absolute left-2.5 top-2.5 rounded-full bg-white/95 px-2.5 py-1.5 text-2xs font-bold text-stone-700 dark:bg-stone-900/95 dark:text-stone-200">
             {{ $listing->created_at->diffForHumans(null, true) }} önce

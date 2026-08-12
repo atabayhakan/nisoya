@@ -153,6 +153,8 @@
                              fetchpriority="high"
                              style="--listing-transition-name: listing-image-{{ $listing->id }}"
                              class="listing-cover-transition relative mx-auto max-h-[420px] w-full object-contain">
+                        {{-- Detayda BÜYÜK: alıcı kararını burada veriyor. --}}
+                        <x-temsili-rozet :gorsel="$hero" buyuk class="absolute bottom-3 left-3" />
                     </div>
                     @if ($listing->images->count() > 1)
                         <div class="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-5">

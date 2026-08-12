@@ -53,6 +53,7 @@ use App\Http\Controllers\SavedSearchController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StoryController;
 use App\Http\Controllers\TemaOzellestiriciController;
+use App\Http\Controllers\TemsiliGorselController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\VehicleBrowseController;
 use Illuminate\Support\Facades\Route;
@@ -207,6 +208,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('panel.listings.republish');
     Route::delete('/panel/ilan/{listing}', [ListingController::class, 'destroy'])->name('panel.listings.destroy');
     Route::patch('/panel/ilan/{listing}/gorsel/{image}/hizala', [ListingController::class, 'alignImage'])->name('panel.listings.images.align');
+    // Temsilî görsel — YALNIZ görseli olmayan hizmet ilanlarında (kapı
+    // TemsiliGorselUretici::uygunMu içinde). Görsel üretimi para harcadığı
+    // için ayrı ve dar bir hız sınırı var.
+    Route::post('/panel/ilan/{listing}/temsili-gorsel', [TemsiliGorselController::class, 'store'])
+        ->middleware('throttle:temsili-gorsel')
+        ->name('panel.listings.representative-image');
     Route::post('/panel/ilan/{listing}/one-cikar', [FeatureController::class, 'store'])->name('panel.listings.feature')->middleware('throttle:listing-feature');
     Route::post('/panel/ilan/{listing}/takvim', [ListingAvailabilityController::class, 'store'])->name('panel.listings.availability.store');
     Route::delete('/panel/ilan/{listing}/takvim/{range}', [ListingAvailabilityController::class, 'destroy'])->name('panel.listings.availability.destroy');

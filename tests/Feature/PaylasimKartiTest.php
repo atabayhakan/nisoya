@@ -171,6 +171,54 @@ class PaylasimKartiTest extends TestCase
         $this->assertLessThan(60, $renk['green']);
     }
 
+    public function test_temsili_gorsel_etiketi_karta_basilir(): void
+    {
+        /*
+         * Bu kart siteden KOPUP tek başına dolaşan tek yüzey (WhatsApp
+         * durumu). Etiket yalnız sitedeki HTML'de kalsaydı, üretilmiş görsel
+         * kartta gerçek fotoğraf gibi görünürdü.
+         *
+         * Ölçüm: parlak beyaz bir kapakla üretiyoruz; etiket bandı KOYU bir
+         * dikdörtgen olduğu için o noktadaki piksel bariz kararmalı.
+         * (Kapak zaten koyu olsaydı test hiçbir şey sınamazdı.)
+         */
+        Storage::fake('public');
+
+        $yol = 'listings/large/kapak.png';
+        Storage::disk('public')->put($yol, (string) (new ImageManager(new Driver))
+            ->createImage(1200, 1200)->fill('#ffffff')->encode(new PngEncoder));
+
+        /*
+         * Örnek noktası ÖLÇÜLDÜ: bant y 948..1008, x 72..413 aralığında.
+         * İlk denemede bandın tam ortasından (y=978) örneklemiştim ve 255
+         * okudum — çünkü oradaki piksel bandın değil, üstündeki BEYAZ
+         * YAZININ pikseliydi. Nokta bilerek bandın üst şeridinde (harf yok).
+         */
+        $ornekX = 100;
+        $ornekY = 952;
+
+        $temsilsiz = $this->ilan(['is_demo' => false]);
+        ListingImage::create(['listing_id' => $temsilsiz->id, 'path_large' => $yol]);
+        $pngA = imagecreatefromstring(app(PaylasimKartiUretici::class)->uret($temsilsiz->fresh()));
+        $this->assertNotFalse($pngA);
+        $acik = imagecolorsforindex($pngA, imagecolorat($pngA, $ornekX, $ornekY));
+
+        $temsili = $this->ilan(['is_demo' => false]);
+        ListingImage::create([
+            'listing_id' => $temsili->id,
+            'path_large' => $yol,
+            'is_representative' => true,
+        ]);
+        $pngB = imagecreatefromstring(app(PaylasimKartiUretici::class)->uret($temsili->fresh()));
+        $this->assertNotFalse($pngB);
+        $koyu = imagecolorsforindex($pngB, imagecolorat($pngB, $ornekX, $ornekY));
+
+        $this->assertGreaterThan(200, $acik['red'],
+            'Ölçüm noktası zaten koyuymuş — bu test hiçbir şey sınamıyor olurdu.');
+        $this->assertLessThan(120, $koyu['red'],
+            'Temsilî etiketi karta basılmamış: paylaşılan görselde uyarı yok.');
+    }
+
     public function test_is_demo_okunmamis_model_kart_uretimini_kirmaz(): void
     {
         // Kolon NOT NULL, ama değeri VERİTABANI varsayılanı dolduruyor: insert

@@ -118,6 +118,16 @@ return Application::configure(basePath: dirname(__DIR__))
             Limit::perDay(30)->by($request->user()?->id ?: $request->ip()),
         ]);
 
+        /*
+         * Temsilî görsel: metin analizinden PAHALI (görsel üretimi) ve bir
+         * ilana bir kez gerekiyor. Günlük sınır kasten düşük — 5 hizmet ilanı
+         * açan bir kullanıcı bile buna çarpmaz, otomatik döngü hemen çarpar.
+         */
+        RateLimiter::for('temsili-gorsel', fn (Request $request) => [
+            Limit::perMinute(2)->by($request->user()?->id ?: $request->ip()),
+            Limit::perDay(10)->by($request->user()?->id ?: $request->ip()),
+        ]);
+
         // Listeden çıkış: gerçek kişi bir kez basar. Cömert ama sınırsız değil —
         // jeton kaba kuvvetle aranamasın.
         RateLimiter::for('eposta-cikis', fn (Request $request) => Limit::perMinute(20)->by($request->ip())
