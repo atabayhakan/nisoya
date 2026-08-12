@@ -148,8 +148,11 @@ class AcilMenusuTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('Acil servis')                 // hayatî katman duruyor
-            ->assertSee('Türkçe konuşan yardım')       // düğmeler envanterden bağımsız
-            ->assertSee('henüz kayıtlı kimse olmayabilir'); // ama beklenti dürüst
+            // Başlık "ara" diyor: düğmeler envanterden bağımsız görünür ama
+            // sonuç vaat etmez. Ayrı bir uyarı satırı vardı, sahibin
+            // telefonunda alt bandın altında yarım kalıyordu — kaldırıldı,
+            // dürüstlük başlığa taşındı.
+            ->assertSee('Türkçe konuşan yardım ara');
     }
 
     public function test_hayati_katman_yardim_dugmelerinin_ustunde_kaliyor(): void
