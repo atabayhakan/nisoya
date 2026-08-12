@@ -54,10 +54,17 @@ return [
 
     /*
      * T.C. Dışişleri Bakanlığı Konsolosluk Çağrı Merkezi — 7/24, dünyanın
-     * her yerinden aranabilir, 6 dilde hizmet veriyor. Yurt dışındaki bir
-     * Türk için bu, acil durumda en değerli tek numaradır: pasaport kaybı,
-     * gözaltı, hastane, vefat gibi konsolosluk gerektiren hâllerde.
-     * Kaynak: mfa.gov.tr — Konsolosluk Çağrı Merkezi sayfası.
+     * her yerinden aranabilir, Türkçe dahil 8 dilde hizmet veriyor
+     * (İngilizce, Almanca, Fransızca, İtalyanca, Flamanca, Rusça, Arapça).
+     * Yurt dışındaki bir Türk için bu, acil durumda en değerli tek numaradır:
+     * pasaport kaybı, gözaltı, hastane, vefat gibi konsolosluk gerektiren
+     * hâllerde.
+     *
+     * "6 dil" YAZIYORDU, YANLIŞTI (2026-08-12 denetimi). O rakam Bükreş
+     * bilgi notu gibi BAYAT temsilcilik sayfalarındaki "Türkçe + beş yabancı
+     * dil" ifadesinden geliyor. Bakanlığın kendi KÇM sayfası sekiz diyor.
+     *
+     * BİRİNCİL KAYNAK: mfa.gov.tr/konsolosluk-cagri-merkezi-2019.tr.mfa
      */
     'konsolosluk_cagri_merkezi' => [
         'numara' => '+903122922929',
@@ -81,10 +88,22 @@ return [
     | acil durumdaki birine verilen yanlış bir sözdür; tersi (ucuz olanı
     | pahalı sanmak) yalnızca fırsatı kaçırtır. İkisi aynı ağırlıkta değil.
     |
-    | Kaynak: mfa.gov.tr/contact-us.en.mfa (2026-08-12'de okundu).
-    | NOT: Bakanlığın TÜRKÇE iletişim sayfasında bu numaralar YOK, yalnız
-    | İngilizce sayfada listeleniyor — Türkçe sayfaya bakıp "yayımlanmamış"
-    | sonucuna varma.
+    | BİRİNCİL KAYNAK — BURADAN TAZELE:
+    |   mfa.gov.tr/konsolosluk-cagri-merkezi-2019.tr.mfa  (Türkçe, en derli toplu)
+    |   konsolosluk.gov.tr duyurusu
+    | Ayrıca her numara ilgili temsilciliğin kendi duyurusuyla da doğrulandı
+    | (Viyana, Salzburg, Londra, Rotterdam, Paris, Lyon, Berlin, Los Angeles).
+    |
+    | `contact-us.en.mfa` sayfasını KAYNAK ALMA: numaraları en dağınık biçimde
+    | yazan sayfa orası (`44203-6088090`, `+33-180-146335`). İlk yazışta oradan
+    | okundu ve "bu numaralar Türkçe sayfada yok" diye yanlış bir not düşüldü —
+    | doğrusu Türkçe İLETİŞİM sayfasında yoklar, KÇM sayfasında var.
+    |
+    | ALMANYA TUZAĞI: Köln ve Essen Başkonsolosluğu sayfaları hâlâ ESKİ numarayı
+    | (030 3080 7090) gösteriyor. Berlin Büyükelçiliği 09.07.2021 duyurusunda o
+    | numaranın teknik arıza nedeniyle kullanılamadığını bildirip yerine
+    | 030 568373099'u vermiş. Aşağıdaki numara halefidir; "eski sayfalarda başka
+    | yazıyor" diye geri çevirme.
     |
     | `tarife`: 'ucretsiz' | 'yerel'
     |
