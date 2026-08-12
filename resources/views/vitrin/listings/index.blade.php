@@ -240,6 +240,9 @@
                                     · <b class="text-stone-800 dark:text-stone-100">{{ $aktifFiltreler->count() }}</b> filtre aktif
                                 @endif
                             </p>
+
+                            {{-- Doğal dille arama yorumu — klasik şablonla AYNI bileşen. --}}
+                            <x-arama-yorumu :yorum="$aramaYorumu ?? null" :cumle="$aramaCumlesi ?? ''" class="mt-3" />
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Country;
 use App\Models\Listing;
+use App\Services\DogalDilArama;
 use App\Support\Tema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -24,6 +25,42 @@ class BrowseController extends Controller
 
     protected function render(Request $request, ?Category $category): View
     {
+        /*
+         * DOĞAL DİLLE ARAMA — süzgeçler okunmadan ÖNCE.
+         *
+         * "Berlin'de ucuz ev temizliği" bugün olduğu gibi aranınca, bu cümlenin
+         * tamamı başlık/açıklamada LIKE ile aranıyor ve hiçbir şey bulunmuyor.
+         * Cümle burada `q` + `sehir` + `tip` + `max` alanlarına ayrılıyor;
+         * aşağıdaki sorgu hiç değişmeden çalışıyor.
+         *
+         * ÜÇ KAPI:
+         *   - Kullanıcı süzgeci kendisi seçtiyse yorumlama ÇALIŞMAZ (elle
+         *     seçilen bir süzgeci AI'ın değiştirmesi en sinir bozucu hatadır).
+         *   - `?ham=1` ile kullanıcı yorumu kapatabilir (aşağıdaki şeritteki
+         *     bağlantı buraya gider).
+         *   - AI kapalı/kırıksa hiçbir şey olmaz, arama bugünkü gibi çalışır.
+         */
+        $aramaCumlesi = trim((string) $request->input('q'));
+        $yorum = null;
+
+        $baskaSuzgecVar = $category !== null || $request->filled([
+            'kategori', 'ulke', 'sehir', 'min', 'max', 'tip',
+        ]);
+
+        if (! $request->boolean('ham')) {
+            $cevirmen = app(DogalDilArama::class);
+
+            if ($cevirmen->yorumlanmaliMi($aramaCumlesi, $baskaSuzgecVar)) {
+                $yorum = $cevirmen->yorumla($aramaCumlesi);
+
+                if ($yorum !== null) {
+                    // Yalnız DOLU alanlar isteğe yazılır; null olanlar
+                    // kullanıcının hiçbir şeyini değiştirmesin.
+                    $request->merge(array_filter($yorum, fn ($v) => $v !== null && $v !== ''));
+                }
+            }
+        }
+
         // Demo süzgeci burada DEĞİL, süzgeçler kurulduktan sonra uygulanır
         // (aşağıda `$query->gercek()`) — örnek rafı aynı süzgeçleri paylaşsın diye.
         $query = Listing::query()->active()->with(['coverImage', 'category.parent', 'country', 'user']);
@@ -187,8 +224,18 @@ class BrowseController extends Controller
                 ->with('children:id,parent_id')->orderBy('sort_order')->get(),
             'countries' => Country::query()->where('is_active', true)->orderBy('sort_order')->get(),
             'activeCategory' => $activeCategory,
+            /*
+             * ŞERİT VERİSİ: yorum yapıldıysa kullanıcıya NE ANLAŞILDIĞI
+             * yazılır. Arama kutusuna yazdığından başka bir sonuç kümesi
+             * görüp sebebini bilmemek, aramaya olan güveni bitirir.
+             */
+            'aramaYorumu' => $yorum,
+            'aramaCumlesi' => $aramaCumlesi,
             'filters' => [
-                'q' => $request->input('q', ''),
+                // Kutuda kullanıcının KENDİ cümlesi kalır — yorumun daralttığı
+                // anahtar kelime değil. Aksi hâlde kullanıcı yazdığını
+                // düzeltemez, her aramada cümlesi elinden alınırdı.
+                'q' => $aramaCumlesi !== '' ? $aramaCumlesi : $request->input('q', ''),
                 'kategori' => $activeCategory?->slug ?? '',
                 'ulke' => $request->input('ulke', ''),
                 'sehir' => $request->input('sehir', ''),

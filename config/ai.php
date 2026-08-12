@@ -46,6 +46,9 @@ return [
         // İlan METNİNDE dolandırıcılık deseni ön-elemesi — görsel
         // moderasyonunun ikizi. Bkz. App\Services\DolandiricilikTespiti.
         'text_moderation' => (bool) env('AI_TEXT_MODERATION', true),
+        // Doğal dille arama: cümleyi var olan süzgeçlere çevirir (yeni bir
+        // arama motoru DEĞİL). Bkz. App\Services\DogalDilArama.
+        'natural_search' => (bool) env('AI_NATURAL_SEARCH', true),
         // İlan görselleri + sohbet fotoğrafları için otomatik uygunsuz içerik
         // ön-elemesi. Görsel SİLİNMEZ — yalnızca işaretlenir/incelemeye alınır
         // (bkz. App\Services\ImageModerationService).
