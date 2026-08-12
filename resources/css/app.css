@@ -237,7 +237,37 @@ body > header {
     view-transition-name: var(--listing-transition-name, none);
 }
 
+/* ---------------------------------------------------------------------------
+   ZİYARETÇİNİN HAREKET-AZALTMA TERCİHİ — TEMADAN BAĞIMSIZ.
+
+   Bu sıfırlama eskiden `components/tasarim-theme.blade.php` içindeydi ve o
+   dosyanın TAMAMI `@unless (Tema::vitrinMi())` ile sarılı. Canlı tema vitrin
+   olduğu için kural hiç basılmıyordu: 2026-08-12'de canlıdan ölçüldü, ne
+   HTML'de ne de 210 KB'lık derlenmiş CSS'te `0.01ms` geçiyordu.
+
+   Neden orada olması BAŞTAN yanlıştı: o dosya SAHİBİN tasarım kontrollerini
+   (marka rengi, yazı tipi, köşe, cam, "akıcı geçişler") barındırıyor ve
+   vitrinde bunların kapalı olması BİLİNÇLİ bir karar — panelde amber bir
+   uyarıyla da yazılı. Ama hareket-azaltma sahibin ayarı değil, ZİYARETÇİNİN
+   erişilebilirlik tercihidir; sahibin kontrolleriyle aynı kapıya bağlandığı
+   için onlarla birlikte kapandı ve kimsenin aklına "kapalı sahip kontrolleri"
+   listesinde bunu aramak gelmedi.
+
+   Artık her iki iskeletin de yüklediği tek dosyada (`@vite` girişi), yani
+   temaya bağlanması yapısal olarak imkânsız.
+
+   Bekçi: AcilMenusuTest yok — TasarimModuTest::test_hareket_azaltma_temadan_bagimsiz
+   --------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
     @view-transition {
         navigation: none;
     }

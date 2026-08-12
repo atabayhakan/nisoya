@@ -6,10 +6,12 @@ use App\Enums\UserRole;
 use App\Filament\Pages\TasarimAyarlari;
 use App\Models\User;
 use App\Support\Settings;
+use App\Support\TemaJetonlari;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -157,36 +159,65 @@ class TasarimModuTest extends TestCase
     public function test_smooth_animations_off_emits_reduced_motion(): void
     {
         /*
-         * SÖZLEŞME GENİŞLETİLDİ (2026-08-06). Eski hâli "açıkken böyle bir
-         * kural yok" diyordu; artık ziyaretçinin kendi tercihine bağlı bir
-         * kural HER ZAMAN basılıyor (bkz. aşağıdaki test), o yüzden ayrım
-         * dizeyle değil SAYIYLA yapılır — iki blok aynı seçiciyi kullanıyor.
+         * SÖZLEŞME DARALTILDI (2026-08-12). 2026-08-06'da ziyaretçi tercihi
+         * de bu Blade dosyasına yazılmıştı, bu yüzden sayaç 1/2 idi. O blok
+         * `resources/css/app.css`'e taşındı (gerekçe: temaya bağlıydı ve
+         * vitrinde hiç basılmıyordu) — HTML'de artık YALNIZ sahibin düğmesi
+         * kalıyor.
          *
-         *   açık   → 1 kez (yalnız prefers-reduced-motion içinde)
-         *   kapalı → 2 kez (koşulsuz blok + medya sorgusu)
+         *   açık   → 0 kez (sahip kapatmadı, HTML'de kural yok)
+         *   kapalı → 1 kez (koşulsuz blok)
+         *
+         * Ziyaretçi tercihinin bekçisi ayrı testte:
+         * test_hareket_azaltma_temadan_bagimsiz
          */
         $acik = (string) $this->get('/')->assertOk()->getContent();
-        $this->assertSame(1, substr_count($acik, 'transition-duration: 0.01ms'));
+        $this->assertSame(0, substr_count($acik, 'transition-duration: 0.01ms'));
 
         Settings::setMany(['gorunum.smooth_animations' => '0']);
 
         $kapali = (string) $this->get('/')->assertOk()->getContent();
-        $this->assertSame(2, substr_count($kapali, 'transition-duration: 0.01ms'));
+        $this->assertSame(1, substr_count($kapali, 'transition-duration: 0.01ms'));
     }
 
-    public function test_ziyaretcinin_hareket_tercihi_ayardan_bagimsiz_uygulanir(): void
+    public function test_hareket_azaltma_temadan_bagimsiz(): void
     {
         /*
-         * ERİŞİLEBİLİRLİK AÇIĞIYDI: `prefers-reduced-motion` sıfırlaması yalnız
-         * sahip "Yumuşak geçişler"i KAPATTIĞINDA basılıyordu. Varsayılan AÇIK
-         * olduğu için canlıda hiç çalışmıyordu — yani işletim sisteminde
-         * "hareketi azalt" açık olan ziyaretçi (vestibüler rahatsızlığı olan
-         * biri) sitede yine de tüm geçişleri alıyordu.
+         * İKİ KEZ AÇILAN AYNI AÇIK — ikincisini bu test kapatıyor.
          *
-         * Sahibin düğmesi "herkese kapat", medya sorgusu "isteyene kapat".
-         * İkisi ayrı sorulardır; biri diğerinin yerini tutmaz.
+         * 1. tur (2026-08-06): `prefers-reduced-motion` sıfırlaması yalnız
+         *    sahip "Yumuşak geçişler"i KAPATTIĞINDA basılıyordu; varsayılan
+         *    açık olduğu için canlıda hiç çalışmıyordu.
+         * 2. tur (2026-08-12): düzeltme `tasarim-theme.blade.php`'ye konmuştu,
+         *    ama o dosyanın TAMAMI unless(vitrinMi()) ile sarılı ve canlı tema
+         *    vitrin. Canlıdan ölçüldü: ne HTML'de ne de 210 KB'lık derlenmiş
+         *    CSS'te `0.01ms` geçiyordu.
+         *
+         * ESKİ BEKÇİ BUNU GÖREMEZDİ: `assertSee('@media (prefers-reduced-motion:
+         * reduce)')` diyordu, ama o dize `vitrin-theme.blade.php` içinde de
+         * geçiyor — asıl sıfırlama hiç basılmasa bile yeşil verirdi.
+         *
+         * Yeni bekçi dizeye değil YAPIYA bakıyor: kural, her iki iskeletin de
+         * yüklediği dosyada mı? Bu soruya "evet" ise temaya bağlanması
+         * imkânsız.
          */
-        $this->get('/')->assertOk()->assertSee('@media (prefers-reduced-motion: reduce)', false);
+        $css = File::get(resource_path('css/app.css'));
+
+        $this->assertMatchesRegularExpression(
+            '/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{\s*\*,\s*\*::before,\s*\*::after\s*\{[^}]*transition-duration:\s*0\.01ms\s*!important/s',
+            $css,
+            'Küresel hareket-azaltma sıfırlaması app.css\'te yok. '.
+            'Tema dosyasına taşınmış olabilir — orada temaya bağlanır ve vitrinde ölür.'
+        );
+
+        // Kuralın ERİŞİMİ: her iki iskelet de bu dosyayı yüklüyor mu?
+        foreach (TemaJetonlari::ISKELETLER as $tema => $yol) {
+            $this->assertStringContainsString(
+                'resources/css/app.css',
+                File::get(base_path($yol)),
+                "'{$tema}' iskeleti app.css yüklemiyor — hareket-azaltma kuralı o temada geçersiz kalır."
+            );
+        }
     }
 
     public function test_obsidian_mode_locks_dark_and_hides_theme_toggle(): void
