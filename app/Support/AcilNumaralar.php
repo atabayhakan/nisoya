@@ -34,4 +34,17 @@ class AcilNumaralar
     {
         return config('acil.konsolosluk_cagri_merkezi');
     }
+
+    /**
+     * Ülke → yerel konsolosluk erişim numarası haritası.
+     *
+     * Ülke değiştikçe arayüz bunu okuduğu için tek seferde JSON olarak
+     * geçiyoruz (bir avuç kayıt, boyutu ihmal edilebilir).
+     *
+     * @return array<string, array{numara: string, gosterim: string, tarife: string}>
+     */
+    public static function konsoloslukYerelHaritasi(): array
+    {
+        return config('acil.konsolosluk_yerel', []);
+    }
 }

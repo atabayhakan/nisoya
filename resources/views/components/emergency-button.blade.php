@@ -33,6 +33,7 @@
         ulke: @js($defaultCountry),
         numaralar: @js(\App\Support\AcilNumaralar::harita()),
         rehberliUlkeler: @js(collect($countries)->filter(fn ($u) => !empty($u->rehber_var))->pluck('code')->values()),
+        konsolosluklar: @js(\App\Support\AcilNumaralar::konsoloslukYerelHaritasi()),
         konumDurumu: '',
         konumKoordinat: '',
 
@@ -51,6 +52,12 @@
         /* Seçili ülkenin acil numarası; ülke seçili değilse null. */
         acilNumara() {
             return (this.ulke && this.numaralar[this.ulke]) ? this.numaralar[this.ulke] : null;
+        },
+
+        /* Seçili ülkenin yerel konsolosluk erişim numarası; yoksa null.
+           Yalnız bir avuç ülkede var, o yüzden her yerde null kontrolü şart. */
+        yerelKonsolosluk() {
+            return (this.ulke && this.konsolosluklar[this.ulke]) ? this.konsolosluklar[this.ulke] : null;
         },
 
         /* Genel numaradan FARKLI olan adlandırılmış hatlar. Aynı olanı
@@ -371,14 +378,58 @@
                     @php $ccm = \App\Support\AcilNumaralar::konsoloslukCagriMerkezi(); @endphp
                     <div class="border-b border-stone-100 px-5 py-4 dark:border-stone-800">
                         <p class="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Konsolosluk</p>
+
+                        {{-- YEREL ERİŞİM NUMARASI — varsa birincil.
+
+                             +90 312 dünyanın her yerinden çalışır ama yurt
+                             dışından ULUSLARARASI tarifeden ücretlendirilir; bu
+                             panelin kitlesi ise tam olarak yurt dışındakiler.
+                             Dışişleri aynı çağrı merkezi için bazı ülkelerde
+                             yerel numara yayımlıyor.
+
+                             Etiket `tarife`den geliyor ve muhafazakâr: kaynak
+                             açıkça "ücretsiz" demiyorsa "yerel tarife" yazar.
+                             Ücretsiz olmayan bir hatta ücretsiz demek, acil
+                             durumdaki birine verilmiş yanlış bir sözdür.
+
+                             Ülke adına EK GETİRİLMİYOR ("Almanya'dan" gibi):
+                             Türkçe çekim her ülke adında doğru çalışmıyor
+                             (bu depoda daha önce ölçülmüş bir tuzak). --}}
+                        <template x-if="yerelKonsolosluk()">
+                            <a :href="'tel:' + yerelKonsolosluk().numara"
+                               :aria-label="'Konsolosluk çağrı merkezini ara — ' + yerelKonsolosluk().gosterim"
+                               class="mt-2 flex items-center gap-3 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 transition hover:bg-emerald-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50">
+                                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                                    <x-ay-yildiz class="h-5 w-5" />
+                                </span>
+                                <span class="min-w-0">
+                                    <span class="block font-bold text-stone-800 dark:text-stone-100" x-text="yerelKonsolosluk().gosterim"></span>
+                                    <span class="block text-xs text-stone-600 dark:text-stone-400"
+                                          x-text="yerelKonsolosluk().tarife === 'ucretsiz'
+                                              ? 'Bulunduğun ülkeden ücretsiz — 7/24'
+                                              : 'Bulunduğun ülkeden yerel tarife — 7/24'"></span>
+                                </span>
+                            </a>
+                        </template>
+
+                        {{-- ULUSLARARASI HAT — yerel numara varken de duruyor,
+                             ama ikincil. Yerel hat çalışmazsa çıkış yolu bu;
+                             kaldırmak tek noktalı bağımlılık yaratırdı. --}}
                         <a href="tel:{{ $ccm['numara'] }}"
-                           class="mt-2 flex items-center gap-3 rounded-xl border border-stone-200 px-4 py-3 transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-stone-700 dark:hover:border-emerald-700 dark:hover:bg-emerald-950/20">
-                            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-                                <x-ay-yildiz class="h-5 w-5" />
-                            </span>
+                           :class="yerelKonsolosluk()
+                               ? 'mt-2 flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition hover:bg-stone-50 dark:hover:bg-stone-800'
+                               : 'mt-2 flex items-center gap-3 rounded-xl border border-stone-400 px-4 py-3 transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-stone-500 dark:hover:border-emerald-700 dark:hover:bg-emerald-950/20'">
+                            <template x-if="! yerelKonsolosluk()">
+                                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                    <x-ay-yildiz class="h-5 w-5" />
+                                </span>
+                            </template>
                             <span class="min-w-0">
                                 <span class="block font-bold text-stone-800 dark:text-stone-100">{{ $ccm['gosterim'] }}</span>
-                                <span class="block text-xs text-stone-600 dark:text-stone-400">{{ $ccm['aciklama'] }}</span>
+                                <span class="block text-xs text-stone-600 dark:text-stone-400"
+                                      x-text="yerelKonsolosluk()
+                                          ? 'Aynı merkez, dünyanın her yerinden (uluslararası tarife)'
+                                          : @js($ccm['aciklama'])"></span>
                             </span>
                         </a>
                         {{-- Rehber bağlantısı YALNIZ rehberi olan ülkelerde:

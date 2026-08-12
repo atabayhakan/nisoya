@@ -54,15 +54,73 @@ return [
 
     /*
      * T.C. Dışişleri Bakanlığı Konsolosluk Çağrı Merkezi — 7/24, dünyanın
-     * her yerinden aranabilir, 6 dilde hizmet veriyor. Yurt dışındaki bir
-     * Türk için bu, acil durumda en değerli tek numaradır: pasaport kaybı,
-     * gözaltı, hastane, vefat gibi konsolosluk gerektiren hâllerde.
-     * Kaynak: mfa.gov.tr — Konsolosluk Çağrı Merkezi sayfası.
+     * her yerinden aranabilir, Türkçe dahil 8 dilde hizmet veriyor
+     * (İngilizce, Almanca, Fransızca, İtalyanca, Flamanca, Rusça, Arapça).
+     * Yurt dışındaki bir Türk için bu, acil durumda en değerli tek numaradır:
+     * pasaport kaybı, gözaltı, hastane, vefat gibi konsolosluk gerektiren
+     * hâllerde.
+     *
+     * "6 dil" YAZIYORDU, YANLIŞTI (2026-08-12 denetimi). O rakam Bükreş
+     * bilgi notu gibi BAYAT temsilcilik sayfalarındaki "Türkçe + beş yabancı
+     * dil" ifadesinden geliyor. Bakanlığın kendi KÇM sayfası sekiz diyor.
+     *
+     * BİRİNCİL KAYNAK: mfa.gov.tr/konsolosluk-cagri-merkezi-2019.tr.mfa
      */
     'konsolosluk_cagri_merkezi' => [
         'numara' => '+903122922929',
         'gosterim' => '+90 312 292 29 29',
         'aciklama' => 'T.C. Dışişleri Konsolosluk Çağrı Merkezi — 7/24, dünyanın her yerinden',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ülke bazlı konsolosluk erişim numaraları
+    |--------------------------------------------------------------------------
+    |
+    | Yukarıdaki +90 312 numarası dünyanın her yerinden çalışır AMA yurt
+    | dışından ULUSLARARASI TARİFEDEN ücretlendirilir — ve bu panelin kitlesi
+    | tam olarak yurt dışındaki insanlar. Dışişleri aynı çağrı merkezi için
+    | bazı ülkelerde yerel erişim numarası yayımlıyor; oradan arayan kişi
+    | yurt içi çağrı yapmış oluyor.
+    |
+    | `tarife` ALANINDA MUHAFAZAKÂR OL. Kaynak açıkça "ücretsiz/toll-free"
+    | demiyorsa 'yerel' yaz. Ücretsiz olmayan bir hatta "ücretsiz" demek,
+    | acil durumdaki birine verilen yanlış bir sözdür; tersi (ucuz olanı
+    | pahalı sanmak) yalnızca fırsatı kaçırtır. İkisi aynı ağırlıkta değil.
+    |
+    | BİRİNCİL KAYNAK — BURADAN TAZELE:
+    |   mfa.gov.tr/konsolosluk-cagri-merkezi-2019.tr.mfa  (Türkçe, en derli toplu)
+    |   konsolosluk.gov.tr duyurusu
+    | Ayrıca her numara ilgili temsilciliğin kendi duyurusuyla da doğrulandı
+    | (Viyana, Salzburg, Londra, Rotterdam, Paris, Lyon, Berlin, Los Angeles).
+    |
+    | `contact-us.en.mfa` sayfasını KAYNAK ALMA: numaraları en dağınık biçimde
+    | yazan sayfa orası (`44203-6088090`, `+33-180-146335`). İlk yazışta oradan
+    | okundu ve "bu numaralar Türkçe sayfada yok" diye yanlış bir not düşüldü —
+    | doğrusu Türkçe İLETİŞİM sayfasında yoklar, KÇM sayfasında var.
+    |
+    | ALMANYA TUZAĞI: Köln ve Essen Başkonsolosluğu sayfaları hâlâ ESKİ numarayı
+    | (030 3080 7090) gösteriyor. Berlin Büyükelçiliği 09.07.2021 duyurusunda o
+    | numaranın teknik arıza nedeniyle kullanılamadığını bildirip yerine
+    | 030 568373099'u vermiş. Aşağıdaki numara halefidir; "eski sayfalarda başka
+    | yazıyor" diye geri çevirme.
+    |
+    | `tarife`: 'ucretsiz' | 'yerel'
+    |
+    */
+    'konsolosluk_yerel' => [
+        // 888 = Kuzey Amerika ücretsiz öneki.
+        'US' => ['numara' => '+18885667656', 'gosterim' => '+1 888 566 76 56', 'tarife' => 'ucretsiz'],
+        'CA' => ['numara' => '+18885667656', 'gosterim' => '+1 888 566 76 56', 'tarife' => 'ucretsiz'],
+
+        // 0800 = Avusturya ücretsiz aralığı.
+        'AT' => ['numara' => '+43800007090', 'gosterim' => '+43 800 00 70 90', 'tarife' => 'ucretsiz'],
+
+        // Aşağıdakiler coğrafi/şehir numaraları: yurt içi tarife, ücretsiz DEĞİL.
+        'DE' => ['numara' => '+4930568373099', 'gosterim' => '+49 30 56 83 73 099', 'tarife' => 'yerel'],
+        'GB' => ['numara' => '+442036088090', 'gosterim' => '+44 20 3608 8090', 'tarife' => 'yerel'],
+        'NL' => ['numara' => '+31107660007', 'gosterim' => '+31 10 766 0007', 'tarife' => 'yerel'],
+        'FR' => ['numara' => '+33180146335', 'gosterim' => '+33 1 80 14 63 35', 'tarife' => 'yerel'],
     ],
 
     /*

@@ -353,6 +353,81 @@ class AcilMenusuTest extends TestCase
         }
     }
 
+    public function test_yerel_konsolosluk_numaralari_bicimli_ve_gecerli_ulkede(): void
+    {
+        /*
+         * +90 312 dünyanın her yerinden çalışır ama yurt dışından ULUSLARARASI
+         * tarifeden ücretlendirilir — panelin kitlesi ise tam olarak yurt
+         * dışındakiler. Yerel erişim numaraları bu yüzden var.
+         */
+        $harita = AcilNumaralar::konsoloslukYerelHaritasi();
+        $this->assertNotEmpty($harita, 'Yerel konsolosluk haritası boş.');
+
+        foreach ($harita as $kod => $kayit) {
+            // `tel:` bağlantısına gireceği için E.164: yalnız + ve rakam.
+            $this->assertMatchesRegularExpression('/^\+[1-9]\d{7,14}$/', $kayit['numara'],
+                "{$kod}: numara E.164 biçiminde değil ({$kayit['numara']}) — tel: bağlantısı bozulur.");
+
+            $this->assertArrayHasKey('gosterim', $kayit, "{$kod}: gösterim biçimi yok.");
+            $this->assertContains($kayit['tarife'], ['ucretsiz', 'yerel'],
+                "{$kod}: tarife 'ucretsiz' ya da 'yerel' olmalı.");
+
+            // Bu ülke acil numara listesinde de olmalı; yoksa panelde ülke
+            // seçilebilir ama konsolosluk satırı hiç görünmez.
+            $this->assertArrayHasKey($kod, config('acil.ulkeler'),
+                "{$kod}: konsolosluk numarası var ama ülke acil listesinde yok.");
+        }
+    }
+
+    public function test_ucretsiz_iddiasi_yalnizca_ucretsiz_oneklerde(): void
+    {
+        /*
+         * BU TESTİN VAR OLMA SEBEBİ BİR SÖZ.
+         *
+         * Bakanlığın sayfası bu numaraların çoğunu "ücretsiz" diye
+         * ETİKETLEMİYOR; yalnız ABD/Kanada (888) ve Avusturya (0800) ücretsiz
+         * aralıktan. Almanya (+49 30 …), İngiltere (+44 20 …), Hollanda
+         * (+31 10 …), Fransa (+33 1 80 …) coğrafi/şehir numarası — yurt içi
+         * tarife, ücretsiz DEĞİL.
+         *
+         * Ücretsiz olmayan bir hatta "ücretsiz" demek, acil durumdaki birine
+         * verilmiş yanlış bir sözdür. Tersi (ucuz olanı pahalı sanmak) yalnız
+         * fırsat kaçırtır. İki hata aynı ağırlıkta değil, o yüzden kural tek
+         * yönlü: `ucretsiz` yalnız bilinen ücretsiz öneklerde kullanılabilir.
+         */
+        $ucretsizOnekler = ['+1800', '+1833', '+1844', '+1855', '+1866', '+1877', '+1888', '+43800', '+44800', '+49800', '+31800', '+33800'];
+
+        foreach (AcilNumaralar::konsoloslukYerelHaritasi() as $kod => $kayit) {
+            if ($kayit['tarife'] !== 'ucretsiz') {
+                continue;
+            }
+
+            $eslesti = false;
+            foreach ($ucretsizOnekler as $onek) {
+                if (str_starts_with($kayit['numara'], $onek)) {
+                    $eslesti = true;
+                    break;
+                }
+            }
+
+            $this->assertTrue($eslesti,
+                "{$kod}: 'ucretsiz' denmiş ama numara ({$kayit['numara']}) bilinen bir ücretsiz "
+                ."aralıkta değil. Kaynak açıkça ücretsiz demiyorsa 'yerel' yaz.");
+        }
+    }
+
+    public function test_yerel_konsolosluk_haritasi_sayfaya_gecer(): void
+    {
+        // Alpine ülke değiştikçe bunu okur.
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $tirnak = '\u'.'0022';
+
+        $this->assertStringContainsString('konsolosluklar', $html);
+        $this->assertStringContainsString($tirnak.'+4930568373099'.$tirnak, $html,
+            'Almanya yerel konsolosluk numarası sayfaya basılmamış.');
+    }
+
     public function test_platform_sinirini_soyleyen_uyari_duruyor(): void
     {
         /*
