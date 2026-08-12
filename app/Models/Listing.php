@@ -26,6 +26,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *                                      metotlarına (suffix() vb.) erişimi hata sayıyor.
  * @property Carbon|null $featured_until
  * @property Carbon|null $unpublished_at
+ * @property int $pending_images
+ * @property Carbon|null $images_queued_at aynı sebep: casts() datetime diyor
+ *                                         ama docblock olmadan analiz string
+ *                                         sanıyor ve lessThan() çağrısını hata
+ *                                         sayıyor.
+ * @property bool $images_failed
  * @property-read User|null $user
  */
 class Listing extends Model
@@ -73,7 +79,39 @@ class Listing extends Model
             'is_featured' => 'boolean',
             'featured_until' => 'datetime',
             'unpublished_at' => 'datetime',
+            'pending_images' => 'integer',
+            'images_queued_at' => 'datetime',
+            'images_failed' => 'boolean',
         ];
+    }
+
+    /**
+     * Görsellerin işlenme durumu — arayüzün okuduğu TEK kaynak.
+     *
+     * `ListingImage` kaydı yalnızca kuyruk işinde doğduğu için, yükleme ile
+     * görselin belirmesi arasında bir boşluk var. O boşlukta BOŞ KUTU ile
+     * ARIZA aynı görünüyordu; bu metot ikisini ayırır.
+     *
+     * `bayat`: worker sert öldürülürse sayaç sıfırlanmaz ve ekran sonsuza dek
+     * "işleniyor" derdi. 15 dakikadan eski bir kuyruk kaydı, iş bir daha
+     * koşmayacak demektir — kullanıcıya doğrusu söylenir.
+     *
+     * @return 'hazir'|'isleniyor'|'hata'
+     */
+    public function gorselDurumu(): string
+    {
+        if ($this->images_failed) {
+            return 'hata';
+        }
+
+        if (($this->pending_images ?? 0) < 1) {
+            return 'hazir';
+        }
+
+        $bayat = $this->images_queued_at !== null
+            && $this->images_queued_at->lessThan(now()->subMinutes(15));
+
+        return $bayat ? 'hata' : 'isleniyor';
     }
 
     protected static function booted(): void

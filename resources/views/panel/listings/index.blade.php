@@ -50,6 +50,18 @@
                             <img src="{{ $listing->coverImage->url('thumb') }}" alt=""
                                  style="object-position: {{ $listing->coverImage->objectPosition() }}"
                                  class="h-full w-full object-cover">
+                        @elseif ($listing->gorselDurumu() === 'isleniyor')
+                            {{-- Kapak henüz yok ama YOLDA. Bu ayrım olmadan
+                                 "boş kutu" ile "arıza" aynı görünüyordu. --}}
+                            <div class="flex h-full w-full items-center justify-center bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                                 title="Görsel işleniyor">
+                                <x-heroicon-o-arrow-path class="h-6 w-6 motion-safe:animate-spin" />
+                            </div>
+                        @elseif ($listing->gorselDurumu() === 'hata')
+                            <div class="flex h-full w-full items-center justify-center bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+                                 title="Görsel yüklenemedi">
+                                <x-heroicon-o-exclamation-triangle class="h-6 w-6" />
+                            </div>
                         @else
                             @php($fallbackIcon = \App\Support\CategoryIcon::heroicon($listing->category?->parent?->icon ?? $listing->category?->icon))
                             <div class="flex h-full w-full items-center justify-center text-stone-300 dark:text-stone-400">
@@ -63,6 +75,18 @@
                             <span class="inline-flex items-center gap-0.5 text-xs text-stone-600 dark:text-stone-400"><x-heroicon-o-eye class="h-3.5 w-3.5" /> {{ $listing->views_count }}</span>
                         </div>
                         <a href="{{ route('listings.show', [$listing, $listing->slug]) }}" class="mt-1 block truncate font-semibold text-stone-800 hover:text-emerald-700 dark:text-stone-100 dark:hover:text-emerald-400">{{ $listing->title }}</a>
+
+                        {{-- Rozetin YANINDA değil ALTINDA, çünkü bu bir durum
+                             değil bir AÇIKLAMA: kullanıcı ne yapacağını bilsin. --}}
+                        @if ($listing->gorselDurumu() === 'isleniyor')
+                            <p class="mt-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                                Görsel işleniyor — birkaç dakika içinde görünecek.
+                            </p>
+                        @elseif ($listing->gorselDurumu() === 'hata')
+                            <p class="mt-0.5 text-xs font-medium text-red-600 dark:text-red-400">
+                                Görsel yüklenemedi. Düzenle'den tekrar deneyebilirsin.
+                            </p>
+                        @endif
                         <p class="whitespace-nowrap text-sm text-stone-500 dark:text-stone-400">
                             @if ($listing->price !== null){{ number_format((float) $listing->price, 2) }} {{ $listing->currency }} <span class="text-stone-600 dark:text-stone-400">{{ $listing->price_unit->suffix() }}</span>@else Görüşülür @endif
                         </p>
