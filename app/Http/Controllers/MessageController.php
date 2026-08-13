@@ -141,8 +141,18 @@ class MessageController extends Controller
         // Yazıyor bayrağını temizle (mesaj gönderildi).
         Cache::forget($this->typingKey($conversation, $request->user()->id));
 
+        /*
+         * GECİKMELİ: karşı taraf bu süre içinde okursa bildirim HİÇ gitmez
+         * (bkz. NewMessageNotification::via). Yazışma sırasında her satır
+         * için e-posta göndermek, insanı bildirimleri toptan kapatmaya iter.
+         */
         $conversation->other($request->user())?->notify(
-            new NewMessageNotification($this->notificationPreview($message), $request->user()->name, $conversation->id)
+            (new NewMessageNotification(
+                $this->notificationPreview($message),
+                $request->user()->name,
+                $conversation->id,
+                $message->id,
+            ))->delay(now()->addSeconds(NewMessageNotification::GECIKME_SANIYE))
         );
 
         if ($request->wantsJson()) {
@@ -305,7 +315,11 @@ class MessageController extends Controller
         ]);
         $conversation->update(['last_message_at' => now()]);
 
-        $listing->user->notify(new NewMessageNotification($message->body, $user->name, $conversation->id));
+        // Aynı gecikme+okundu kapısı (bkz. store).
+        $listing->user->notify(
+            (new NewMessageNotification($message->body, $user->name, $conversation->id, $message->id))
+                ->delay(now()->addSeconds(NewMessageNotification::GECIKME_SANIYE))
+        );
 
         return redirect()->route('panel.messages.show', $conversation)
             ->with('status', 'Mesajın gönderildi.');
@@ -360,7 +374,11 @@ class MessageController extends Controller
         ]);
         $conversation->update(['last_message_at' => now()]);
 
-        $user->notify(new NewMessageNotification($message->body, $gonderen->name, $conversation->id));
+        // Aynı gecikme+okundu kapısı (bkz. store).
+        $user->notify(
+            (new NewMessageNotification($message->body, $gonderen->name, $conversation->id, $message->id))
+                ->delay(now()->addSeconds(NewMessageNotification::GECIKME_SANIYE))
+        );
 
         return redirect()->route('panel.messages.show', $conversation)
             ->with('status', 'Mesajın gönderildi.');
