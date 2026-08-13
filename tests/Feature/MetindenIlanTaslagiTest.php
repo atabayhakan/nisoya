@@ -303,11 +303,124 @@ class MetindenIlanTaslagiTest extends TestCase
         $this->actingAs($user)
             ->post(route('panel.listings.analyze-text'), ['metin' => 'doktorum evde bakıyorum'])
             ->assertRedirect(route('panel.listings.create', ['tip' => 'hizmet']))
-            ->assertSessionHas('quick_prefill', true);
+            ->assertSessionHas('quick_prefill', 'metin');
 
         // Form `old()` okuduğu için öneri oturumda taşınmalı.
         $this->assertSame('Evde doktor muayenesi', session('_old_input.title'));
         $this->assertSame($kategori->id, session('_old_input.category_id'));
+    }
+
+    public function test_bant_kaynagi_dogru_soyluyor(): void
+    {
+        /*
+         * CANLIDA BULUNDU (2026-08-13). Bant metni "Fotoğrafından bir taslak
+         * hazırladık" diye SABİTTİ; fotoğraf tek yolken doğruydu. Metin ve ses
+         * kapıları sonradan eklendi ve YAZARAK taslak hazırlayan kullanıcıya
+         * fotoğraf çektiği söyleniyordu. Kullanıcıya yapmadığı şeyi söylemek,
+         * ekranın geri kalanına olan güveni de zayıflatır.
+         */
+        config(['ai.features.text_listing' => true]);
+        $uye = $this->uye();
+        $kategori = Category::where('slug', 'doktorlar')->firstOrFail();
+
+        $this->sahteAi([
+            'baslik' => 'Evde doktor muayenesi',
+            'kategori_slug' => $kategori->slug,
+            'aciklama' => 'Hafta sonu dahil evde muayene hizmeti veriyorum.',
+            'durum' => null,
+            'fiyat' => null,
+        ]);
+
+        $this->actingAs($uye)
+            ->post(route('panel.listings.analyze-text'), ['metin' => 'doktorum evde bakıyorum'])
+            ->assertSessionHas('quick_prefill', 'metin');
+
+        // Bandın METNİ de doğru olmalı — oturum değeri doğru olup ekranda
+        // yine fotoğraf yazsaydı hata sürerdi.
+        $this->actingAs($uye)
+            ->get(route('panel.listings.create', ['tip' => 'hizmet']))
+            ->assertOk()
+            ->assertSee('Yazdığın metinden bir taslak hazırladık', escape: false)
+            ->assertDontSee('Fotoğrafından bir taslak hazırladık', escape: false);
+    }
+
+    public function test_fiyat_birimi_metinden_cikariliyor(): void
+    {
+        /*
+         * CANLIDA BULUNDU. "saat ücreti 20 euro" yazan kullanıcıda fiyat 20
+         * doluyor ama birim varsayılan "Görüşülür"de kalıyordu: hem çelişkili
+         * (somut fiyat + "görüşülür"), hem de kullanıcının AÇIKÇA verdiği
+         * bilgi kayboluyordu.
+         */
+        config(['ai.features.text_listing' => true]);
+        $uye = $this->uye();
+        $kategori = Category::where('slug', 'doktorlar')->firstOrFail();
+
+        $this->sahteAi([
+            'baslik' => 'Evde muayene',
+            'kategori_slug' => $kategori->slug,
+            'aciklama' => 'Evde muayene hizmeti veriyorum.',
+            'durum' => null,
+            'fiyat' => 20,
+            'fiyat_birimi' => 'saatlik',
+        ]);
+
+        $this->actingAs($uye)
+            ->post(route('panel.listings.analyze-text'), ['metin' => 'saat ücreti 20 euro evde muayene']);
+
+        $this->assertSame('saatlik', session('_old_input.price_unit'));
+    }
+
+    public function test_birim_cikarilamazsa_formun_varsayilani_bozulmuyor(): void
+    {
+        /*
+         * `withInput` içine null KOYULMAZ. Form `old('price_unit', $varsayilan)`
+         * okuyor ve Laravel'in `old()` çağrısı `Arr::get` üzerinden çalışıyor:
+         * anahtar VARSA ve değeri null'sa varsayılana düşmez, null döner.
+         * Yani null flash'lamak birim seçimini boşaltırdı — üstelik alan
+         * `required`.
+         */
+        config(['ai.features.text_listing' => true]);
+        $uye = $this->uye();
+        $kategori = Category::where('slug', 'doktorlar')->firstOrFail();
+
+        $this->sahteAi([
+            'baslik' => 'Evde muayene',
+            'kategori_slug' => $kategori->slug,
+            'aciklama' => 'Evde muayene hizmeti veriyorum.',
+            'durum' => null,
+            'fiyat' => null,
+            'fiyat_birimi' => null,
+        ]);
+
+        $this->actingAs($uye)
+            ->post(route('panel.listings.analyze-text'), ['metin' => 'doktorum evde bakıyorum']);
+
+        $this->assertNull(session('_old_input.price_unit'),
+            'Birim anahtarı flash edilmiş — formun varsayılanı ezilir.');
+        $this->assertFalse(array_key_exists('price_unit', (array) session('_old_input')),
+            'Anahtar hiç bulunmamalı; null değer varsayılanı bozar.');
+    }
+
+    public function test_uydurulan_fiyat_birimi_atiliyor(): void
+    {
+        config(['ai.features.text_listing' => true]);
+        $uye = $this->uye();
+        $kategori = Category::where('slug', 'doktorlar')->firstOrFail();
+
+        $this->sahteAi([
+            'baslik' => 'Evde muayene',
+            'kategori_slug' => $kategori->slug,
+            'aciklama' => 'Evde muayene hizmeti veriyorum.',
+            'durum' => null,
+            'fiyat' => 20,
+            'fiyat_birimi' => 'boyle-bir-birim-yok',
+        ]);
+
+        $this->actingAs($uye)
+            ->post(route('panel.listings.analyze-text'), ['metin' => 'saat ücreti 20 euro']);
+
+        $this->assertFalse(array_key_exists('price_unit', (array) session('_old_input')));
     }
 
     public function test_ai_cevap_veremezse_kullaniciya_soyleniyor(): void

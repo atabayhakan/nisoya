@@ -43,6 +43,14 @@ class ListingTextService
     /** Prompt'a giren metin bu uzunlukta kesilir (maliyet + kötüye kullanım). */
     private const MAX_CHARS = 4000;
 
+    /**
+     * Modelin seçebileceği fiyat birimleri — `PriceUnit` enum'undan
+     * TÜRETİLMEZ, bilerek daraltılmış bir alt küme: burada yalnız serbest
+     * metinden gerçekten anlaşılabilenler var. "Görüşülür" listede YOK,
+     * çünkü o zaten formun varsayılanı ve fiyat varken çelişki yaratıyor.
+     */
+    private const BIRIMLER = ['saatlik', 'gunluk', 'aylik', 'haftalik', 'is_basina', 'adet', 'paket', 'kilogram', 'toplam'];
+
     public function __construct(private readonly AiProvider $ai) {}
 
     public function isEnabled(): bool
@@ -137,6 +145,12 @@ class ListingTextService
           (ör. "Sıfır", "Az kullanılmış", "İyi"); hizmet ilanıysa ya da emin
           değilsen null.
         - fiyat: metinde AÇIKÇA yazan fiyat (sayı). Yoksa null.
+        - fiyat_birimi: fiyatın NEYE göre olduğu. Yalnız metinden açıkça
+          anlaşılıyorsa doldur, yoksa null. Örnekler: "saat ücreti 20 euro"
+          → saatlik · "günlük 80" → gunluk · "aylık kira 900" → aylik ·
+          "iş başına 150" → is_basina · "tanesi 50" → adet ·
+          "kilosu 12" → kilogram · tek seferlik satış fiyatı → toplam.
+          Fiyat null ise bu da null olsun.
 
         KESİN KURALLAR — bunlara uymazsan çıktı kullanılamaz:
 
@@ -174,8 +188,19 @@ class ListingTextService
                 'aciklama' => ['type' => 'string'],
                 'durum' => ['type' => ['string', 'null']],
                 'fiyat' => ['type' => ['number', 'null']],
+                /*
+                 * FİYAT BİRİMİ — canlıda denenince eksik olduğu görüldü.
+                 * "saat ücreti 20 euro" yazan kullanıcıda fiyat 20 doluyor
+                 * ama birim varsayılan "Görüşülür"de kalıyordu: hem çelişkili
+                 * (somut fiyat + "görüşülür"), hem de kullanıcının AÇIKÇA
+                 * verdiği bilgi kayboluyordu.
+                 */
+                'fiyat_birimi' => [
+                    'type' => ['string', 'null'],
+                    'enum' => [...self::BIRIMLER, null],
+                ],
             ],
-            'required' => ['baslik', 'kategori_slug', 'aciklama', 'durum', 'fiyat'],
+            'required' => ['baslik', 'kategori_slug', 'aciklama', 'durum', 'fiyat', 'fiyat_birimi'],
             'additionalProperties' => false,
         ];
     }
@@ -212,6 +237,15 @@ class ListingTextService
                 ? (float) $data['fiyat']
                 : null,
             'condition' => filled($data['durum'] ?? null) ? trim((string) $data['durum']) : null,
+            /*
+             * Birim yalnız FİYAT VARSA anlamlı: fiyatsız bir ilanda "saatlik"
+             * demek bir şey söylemez, üstelik form zaten "Görüşülür"e düşer.
+             * Listede olmayan bir değer gelirse atılır.
+             */
+            'price_unit' => isset($data['fiyat']) && is_numeric($data['fiyat'])
+                && in_array($data['fiyat_birimi'] ?? null, self::BIRIMLER, true)
+                    ? (string) $data['fiyat_birimi']
+                    : null,
         ];
     }
 }
