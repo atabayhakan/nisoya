@@ -161,6 +161,20 @@ class IlanCevirmeni
         $aciklama = trim((string) ($sonuc['description'] ?? ''));
 
         if ($baslik === '' || $aciklama === '') {
+            /*
+             * BU LOG SATIRI CANLIDA EKSİKTİ VE HATAYI GÖRÜNMEZ YAPIYORDU.
+             *
+             * Model kullanılamaz cevap döndüğünde sessizce null dönülüyordu:
+             * kullanıcı "Çeviri yapılamadı" görüyordu, günlükte hiçbir iz
+             * yoktu. Özellik haftalarca ölü kalabilirdi. Sağlayıcının kendi
+             * hata metni de yazılıyor — teşhisi mümkün kılan tek şey o.
+             */
+            Log::warning('İlan çevirisi kullanılamaz yanıt döndü', [
+                'listing_id' => $listing->id,
+                'saglayici' => $this->ai->name(),
+                'saglayici_hatasi' => $this->ai->lastError(),
+            ]);
+
             return null;
         }
 
