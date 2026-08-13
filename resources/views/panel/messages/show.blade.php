@@ -36,7 +36,21 @@
                     </a>
                 @endif
             </div>
-            <span class="flex shrink-0 items-center gap-1 text-xs text-stone-600 dark:text-stone-400"><span class="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span> canlı</span>
+            <span class="hidden shrink-0 items-center gap-1 text-xs text-stone-600 sm:flex dark:text-stone-400"><span class="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span> canlı</span>
+
+            {{-- Mesaj sesi aç/kapat. Tercih tarayıcıda saklanıyor (sunucuya
+                 taşımak, hesap ayarı gibi ağır bir şey yapmak olurdu; bu
+                 cihaza özgü bir tercih — işteki bilgisayarda sessiz, evde
+                 açık isteyebilir).
+
+                 Simge dolu/çizgili olarak DEĞİŞİYOR: yalnız renk değiştiren
+                 bir düğme, durumu renk körü kullanıcıya söylemez. --}}
+            <button type="button" id="ses-toggle"
+                    class="grid h-10 w-10 shrink-0 place-items-center rounded-full text-stone-500 transition hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
+                    aria-label="Mesaj sesini kapat" aria-pressed="true">
+                <x-heroicon-o-speaker-wave class="ses-acik h-5 w-5" />
+                <x-heroicon-o-speaker-x-mark class="ses-kapali hidden h-5 w-5" />
+            </button>
         </div>
 
         {{-- Durum mesajı (anlaşma aksiyonları buraya döner) --}}
@@ -204,6 +218,69 @@
                 return a;
             }
 
+            /* ── YENİ MESAJ SESİ ────────────────────────────────────────────
+               Ses DOSYA DEĞİL, anlık üretiliyor (Web Audio). Sebebi: harici
+               dosya CSP'ye takılır, depoya ikili dosya ekler ve indirilene
+               kadar ilk mesajda çalmaz. İki kısa yumuşak nota yeter.
+
+               ÜÇ KURAL:
+               1. Kendi mesajında ÇALMAZ — her yazdığında kendine ses duymak
+                  can sıkar (aşağıda `! m.mine`).
+               2. Kapatılabilir ve tercih HATIRLANIR. Kapatılamayan ses,
+                  sesin kendisinden kötüdür.
+               3. Tarayıcı izni olmadan çalmaz ve bu SESSİZCE geçilir.
+                  Chrome/Safari, kullanıcı sayfayla etkileşmeden ses çalmayı
+                  engelliyor; sohbette yazı yazınca izin doğuyor. Engellenirse
+                  hata fırlatmıyoruz — sohbet sesten önemli. */
+            const SES_ANAHTARI = 'nisoya_sohbet_sesi';
+            let sesAcik = localStorage.getItem(SES_ANAHTARI) !== '0';
+            let sesBaglami = null;
+
+            function sesCal() {
+                if (! sesAcik) return;
+                try {
+                    const AC = window.AudioContext || window.webkitAudioContext;
+                    if (! AC) return;
+                    sesBaglami = sesBaglami || new AC();
+                    if (sesBaglami.state === 'suspended') sesBaglami.resume();
+
+                    const t = sesBaglami.currentTime;
+                    [[880, 0], [1174, 0.09]].forEach(([hz, gecikme]) => {
+                        const osc = sesBaglami.createOscillator();
+                        const kazanc = sesBaglami.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.value = hz;
+                        // Yumuşak giriş/çıkış: sert başlayan ton "tık" gibi duyulur.
+                        kazanc.gain.setValueAtTime(0, t + gecikme);
+                        kazanc.gain.linearRampToValueAtTime(0.06, t + gecikme + 0.015);
+                        kazanc.gain.exponentialRampToValueAtTime(0.0001, t + gecikme + 0.16);
+                        osc.connect(kazanc).connect(sesBaglami.destination);
+                        osc.start(t + gecikme);
+                        osc.stop(t + gecikme + 0.18);
+                    });
+                } catch (e) { /* ses çalınamadı — sohbet etkilenmez */ }
+            }
+
+            const sesDugmesi = document.getElementById('ses-toggle');
+            function sesSimgesiniGuncelle() {
+                if (! sesDugmesi) return;
+                sesDugmesi.querySelector('.ses-acik').classList.toggle('hidden', ! sesAcik);
+                sesDugmesi.querySelector('.ses-kapali').classList.toggle('hidden', sesAcik);
+                sesDugmesi.setAttribute('aria-label', sesAcik ? 'Mesaj sesini kapat' : 'Mesaj sesini aç');
+                sesDugmesi.setAttribute('aria-pressed', sesAcik ? 'true' : 'false');
+            }
+            if (sesDugmesi) {
+                sesSimgesiniGuncelle();
+                sesDugmesi.addEventListener('click', () => {
+                    sesAcik = ! sesAcik;
+                    localStorage.setItem(SES_ANAHTARI, sesAcik ? '1' : '0');
+                    sesSimgesiniGuncelle();
+                    // Açarken bir kez çal: kullanıcı neyi açtığını duysun
+                    // (ayrıca bu dokunuş tarayıcı izni için de yeterli).
+                    if (sesAcik) sesCal();
+                });
+            }
+
             function appendMessage(m) {
                 removeEmpty();
                 const wrap = document.createElement('div');
@@ -220,6 +297,10 @@
                 if (m.uyari) bubble.append(dikkatNode(m.uyari.metin));
                 wrap.append(bubble);
                 thread.append(wrap);
+
+                // Ses YALNIZ karşı taraftan gelen mesajda. Geri alınan mesaj
+                // yukarıda erken dönüyor, yani "geri al" da ses çıkarmıyor.
+                if (! m.mine) sesCal();
             }
 
             /* Dikkat notu. METNİ SUNUCU GÖNDERİYOR (App\Support\SohbetUyarisi);
