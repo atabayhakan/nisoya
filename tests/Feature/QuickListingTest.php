@@ -99,7 +99,7 @@ class QuickListingTest extends TestCase
             ]);
 
         $response->assertRedirect(route('panel.listings.create', ['tip' => 'urun']));
-        $response->assertSessionHas('quick_prefill', true);
+        $response->assertSessionHas('quick_prefill', 'fotograf');
         $response->assertSessionHasInput('title', 'İkinci el ahşap yemek masası');
         $response->assertSessionHasInput('category_id', $category->id);
         $response->assertSessionHasInput('price', 120.0);
@@ -171,7 +171,7 @@ class QuickListingTest extends TestCase
             ->post('/panel/ilan/analiz', ['photo' => UploadedFile::fake()->image('koltuk.jpg')]);
 
         $response->assertRedirect(route('panel.listings.create', ['tip' => 'urun']));
-        $response->assertSessionHas('quick_prefill', true);
+        $response->assertSessionHas('quick_prefill', 'fotograf');
         $response->assertSessionHasInput('title', 'Vintage deri koltuk');
         $response->assertSessionHasInput('category_id', $category->id);
 

@@ -61,7 +61,7 @@ class QuickListingController extends Controller
             return $target->with('status', 'Metinden ilan çıkaramadık — bilgileri elle doldurabilirsin.');
         }
 
-        return $this->formaTasi($suggestion, $suggestion['type']);
+        return $this->formaTasi($suggestion, $suggestion['type'], 'metin');
     }
 
     /** Fotoğrafı analiz et, önerileri forma taşı. */
@@ -83,7 +83,7 @@ class QuickListingController extends Controller
             return $target->with('status', 'Fotoğraf otomatik okunamadı — bilgileri elle doldurabilirsin.');
         }
 
-        return $this->formaTasi($suggestion, 'urun');
+        return $this->formaTasi($suggestion, 'urun', 'fotograf');
     }
 
     /**
@@ -96,8 +96,12 @@ class QuickListingController extends Controller
      * durmalı.
      *
      * @param  array{title: string, category_id: ?int, description: string, price: ?float, condition: ?string}  $suggestion
+     * @param  string  $kaynak  'fotograf' | 'metin' — banda hangi yoldan
+     *                          gelindiğini söyler. Sabit "Fotoğrafından…"
+     *                          metni, metin kapısı eklendikten sonra
+     *                          kullanıcıya YAPMADIĞI şeyi söylüyordu.
      */
-    private function formaTasi(array $suggestion, string $tip): RedirectResponse
+    private function formaTasi(array $suggestion, string $tip, string $kaynak): RedirectResponse
     {
         // Durum bilgisini açıklamanın sonuna küçük bir not olarak ekle.
         $description = $suggestion['description'];
@@ -105,16 +109,33 @@ class QuickListingController extends Controller
             $description = trim($description."\n\nDurum: ".$suggestion['condition']);
         }
 
+        $girdi = [
+            'type' => $tip,
+            'title' => Str::limit($suggestion['title'], 250, ''),
+            'category_id' => $suggestion['category_id'],
+            'description' => Str::limit($description, 4900, ''),
+            'price' => $suggestion['price'],
+        ];
+
+        /*
+         * `price_unit` YALNIZ DOLUYSA eklenir — null'ı da flash'lamak
+         * varsayılanı BOZAR.
+         *
+         * Form `old('price_unit', $varsayilan)` okuyor. Laravel'in `old()`
+         * çağrısı `Arr::get` üzerinden çalışıyor: anahtar VARSA ve değeri
+         * null'sa varsayılana düşmez, null döner. Yani null flash'lamak
+         * birim seçimini boşaltırdı — üstelik alan `required`.
+         *
+         * Fotoğraf yolunda bu alan hiç üretilmiyor; `??` onun için.
+         */
+        if (filled($suggestion['price_unit'] ?? null)) {
+            $girdi['price_unit'] = $suggestion['price_unit'];
+        }
+
         // old() üzerinden forma taşı — form-fields partial'ı zaten old() okur.
         return redirect()
             ->route('panel.listings.create', ['tip' => $tip])
-            ->withInput([
-                'type' => $tip,
-                'title' => Str::limit($suggestion['title'], 250, ''),
-                'category_id' => $suggestion['category_id'],
-                'description' => Str::limit($description, 4900, ''),
-                'price' => $suggestion['price'],
-            ])
-            ->with('quick_prefill', true);
+            ->withInput($girdi)
+            ->with('quick_prefill', $kaynak);
     }
 }
