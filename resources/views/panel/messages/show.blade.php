@@ -72,10 +72,23 @@
         </div>
 
         {{-- Gönder --}}
+        {{-- YAZMA ALANI MOBİLDE EKRANA SABİT.
+
+             Ölçüldü (360x640): sekme çubuğunu gizleyip her şeyi daralttıktan
+             SONRA bile formun altı 682px'e düşüyordu — yani 42px ekranın
+             altında kalıyordu ve mesaj yazmak için kaydırmak gerekiyordu.
+
+             Sabit bir yükseklik ayarlayıp (ör. mesaj kutusunu 44dvh yapmak)
+             düzeltmek SİHİRLİ SAYIYA bağlı olurdu: anlaşma paneli aktif bir
+             anlaşmada uzuyor, başlıklar sarabiliyor. `sticky` bunların hiçbirine
+             bağlı değil — yukarısı ne kadar uzarsa uzasın yazma alanı yerinde
+             kalır. Mesajlaşma uygulamalarının yaptığı da bu.
+
+             Yalnız mobilde: masaüstünde zaten sığıyor ve sabitlemek gereksiz. --}}
         <form id="send-form"
               data-url="{{ route('panel.messages.store', $conversation) }}"
               data-typing-url="{{ route('panel.messages.typing', $conversation) }}"
-              class="mt-3 flex items-end gap-2">
+              class="sticky bottom-0 z-20 -mx-4 mt-3 flex items-end gap-1.5 border-t border-stone-200 bg-stone-50 px-4 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 sm:static sm:mx-0 sm:gap-2 sm:border-0 sm:bg-transparent sm:p-0 dark:border-stone-800 dark:bg-stone-950 sm:dark:bg-transparent">
             @csrf
 
             {{-- GENİŞLİK BÜTÇESİ — dar telefonda ölçüldü (2026-08-13, 360px).
