@@ -11,7 +11,19 @@
 
 {{-- Faz H3: native-app hissi veren sabit alt sekme çubuğu. Panel sayfaları
      dahil HER sayfada gösterilir (bağış FAB'ının aksine — bu sabit bir çubuk,
-     kendi yerini ayırır/taşmaz, bkz. app.blade.php'deki body padding'i). --}}
+     kendi yerini ayırır/taşmaz, bkz. app.blade.php'deki body padding'i).
+
+     TEK İSTİSNA: SOHBET EKRANI (2026-08-13, gerçek cihazda görüldü).
+     Dar bir telefonda üst menü + başlık kartı + anlaşma paneli + mesaj kutusu
+     + yazma alanı + bu çubuk aynı ekrana sığmıyordu; yazma alanı eziliyordu.
+     Mesajlaşma tam-ekran bir iş — WhatsApp/Telegram da sohbette sekme çubuğu
+     göstermez. Gezinme kaybolmuyor: sayfanın başında "Tüm mesajlar" bağlantısı
+     var. Çubuğun yerini tutan gövde dolgusu da sohbet sayfasında sıfırlanıyor
+     (bkz. panel/messages/show.blade.php) — iki iskelete birden dokunmamak
+     için kural orada, sebebiyle birlikte duruyor. --}}
+@if (request()->routeIs('panel.messages.show'))
+    @php(null)
+@else
 <div x-data="altSayfa" @keydown.escape.window="kapat()">
     <nav
         class="fixed inset-x-0 bottom-0 z-30 flex items-stretch justify-around border-t border-stone-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden dark:border-stone-800 dark:bg-stone-900/95"
@@ -197,3 +209,4 @@
         </div>
     </template>
 </div>
+@endif

@@ -1,12 +1,27 @@
 <x-layouts.app :title="($other?->name ?? 'Mesaj').' — Nisoya'">
     @php($me = auth()->id())
     @php($lastId = $conversation->messages->max('id') ?? 0)
-    <div class="mx-auto max-w-3xl px-4 py-6">
+
+    {{-- SOHBET EKRANI DAR TELEFONDA SIĞMIYORDU (2026-08-13, gerçek cihaz).
+         Üst menü + başlık kartı + anlaşma paneli + mesaj kutusu + yazma alanı
+         + alt sekme çubuğu aynı ekrana girmiyordu; yazma alanı eziliyordu.
+
+         Alt sekme çubuğu bu sayfada gizleniyor (bkz. x-mobile-tab-bar) ama
+         onun yerini tutan gövde dolgusu İKİ İSKELETTE birden yazılı
+         (klasik + vitrin app.blade.php). İki dosyaya birden dokunup birini
+         unutmak yerine kural burada, gizleme kararının yanında duruyor. --}}
+    <style>
+        @media (max-width: 767px) {
+            body { padding-bottom: 0 !important; }
+        }
+    </style>
+
+    <div class="mx-auto max-w-3xl px-4 py-4 sm:py-6">
         <x-panel.back-link :href="route('panel.messages.index')" label="Tüm mesajlar" />
 
         {{-- Başlık --}}
-        <div class="mt-3 flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
-            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-emerald-100 font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+        <div class="mt-2 flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-3 shadow-sm sm:mt-3 sm:p-4 dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
+            <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-100 font-bold text-emerald-700 sm:h-11 sm:w-11 dark:bg-emerald-900/40 dark:text-emerald-300">
                 {{ mb_strtoupper(mb_substr($other?->name ?? '?', 0, 1)) }}
             </div>
             <div class="min-w-0 flex-1">
@@ -34,7 +49,11 @@
 
         {{-- Mesajlar: SABİT yükseklikli, KENDİ İÇİNDE kaydırılan kutu. --}}
         <div id="thread"
-             class="mt-4 h-[58vh] min-h-[280px] space-y-3 overflow-y-auto rounded-2xl border border-stone-200 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-950/40"
+             {{-- Yükseklik `dvh` ile: mobil tarayıcının adres çubuğu açılıp
+                  kapandıkça `vh` sabit kalıyor ve kutu ekrandan taşıyordu.
+                  Alt sekme çubuğu bu sayfada gizlendiği için mobilde biraz
+                  daha cömert davranabiliyoruz. --}}
+             class="mt-3 h-[52dvh] min-h-[220px] space-y-3 overflow-y-auto rounded-2xl border border-stone-200 bg-stone-50 p-3 sm:mt-4 sm:h-[58vh] sm:min-h-[280px] sm:p-4 dark:border-stone-800 dark:bg-stone-950/40"
              data-url="{{ route('panel.messages.stream', $conversation) }}"
              data-recall-url="{{ url('/panel/mesajlar/'.$conversation->id.'/mesaj') }}"
              data-last="{{ $lastId }}">
@@ -59,21 +78,41 @@
               class="mt-3 flex items-end gap-2">
             @csrf
 
+            {{-- GENİŞLİK BÜTÇESİ — dar telefonda ölçüldü (2026-08-13, 360px).
+                 Eskiden: 2 × 44px düğme + 24px boşluk + "Gönder" (px-5 + metin
+                 ≈ 90px) = 178px sabit; metin kutusuna ~126px kalıyordu ve
+                 yer tutucu ÜÇ SATIRA taşıp kırpılıyordu.
+                 Şimdi: düğmeler mobilde 40px genişlikte (YÜKSEKLİK 44px
+                 KALIYOR — dokunma hedefi küçültülmez), boşluklar 6px, gönder
+                 mobilde ikon. Metin kutusuna ~184px kalıyor. --}}
+
             {{-- Fotoğraf ekle (birden fazla seçilebilir — her biri ayrı mesaj olarak sırayla gönderilir) --}}
-            <label class="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-stone-300 text-stone-500 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800" title="Fotoğraf gönder (birden fazla seçebilirsin)">
+            <label class="flex h-11 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-stone-300 text-stone-500 transition hover:bg-stone-50 sm:w-11 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800" title="Fotoğraf gönder (birden fazla seçebilirsin)">
                 <x-heroicon-o-photo class="h-5 w-5" />
                 <input id="photo-input" type="file" accept="image/*" multiple class="sr-only">
             </label>
 
             {{-- Konum paylaş --}}
-            <button type="button" id="location-btn" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-stone-300 text-stone-500 transition hover:bg-stone-50 disabled:opacity-50 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800" title="Konum gönder">
+            <button type="button" id="location-btn" class="flex h-11 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 text-stone-500 transition hover:bg-stone-50 disabled:opacity-50 sm:w-11 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800" title="Konum gönder">
                 <x-heroicon-o-map-pin class="h-5 w-5" />
             </button>
 
-            <textarea name="body" rows="2" maxlength="2000" placeholder="Mesaj yaz... (Enter ile gönder, Shift+Enter ile alt satır)"
-                      class="flex-1 resize-none rounded-xl border-stone-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"></textarea>
-            <button type="submit" class="shrink-0 rounded-xl bg-emerald-700 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Gönder</button>
+            {{-- rows=1 + JS ile kendini büyütme: tek satırla başlar, uzun
+                 mesajda 8rem'e kadar açılır. Yer tutucu KISA — uzun olanı dar
+                 ekranda kırpılıyordu; Enter ipucu aşağıdaki yardım satırında
+                 (mobilde gizli, orada zaten yer yok). --}}
+            <textarea id="msg-input" name="body" rows="1" maxlength="2000" placeholder="Mesaj yaz…"
+                      class="max-h-32 min-h-11 flex-1 resize-none rounded-xl border-stone-300 px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"></textarea>
+
+            <button type="submit" class="flex h-11 shrink-0 items-center justify-center rounded-xl bg-emerald-700 px-3 font-semibold text-white transition hover:bg-emerald-800 disabled:opacity-60 sm:px-5 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900" aria-label="Gönder">
+                <x-heroicon-o-paper-airplane class="h-5 w-5 sm:hidden" />
+                <span class="hidden sm:inline">Gönder</span>
+            </button>
         </form>
+
+        <p class="mt-1.5 hidden px-1 text-2xs text-stone-500 sm:block dark:text-stone-400">
+            Enter ile gönder, Shift+Enter ile alt satır.
+        </p>
     </div>
 
     <script>
@@ -263,6 +302,17 @@
             ta.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); }
             });
+
+            /* Kendi kendini büyüten kutu: rows=1 ile başlıyoruz, uzun mesajda
+               içeriğe göre açılıyor (CSS max-h-32 tavanı kesiyor, sonrası
+               kaydırma). Bu olmadan rows=1 uzun mesajı tek satıra sıkıştırırdı. */
+            const buyut = () => {
+                ta.style.height = 'auto';
+                ta.style.height = Math.min(ta.scrollHeight, 128) + 'px';
+            };
+            ta.addEventListener('input', buyut);
+            // Gönderdikten sonra kutu boşalıyor; yüksekliği de sıfırlanmalı.
+            form.addEventListener('submit', () => setTimeout(buyut, 0));
 
             // "Yazıyor..." pingi — en fazla 2.5 sn'de bir.
             ta.addEventListener('input', () => {
