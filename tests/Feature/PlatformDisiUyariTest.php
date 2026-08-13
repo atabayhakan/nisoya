@@ -76,10 +76,14 @@ class PlatformDisiUyariTest extends TestCase
         return [$ben, $karsi, $konusma];
     }
 
-    /**
-     * Uyarı metni JS aynası (dikkatNode) yüzünden her sayfanın <script>
-     * bloğunda BİR kez zaten geçer — bu yüzden "görünür/görünmez" sayımla
-     * ayrılır: yalnız JS kopyası = 1, sunucu ayrıca render ettiyse ≥ 2.
+    /*
+     * SAYIM ARTIK BASİT: 0 = uyarı yok, 1 = var.
+     *
+     * Eskiden metin JS aynasında (dikkatNode) da yazılıydı, o yüzden her
+     * sayfada BİR kez bedava geçiyordu ve testin "1 mi 2 mi" diye saymak
+     * zorunda kalması bu yüzdendi. Metin tek kaynağa taşındı
+     * (App\Support\SohbetUyarisi); JS artık sunucudan gelen dizeyi basıyor,
+     * kendi kopyasını taşımıyor.
      */
     private function uyariSayisi(User $ben, Conversation $konusma): int
     {
@@ -97,7 +101,7 @@ class PlatformDisiUyariTest extends TestCase
 
         $konusma->messages()->create(['sender_id' => $karsi->id, 'body' => 'whatsapptan devam edelim, numaram 0532 123 45 67']);
 
-        $this->assertSame(2, $this->uyariSayisi($ben, $konusma), 'Uyarı mesajın altında render edilmeliydi.');
+        $this->assertSame(1, $this->uyariSayisi($ben, $konusma), 'Uyarı mesajın altında render edilmeliydi.');
     }
 
     public function test_kendi_mesajinda_ve_masum_mesajda_uyari_yok(): void
@@ -109,7 +113,7 @@ class PlatformDisiUyariTest extends TestCase
         // …karşı taraf masum bir mesaj yazdı.
         $konusma->messages()->create(['sender_id' => $karsi->id, 'body' => 'Ürün yarın hazır olur.']);
 
-        $this->assertSame(1, $this->uyariSayisi($ben, $konusma), 'Yalnız JS kopyası kalmalıydı — sunucu uyarı render etmemeli.');
+        $this->assertSame(0, $this->uyariSayisi($ben, $konusma), 'Sunucu uyarı render etmemeli (metnin JS kopyası artık yok).');
     }
 
     public function test_akis_ucu_dikkat_bayragini_dogru_isaretler(): void
@@ -125,11 +129,17 @@ class PlatformDisiUyariTest extends TestCase
             ->assertOk()
             ->json('messages');
 
-        $bayraklar = collect($mesajlar)->map(fn ($m) => [$m['body'], $m['dikkat']])->all();
+        /*
+         * Alan `dikkat` (bool) değil `uyari` (dizi|null) oldu: uyarı METNİ de
+         * sunucudan geliyor artık, JS kendi kopyasını taşımıyor. Boolean bir
+         * bayrak, ikinci bir uyarı türü eklenince hangi metnin basılacağını
+         * söyleyemezdi.
+         */
+        $bayraklar = collect($mesajlar)->map(fn ($m) => [$m['body'], $m['uyari']['tur'] ?? null])->all();
 
-        $this->assertContains(['telegramdan yazsana', true], $bayraklar);
-        $this->assertContains(['Yarın uygun mu?', false], $bayraklar);
+        $this->assertContains(['telegramdan yazsana', 'platform_disi'], $bayraklar);
+        $this->assertContains(['Yarın uygun mu?', null], $bayraklar);
         // Kendi mesajım kalıp içerse de bayrak taşımaz.
-        $this->assertContains(['wp var mı', false], $bayraklar);
+        $this->assertContains(['wp var mı', null], $bayraklar);
     }
 }

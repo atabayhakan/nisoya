@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Support\PlatformDisiIsaret;
+use App\Support\SohbetUyarisi;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
@@ -109,11 +109,18 @@ class Message extends Model
             'image' => $this->imageUrl(),
             'lat' => $coords['lat'] ?? null,
             'lng' => $coords['lng'] ?? null,
-            // Platform-dışı çekme işareti YALNIZ karşı tarafın mesajında:
-            // uyarının muhatabı alıcıdır (bkz. PlatformDisiIsaret).
-            'dikkat' => $this->sender_id !== $me
-                && ! $this->isRecalled()
-                && PlatformDisiIsaret::tespit($this->displayBody()),
+            /*
+             * Dikkat notu YALNIZ karşı tarafın mesajında: uyarının muhatabı
+             * ALICIDIR. Gönderene kendi mesajını "şüpheli" diye göstermek hem
+             * suçlayıcı olur hem de dolandırıcıyı sadece cümlesini
+             * değiştirmeye iter.
+             *
+             * Metin burada KURULMUYOR, SohbetUyarisi'nden geliyor — sunucu ve
+             * JS render'ları aynı dizeyi basıyor, ikisi de karar vermiyor.
+             */
+            'uyari' => $this->sender_id !== $me && ! $this->isRecalled()
+                ? SohbetUyarisi::bul($this->displayBody())
+                : null,
         ];
     }
 

@@ -32,12 +32,17 @@
                 @if ($mine)<button type="button" class="recall-btn font-medium underline decoration-dotted underline-offset-2 hover:no-underline">· geri al</button>@endif
             </p>
 
-            {{-- Platform-dışı çekme uyarısı — yalnız KARŞI TARAFIN mesajında
-                 (uyarının muhatabı alıcı). Engellemez, işaretler; metin JS
-                 aynasıyla (show.blade dikkatNode) birebir aynı kalmalı. --}}
-            @if (! $mine && \App\Support\PlatformDisiIsaret::tespit($message->body))
+            {{-- Dikkat notu — yalnız KARŞI TARAFIN mesajında (uyarının muhatabı
+                 alıcı). Engellemez, işaretler.
+
+                 METİN BURADA KURULMUYOR: App\Support\SohbetUyarisi tek kaynak.
+                 Eskiden aynı cümle hem burada hem JS aynasında yazılıydı ve
+                 iki dosyanın başında "birebir aynı kalmalı" uyarısı vardı —
+                 ikinci bir uyarı türü eklerken bu dörde çıkardı. --}}
+            @php($uyari = $mine ? null : \App\Support\SohbetUyarisi::bul($message->body))
+            @if ($uyari)
                 <p class="platform-uyari mt-1.5 border-t border-amber-300/50 pt-1.5 text-2xs font-medium text-amber-700 dark:border-amber-400/20 dark:text-amber-400">
-                    ⚠️ Konuşmayı platform dışına taşıma teklifi olabilir — yazışma burada kalırsa kaydı elinde olur; görmeden ödeme yapma.
+                    {{ $uyari['metin'] }}
                 </p>
             @endif
         </div>

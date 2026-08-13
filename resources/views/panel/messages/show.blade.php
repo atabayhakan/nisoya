@@ -217,17 +217,19 @@
                 bubble.className = 'max-w-[75%] rounded-2xl px-4 py-2 ' + (m.mine ? MINE : THEIRS);
                 fillBubble(bubble, m);
                 bubble.append(metaEl(m));
-                if (m.dikkat) bubble.append(dikkatNode());
+                if (m.uyari) bubble.append(dikkatNode(m.uyari.metin));
                 wrap.append(bubble);
                 thread.append(wrap);
             }
 
-            // Platform-dışı çekme uyarısı — sunucu render'ındaki
-            // bubble.blade.php metniyle BİREBİR aynı kalmalı.
-            function dikkatNode() {
+            /* Dikkat notu. METNİ SUNUCU GÖNDERİYOR (App\Support\SohbetUyarisi);
+               burada yalnız basılıyor. Eskiden cümle hem burada hem
+               bubble.blade.php'de yazılıydı ve ikisinin "birebir aynı kalması"
+               elle korunuyordu — ikinci uyarı türü eklenince sürdürülemezdi. */
+            function dikkatNode(metin) {
                 const p = document.createElement('p');
                 p.className = 'platform-uyari mt-1.5 border-t border-amber-300/50 pt-1.5 text-2xs font-medium text-amber-700 dark:border-amber-400/20 dark:text-amber-400';
-                p.textContent = '⚠️ Konuşmayı platform dışına taşıma teklifi olabilir — yazışma burada kalırsa kaydı elinde olur; görmeden ödeme yapma.';
+                p.textContent = metin;
                 return p;
             }
 
