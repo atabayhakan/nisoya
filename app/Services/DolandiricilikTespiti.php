@@ -105,6 +105,20 @@ class DolandiricilikTespiti
         }
 
         if (! is_array($veri) || ! array_key_exists('supheli', $veri)) {
+            /*
+             * FAIL-OPEN AMA SESSİZ DEĞİL.
+             *
+             * Canlıda bu dal her seferinde çalışıyordu (sağlayıcı JSON
+             * döndürmüyordu) ve hiçbir yerde iz bırakmıyordu: moderasyon
+             * tamamen ölüydü, gösterge de yoktu. Engellemiyoruz ama
+             * SÖYLÜYORUZ.
+             */
+            Log::warning('Metin moderasyonu kullanılamaz yanıt döndü', [
+                'listing_id' => $listing->id,
+                'saglayici' => $this->ai->name(),
+                'saglayici_hatasi' => $this->ai->lastError(),
+            ]);
+
             return null;
         }
 

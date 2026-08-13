@@ -55,9 +55,66 @@ class OpenAiProvider implements AiProvider
      * @param  array<string, mixed>|null  $jsonSchema
      * @return array<string, mixed>|null
      */
+    /**
+     * JSON kipinde istem "JSON" kelimesini İÇERMEK ZORUNDA — talimatı burada,
+     * TEK KAPIDAN ekliyoruz.
+     *
+     * -----------------------------------------------------------------------
+     * CANLIDA BULUNDU (2026-08-13)
+     *
+     * İlan çevirisi ve dolandırıcılık tespiti üretimde ÇALIŞMIYORDU: sağlayıcı
+     * her seferinde "Yanıt geçerli JSON değil (model JSON döndürmedi)" diyordu.
+     *
+     * Sebep: OpenRouter `responseFormat()` içinde şemayı KULLANMIYOR, OpenAI'ın
+     * `json_object` kipini kullanıyor (birçok modelde strict şema desteği yok).
+     * O kipin belgelenmiş şartı ise istemin içinde "JSON" kelimesinin geçmesi.
+     * Şema veriliyordu ama talimat verilmiyordu; her çağıranın bunu ayrıca
+     * hatırlaması gerekiyordu ve iki servis hatırlamamıştı.
+     *
+     * Talimatı servislere tek tek eklemek aynı hatayı bir sonraki serviste
+     * tekrar üretirdi. Şema geçen HER çağrı buradan geçiyor.
+     *
+     * İstem zaten "JSON" diyorsa dokunulmaz — kendi biçim tarifini yazmış
+     * servislerin (ListingTextService) metnini bozmamak için.
+     *
+     * @param  list<array<string, mixed>>  $messages
+     * @param  array<string, mixed>|null  $jsonSchema
+     * @return list<array<string, mixed>>
+     */
+    private function jsonTalimatiEkle(array $messages, ?array $jsonSchema): array
+    {
+        if ($jsonSchema === null) {
+            return $messages;
+        }
+
+        $metin = '';
+        foreach ($messages as $m) {
+            if (is_string($m['content'] ?? null)) {
+                $metin .= $m['content'];
+            }
+        }
+
+        if (stripos($metin, 'json') !== false) {
+            return $messages;
+        }
+
+        $anahtarlar = array_keys((array) ($jsonSchema['properties'] ?? []));
+        $talimat = 'Yanıtını SADECE JSON nesnesi olarak ver.';
+
+        if ($anahtarlar !== []) {
+            $talimat .= ' Anahtarlar: '.implode(', ', $anahtarlar).'. Başka metin yazma.';
+        }
+
+        $messages[] = ['role' => 'user', 'content' => $talimat];
+
+        return $messages;
+    }
+
     private function postChat(array $messages, ?array $jsonSchema, ?int $timeoutSeconds): ?array
     {
         $this->lastError = null;
+
+        $messages = $this->jsonTalimatiEkle($messages, $jsonSchema);
 
         $body = [
             'model' => $this->config['model'],
