@@ -379,7 +379,24 @@ class ListingController extends Controller
         if (! $isOwner && ! $isArchived) {
             $viewerKey = 'viewed:listing:'.$listing->id.':'.(auth()->id() ?? $request->session()->getId());
             if (Cache::add($viewerKey, true, now()->addHours(6))) {
+                /*
+                 * `updated_at`'E DOKUNMADAN artır.
+                 *
+                 * Düz `increment()` zaman damgasını da günceller ve bu İKİ
+                 * yerde birden yalan söyler:
+                 *   1. İlan detayında "X önce güncellendi" yazıyor — oysa
+                 *      satıcı bir şey değiştirmedi, sadece BİRİ BAKTI.
+                 *   2. Site haritasındaki `lastmod` bu alandan geliyor; her
+                 *      ziyaret arama motoruna "içerik değişti" diye haber
+                 *      veriyor. İçerik değişmediği hâlde sürekli tazelenen
+                 *      bir lastmod, tarayıcı güvenini aşındırır.
+                 *
+                 * Canlıda ölçüldü: üç ilanın üçü de "3 dakika önce
+                 * güncellendi" görünüyordu — tek sebep sayfaların açılmasıydı.
+                 */
+                $listing->timestamps = false;
                 $listing->increment('views_count');
+                $listing->timestamps = true;
             }
         }
 
