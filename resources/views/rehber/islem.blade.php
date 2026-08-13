@@ -43,7 +43,12 @@
                     <li class="flex gap-3 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-700 dark:bg-stone-800/50">
                         <span class="mt-0.5 text-emerald-700 dark:text-emerald-400" aria-hidden="true">✔</span>
                         <span>
-                            <span class="font-medium text-stone-900 dark:text-stone-50">{{ $evrak['ad'] ?? '' }}</span>
+                            {{-- `?? ''` YOK, bilerek: modeldeki düzenleyici
+                                 adı boş olan maddeyi zaten atıyor. Buraya
+                                 yedek koymak, veri şekli yine bozulursa onu
+                                 SESSİZCE boş satıra çevirirdi — canlıda tam
+                                 olarak bu oldu (bkz. TemsilcilikIslemi). --}}
+                            <span class="font-medium text-stone-900 dark:text-stone-50">{{ $evrak['ad'] }}</span>
                             @if (! empty($evrak['not']))
                                 <span class="mt-0.5 block text-sm text-stone-500 dark:text-stone-400">{{ $evrak['not'] }}</span>
                             @endif

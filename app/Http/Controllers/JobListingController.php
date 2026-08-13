@@ -150,7 +150,12 @@ class JobListingController extends Controller
         if (! $isOwner) {
             $viewerKey = 'viewed:job:'.$job->id.':'.(auth()->id() ?? $request->session()->getId());
             if (Cache::add($viewerKey, true, now()->addHours(6))) {
+                // `updated_at`'e dokunmadan artır — gerekçe
+                // ListingController::show içinde yazılı (görüntülenme,
+                // "güncellendi" bilgisini ve sitemap lastmod'unu bozuyordu).
+                $job->timestamps = false;
                 $job->increment('views_count');
+                $job->timestamps = true;
             }
         }
 

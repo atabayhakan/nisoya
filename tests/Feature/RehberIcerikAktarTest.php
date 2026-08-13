@@ -83,7 +83,23 @@ class RehberIcerikAktarTest extends TestCase
 
         $kayit = TemsilcilikIslemi::first();
         $this->assertNotNull($kayit);
-        $this->assertSame(['Kimlik kartı', 'İki adet fotoğraf'], $kayit->evraklar);
+
+        /*
+         * BEKLENTİ 2026-08-13'TE DEĞİŞTİ — eskisi hatayı sabitliyordu.
+         *
+         * JSON düz metin dizisi veriyor; bu test de düz metin bekliyordu ve
+         * yeşildi. Oysa görünüm ve yönetim panelindeki Repeater ['ad','not']
+         * şekli okuyor. Sonuç: /de/berlin/pasaport sayfasında "Gerekli
+         * evraklar" SEKİZ BOŞ MADDE olarak basılıyordu — sayfa 200 dönüyordu,
+         * yani hiçbir izleme göremezdi.
+         *
+         * Artık şekil modelde tek noktada düzenleniyor
+         * (TemsilcilikIslemi::evraklariDuzenle); bu test onu doğruluyor.
+         */
+        $this->assertSame([
+            ['ad' => 'Kimlik kartı', 'not' => null],
+            ['ad' => 'İki adet fotoğraf', 'not' => null],
+        ], $kayit->evraklar);
         $this->assertSame('2026-08-04', $kayit->dogrulanma_tarihi?->toDateString());
     }
 
