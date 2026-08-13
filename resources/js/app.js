@@ -346,7 +346,21 @@ Alpine.data('metinKapisi', () => ({
 
     init() {
         const Motor = window.SpeechRecognition || window.webkitSpeechRecognition;
-        this.destekVar = typeof Motor === 'function';
+
+        /* API'NİN VARLIĞI YETMEZ, İZİN DE GEREKİR.
+           Canlıda ölçüldü (2026-08-13): sitenin kendi Permissions-Policy
+           başlığı `microphone=()` diyordu — yani mikrofon kendi sayfamıza
+           bile kapalıydı. API mevcut olduğu için düğme görünüyor, kullanıcı
+           basıyor ve hiçbir şey olmuyordu. Çalışamayacak bir özelliği
+           önermek, olmamasından kötüdür.
+           featurePolicy eski tarayıcılarda yok; yoksa engellenmemiş sayılır. */
+        const politika = document.featurePolicy || document.permissionsPolicy;
+        let izinli = true;
+        try {
+            if (politika?.allowsFeature) izinli = politika.allowsFeature('microphone');
+        } catch (e) { izinli = true; }
+
+        this.destekVar = typeof Motor === 'function' && izinli;
     },
 
     dinlemeyiDegistir() {
