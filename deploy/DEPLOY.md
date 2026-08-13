@@ -271,6 +271,46 @@ add_header Permissions-Policy "geolocation=(self), microphone=(self), camera=()"
 Sonra `sudo nginx -t && sudo systemctl reload nginx`. Doğrulama: tarayıcı
 konsolunda `document.featurePolicy.allowsFeature('microphone')` → `true`.
 
+### ⚠️ ELLE UYGULANMASI GEREKEN: statik varlıklarda gzip (2026-08-13)
+
+Canlıda ölçüldü — **HTML sıkıştırılıyor ama CSS ve JS çıplak gidiyor**:
+
+| kaynak | boyut | Content-Encoding |
+|---|---|---|
+| `/` (HTML) | 43.916 B | gzip ✅ |
+| `app-*.css` | **211.538 B** | yok ❌ |
+| `app-*.js` | **81.447 B** | yok ❌ |
+
+Yaklaşık 290 KB çıplak metin, sıkıştırılınca ~40 KB'a iner. Hedef kitle
+ağırlıkla mobil ve yurt dışında; bu fark doğrudan açılış süresine yazılıyor.
+
+Depodaki dosyada statik varlık konumuna açık `gzip on` + `gzip_types` eklendi.
+Aynısı **aktif dosyada** (`/etc/nginx/sites-enabled/nisoya`) da olmalı:
+`location ~* \.(jpg|...|css|js|woff2?)$` bloğunun içine
+
+```
+gzip on;
+gzip_vary on;
+gzip_min_length 1024;
+gzip_comp_level 6;
+gzip_types text/css application/javascript application/json image/svg+xml font/ttf;
+```
+
+Doğrulama:
+
+```
+curl -sI -H 'Accept-Encoding: gzip' https://nisoya.com/build/assets/app-<hash>.css | grep -i content-encoding
+```
+
+### ⚠️ Bu dosya eskiden UYGULANAMAZ hâldeydi
+
+`deploy/nginx-nisoya.conf` içinde `server` bloğunun içinde iki `limit_req_zone`
+satırı vardı. Nginx'te bu yönerge yalnız `http` bağlamında geçerli — yani
+yukarıdaki "kopyala" adımı `nginx -t` aşamasında düşerdi. Bölgeler ayrıca
+hiçbir yerde kullanılmıyordu (`limit_req` yönergesi yok), yani hiçbir koruma
+sağlamıyorlardı. 2026-08-13'te kaldırıldı; gerçek hız sınırları uygulama
+katmanında (`bootstrap/app.php`).
+
 `TarayiciIzinPolitikasiTest` bu kuralı depoda koruyor: kodda mikrofon/konum
 kullanan bir yer varsa politika `self` vermeli, kullanılmayan yetenek ise
 (kamera) kapalı kalmalı.
