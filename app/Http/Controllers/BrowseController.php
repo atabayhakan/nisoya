@@ -54,9 +54,35 @@ class BrowseController extends Controller
                 $yorum = $cevirmen->yorumla($aramaCumlesi);
 
                 if ($yorum !== null) {
+                    /*
+                     * KATEGORİ TUTTUYSA SERBEST METİN UYGULANMAZ.
+                     *
+                     * Canlıda ölçüldü: "Berlin'de ucuz ev temizliği" cümlesi
+                     * hem `kategori=ev-temizligi` hem `q=ev temizliği`
+                     * üretiyordu. İkisi birden uygulanınca, o kategoriye TAM
+                     * OTURAN ama metninde "ev temizliği" geçmeyen bir ilan
+                     * (ör. "Haftalık daire temizlik hizmeti") listeden
+                     * DÜŞÜYORDU — yalnız kategoriyle arandığında ise
+                     * bulunuyordu.
+                     *
+                     * Kategori doğrulanmış ve daha güçlü sinyal; üstüne
+                     * aynı kelimelerden türetilmiş bir LIKE eklemek sonucu
+                     * daraltmaktan başka işe yaramıyor.
+                     */
+                    if (filled($yorum['kategori'])) {
+                        $yorum['q'] = null;
+                    }
+
                     // Yalnız DOLU alanlar isteğe yazılır; null olanlar
                     // kullanıcının hiçbir şeyini değiştirmesin.
-                    $request->merge(array_filter($yorum, fn ($v) => $v !== null && $v !== ''));
+                    $uygulanacak = array_filter($yorum, fn ($v) => $v !== null && $v !== '');
+
+                    // `q` YAZILMAZSA istekte kullanıcının CÜMLESİ kalır ve
+                    // cümlenin tamamı LIKE ile aranır — yorumdan da beter.
+                    // Bu yüzden açıkça boşaltılıyor.
+                    $uygulanacak['q'] = $yorum['q'] ?? '';
+
+                    $request->merge($uygulanacak);
                 }
             }
         }
@@ -229,7 +255,7 @@ class BrowseController extends Controller
              * yazılır. Arama kutusuna yazdığından başka bir sonuç kümesi
              * görüp sebebini bilmemek, aramaya olan güveni bitirir.
              */
-            'aramaYorumu' => $yorum,
+            'aramaYorumu' => app(DogalDilArama::class)->etiketler($yorum),
             'aramaCumlesi' => $aramaCumlesi,
             'filters' => [
                 // Kutuda kullanıcının KENDİ cümlesi kalır — yorumun daralttığı

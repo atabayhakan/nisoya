@@ -153,6 +153,54 @@ class DogalDilArama
             fn () => Country::query()->where('is_active', true)->pluck('code'));
     }
 
+    /**
+     * Yorumu EKRANDA gösterilecek hâle getirir: makine değerleri yerine
+     * insanın okuyacağı adlar.
+     *
+     * Canlıda görüldü: şerit "Kategori: ev-temizligi · Ülke: DE" yazıyordu.
+     * Bunlar URL slug'ı ve ülke kodu — kullanıcıya makine değeri göstermek,
+     * "anladım" demenin amacını boşa çıkarır.
+     *
+     * @param  array<string, mixed>|null  $yorum
+     * @return list<array{etiket: string, deger: string}>
+     */
+    public function etiketler(?array $yorum): array
+    {
+        if ($yorum === null) {
+            return [];
+        }
+
+        $kategoriAdi = filled($yorum['kategori'] ?? null)
+            ? Category::query()->where('slug', $yorum['kategori'])->value('name')
+            : null;
+
+        $ulkeAdi = filled($yorum['ulke'] ?? null)
+            ? Country::query()->where('code', $yorum['ulke'])->value('name_tr')
+            : null;
+
+        $tipAdi = match ($yorum['tip'] ?? null) {
+            'hizmet' => 'Hizmet',
+            'urun' => 'Ürün',
+            'emlak' => 'Emlak',
+            'vasita' => 'Vasıta',
+            default => null,
+        };
+
+        $satirlar = [
+            ['etiket' => 'Aranan', 'deger' => $yorum['q'] ?? null],
+            ['etiket' => 'Kategori', 'deger' => $kategoriAdi ?: null],
+            ['etiket' => 'Tür', 'deger' => $tipAdi],
+            ['etiket' => 'Şehir', 'deger' => $yorum['sehir'] ?? null],
+            ['etiket' => 'Ülke', 'deger' => $ulkeAdi ?: null],
+            ['etiket' => 'En fazla', 'deger' => filled($yorum['max'] ?? null) ? rtrim(rtrim(number_format((float) $yorum['max'], 2, ',', '.'), '0'), ',') : null],
+        ];
+
+        return array_values(array_map(
+            fn (array $s): array => ['etiket' => $s['etiket'], 'deger' => (string) $s['deger']],
+            array_filter($satirlar, fn (array $s): bool => filled($s['deger'])),
+        ));
+    }
+
     public function istem(string $sorgu): string
     {
         // Kategori listesi isteme VERİLİYOR: model uydurmasın diye. Ad+slug
