@@ -245,6 +245,35 @@ redis-cli Info stats
 > DEĞİL, ayrı kopya — `sites-available` ile senkron değil). Başlık değişiklikleri
 > AKTİF dosyada yapılmalı. Yedeği include edilen dizin İÇİNE koyma (`*` glob'una
 > takılıp "duplicate listen" hatası verir) — `/root/` altına al.
+
+### ⚠️ ELLE UYGULANMASI GEREKEN: Permissions-Policy (2026-08-13)
+
+`deploy/nginx-nisoya.conf` düzeltildi ama **nginx yapılandırması otomatik
+deploy edilmiyor** — sunucuda elle güncellenmeli.
+
+Eski satır sitenin kendi özelliklerini kapatıyordu:
+
+```
+add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+```
+
+Boş parantez "hiç kimseye izin yok" demek, kendi sayfamıza bile. Tarayıcıya
+soruldu (`document.featurePolicy.allowsFeature`) ve üçü de `false` döndü.
+Sonuç: **sesle ilan düğmesi görünüyor ama çalışmıyor**, acil panelindeki
+konum tespiti hep yedeğe düşüyor.
+
+Yeni satır (`sites-enabled/nisoya` içinde de değiştir):
+
+```
+add_header Permissions-Policy "geolocation=(self), microphone=(self), camera=()" always;
+```
+
+Sonra `sudo nginx -t && sudo systemctl reload nginx`. Doğrulama: tarayıcı
+konsolunda `document.featurePolicy.allowsFeature('microphone')` → `true`.
+
+`TarayiciIzinPolitikasiTest` bu kuralı depoda koruyor: kodda mikrofon/konum
+kullanan bir yer varsa politika `self` vermeli, kullanılmayan yetenek ise
+(kamera) kapalı kalmalı.
 - [ ] .env dosyası .gitignore'da ve yedeklenmiyor
 
 <!-- Otomatik deploy dogrulamasi: 2026-07-27T03:05:12Z -->
