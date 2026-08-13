@@ -16,6 +16,31 @@ class ProfanityFilterService
      * Temel Türkçe ve genel küfür / hakaret / argo sözlüğü.
      * Patlatma/gizleme amaçlı kök kelimeler.
      */
+    /**
+     * Ağır küfür kökleri.
+     *
+     * -------------------------------------------------------------------------
+     * ÜÇ KELİME ÇIKARILDI (2026-08-13, canlıda ölçüldü): `kopek`, `top`, `it`.
+     *
+     * Bunlar bağlama göre hakaret olabilir ama HER BİRİ sıradan Türkçe kelime
+     * ve engellenmeleri gerçek kullanımı kırıyordu. Ölçüm:
+     *
+     *   "Köpek bakıcısı arıyorum, haftada iki gün"  -> ENGELLENDİ
+     *   "Çocuklar için top satıyorum"                -> ENGELLENDİ
+     *   "Sitede top model kıyafet var"               -> ENGELLENDİ
+     *
+     * Filtre yalnız sohbette değil İLAN OLUŞTURURKEN de çalışıyor
+     * (ListingRequest), yani "köpek bakıcılığı yapıyorum" diye ilan
+     * VERİLEMİYORDU. Site bakım hizmetleri pazaryeri — "Bebek Bakıcılığı" ve
+     * "Yaşlı Bakımı" kategorileri var; hayvan bakımı da doğal bir komşusu.
+     *
+     * Takas net: zayıf bir hakareti geçirmek, dürüst satıcının ilanını
+     * reddetmekten iyidir. Hakaret için şikâyet mekanizması zaten var.
+     *
+     * Kısa kelimeler (`am`, `oc`, `got`, `dol`) YALNIZ TEK BAŞINAYKEN eşleşir
+     * (aşağıdaki eşleştirme mantığı), o yüzden "Ocak", "toplam", "tamam",
+     * "dolap" güvende — ölçüldü.
+     */
     private const BAD_WORDS = [
         'amk', 'aq', 'amq', 'amw', 'a.m.k', 'a.q',
         'sik', 'siki', 'sikis', 'sikis', 'sikerim', 'sikeyim', 'sikti', 'siktir', 'sikim', 'sikimi',
@@ -24,8 +49,8 @@ class ProfanityFilterService
         'got', 'gotu', 'gotun', 'gotveren', 'gotlek',
         'pic', 'pici', 'pich',
         'yarrak', 'yarak', 'yarragim', 'yarram',
-        'ibne', 'ipne', 'top',
-        'kopek', 'it', 'kahpe', 'puşt', 'pust',
+        'ibne', 'ipne',
+        'kahpe', 'puşt', 'pust',
         'yavsak', 'yavşak', 'döl', 'dol',
         'fahişe', 'fahise', 'kaltak',
         'gavat', 'kavat', 'piç',
