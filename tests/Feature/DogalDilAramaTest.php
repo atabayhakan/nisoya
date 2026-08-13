@@ -256,6 +256,63 @@ class DogalDilAramaTest extends TestCase
         $this->assertSame(1, app(AiProvider::class)->cagriSayisi);
     }
 
+    public function test_kategori_tuttugunda_serbest_metin_sonucu_daraltmiyor(): void
+    {
+        /*
+         * CANLIDA ÖLÇÜLDÜ (2026-08-13). "Berlin'de 500 euro altı ev
+         * temizliği" cümlesi hem `kategori=ev-temizligi` hem `q=ev temizliği`
+         * üretiyordu ve ikisi birden uygulanıyordu.
+         *
+         * Sonuç: o kategoriye TAM OTURAN ama metninde "ev temizliği"
+         * geçmeyen bir ilan listeden düşüyordu. Yalnız kategoriyle
+         * arandığında bulunuyordu — yani yorum, aramayı iyileştirmek yerine
+         * bozuyordu.
+         */
+        $this->sahteAi([
+            'q' => 'ev temizliği', 'sehir' => null, 'ulke' => null,
+            'tip' => 'hizmet', 'kategori' => 'ev-temizligi', 'max' => null,
+        ]);
+
+        $kategori = Category::query()->where('slug', 'ev-temizligi')->firstOrFail();
+
+        Listing::factory()->create([
+            'user_id' => User::factory()->create()->id,
+            'category_id' => $kategori->id,
+            'type' => 'hizmet',
+            'status' => ListingStatus::Aktif,
+            'is_demo' => false,
+            'title' => 'Haftalık daire temizlik hizmeti',
+            'description' => 'Daire ve ofis temizliği yapıyorum, referanslarım var.',
+        ]);
+
+        $this->get('/ilanlar?q='.urlencode('Berlinde ucuz ev temizliği'))
+            ->assertOk()
+            ->assertSee('Haftalık daire temizlik hizmeti');
+    }
+
+    public function test_serit_makine_degeri_degil_insan_dili_gosteriyor(): void
+    {
+        // Canlıda "Kategori: ev-temizligi · Ülke: DE" yazıyordu — kullanıcıya
+        // URL slug'ı ve ülke kodu göstermek "anladım" demeyi boşa çıkarır.
+        $this->sahteAi([
+            'q' => null, 'sehir' => 'Berlin', 'ulke' => 'DE',
+            'tip' => 'hizmet', 'kategori' => 'ev-temizligi', 'max' => 500,
+        ]);
+
+        $this->ilan();
+
+        $yanit = $this->get('/ilanlar?q='.urlencode('Berlinde 500 euro altı ev temizliği'))->assertOk();
+
+        $yanit->assertSee('Ülke: Almanya', escape: false);
+        $yanit->assertSee('Tür: Hizmet', escape: false);
+        $yanit->assertSee('Kategori: Ev Temizliği', escape: false);
+
+        // Slug'ın kendisi kategori BAĞLANTILARINDA meşru olarak geçiyor;
+        // yasak olan onu ŞERİTTE etiket değeri diye basmak.
+        $yanit->assertDontSee('Ülke: DE', escape: false);
+        $yanit->assertDontSee('Kategori: ev-temizligi', escape: false);
+    }
+
     public function test_ozellik_kapaliyken_arama_bugunku_gibi_calisiyor(): void
     {
         config(['ai.features.natural_search' => false]);
