@@ -33,6 +33,25 @@ class CurrencySeeder extends Seeder
             ['code' => 'AED', 'name' => 'BAE Dirhemi', 'symbol' => 'AED'],
             ['code' => 'QAR', 'name' => 'Katar Riyali', 'symbol' => 'QAR'],
             ['code' => 'SAR', 'name' => 'Suudi Riyali', 'symbol' => 'SAR'],
+            // Gelişmişlik seviyesine göre ülke genişlemesiyle birlikte
+            // (2026-08-16) — CountrySeeder'daki 30 yeni ülkenin karşılıkları.
+            // EUR ve CHF zaten yukarıda var, o yüzden burada yok. Sembol
+            // çakışması riskinde (peso/dinar/riyal ailesi) Gulf akımındaki
+            // gibi Latin kod fallback'i kullanıldı.
+            ['code' => 'ISK', 'name' => 'İzlanda Kronu', 'symbol' => 'kr'],
+            ['code' => 'SGD', 'name' => 'Singapur Doları', 'symbol' => 'S$'],
+            ['code' => 'NZD', 'name' => 'Yeni Zelanda Doları', 'symbol' => 'NZ$'],
+            ['code' => 'KRW', 'name' => 'Güney Kore Wonu', 'symbol' => '₩'],
+            ['code' => 'JPY', 'name' => 'Japon Yeni', 'symbol' => '¥'],
+            ['code' => 'ILS', 'name' => 'İsrail Şekeli', 'symbol' => '₪'],
+            ['code' => 'CZK', 'name' => 'Çek Korunası', 'symbol' => 'Kč'],
+            ['code' => 'BHD', 'name' => 'Bahreyn Dinarı', 'symbol' => 'BHD'],
+            ['code' => 'CLP', 'name' => 'Şili Pesosu', 'symbol' => 'CLP'],
+            ['code' => 'HUF', 'name' => 'Macar Forinti', 'symbol' => 'Ft'],
+            ['code' => 'ARS', 'name' => 'Arjantin Pesosu', 'symbol' => 'ARS'],
+            ['code' => 'UYU', 'name' => 'Uruguay Pesosu', 'symbol' => 'UYU'],
+            ['code' => 'OMR', 'name' => 'Umman Riyali', 'symbol' => 'OMR'],
+            ['code' => 'KWD', 'name' => 'Kuveyt Dinarı', 'symbol' => 'KWD'],
         ];
 
         foreach ($currencies as $i => $c) {
