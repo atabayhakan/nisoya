@@ -84,6 +84,14 @@ class CountrySeeder extends Seeder
             ['UY', 'Uruguay', '🇺🇾', 'UYU', -34.9011, -56.1645],
             ['OM', 'Umman', '🇴🇲', 'OMR', 23.5859, 58.4059],
             ['KW', 'Kuveyt', '🇰🇼', 'KWD', 29.3759, 47.9774],
+
+            // Kıbrıs — sahiple konuşuldu (2026-08-16): ISO CY yalnız Rum
+            // Yönetimi'ni karşılıyor, o yüzden ad AÇIKÇA "Güney Kıbrıs (Rum
+            // Kesimi)" — Türkiye'nin KKTC'yi ayrı devlet saydığı gerçeğiyle
+            // çelişmeyen, belirsizlik bırakmayan etiket. HDI #31 (0.913,
+            // Andorra ile eşit) ama liste bozulmasın diye dizinin sonuna
+            // eklendi, aradaki HDI sırasına değil.
+            ['CY', 'Güney Kıbrıs (Rum Kesimi)', '🇨🇾', 'EUR', 35.1856, 33.3823],
         ];
 
         foreach ($countries as $i => $c) {

@@ -73,6 +73,7 @@ class CitySeeder extends Seeder
             'UY' => ['Montevideo', 'Salto'],
             'OM' => ['Maskat', 'Salalah'],
             'KW' => ['Kuveyt', 'Hawalli'],
+            'CY' => ['Lefkoşa', 'Limasol'],
         ];
 
         foreach ($data as $countryCode => $cities) {
