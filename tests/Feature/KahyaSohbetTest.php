@@ -124,19 +124,22 @@ class KahyaSohbetTest extends TestCase
         $this->assertSame(2, KahyaMesaji::query()->count());
     }
 
-    public function test_japonya_ekle_ucta_uca(): void
+    // "Japonya" örneği 2026-08-16'da GERÇEK ülke oldu (gelişmişlik-seviyesi
+    // genişlemesi) — bu test artık "var olan ülke" senaryosunu sınardı.
+    // Fiji'ye geçildi (bkz. KahyaEylemTest'teki aynı not).
+    public function test_fiji_ekle_ucta_uca(): void
     {
         $this->sahteAjan([
-            new ToolCall('t1', 'ulke-ekle', ['kod' => 'JP', 'ad' => 'Japonya', 'emoji' => '🇯🇵']),
-            'Japonya\'yı ekledim.',
+            new ToolCall('t1', 'ulke-ekle', ['kod' => 'FJ', 'ad' => 'Fiji', 'emoji' => '🇫🇯']),
+            'Fiji\'yi ekledim.',
         ]);
 
-        $yanit = $this->sohbet()->sor('ülkeler kısmına Japonya ekle', $this->admin());
+        $yanit = $this->sohbet()->sor('ülkeler kısmına Fiji ekle', $this->admin());
 
         $this->assertNotNull($yanit->eylem);
         $this->assertSame(KahyaEylemKaydi::DURUM_UYGULANDI, $yanit->eylem->durum);
         $this->assertFalse($yanit->onayBekliyor);
-        $this->assertDatabaseHas('countries', ['code' => 'JP', 'name_tr' => 'Japonya']);
+        $this->assertDatabaseHas('countries', ['code' => 'FJ', 'name_tr' => 'Fiji']);
     }
 
     /**
@@ -382,12 +385,12 @@ class KahyaSohbetTest extends TestCase
     public function test_panelden_geri_alma_calisir(): void
     {
         $this->sahteAjan([
-            new ToolCall('t1', 'ulke-ekle', ['kod' => 'JP', 'ad' => 'Japonya']),
+            new ToolCall('t1', 'ulke-ekle', ['kod' => 'FJ', 'ad' => 'Fiji']),
             'Ekledim.',
         ]);
 
         $admin = $this->admin();
-        $this->sohbet()->sor('Japonya ekle', $admin);
+        $this->sohbet()->sor('Fiji ekle', $admin);
 
         $kayit = KahyaEylemKaydi::query()->where('eylem', 'ulke-ekle')->firstOrFail();
 
@@ -396,6 +399,6 @@ class KahyaSohbetTest extends TestCase
             ->call('eylemGeriAl', $kayit->id)
             ->assertSuccessful();
 
-        $this->assertDatabaseMissing('countries', ['code' => 'JP']);
+        $this->assertDatabaseMissing('countries', ['code' => 'FJ']);
     }
 }

@@ -98,30 +98,37 @@ class KahyaEylemTest extends TestCase
         $this->assertSame($once, Country::query()->count(), 'Geçersiz istek hiçbir şey değiştirmemeli.');
     }
 
-    // ------------------------------------------- Sahibin örneği: Japonya
+    // ---------------------------------------------- Sahibin örneği: Fiji
+    //
+    // Orijinali "Japonya"ydı (sahibin gerçek sözü: "Kâhya ülkeler kısmına
+    // Japonya ekle") ama 2026-08-16'daki gelişmişlik-seviyesi genişlemesi
+    // Japonya'yı GERÇEKTEN ekledi — test artık "var olan ülke" senaryosunu
+    // sınardı. Fiji seçildi çünkü platformun bugüne kadarki iki seçim
+    // ölçütünden de (diaspora yoğunluğu, HDI sırası) uzak — yeniden
+    // çakışma riski düşük.
 
-    public function test_japonya_eklenir_ve_geri_alinir(): void
+    public function test_fiji_eklenir_ve_geri_alinir(): void
     {
         $admin = $this->admin();
 
         $kayit = $this->calistirici()->calistir('ulke-ekle', [
-            'kod' => 'JP',
-            'ad' => 'Japonya',
-            'emoji' => '🇯🇵',
+            'kod' => 'FJ',
+            'ad' => 'Fiji',
+            'emoji' => '🇫🇯',
         ], $admin);
 
         // Düşük risk: onay beklemeden uygulanır.
         $this->assertSame(KahyaEylemKaydi::DURUM_UYGULANDI, $kayit->durum);
         $this->assertTrue($kayit->geriAlinabilirMi());
-        $this->assertDatabaseHas('countries', ['code' => 'JP', 'name_tr' => 'Japonya', 'is_active' => true]);
+        $this->assertDatabaseHas('countries', ['code' => 'FJ', 'name_tr' => 'Fiji', 'is_active' => true]);
 
         // Yeni ülke listenin SONUNA girer — mevcut sıra sahibin düzenidir.
-        $japonya = Country::query()->where('code', 'JP')->firstOrFail();
-        $this->assertSame((int) Country::query()->max('sort_order'), (int) $japonya->sort_order);
+        $fiji = Country::query()->where('code', 'FJ')->firstOrFail();
+        $this->assertSame((int) Country::query()->max('sort_order'), (int) $fiji->sort_order);
 
         $this->calistirici()->geriAl($kayit->refresh());
 
-        $this->assertDatabaseMissing('countries', ['code' => 'JP']);
+        $this->assertDatabaseMissing('countries', ['code' => 'FJ']);
         $this->assertSame(KahyaEylemKaydi::DURUM_GERI_ALINDI, $kayit->refresh()->durum);
     }
 
@@ -138,13 +145,13 @@ class KahyaEylemTest extends TestCase
      */
     public function test_ilanli_ulkenin_geri_alinmasi_silmez_pasife_ceker(): void
     {
-        $kayit = $this->calistirici()->calistir('ulke-ekle', ['kod' => 'JP', 'ad' => 'Japonya']);
+        $kayit = $this->calistirici()->calistir('ulke-ekle', ['kod' => 'FJ', 'ad' => 'Fiji']);
 
-        Listing::factory()->create(['country_code' => 'JP']);
+        Listing::factory()->create(['country_code' => 'FJ']);
 
         $sonucKaydi = $this->calistirici()->geriAl($kayit->refresh());
 
-        $this->assertDatabaseHas('countries', ['code' => 'JP', 'is_active' => false]);
+        $this->assertDatabaseHas('countries', ['code' => 'FJ', 'is_active' => false]);
         $this->assertStringContainsString('silinmedi', (string) $sonucKaydi->sonuc);
     }
 

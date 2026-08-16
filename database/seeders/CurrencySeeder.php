@@ -9,7 +9,10 @@ class CurrencySeeder extends Seeder
 {
     public function run(): void
     {
-        // Türk Lirası bilinçli olarak YOK — platform yurtdışı odaklı.
+        // Türk Lirası uzun süre BİLİNÇLİ OLARAK yoktu — platform yurtdışı
+        // odaklı. KKTC eklenmesiyle (2026-08-16) TEK istisna aşağıda: TRY,
+        // sırf o satır için. Yeni bir ülkeye "zaten TRY var" diye TL
+        // verilmemeli — istisna KKTC'ye özel, kurala değil.
         $currencies = [
             ['code' => 'EUR', 'name' => 'Euro', 'symbol' => '€'],
             ['code' => 'USD', 'name' => 'Amerikan Doları', 'symbol' => '$'],
@@ -33,6 +36,30 @@ class CurrencySeeder extends Seeder
             ['code' => 'AED', 'name' => 'BAE Dirhemi', 'symbol' => 'AED'],
             ['code' => 'QAR', 'name' => 'Katar Riyali', 'symbol' => 'QAR'],
             ['code' => 'SAR', 'name' => 'Suudi Riyali', 'symbol' => 'SAR'],
+            // Gelişmişlik seviyesine göre ülke genişlemesiyle birlikte
+            // (2026-08-16) — CountrySeeder'daki 30 yeni ülkenin karşılıkları.
+            // EUR ve CHF zaten yukarıda var, o yüzden burada yok. Sembol
+            // çakışması riskinde (peso/dinar/riyal ailesi) Gulf akımındaki
+            // gibi Latin kod fallback'i kullanıldı.
+            ['code' => 'ISK', 'name' => 'İzlanda Kronu', 'symbol' => 'kr'],
+            ['code' => 'SGD', 'name' => 'Singapur Doları', 'symbol' => 'S$'],
+            ['code' => 'NZD', 'name' => 'Yeni Zelanda Doları', 'symbol' => 'NZ$'],
+            ['code' => 'KRW', 'name' => 'Güney Kore Wonu', 'symbol' => '₩'],
+            ['code' => 'JPY', 'name' => 'Japon Yeni', 'symbol' => '¥'],
+            ['code' => 'ILS', 'name' => 'İsrail Şekeli', 'symbol' => '₪'],
+            ['code' => 'CZK', 'name' => 'Çek Korunası', 'symbol' => 'Kč'],
+            ['code' => 'BHD', 'name' => 'Bahreyn Dinarı', 'symbol' => 'BHD'],
+            ['code' => 'CLP', 'name' => 'Şili Pesosu', 'symbol' => 'CLP'],
+            ['code' => 'HUF', 'name' => 'Macar Forinti', 'symbol' => 'Ft'],
+            ['code' => 'ARS', 'name' => 'Arjantin Pesosu', 'symbol' => 'ARS'],
+            ['code' => 'UYU', 'name' => 'Uruguay Pesosu', 'symbol' => 'UYU'],
+            ['code' => 'OMR', 'name' => 'Umman Riyali', 'symbol' => 'OMR'],
+            ['code' => 'KWD', 'name' => 'Kuveyt Dinarı', 'symbol' => 'KWD'],
+            // KKTC eklenmesiyle birlikte (2026-08-16) — sahiple konuşuldu.
+            // Türk Lirası buraya kadar BİLİNÇLİ OLARAK yoktu ("platform
+            // yurtdışı odaklı" — bkz. yukarıdaki not). KKTC'de fiilen
+            // kullanılan para birimi TL olduğu için TEK istisna burada.
+            ['code' => 'TRY', 'name' => 'Türk Lirası', 'symbol' => '₺'],
         ];
 
         foreach ($currencies as $i => $c) {
