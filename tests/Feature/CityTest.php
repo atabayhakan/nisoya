@@ -23,8 +23,10 @@ class CityTest extends TestCase
         $this->assertDatabaseHas('cities', ['country_code' => 'DE', 'name' => 'Berlin']);
         $this->assertDatabaseHas('cities', ['country_code' => 'GB', 'name' => 'Londra']);
         $this->assertDatabaseHas('cities', ['country_code' => 'AE', 'name' => 'Dubai']);
-        // Ülke başına 2 tohum şehir — 25 ülke (22 + Körfez: AE/QA/SA) × 2.
-        $this->assertSame(50, City::count());
+        // Ülke başına 2 tohum şehir (mikro-devletlerde 1) — 25 ülke × 2 (50)
+        // + gelişmişlik-seviyesi genişlemesi: 25 ülke × 2 + 5 mikro-devlet
+        // × 1 (55) + Güney Kıbrıs × 2 + KKTC × 2 (2026-08-16).
+        $this->assertSame(109, City::count());
     }
 
     public function test_registration_page_includes_city_suggestions(): void

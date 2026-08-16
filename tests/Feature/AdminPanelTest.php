@@ -68,7 +68,10 @@ class AdminPanelTest extends TestCase
         $this->seed([CurrencySeeder::class, CountrySeeder::class, CategorySeeder::class]);
 
         $this->assertDatabaseHas('currencies', ['code' => 'EUR']);
-        $this->assertDatabaseMissing('currencies', ['code' => 'TRY']); // TL olmamalı
+        // TL uzun süre BİLİNÇLİ OLARAK yoktu (platform yurtdışı odaklı).
+        // 2026-08-16'da KKTC eklenmesiyle TEK istisna: TRY artık var, ama
+        // yalnız KKTC (XN) için — bkz. CurrencySeeder üstündeki not.
+        $this->assertDatabaseHas('currencies', ['code' => 'TRY']);
         $this->assertDatabaseHas('countries', ['code' => 'DE', 'name_tr' => 'Almanya']);
         $this->assertDatabaseHas('categories', ['slug' => 'egitim-ders', 'parent_id' => null]);
     }
