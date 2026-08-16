@@ -9,7 +9,10 @@ class CurrencySeeder extends Seeder
 {
     public function run(): void
     {
-        // Türk Lirası bilinçli olarak YOK — platform yurtdışı odaklı.
+        // Türk Lirası uzun süre BİLİNÇLİ OLARAK yoktu — platform yurtdışı
+        // odaklı. KKTC eklenmesiyle (2026-08-16) TEK istisna aşağıda: TRY,
+        // sırf o satır için. Yeni bir ülkeye "zaten TRY var" diye TL
+        // verilmemeli — istisna KKTC'ye özel, kurala değil.
         $currencies = [
             ['code' => 'EUR', 'name' => 'Euro', 'symbol' => '€'],
             ['code' => 'USD', 'name' => 'Amerikan Doları', 'symbol' => '$'],
@@ -52,6 +55,11 @@ class CurrencySeeder extends Seeder
             ['code' => 'UYU', 'name' => 'Uruguay Pesosu', 'symbol' => 'UYU'],
             ['code' => 'OMR', 'name' => 'Umman Riyali', 'symbol' => 'OMR'],
             ['code' => 'KWD', 'name' => 'Kuveyt Dinarı', 'symbol' => 'KWD'],
+            // KKTC eklenmesiyle birlikte (2026-08-16) — sahiple konuşuldu.
+            // Türk Lirası buraya kadar BİLİNÇLİ OLARAK yoktu ("platform
+            // yurtdışı odaklı" — bkz. yukarıdaki not). KKTC'de fiilen
+            // kullanılan para birimi TL olduğu için TEK istisna burada.
+            ['code' => 'TRY', 'name' => 'Türk Lirası', 'symbol' => '₺'],
         ];
 
         foreach ($currencies as $i => $c) {

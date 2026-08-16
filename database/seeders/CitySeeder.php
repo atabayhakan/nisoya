@@ -74,6 +74,9 @@ class CitySeeder extends Seeder
             'OM' => ['Maskat', 'Salalah'],
             'KW' => ['Kuveyt', 'Hawalli'],
             'CY' => ['Lefkoşa', 'Limasol'],
+            // Lefkoşa CY'nin listesinde de var — şehir gerçekten ikiye
+            // bölünmüş (Yeşil Hat), uydurma çakışma değil.
+            'XN' => ['Lefkoşa', 'Gazimağusa'],
         ];
 
         foreach ($data as $countryCode => $cities) {

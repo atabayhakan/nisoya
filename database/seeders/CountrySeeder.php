@@ -92,6 +92,21 @@ class CountrySeeder extends Seeder
             // Andorra ile eşit) ama liste bozulmasın diye dizinin sonuna
             // eklendi, aradaki HDI sırasına değil.
             ['CY', 'Güney Kıbrıs (Rum Kesimi)', '🇨🇾', 'EUR', 35.1856, 33.3823],
+
+            // KKTC — sahiple konuşuldu (2026-08-16): ayrı satır, TL ile.
+            //
+            // KOD: ISO-3166 KKTC'yi tanımıyor (yalnız Türkiye tanıyor), yani
+            // resmî bir 2 harfli kod YOK. 'XN' kullanıldı — ISO'nun bilerek
+            // hiçbir ülkeye atamadığı, tam bu durum için ayrılmış 'X' serisi
+            // aralığından (Kosova'nın yaygın kullandığı 'XK' ile aynı mantık).
+            // Gerçek bir ülkeyle KOD ÇAKIŞMASI riski yok.
+            //
+            // BAYRAK: Unicode'da 🇽🇳 diye TANIMLI bir bayrak YOK (yalnız
+            // ISO'da atanmış kodlar gerçek bayrak render eder). Bu emoji
+            // çoğu platformda YER TUTUCU/genel bayrak simgesi olarak
+            // görünür, KKTC bayrağı olarak DEĞİL — bilinen bir sınır, kod
+            // incelemesinde şaşırtmasın diye burada yazılı.
+            ['XN', 'Kuzey Kıbrıs Türk Cumhuriyeti', '🇽🇳', 'TRY', 35.1901, 33.3644],
         ];
 
         foreach ($countries as $i => $c) {
