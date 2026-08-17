@@ -101,6 +101,62 @@ yüksek), ve varsa somut ilk adım.
 
 ---
 
+## [2026-08-18]
+
+### Ek — USAilan.com incelemesi (ajan turu dışında)
+
+Sahip, ABD'ye özel 15 yıllık bir Türkçe ilan sitesi olan **usailan.com**'u
+canlıda incelettirdi ve Nisoya'ya uygulanabilecekleri sordu. Bu, haftalık ajan
+turunun çıktısı değil; ayrı bir istek — Lalafo incelemesiyle (2026-08-10) aynı
+desende. Tam rapor: [USAilan Dosyası](https://claude.ai/code/artifact/776099fe-bec8-4511-a0f0-752d3a465092).
+
+**Sitenin yaptıkları:** ilan + şirket rehberi + topluluk forumu + "Amerika'da
+Yaşam" içerik köşesi tek platformda · tek "+" düğmesi İlan Ver/Şirket Ekle/
+Toplulukta Başlık Aç olarak üçe dallanıyor · ilan detayında görüntülenme
+sayısı + satıcının üyelik tarihi + "üyenin diğer ilanları" + alt kısımda
+"size uygun diğer ilanlar"/"kategori ilanları" · şirket rehberinde boş
+kategoriler (0) gizlenmeden sayısıyla duruyor · reklam geliri üç katmanlı
+(üst menü CTA + programatik banner + sponsorlu şirket kartı).
+
+**Zaten Nisoya'da ölçülmüş/kararlı olanlar (yeniden önerilmiyor):**
+- **Görüntülenme sayacı** — Lalafo turunda (2026-08-10) **ERTELE** kararı
+  aldı: veri var (`views_count`), gösterim şartı "ilan başına anlamlı bir
+  sayıya çıksın". USAilan aynı deseni doğruluyor ama koşulu değiştirmiyor —
+  envanter kapısı hâlâ geçerli.
+- **Benzer/kategori ilanları bloğu** — aynı turda **ERTELE**: kod yazılı
+  (`vitrin/listings/show.blade.php`), `Tema::vitrinMi()` ile kapalı, şart
+  "aynı kategoride en az birkaç üçüncü taraf ilan biriksin". USAilan'ın
+  "size uygun diğer ilanlar" + "kategori ilanları" ikilisi bu tek bloğun
+  genişletilmiş hâli — aynı şart geçerli.
+
+**Yeni, henüz karar bekleyen iki fikir** (karar defterindeki 6 sınırı zaten
+dolu — bkz. 2026-08-10 girişi — bu yüzden resmi numaralı öneri olarak DEĞİL,
+sırada bekleyen not olarak yazılıyor):
+
+1. **Ülke rehberini "pratik yaşam" konularına genişletmek.** USAilan'ın en
+   çok görüntülenen içerikleri (14.160, 9.025, 3.708 görüntülenme) konsolosluk
+   işlemi DEĞİL — kredi skoru, SSN'siz banka hesabı, ehliyet çevirme, telefon
+   operatörü karşılaştırması gibi gündelik hayata dair rehberler. Nisoya'nın
+   rehberi bugün yalnız temsilcilik × işlem (vekaletname, pasaport vb.) ile
+   sınırlı. Bu, karar defterindeki mevcut altı öneriden hiçbiriyle çakışmıyor
+   — rehber modülünün KAPSAMINI genişletme fikri, içindeki sayfa SAYISINI
+   artırma fikrinden (öneri 2, 2026-08-04) farklı.
+2. **İlan detayına satıcı kıdemi ("Nisoya'da N aydır üye") rozeti.**
+   Görüntülenme sayacından farklı olarak envanter kapısına takılmıyor — "yeni
+   üye" de "kıdemli üye" de dürüst bir bilgi, sıfır ilan riski taşımıyor.
+
+**Sıraya alınmayan üçüncü fikir:** "+İlan Ver" akışını ilan/şirket seçimine
+dallandırmak — Nisoya'da ikinci bir içerik türü (şirket profili) yayında
+olmadan bu fikrin bir karşılığı yok, iş ilanları modülündeki `companies`
+tablosuyla ilişkisi ayrıca netleştirilmeli.
+
+**Devam eden plan:** Sahip birkaç benzer platform daha inceleyip verilerini
+birleştirmek istiyor. Bu girdi ilk veri noktası; sonraki turlarda bu bölüm
+güncellenecek, kararlar hepsi toplandıktan sonra tek seferde verilecek. Sahip
+bu hafta Nisoya dışında başka projelerle ilgilenecek — bu iş askıda, sırada.
+
+---
+
 ## [2026-08-10]
 
 **Envanter ölçümü (bu tur, canlıdan):** `/ilanlar` filtresiz **1 ilan** —
