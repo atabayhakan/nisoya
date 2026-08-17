@@ -29,7 +29,7 @@ return [
 
         // --- Genel ---
         'genel.site_adi' => ['group' => 'genel', 'label' => 'Site adı', 'type' => 'text', 'default' => 'Nisoya'],
-        'genel.slogan' => ['group' => 'genel', 'label' => 'Slogan', 'type' => 'text', 'default' => 'Ne İş Olursa Yaparım'],
+        'genel.slogan' => ['group' => 'genel', 'label' => 'Slogan', 'type' => 'text', 'default' => 'Ne İş Olursa Yaparız'],
 
         // --- İletişim sayfası ---
         // 'iletisim.eposta' aynı zamanda yeni mesaj bildirimlerinin gönderileceği
@@ -139,7 +139,7 @@ return [
         'header.ozel_kod' => ['group' => 'header', 'label' => 'Header özel kod (</head> öncesi)', 'type' => 'code', 'default' => ''],
 
         // --- Footer ---
-        'footer.aciklama' => ['group' => 'footer', 'label' => 'Footer açıklama', 'type' => 'textarea', 'default' => 'Ne İş Olursa Yaparım. Yurt dışındaki Türklerin kendi aralarında yetenek ve hizmet pazaryeri.'],
+        'footer.aciklama' => ['group' => 'footer', 'label' => 'Footer açıklama', 'type' => 'textarea', 'default' => 'Ne İş Olursa Yaparız. Yurt dışındaki Türklerin kendi aralarında yetenek ve hizmet pazaryeri.'],
         'footer.telif_metni' => ['group' => 'footer', 'label' => 'Telif hakkı metni (yıl otomatik eklenir)', 'type' => 'text', 'default' => 'Nisoya. Tüm hakları saklıdır.'],
         'footer.sosyal_instagram' => ['group' => 'footer', 'label' => 'Instagram bağlantısı', 'type' => 'text', 'default' => ''],
         'footer.sosyal_facebook' => ['group' => 'footer', 'label' => 'Facebook bağlantısı', 'type' => 'text', 'default' => ''],
@@ -222,7 +222,7 @@ return [
         'duyuru.kapatilabilir' => ['group' => 'duyuru', 'label' => 'Ziyaretçi kapatabilsin', 'type' => 'select', 'options' => ['1' => 'Evet', '0' => 'Hayır'], 'default' => '1'],
 
         // --- SEO (arama motoru + paylaşım) — kendi sayfası var (SeoAyarlari).
-        'seo.default_title' => ['group' => 'seo', 'label' => 'Varsayılan başlık', 'type' => 'text', 'default' => 'Nisoya — Ne İş Olursa Yaparım'],
+        'seo.default_title' => ['group' => 'seo', 'label' => 'Varsayılan başlık', 'type' => 'text', 'default' => 'Nisoya — Ne İş Olursa Yaparız'],
         'seo.default_description' => ['group' => 'seo', 'label' => 'Varsayılan açıklama', 'type' => 'textarea', 'default' => 'Yurt dışındaki Türklerin yetenek, hizmet ve ev ürünleri pazaryeri. Kendi insanından güvenle hizmet al, yeteneğini paraya dönüştür.'],
         'seo.og_image' => ['group' => 'seo', 'label' => 'Paylaşım görseli (OG — 1200×630 önerilir)', 'type' => 'image', 'default' => ''],
         'seo.robots_index' => ['group' => 'seo', 'label' => 'Arama motorlarında görünür', 'type' => 'select', 'options' => ['1' => 'Görünür', '0' => 'Gizli (noindex)'], 'default' => '1'],

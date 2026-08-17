@@ -64,6 +64,6 @@ class IlanIpuclariNotification extends Notification implements ShouldQueue
             // Bu cümle bilerek var: tek seferlik olduğunu söylemek, "acaba
             // her hafta bu mesaj gelecek mi" endişesini baştan kapatıyor.
             ->line('Bu tek seferlik bir öneri mesajıdır; aynı ilan için tekrar göndermeyeceğiz.')
-            ->line('Nisoya — Ne İş Olursa Yaparım');
+            ->line('Nisoya — Ne İş Olursa Yaparız');
     }
 }

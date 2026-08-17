@@ -68,7 +68,7 @@ class AyarDoldur extends Eylem
             'anahtar' => 'Güncellenecek ayarın tam anahtarı. Yalnız seo. / duyuru. / iletisim. / '
                 .'nabiz. / bagis. ile başlayanlar yazılabilir. Ör. seo.default_title, '
                 .'duyuru.metin, iletisim.eposta, nabiz.hedef_sayi, bagis.baslik.',
-            'deger' => 'Yazılacak yeni değer, düz metin. Ör. "Nisoya — Ne İş Olursa Yaparım".',
+            'deger' => 'Yazılacak yeni değer, düz metin. Ör. "Nisoya — Ne İş Olursa Yaparız".',
         ];
     }
 

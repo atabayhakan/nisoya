@@ -43,6 +43,6 @@ class ApplicationStatusNotification extends Notification implements ShouldQueue
             ->line('"'.$this->jobTitle.'" ilanına yaptığın başvurunun durumu güncellendi:')
             ->line('Yeni durum: '.$this->statusLabel)
             ->action('İlanı görüntüle', route('jobs.show', [$this->jobId, $this->jobSlug]))
-            ->line('Nisoya — Ne İş Olursa Yaparım');
+            ->line('Nisoya — Ne İş Olursa Yaparız');
     }
 }

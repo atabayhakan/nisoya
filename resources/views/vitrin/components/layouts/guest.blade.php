@@ -65,7 +65,7 @@
             <a href="{{ url('/iletisim') }}" class="hover:text-emerald-700 hover:underline dark:hover:text-emerald-400">İletişim</a>
         </nav>
 
-        <p class="mt-3 text-xs font-medium text-stone-600 dark:text-stone-400">© {{ date('Y') }} Nisoya — Ne İş Olursa Yaparım</p>
+        <p class="mt-3 text-xs font-medium text-stone-600 dark:text-stone-400">© {{ date('Y') }} Nisoya — Ne İş Olursa Yaparız</p>
     </div>
 
     <script>

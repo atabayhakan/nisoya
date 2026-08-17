@@ -30,7 +30,7 @@ class MailTemplates
                 'greeting' => 'Merhaba {ad},',
                 'intro' => '{gonderen} sana yeni bir mesaj gönderdi:',
                 'action' => 'Mesajı görüntüle',
-                'outro' => 'Nisoya — Ne İş Olursa Yaparım',
+                'outro' => 'Nisoya — Ne İş Olursa Yaparız',
             ],
         ],
         'destek_yaniti' => [

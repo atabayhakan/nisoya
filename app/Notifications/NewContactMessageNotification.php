@@ -41,6 +41,6 @@ class NewContactMessageNotification extends Notification implements ShouldQueue
             ->line('**Mesaj:**')
             ->line(Str::limit($m->message, 1000))
             ->action('Admin panelinde görüntüle', route('filament.admin.resources.contact-messages.index'))
-            ->line('Nisoya — Ne İş Olursa Yaparım');
+            ->line('Nisoya — Ne İş Olursa Yaparız');
     }
 }

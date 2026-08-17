@@ -47,6 +47,6 @@ class ListingFlaggedNotification extends Notification implements ShouldQueue
             ->line('"'.$this->listingTitle.'" ilanındaki bir görsel, otomatik ön kontrolümüz tarafından ek incelemeye alındı.')
             ->line('Bu genellikle yanlış bir eşleşmedir ve ekibimiz kısa süre içinde gözden geçirip ilanını tekrar yayına alacaktır. Ekstra bir şey yapmana gerek yok.')
             ->action('İlanlarımı görüntüle', $this->url)
-            ->line('Nisoya — Ne İş Olursa Yaparım');
+            ->line('Nisoya — Ne İş Olursa Yaparız');
     }
 }
