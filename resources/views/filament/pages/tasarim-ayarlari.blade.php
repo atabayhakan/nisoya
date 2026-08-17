@@ -230,7 +230,7 @@
                          yani motorla ayrışamaz. --}}
                     <div class="mt-3 border border-gray-200 px-3 py-2.5 text-sm font-bold dark:border-gray-700"
                          style="border-radius: {{ $onizlemeKose }}; font-family: {{ $onizlemeFont }}; color: {{ $onizlemeRenk }}">
-                        Ne İş Olursa Yaparım
+                        Ne İş Olursa Yaparız
                     </div>
 
                     @if ($secili)

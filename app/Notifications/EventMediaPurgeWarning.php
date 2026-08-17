@@ -36,7 +36,7 @@ class EventMediaPurgeWarning extends Notification implements ShouldQueue
             ->line('Depolama politikamız gereği anı akışındaki fotoğraf ve videolar **'.$this->purgeDate.'** tarihinde kalıcı olarak silinecek.')
             ->line('Saklamak istediklerini şimdiden bilgisayarına indirmeni öneririz.')
             ->action('Anı akışını aç', $this->inviteUrl)
-            ->line('Nisoya — Ne İş Olursa Yaparım');
+            ->line('Nisoya — Ne İş Olursa Yaparız');
     }
 
     /** @return array<string, mixed> */

@@ -79,7 +79,7 @@ class PageTest extends TestCase
     {
         $this->seed(StaticPagesSeeder::class);
 
-        $this->get('/hakkimizda')->assertOk()->assertSee('Hakkımızda')->assertSee('Ne İş Olursa Yaparım');
+        $this->get('/hakkimizda')->assertOk()->assertSee('Hakkımızda')->assertSee('Ne İş Olursa Yaparız');
         $this->get('/sss')->assertOk()->assertSee('Nisoya ücretli mi');
         $this->get('/kosullar')->assertOk()->assertSee('Platformun niteliği');
 

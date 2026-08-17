@@ -41,6 +41,6 @@ class NewApplicationNotification extends Notification implements ShouldQueue
             ->greeting('Merhaba '.$notifiable->name.',')
             ->line($this->applicantName.', "'.$this->jobTitle.'" ilanına başvurdu.')
             ->action('Başvuruyu görüntüle', route('panel.jobs.applicants', $this->jobId))
-            ->line('Nisoya — Ne İş Olursa Yaparım');
+            ->line('Nisoya — Ne İş Olursa Yaparız');
     }
 }

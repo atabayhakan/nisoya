@@ -47,6 +47,6 @@ class GpsPrivacyNotification extends Notification implements ShouldQueue
             ->line('Bu bilgi görsel yayınlanmadan önce otomatik olarak temizlendi; başkaları tarafından görülemez.')
             ->line('Bilgin olsun istedik — telefon kamerandaki konum servisini kapatarak gelecekte bu bilgiyi baştan engelleyebilirsin.')
             ->action('İlanı görüntüle', route('panel.listings.edit', $this->listingId))
-            ->line('Nisoya — Ne İş Olursa Yaparım');
+            ->line('Nisoya — Ne İş Olursa Yaparız');
     }
 }

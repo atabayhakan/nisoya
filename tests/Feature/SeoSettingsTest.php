@@ -31,7 +31,7 @@ class SeoSettingsTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('Nisoya — Ne İş Olursa Yaparım')
+            ->assertSee('Nisoya — Ne İş Olursa Yaparız')
             ->assertSee('güvenle hizmet al');
     }
 
