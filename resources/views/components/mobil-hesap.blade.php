@@ -20,7 +20,7 @@
         <button
             type="button"
             @click="ac()"
-            class="flex items-center rounded-full ring-2 ring-transparent transition hover:ring-emerald-200 dark:hover:ring-emerald-800"
+            class="flex h-9 w-9 items-center justify-center rounded-full ring-2 ring-transparent transition hover:ring-emerald-200 dark:hover:ring-emerald-800"
             :aria-expanded="acik ? 'true' : 'false'"
             aria-haspopup="dialog"
             aria-label="Hesabım"
@@ -29,9 +29,13 @@
                  Masaüstünde zil + sayı rozeti her sayfada duruyordu; mobilde
                  hiçbir işaret YOKTU — kullanıcı Panelim'e girmeden okunmamış
                  bildirimi olduğunu bilemiyordu. Sayı yerine nokta: 8x8'lik bir
-                 avatarın yanında rakam okunmuyor, "bir şey var" yeter. --}}
+                 avatarın yanında rakam okunmuyor, "bir şey var" yeter.
+
+                 h-9 w-9 (36px): başlıktaki arama/ülke/acil/üye-ol düğmeleriyle
+                 AYNI yükseklik — dördü farklı boyda olduğu için sıra "birbirinden
+                 bağımsız" görünüyordu (ölçüldü: 28-38px arası saçılma). --}}
             <span class="relative">
-                <x-avatar :user="auth()->user()" size="h-8 w-8" text="text-xs" />
+                <x-avatar :user="auth()->user()" size="h-9 w-9" text="text-xs" />
                 @if ($okunmamisBildirim = auth()->user()->okunmamisBildirimSayisi())
                     <span class="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-stone-900" aria-hidden="true"></span>
                 @endif
@@ -161,7 +165,7 @@
             @click="acik ? kapat() : ac()"
             :aria-expanded="acik ? 'true' : 'false'"
             aria-controls="misafir-yelpaze"
-            class="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400"
+            class="inline-flex h-9 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-emerald-700 px-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400"
         >
             Üye ol
             {{-- Döndürme sarmalayıcı span'de: Alpine'in `::class` kısayolunu

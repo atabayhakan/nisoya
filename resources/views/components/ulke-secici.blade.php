@@ -17,7 +17,7 @@
     <button
         type="button"
         @click="ac()"
-        class="inline-flex items-center gap-1 rounded-full border border-stone-200 px-2 py-1.5 sm:px-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+        class="inline-flex h-9 items-center gap-1 rounded-full border border-stone-200 px-2 sm:px-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
         :aria-expanded="acik ? 'true' : 'false'"
         aria-haspopup="dialog"
         aria-label="Ülke seç"

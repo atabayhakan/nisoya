@@ -160,8 +160,15 @@
         @click="ac()"
         {{-- Odak halkası DIŞA taşınıyor: `ring-inset` ile kırmızının üstünde
              kalan beyaz halka 2.86:1 veriyordu (gereken 3.0). Offset'li hâli
-             sayfa zeminine düşüyor ve net görünüyor. --}}
-        class="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg bg-[#E30A17] px-2 py-2 sm:gap-1.5 sm:px-2.5 text-sm font-bold text-white shadow-sm ring-1 ring-inset ring-white/20 transition hover:-translate-y-0.5 hover:bg-[#C10914] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2"
+             sayfa zeminine düşüyor ve net görünüyor.
+
+             rounded-full + h-9 (36px) — eskiden rounded-lg'ydi ve py-2 ile
+             38px'e çıkıyordu. Başlıktaki dört düğme (ara/ülke/acil/üye ol)
+             ölçüldüğünde 28-38px arasında saçılmış ve iki farklı köşe
+             yuvarlaklığı arasında dönüyordu — sıra "birbirinden bağımsız"
+             görünüyordu. Şimdi üç dolu/anahat pill (ülke, acil, üye ol) aynı
+             şekil ailesinde; yalnız arama (salt ikon) rounded-lg kalıyor. --}}
+        class="inline-flex h-9 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-[#E30A17] px-2.5 sm:gap-1.5 sm:px-3 text-sm font-bold text-white shadow-sm ring-1 ring-inset ring-white/20 transition hover:-translate-y-0.5 hover:bg-[#C10914] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2"
         aria-label="Acil yardım — hızlı erişim"
         title="Acil yardım — hızlı erişim"
     >

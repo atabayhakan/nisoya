@@ -115,7 +115,7 @@
 
                 {{-- Favoriler — mobilde başlıkta, yalnız giriş yapmışken. --}}
                 @auth
-                    <a href="{{ route('panel.favorites.index') }}" class="rounded-lg p-2 text-stone-600 transition hover:bg-stone-100 md:hidden dark:text-stone-300 dark:hover:bg-stone-800" title="Favorilerim" aria-label="Favorilerim">
+                    <a href="{{ route('panel.favorites.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg text-stone-600 transition hover:bg-stone-100 md:hidden dark:text-stone-300 dark:hover:bg-stone-800" title="Favorilerim" aria-label="Favorilerim">
                         <x-heroicon-o-heart class="h-5 w-5" />
                     </a>
                 @endauth
