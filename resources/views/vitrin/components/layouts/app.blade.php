@@ -213,8 +213,10 @@
                         <li><a href="{{ route('candidates.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Yetenek Havuzu</a></li>
                     @endif
                     {{-- Rehber bağlantısı ancak yayında içerik varken belirir (F2) —
-                         boş rehbere götüren link, linkin yokluğundan kötüdür. --}}
-                    @if (\App\Support\Modules::enabled('rehber') && ($rehberFooterUlke = app(\App\Services\RehberYuzeyi::class)->varsayilanUlkeKodu()) !== null)
+                         boş rehbere götüren link, linkin yokluğundan kötüdür. Hedef
+                         ziyaretçinin kendi ülkesi (F3, girisNoktasiUlkeKodu) — sabit
+                         "ilk hazır ülke" artık yalnız o da hazır değilse devreye girer. --}}
+                    @if (\App\Support\Modules::enabled('rehber') && ($rehberFooterUlke = app(\App\Services\RehberYuzeyi::class)->girisNoktasiUlkeKodu(request()->user(), request())) !== null)
                         <li><a href="{{ route('rehber.ulke', $rehberFooterUlke) }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Ülke Rehberi</a></li>
                     @endif
                     <li><a href="{{ url('/nasil-calisir') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a></li>

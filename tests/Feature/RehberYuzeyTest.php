@@ -161,6 +161,38 @@ class RehberYuzeyTest extends TestCase
         $this->get('/nasil-calisir')->assertOk()->assertSee('Ülke Rehberi')->assertSee('/de');
     }
 
+    public function test_footer_baglantisi_uyenin_kendi_ulkesine_gider_ilk_hazir_ulkeye_degil(): void
+    {
+        // F3: DE ilk hazır ülke (varsayilanUlkeKodu) — ama üye KG'de yaşıyor
+        // ve KG de hazır. Footer artık sabit "ilk hazır ülke"ye değil,
+        // üyenin KENDİ ülkesine gitmeli.
+        $tur = $this->islemTuru();
+        $this->islem($this->temsilcilik(), $tur);
+        $this->islem($this->temsilcilik([
+            'country_code' => 'KG', 'ad' => 'Bişkek Büyükelçiliği', 'slug' => 'biskek', 'sehir' => 'Bişkek',
+        ]), $tur);
+
+        $uye = User::factory()->create(['country_code' => 'KG', 'email_verified_at' => now()]);
+
+        // Tam href karşılaştırması bilinçli: bare "/de" alt dizesi sayfadaki
+        // </details> etiketleriyle (FAQ akordeonu) yanlış eşleşiyordu.
+        $this->actingAs($uye)->get('/nasil-calisir')
+            ->assertOk()
+            ->assertSee(route('rehber.ulke', 'kg'))
+            ->assertDontSee(route('rehber.ulke', 'de'));
+    }
+
+    public function test_footer_baglantisi_hazir_olmayan_uye_ulkesine_dayatilmaz(): void
+    {
+        // Üyenin ülkesi (US) rehberde hiç yok — DE'ye (ilk hazır) düşer.
+        // Kırık/boş link yerine hâlâ ÇALIŞAN bir hedef.
+        $this->yayindaAlmanya();
+
+        $uye = User::factory()->create(['country_code' => 'US', 'email_verified_at' => now()]);
+
+        $this->actingAs($uye)->get('/nasil-calisir')->assertOk()->assertSee(route('rehber.ulke', 'de'));
+    }
+
     // ----------------------------------------------------------- Cmd+K arama
 
     public function test_arama_yayindaki_islemi_bulur(): void

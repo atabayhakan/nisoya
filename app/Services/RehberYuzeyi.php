@@ -89,6 +89,25 @@ class RehberYuzeyi
     }
 
     /**
+     * Ülkesiz "Rehbere git" linkleri için hedef (footer/menü, F3).
+     *
+     * Ziyaretçinin kendi ülkesi hazırsa oraya gider; değilse (tespit
+     * edilemedi ya da rehberi boşsa) `varsayilanUlkeKodu()`'na düşer —
+     * anasayfa widget'ının (`rehberVerisi()`) zaten kullandığı çözünürlükle
+     * aynı öncelik, yalnız tek bir ülke koduna indirgenmiş hâli.
+     */
+    public function girisNoktasiUlkeKodu(?User $uye, Request $request): ?string
+    {
+        $cozulenKod = $this->cozulenUlkeKodu($uye, $request);
+
+        if ($cozulenKod !== null && $this->hazirUlkeler()->contains('code', $cozulenKod)) {
+            return strtolower($cozulenKod);
+        }
+
+        return $this->varsayilanUlkeKodu();
+    }
+
+    /**
      * Footer bağlantısının hedefi: ilk hazır ülkenin küçük harfli kodu.
      *
      * Footer her sayfada basıldığı için DOLU sonuç kısa süre önbelleklenir.

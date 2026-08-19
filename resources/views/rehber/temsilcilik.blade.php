@@ -15,6 +15,8 @@
             <span class="text-stone-700 dark:text-stone-200">{{ $temsilcilik->sehir }}</span>
         </nav>
 
+        <x-rehber.ulke-secici :aktif="$country" class="mt-3" />
+
         <p class="mt-4 text-xs font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-400">{{ $temsilcilik->turEtiketi() }}</p>
         <h1 class="mt-1 text-3xl font-bold text-stone-900 dark:text-stone-50">{{ $temsilcilik->ad }}</h1>
 
