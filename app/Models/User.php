@@ -518,6 +518,62 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
         return $this->trustTier()->isNew();
     }
 
+    /**
+     * Kayıttan bu yana geçen tam ay sayısı — kıdem metinlerinin TEK kaynağı.
+     *
+     * `trustTier()`'daki `age_days` ile KARIŞTIRILMAMALI: o çok faktörlü bir
+     * güven kademesi hesaplıyor (değerlendirme + doğrulama + yaş), bu yalnız
+     * ham bir üyelik süresi olgusu — ikisi farklı sorulara cevap veriyor.
+     */
+    public function kidemAySayisi(): int
+    {
+        return (int) $this->created_at->diffInMonths(now());
+    }
+
+    /**
+     * Tam cümle — ilan detayı ve satıcı şeridi için. 1 aydan taze hesap için
+     * bile bir şey döner (detay sayfalarındaki eski "Üyelik: ay yıl" metninin
+     * yerini alıyor, o hiçbir hesap için boş kalmıyordu).
+     *
+     * "Yeni üye" YAZILMIYOR bilerek: TrustTier::Yeni'nin rozet etiketi zaten
+     * bu — aynı ekranda iki farklı "yeni üye" ibaresi (biri kıdem, biri güven
+     * kademesi) aynı şeyi söylüyormuş gibi görünürdü, oysa ikisi ayrı ölçüt.
+     */
+    public function kidemMetni(): string
+    {
+        $ay = $this->kidemAySayisi();
+
+        if ($ay < 1) {
+            return "Nisoya'da yakın zamanda katıldı";
+        }
+
+        if ($ay >= 12) {
+            return "Nisoya'da ".intdiv($ay, 12).' yıldır üye';
+        }
+
+        return "Nisoya'da {$ay} aydır üye";
+    }
+
+    /**
+     * Kısa biçim — ilan kartı rozeti için (dar alan, "Nisoya'da" öneki
+     * bağlamdan zaten belli). 1 aydan taze hesapta null: kartta göstermeye
+     * değer bir kıdem yok, boş/garip bir rozet basmaktansa hiç basmamak.
+     */
+    public function kidemKisa(): ?string
+    {
+        $ay = $this->kidemAySayisi();
+
+        if ($ay < 1) {
+            return null;
+        }
+
+        if ($ay >= 12) {
+            return intdiv($ay, 12).' yıldır üye';
+        }
+
+        return "{$ay} aydır üye";
+    }
+
     /** Activity log: yalnızca önemli alan değişikliklerini logla. */
     public function getActivitylogOptions(): LogOptions
     {

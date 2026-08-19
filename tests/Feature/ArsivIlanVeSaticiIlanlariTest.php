@@ -305,9 +305,12 @@ class ArsivIlanVeSaticiIlanlariTest extends TestCase
             ->assertOk()
             // Şeridin kendisi (mobilde görünür, masaüstünde gizli).
             ->assertSee('lg:hidden', false)
-            // Kimlik: satıcı adı ve üyelik yılı.
+            // Kimlik: satıcı adı ve kıdem metni (bkz. User::kidemMetni,
+            // docs/03-buyume-fikirleri.md 2026-08-19 · YAP — taze hesap
+            // için "yakın zamanda katıldı" döner, factory created_at'i
+            // özelleştirmiyor).
             ->assertSee('Ayşe Demir')
-            ->assertSee("'ten beri üye", false)
+            ->assertSee("Nisoya'da yakın zamanda katıldı")
             // İletişime kısayol ve hedefi.
             ->assertSee('Satıcıya mesaj yaz')
             ->assertSee('satici-iletisim', false);
