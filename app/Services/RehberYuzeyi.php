@@ -48,6 +48,30 @@ class RehberYuzeyi
     }
 
     /**
+     * Rehberde en azından bir temsilcilik kaydı olan aktif ülkeler — yayında
+     * İŞLEM şartı YOK (hazirUlkeler()'in tersine). Nisoya AI arama
+     * çubuğunun ülke listesi buradan gelir: model "Avustralya" gibi bir
+     * ismi koda çevirebilsin diye, o ülkenin işlem içeriği olmasa bile
+     * listede olması yeterli — RehberDogalDilArama::temsilciklerleBul() o
+     * ülkede zaten temsilciliğin kendisini önerebiliyor.
+     *
+     * Bu ayrım olmadan (2026-08-20, canlıda ölçüldü): 55 yeni iskelet ülke
+     * hazirUlkeler()'de hiç görünmediği için AI'nin ülke listesinde de hiç
+     * yoktu — "Avustralya'da büyükelçilik nerede" sorusu model tarafından
+     * hiçbir ülke koduna bağlanamıyordu.
+     *
+     * @return Collection<int, Country>
+     */
+    public function kapsananUlkeler(): Collection
+    {
+        return Country::query()
+            ->where('is_active', true)
+            ->whereHas('temsilcilikler', fn ($q) => $q->where('is_active', true))
+            ->orderBy('sort_order')
+            ->get();
+    }
+
+    /**
      * K1 çözümü: üye ikameti > GeoIP; ikisi de yoksa null.
      * Dönen kod HAZIRLIK garantisi taşımaz — çağıran hazır listesiyle eşler.
      */

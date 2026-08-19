@@ -61,9 +61,12 @@ class NisoyaAiYonlendiriciTest extends TestCase
         ]);
     }
 
-    private function sahteBagla(?array $yanit): void
+    private function sahteBagla(?array $yanit): SahteAiSaglayici
     {
-        $this->app->instance(AiProvider::class, new SahteAiSaglayici($yanit));
+        $sahte = new SahteAiSaglayici($yanit);
+        $this->app->instance(AiProvider::class, $sahte);
+
+        return $sahte;
     }
 
     public function test_ayar_kapaliyken_pasif(): void
@@ -123,6 +126,29 @@ class NisoyaAiYonlendiriciTest extends TestCase
         $this->assertNotNull($sonuc['ilanBaglantisi']);
     }
 
+    /**
+     * Gerçek olay (2026-08-20, canlıda ölçüldü): "merhaba naber nasılsın"
+     * gibi alakasız bir selamlama, ziyaretçinin kendi ülkesindeki
+     * temsilciliği "rehber" sonucu olarak döndürüyordu — AI doğru şekilde
+     * "belirsiz" demişti ama varsayılan ülkeye düşme YALNIZ "rehber"
+     * niyetinde uygulanmalıydı.
+     */
+    public function test_belirsiz_niyette_ipucu_yokken_varsayilan_ulkeye_dusulmez(): void
+    {
+        $this->yayindaAlmanya(); // ziyaretçinin "kendi ülkesi" (DE) hazır ve gerçek içerik taşıyor
+
+        $this->sahteBagla([
+            'niyet' => 'belirsiz', 'ulke_kodu' => null, 'islem_turu_slug' => null, 'anahtar_kelimeler' => ['selamlama', 'genel sohbet'],
+        ]);
+
+        // varsayilanUlkeKodu DOLU (DE) — ama soru resmî bir konu değil, bu yüzden kullanılmamalı.
+        $sonuc = app(NisoyaAiYonlendirici::class)->ara('merhaba naber nasılsın', 'DE');
+
+        $this->assertSame('belirsiz', $sonuc['niyet']);
+        $this->assertTrue($sonuc['sonuclar']->isEmpty(), 'Alakasız bir selamlama, ziyaretçinin ülkesindeki temsilciliği döndürmemeli');
+        $this->assertNotNull($sonuc['ilanBaglantisi']);
+    }
+
     public function test_ai_basarisiz_olursa_kaba_kelimelere_duser_cokme(): void
     {
         $this->yayindaAlmanya();
@@ -165,5 +191,28 @@ class NisoyaAiYonlendiriciTest extends TestCase
 
         $this->assertSame('rehber', $sonuc['niyet']);
         $this->assertStringContainsString('Bişkek', $sonuc['sonuclar']->first()['altbaslik']);
+    }
+
+    /**
+     * Gerçek olay (2026-08-20, canlıda ölçüldü): AI'nin ülke listesi
+     * hazirUlkeler()'den (yalnız işlem içeriği olanlar) geliyordu — yeni
+     * eklenen 55 iskelet ülke o listede hiç yoktu, bu yüzden model
+     * "Avustralya'da büyükelçilik nerede" sorusundan ülke kodu
+     * çıkaramıyordu. Artık kapsananUlkeler() kullanılıyor (bkz.
+     * RehberYuzeyi), işlem içeriği olmasa bile temsilciliği olan her ülke
+     * modele bildiriliyor.
+     */
+    public function test_istem_islem_icerigi_olmayan_ulkeyi_de_listeler(): void
+    {
+        $this->temsilcilik([
+            'country_code' => 'AU', 'ad' => 'Canberra Büyükelçiliği', 'slug' => 'canberra', 'sehir' => 'Canberra',
+        ]); // hiç işlem yok — tam da yeni iskelet ülkelerin durumu
+
+        $sahte = $this->sahteBagla(['niyet' => 'rehber', 'ulke_kodu' => 'AU', 'islem_turu_slug' => null, 'anahtar_kelimeler' => []]);
+
+        app(NisoyaAiYonlendirici::class)->ara('Avustralya\'da büyükelçilik nerede', null);
+
+        $this->assertNotNull($sahte->sonYonerge);
+        $this->assertStringContainsString('AU', $sahte->sonYonerge);
     }
 }
