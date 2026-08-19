@@ -24,16 +24,6 @@ class RehberDunyaTemsilcilikIskeletiSeederTest extends TestCase
     {
         parent::setUp();
         $this->seed([CurrencySeeder::class, CountrySeeder::class]);
-
-        // TH/KH/ID production'da aktif ama CountrySeeder'da hiç yok (muhtemelen
-        // panelden elle eklenmiş — bkz. spawn_task önerisi). Bu üçü olmadan
-        // test 55 yerine 52 sayardı; testin gördüğü ülke kümesi production'un
-        // GERÇEĞİYLE eşleşsin diye burada tamamlanıyor.
-        Country::query()->insertOrIgnore([
-            ['code' => 'TH', 'name_tr' => 'Tayland', 'emoji' => '🇹🇭', 'default_currency' => 'THB', 'is_active' => true, 'sort_order' => 900],
-            ['code' => 'KH', 'name_tr' => 'Kamboçya', 'emoji' => '🇰🇭', 'default_currency' => 'KHR', 'is_active' => true, 'sort_order' => 901],
-            ['code' => 'ID', 'name_tr' => 'Endonezya', 'emoji' => '🇮🇩', 'default_currency' => 'IDR', 'is_active' => true, 'sort_order' => 902],
-        ]);
     }
 
     public function test_55_ulkeye_temsilcilik_olusturur(): void
