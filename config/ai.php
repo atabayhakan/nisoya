@@ -49,6 +49,10 @@ return [
         // Doğal dille arama: cümleyi var olan süzgeçlere çevirir (yeni bir
         // arama motoru DEĞİL). Bkz. App\Services\DogalDilArama.
         'natural_search' => (bool) env('AI_NATURAL_SEARCH', true),
+        // Anasayfa "Nisoya AI ile ara" çubuğu: soruyu Rehber (konsolosluk/
+        // resmî işlem) veya ilan aramasına yönlendirir — kendi cevap ÜRETMEZ.
+        // Bkz. App\Services\NisoyaAiYonlendirici.
+        'nisoya_ai_arama' => (bool) env('AI_NISOYA_ARAMA', true),
         // İlan görselleri + sohbet fotoğrafları için otomatik uygunsuz içerik
         // ön-elemesi. Görsel SİLİNMEZ — yalnızca işaretlenir/incelemeye alınır
         // (bkz. App\Services\ImageModerationService).

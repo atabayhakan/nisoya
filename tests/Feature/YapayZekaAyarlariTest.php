@@ -81,6 +81,22 @@ class YapayZekaAyarlariTest extends TestCase
         $this->assertDatabaseHas('site_settings', ['key' => 'ai.hizli_ilan_aktif', 'value' => '0']);
     }
 
+    /** En görünür AI yüzeyi — deploy beklemeden kapatılabilmeli (bkz. NisoyaAiYonlendirici). */
+    public function test_admin_can_disable_nisoya_ai_arama(): void
+    {
+        Livewire::actingAs($this->admin())
+            ->test(YapayZekaAyarlari::class)
+            ->fillForm([
+                'saglayici' => 'openrouter',
+                'api_anahtari' => 'sk-or-test-key',
+                'model' => '',
+                'nisoya_ai_arama_aktif' => false,
+            ])
+            ->call('save');
+
+        $this->assertDatabaseHas('site_settings', ['key' => 'ai.nisoya_ai_arama_aktif', 'value' => '0']);
+    }
+
     public function test_test_button_reports_success_on_valid_response(): void
     {
         Http::fake(['openrouter.ai/*' => Http::response([
@@ -127,6 +143,7 @@ class YapayZekaAyarlariTest extends TestCase
             'ai.api_anahtari' => 'sk-or-db-key',
             'ai.model' => 'google/gemini-2.0-flash-001',
             'ai.hizli_ilan_aktif' => '0',
+            'ai.nisoya_ai_arama_aktif' => '0',
         ]);
 
         // boot-time merge'i doğrudan çağır (protected → reflection).
@@ -139,6 +156,7 @@ class YapayZekaAyarlariTest extends TestCase
         $this->assertSame('sk-or-db-key', config('ai.providers.openrouter.api_key'));
         $this->assertSame('google/gemini-2.0-flash-001', config('ai.providers.openrouter.model'));
         $this->assertFalse(config('ai.features.quick_listing'));
+        $this->assertFalse(config('ai.features.nisoya_ai_arama'));
     }
 
     public function test_empty_db_settings_leave_env_defaults(): void
@@ -161,6 +179,7 @@ class YapayZekaAyarlariTest extends TestCase
         Settings::setMany([
             'ai.hizli_ilan_aktif' => '1',
             'ai.moderasyon_aktif' => '1',
+            'ai.nisoya_ai_arama_aktif' => '1',
             'ai.aktif' => '0',
         ]);
 
@@ -171,6 +190,7 @@ class YapayZekaAyarlariTest extends TestCase
 
         $this->assertFalse(config('ai.features.quick_listing'));
         $this->assertFalse(config('ai.features.image_moderation'));
+        $this->assertFalse(config('ai.features.nisoya_ai_arama'));
     }
 
     public function test_admin_can_turn_off_master_switch(): void

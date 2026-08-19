@@ -138,6 +138,14 @@ return Application::configure(basePath: dirname(__DIR__))
             Limit::perDay(30)->by($request->user()?->id ?: $request->ip()),
         ]);
 
+        // Anasayfa "Nisoya AI ile ara" çubuğu — sitenin en görünür AI yüzeyi
+        // (misafire de açık, ilk temas). Diğer AI uçlarından daha SIKI: bu
+        // konum en yüksek trafiği görecek.
+        RateLimiter::for('nisoya-ai-arama', fn (Request $request) => [
+            Limit::perMinute(5)->by($request->user()?->id ?: $request->ip()),
+            Limit::perDay(50)->by($request->user()?->id ?: $request->ip()),
+        ]);
+
         // Listeden çıkış: gerçek kişi bir kez basar. Cömert ama sınırsız değil —
         // jeton kaba kuvvetle aranamasın.
         RateLimiter::for('eposta-cikis', fn (Request $request) => Limit::perMinute(20)->by($request->ip())

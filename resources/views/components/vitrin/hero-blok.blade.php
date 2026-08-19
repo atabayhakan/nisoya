@@ -10,7 +10,13 @@
          Mobilde üç yığılmış hücre (ara · ülke · büyük eylem) telefonda tek elle
          kullanılır; masaüstünde aynı işaretleme sm:'den itibaren tek satıra
          döner ve mevcut görünüm korunur. --}}
-    <form action="{{ url('/ilanlar') }}" method="GET" class="mt-7 flex flex-col gap-1.5 rounded-3xl border border-stone-200/70 bg-white p-2 shadow-brand sm:flex-row sm:items-center sm:rounded-2xl dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
+    {{-- Nisoya AI çubuğu — normal arama kutusunun ÜSTÜNDE, kendini kapatır
+         (sağlayıcı/ayar kapalıysa hiç basılmaz). --}}
+    <div class="mt-7">
+        <x-nisoya-ai-arama />
+    </div>
+
+    <form action="{{ url('/ilanlar') }}" method="GET" class="mt-2 flex flex-col gap-1.5 rounded-3xl border border-stone-200/70 bg-white p-2 shadow-brand sm:flex-row sm:items-center sm:rounded-2xl dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
         <div class="flex min-w-0 flex-1 items-center gap-2 px-3">
             <x-heroicon-o-magnifying-glass class="h-4 w-4 shrink-0 text-stone-600" />
             <input type="text" name="q" placeholder="{{ setting('home.arama_placeholder') }}"
