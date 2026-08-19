@@ -6,6 +6,7 @@ use App\Models\IslemTuru;
 use App\Models\Temsilcilik;
 use App\Models\TemsilcilikIslemi;
 use App\Models\User;
+use App\Services\RehberYuzeyi;
 use App\Support\Settings;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
@@ -191,6 +192,35 @@ class RehberYuzeyTest extends TestCase
         $uye = User::factory()->create(['country_code' => 'US', 'email_verified_at' => now()]);
 
         $this->actingAs($uye)->get('/nasil-calisir')->assertOk()->assertSee(route('rehber.ulke', 'de'));
+    }
+
+    // ------------------------------------------------- kapsananUlkeler (Nisoya AI)
+
+    /**
+     * hazirUlkeler()'in TERSİNE: işlem içeriği olmayan ama temsilciliği olan
+     * bir ülke de burada görünmeli — Nisoya AI arama çubuğunun ülke listesi
+     * buradan geliyor (bkz. RehberYuzeyi::kapsananUlkeler() docblock'u).
+     */
+    public function test_kapsanan_ulkeler_islem_icerigi_olmayan_ulkeyi_de_dondurur(): void
+    {
+        $this->temsilcilik([
+            'country_code' => 'KG', 'ad' => 'Bişkek Büyükelçiliği', 'slug' => 'biskek', 'sehir' => 'Bişkek',
+        ]); // hiç işlem yok — bilerek
+
+        $kodlar = app(RehberYuzeyi::class)->kapsananUlkeler()->pluck('code');
+
+        $this->assertContains('KG', $kodlar);
+        // hazirUlkeler() ise AYNI durumda KG'yi listelemez — iki metot kasıtlı farklı.
+        $this->assertNotContains('KG', app(RehberYuzeyi::class)->hazirUlkeler()->pluck('code'));
+    }
+
+    public function test_kapsanan_ulkeler_pasif_temsilcilikli_ulkeyi_saymaz(): void
+    {
+        $this->temsilcilik(['country_code' => 'KG', 'slug' => 'biskek', 'is_active' => false]);
+
+        $kodlar = app(RehberYuzeyi::class)->kapsananUlkeler()->pluck('code');
+
+        $this->assertNotContains('KG', $kodlar);
     }
 
     // ----------------------------------------------------------- Cmd+K arama

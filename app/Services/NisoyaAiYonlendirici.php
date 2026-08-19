@@ -75,13 +75,24 @@ class NisoyaAiYonlendirici
             ];
         }
 
-        // 'rehber' VEYA 'belirsiz' — ikisinde de Rehber denenir: "belirsiz"
-        // çıkan bir soru yine de resmî bir konu olabilir, sessiz kalınmaz.
+        /*
+         * 'rehber' VEYA 'belirsiz' — ikisinde de Rehber denenir: "belirsiz"
+         * çıkan bir soru yine de resmî bir konu olabilir, sessiz kalınmaz.
+         *
+         * ZİYARETÇİNİN KENDİ ÜLKESİNE düşme (varsayılanUlkeKodu) YALNIZ
+         * "rehber" niyetinde — yani AI bunun resmî bir konu OLDUĞUNDAN emin
+         * ama ülkeyi çıkaramadığında. "belirsiz" durumunda bu kişiselleştirme
+         * UYGULANMAZ: soruda hiçbir gerçek ipucu (ülke/işlem/anahtar kelime)
+         * yoksa "belirsiz" + varsayılan ülke = soruyla hiç ilgisi olmayan
+         * bir "işte elçiliğin" cevabı üretirdi. Gerçek olay (2026-08-20,
+         * canlıda ölçüldü): "merhaba naber nasılsın" gibi rastgele bir
+         * selamlama bile ziyaretçinin ülkesindeki temsilciliği döndürüyordu.
+         */
         $sonuclar = $this->rehberArama->ara(
             $yorum['ulke_kodu'],
             $yorum['islem_turu_slug'],
             $yorum['anahtar_kelimeler'],
-            $varsayilanUlkeKodu,
+            $yorum['niyet'] === 'rehber' ? $varsayilanUlkeKodu : null,
         );
 
         return [
@@ -163,11 +174,13 @@ class NisoyaAiYonlendirici
 
     private function istem(string $sorgu): string
     {
-        // Hazır ülke ve aktif işlem türü listeleri isteme VERİLİYOR — model
-        // listede olmayan bir değer uydurursa RehberDogalDilArama zaten atar,
-        // ama listeyi baştan vermek isabet oranını yükseltir (DogalDilArama'nın
-        // aynı disiplini).
-        $ulkeler = $this->rehberYuzeyi->hazirUlkeler()
+        // Temsilcilik kaydı olan TÜM ülkeler isteme VERİLİYOR (hazirUlkeler()
+        // DEĞİL — o yalnız işlem içeriği olanları döner, bu daha geniş; bkz.
+        // RehberYuzeyi::kapsananUlkeler() docblock'u). Model listede olmayan
+        // bir değer uydurursa RehberDogalDilArama zaten atar, ama listeyi
+        // baştan vermek isabet oranını yükseltir (DogalDilArama'nın aynı
+        // disiplini).
+        $ulkeler = $this->rehberYuzeyi->kapsananUlkeler()
             ->map(fn ($u) => $u->code.' ('.$u->name_tr.')')
             ->implode(', ');
 
