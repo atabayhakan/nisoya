@@ -333,12 +333,22 @@ class HeroYoneticisi extends Page
 ', $medyaSatirlari);
         }
 
-        Notification::make()
+        $bildirim = Notification::make()
             ->title('Hero ayarları kaydedildi')
             ->body($govde)
-            ->success()
-            ->persistent()
-            ->send();
+            ->success();
+
+        // Yalnız medya boru hattından ekstra satır (bilgi/uyarı) geldiğinde
+        // kalıcı yap — sahip kontrast uyarısı gibi eyleme geçirilmesi gereken
+        // bir satırı okumadan bildirim kapanmasın. Sıradan bir metin
+        // kaydında (medya yok/değişmedi) otomatik kapanmaması gereksiz
+        // sürtünmeydi: her kayıtta elle kapatılması gereken, asla kendiliğinden
+        // gitmeyen bir bildirim birikiyordu.
+        if ($medyaSatirlari !== []) {
+            $bildirim->persistent();
+        }
+
+        $bildirim->send();
     }
 
     /** Düzen kartlarından seçim (Blade'deki görsel seçici). */

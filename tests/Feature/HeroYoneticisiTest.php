@@ -11,7 +11,13 @@ use App\Support\Settings;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
+use Filament\Notifications\Livewire\Notifications as BildirimBileseni;
+use Filament\Notifications\Notification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Encoders\JpegEncoder;
+use Intervention\Image\ImageManager;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -36,6 +42,18 @@ class HeroYoneticisiTest extends TestCase
     protected function admin(): User
     {
         return User::factory()->create(['role' => UserRole::Admin, 'email_verified_at' => now()]);
+    }
+
+    /** Filament'in `Notification::assertNotified()` içinde yaptığının aynısı — burada süreyi de okumak için. */
+    private function bildirimGetir(string $baslik): Notification
+    {
+        $bilesen = new BildirimBileseni;
+        $bilesen->mount();
+
+        $bulunan = $bilesen->notifications->first(fn ($n) => $n->getTitle() === $baslik);
+        $this->assertNotNull($bulunan, "Bildirim bulunamadı: {$baslik}");
+
+        return $bulunan;
     }
 
     public function test_admin_can_open_page_and_member_cannot(): void
@@ -81,6 +99,47 @@ class HeroYoneticisiTest extends TestCase
             ->assertSee('Vurgulu satır', false)
             ->assertSee('Panelden gelen alt başlık', false)
             ->assertSee('Hemen başla', false);
+    }
+
+    /**
+     * Gerçek olay (2026-08-20, sahip bildirdi): "bildirim geliyor gitmiyor"
+     * — panelde her kayıtta (düz metin değişikliğinde bile) kalıcı bir
+     * bildirim birikiyordu, elle kapatmak gerekiyordu.
+     *
+     * Kök neden: `->persistent()` koşulsuzdu. Medya boru hattından ekstra
+     * satır (kontrast uyarısı gibi) gelmediği sürece kalıcılığın hiçbir
+     * anlamı yok — sıradan bir "kaydedildi" onayı kendiliğinden kapanmalı.
+     */
+    public function test_medya_uyarisi_yokken_bildirim_kendiliginden_kapanir(): void
+    {
+        Livewire::actingAs($this->admin())
+            ->test(HeroYoneticisi::class)
+            ->fillForm(['baslik' => 'Düz metin değişikliği'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $bildirim = $this->bildirimGetir('Hero ayarları kaydedildi');
+        $this->assertNotSame('persistent', $bildirim->getDuration(), 'Medya bilgisi yokken bildirim kalıcı olmamalı.');
+    }
+
+    public function test_medya_isleme_bilgisi_varken_bildirim_kalicidir(): void
+    {
+        Storage::fake('public');
+
+        $img = (new ImageManager(new Driver))->createImage(2400, 1200)->fill('#8a8a8a');
+        $hamYol = 'hero/'.uniqid().'.jpg';
+        Storage::disk('public')->put($hamYol, (string) $img->encode(new JpegEncoder(quality: 92)));
+
+        Settings::setMany(['hero.arkaplan_tipi' => 'gorsel', 'hero.gorsel_masaustu' => $hamYol]);
+
+        Livewire::actingAs($this->admin())
+            ->test(HeroYoneticisi::class)
+            ->fillForm(['arkaplan_tipi' => 'gorsel'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $bildirim = $this->bildirimGetir('Hero ayarları kaydedildi');
+        $this->assertSame('persistent', $bildirim->getDuration(), 'Medya işleme satırları (kontrast ölçümü vb.) varken bildirim kalıcı olmalı.');
     }
 
     public function test_secondary_cta_is_not_rendered_when_disabled(): void
