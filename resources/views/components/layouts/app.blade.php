@@ -69,13 +69,15 @@
              döner — masaüstünde ferahlık korunur. --}}
         <div :class="scrolled ? 'py-2 shadow-sm' : 'py-3'" class="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 transition-all duration-300 sm:gap-4">
             <a href="{{ url('/') }}" class="group flex min-w-0 shrink items-center gap-2">
-                @if ($logoPath = setting('gorunum.logo_path'))
-                    <img src="{{ Storage::disk('public')->url($logoPath) }}" alt="{{ setting('genel.site_adi') }}" class="h-9 w-9 rounded-xl object-cover">
-                @else
-                    <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-700 text-white transition group-hover:bg-emerald-800 dark:bg-emerald-500 dark:group-hover:bg-emerald-400 dark:text-stone-900">
-                        <x-logo-mark class="h-5 w-5" />
-                    </span>
-                @endif
+                <x-logo-ikon>
+                    @if ($logoPath = setting('gorunum.logo_path'))
+                        <img src="{{ Storage::disk('public')->url($logoPath) }}" alt="{{ setting('genel.site_adi') }}" class="h-9 w-9 rounded-xl object-cover">
+                    @else
+                        <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-700 text-white transition group-hover:bg-emerald-800 dark:bg-emerald-500 dark:group-hover:bg-emerald-400 dark:text-stone-900">
+                            <x-logo-mark class="h-5 w-5" />
+                        </span>
+                    @endif
+                </x-logo-ikon>
                 {{-- ÇOK DAR EKRANDA YALNIZ İKON. 380px altında marka adı ~70px yer
                          kaplıyor ve başlık taşıyordu (360px'te 17px, 320px'te 57px
                          yatay kaydırma). İkon tek başına markayı taşıyor ve yine

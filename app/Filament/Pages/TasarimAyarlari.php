@@ -55,6 +55,7 @@ class TasarimAyarlari extends Page
         'gorunum.logo_animasyon' => '0',
         'gorunum.logo_rengi' => '#059669',
         'gorunum.logo_yazi_tipi' => 'indie-flower',
+        'gorunum.logo_ikon_gizle' => '0',
     ];
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSwatch;
@@ -95,6 +96,8 @@ class TasarimAyarlari extends Page
 
     public string $logoFont = 'indie-flower'; // indie-flower, dancing-script — bkz. TemaJetonlari::EL_YAZISI_FONTLAR
 
+    public bool $logoIkonGizle = false;
+
     public function getTitle(): string
     {
         return 'Görünüm ve Tema';
@@ -118,6 +121,7 @@ class TasarimAyarlari extends Page
         $this->logoAnimasyon = Settings::get('gorunum.logo_animasyon', '0') === '1';
         $this->logoRenk = Settings::get('gorunum.logo_rengi', '#059669');
         $this->logoFont = Settings::get('gorunum.logo_yazi_tipi', 'indie-flower');
+        $this->logoIkonGizle = Settings::get('gorunum.logo_ikon_gizle', '0') === '1';
     }
 
     /**
@@ -253,6 +257,7 @@ class TasarimAyarlari extends Page
             'gorunum.logo_animasyon' => $this->logoAnimasyon ? '1' : '0',
             'gorunum.logo_rengi' => $this->logoRenk,
             'gorunum.logo_yazi_tipi' => $this->logoFont,
+            'gorunum.logo_ikon_gizle' => $this->logoIkonGizle ? '1' : '0',
         ]);
 
         Notification::make()

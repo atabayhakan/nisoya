@@ -81,6 +81,61 @@ class HareketliLogoTest extends TestCase
         $this->assertStringNotContainsString('hareketli-logo-cizgi', $icerik);
     }
 
+    /**
+     * AYNI YOL ÜÇ YERDE GEÇİYOR — bu yüzden "hiç geçmiyor" değil "bir kez
+     * AZALDI" ölçülür. Logo mark'ın path'i (`M7 17V7L17 17V7`) sayfada
+     * normalde ÜÇ kez basılır: favicon (head'deki data-URI SVG, HER sayfada
+     * koşulsuz), header, footer. Gizlenince yalnız header'daki kopyası
+     * kalkmalı — favicon ve footer bilerek dokunulmadı (sahip yalnız "üst
+     * menüde yer aç" dedi; favicon bir menü değil, footer da değil).
+     */
+    public function test_ikon_gizlenince_headerdan_kalkar_favicon_ve_footerda_kalir(): void
+    {
+        $ikonYolu = 'M7 17V7L17 17V7';
+
+        Settings::setMany(['gorunum.logo_ikon_gizle' => '0']);
+        $acikIcerik = (string) $this->get('/')->getContent();
+        $this->assertSame(3, substr_count($acikIcerik, $ikonYolu), 'Varsayılanda ikon üç kez basılmalı: favicon + header + footer.');
+
+        Settings::setMany(['gorunum.logo_ikon_gizle' => '1']);
+        $kapaliIcerik = (string) $this->get('/')->getContent();
+        $this->assertSame(2, substr_count($kapaliIcerik, $ikonYolu), 'İkon gizlenince yalnız favicon+footer kalmalı, header kalkmalı.');
+    }
+
+    /** İkonu gizlemek yazı animasyonunu/marka linkini etkilememeli. */
+    public function test_ikon_gizliyken_yazi_hala_gorunur(): void
+    {
+        Settings::setMany([
+            'gorunum.logo_ikon_gizle' => '1',
+            'gorunum.logo_animasyon' => '1',
+        ]);
+
+        $icerik = (string) $this->get('/')->getContent();
+
+        $this->assertStringContainsString('hareketli-logo-cizgi', $icerik);
+    }
+
+    public function test_panelden_ikon_gizleme_kalici_yazar(): void
+    {
+        Livewire::actingAs($this->admin())
+            ->test(TasarimAyarlari::class)
+            ->set('logoIkonGizle', true)
+            ->call('kaydetCustom');
+
+        $this->assertSame('1', Settings::get('gorunum.logo_ikon_gizle'));
+    }
+
+    public function test_sifirlama_ikon_gizlemeyi_de_fabrikaya_dondurur(): void
+    {
+        Settings::setMany(['gorunum.logo_ikon_gizle' => '1']);
+
+        Livewire::actingAs($this->admin())
+            ->test(TasarimAyarlari::class)
+            ->call('sifirla');
+
+        $this->assertSame('0', Settings::get('gorunum.logo_ikon_gizle'));
+    }
+
     public function test_gecersiz_font_anahtari_varsayilana_duser(): void
     {
         $font = TemaJetonlari::elYazisiFontu('uydurma-font');
@@ -120,13 +175,15 @@ class HareketliLogoTest extends TestCase
     {
         Livewire::actingAs($this->admin())
             ->test(TasarimAyarlari::class)
-            ->assertSee('Hareketli logo yazısı')
+            ->assertSee('Başlıktaki logo')
             ->assertSee('Her iki temada geçerli')
+            ->assertSee('İkonu gizle')
             ->assertSee('Indie Flower')
             ->assertSee('Dancing Script')
             ->assertSeeHtml('wire:model.live="logoAnimasyon"')
             ->assertSeeHtml('wire:model.live="logoRenk"')
-            ->assertSeeHtml('wire:model.live="logoFont"');
+            ->assertSeeHtml('wire:model.live="logoFont"')
+            ->assertSeeHtml('wire:model.live="logoIkonGizle"');
     }
 
     public function test_sifirlama_hareketli_logoyu_da_fabrikaya_dondurur(): void
