@@ -60,6 +60,11 @@ class CurrencySeeder extends Seeder
             // yurtdışı odaklı" — bkz. yukarıdaki not). KKTC'de fiilen
             // kullanılan para birimi TL olduğu için TEK istisna burada.
             ['code' => 'TRY', 'name' => 'Türk Lirası', 'symbol' => '₺'],
+            // Tayland/Kamboçya/Endonezya CountrySeeder'a eklenmesiyle
+            // birlikte (2026-08-19) — bkz. CountrySeeder'daki not.
+            ['code' => 'THB', 'name' => 'Tayland Bahtı', 'symbol' => '฿'],
+            ['code' => 'KHR', 'name' => 'Kamboçya Rieli', 'symbol' => 'KHR'],
+            ['code' => 'IDR', 'name' => 'Endonezya Rupiahı', 'symbol' => 'Rp'],
         ];
 
         foreach ($currencies as $i => $c) {

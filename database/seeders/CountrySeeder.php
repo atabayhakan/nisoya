@@ -107,6 +107,16 @@ class CountrySeeder extends Seeder
             // görünür, KKTC bayrağı olarak DEĞİL — bilinen bir sınır, kod
             // incelemesinde şaşırtmasın diye burada yazılı.
             ['XN', 'Kuzey Kıbrıs Türk Cumhuriyeti', '🇽🇳', 'TRY', 35.1901, 33.3644],
+
+            // Tayland/Kamboçya/Endonezya (2026-08-19): production'da
+            // is_active=true olarak zaten vardı ama bu seeder'da hiç
+            // tanımlı değildi — muhtemelen panelden elle eklenmişler,
+            // kaynak doğruluk (source of truth) sürüklenmesi burada
+            // kapatılıyor. Diğer partiler gibi sona eklendi, mevcut
+            // ülkelerin sort_order'ı bozulmasın diye. Koordinatlar başkent.
+            ['TH', 'Tayland', '🇹🇭', 'THB', 13.7563, 100.5018],
+            ['KH', 'Kamboçya', '🇰🇭', 'KHR', 11.5564, 104.9282],
+            ['ID', 'Endonezya', '🇮🇩', 'IDR', -6.2088, 106.8456],
         ];
 
         foreach ($countries as $i => $c) {
