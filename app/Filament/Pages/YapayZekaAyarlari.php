@@ -58,6 +58,7 @@ class YapayZekaAyarlari extends Page
             'model' => Settings::get('ai.model') ?: '',
             'hizli_ilan_aktif' => (Settings::get('ai.hizli_ilan_aktif') ?? '1') === '1',
             'moderasyon_aktif' => (Settings::get('ai.moderasyon_aktif') ?? '1') === '1',
+            'nisoya_ai_arama_aktif' => (Settings::get('ai.nisoya_ai_arama_aktif') ?? '1') === '1',
         ]);
     }
 
@@ -111,6 +112,11 @@ class YapayZekaAyarlari extends Page
                             ->label('Görsel moderasyonu açık (uygunsuz içerik ön-elemesi)')
                             ->helperText('İlan görselleri ve sohbet fotoğrafları aynı AI ile otomatik taranır. Uygunsuz bulunan ilan görselleri SİLİNMEZ — ilan incelemeye alınır (Onay bekliyor); sohbette uygunsuz fotoğraf gönderilemez. Nihai karar her zaman admin panelinden (Görseller) verilir.')
                             ->columnSpanFull(),
+
+                        Toggle::make('nisoya_ai_arama_aktif')
+                            ->label('Anasayfa "Nisoya AI ile ara" çubuğu açık')
+                            ->helperText('Anasayfadaki arama kutusunun üstünde çıkan yapay zeka destekli soru çubuğu. Sitenin en görünür AI yüzeyi — maliyet sıçrarsa deploy beklemeden buradan kapat.')
+                            ->columnSpanFull(),
                     ]),
             ])
             ->statePath('data');
@@ -127,6 +133,7 @@ class YapayZekaAyarlari extends Page
             'ai.model' => $state['model'] ?? '',
             'ai.hizli_ilan_aktif' => ! empty($state['hizli_ilan_aktif']) ? '1' : '0',
             'ai.moderasyon_aktif' => ! empty($state['moderasyon_aktif']) ? '1' : '0',
+            'ai.nisoya_ai_arama_aktif' => ! empty($state['nisoya_ai_arama_aktif']) ? '1' : '0',
         ]);
 
         Notification::make()

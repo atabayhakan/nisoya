@@ -489,6 +489,14 @@ class AppServiceProvider extends ServiceProvider
             Config::set('ai.features.image_moderation', $moderation === '1');
         }
 
+        // Anasayfa "Nisoya AI ile ara" çubuğu — en görünür, en yüksek trafikli
+        // AI yüzeyi (bkz. NisoyaAiYonlendirici). Ayrı düğme: diğerleri kırıksa
+        // bile bu kapatılabilsin, ya da tersi.
+        $nisoyaAiArama = Settings::get('ai.nisoya_ai_arama_aktif');
+        if ($nisoyaAiArama !== null && $nisoyaAiArama !== '') {
+            Config::set('ai.features.nisoya_ai_arama', $nisoyaAiArama === '1');
+        }
+
         // Ana anahtar (Faz 1): '0' ise sağlayıcı/anahtar girili ve alt özellikler
         // açık olsa bile TÜM yapay zekayı kapat. Sağlayıcı çökerse ya da maliyeti
         // durdurmak için sahibin tek düğmesi. En sonda ezer ki üstteki bireysel
@@ -496,6 +504,7 @@ class AppServiceProvider extends ServiceProvider
         if (Settings::get('ai.aktif') === '0') {
             Config::set('ai.features.quick_listing', false);
             Config::set('ai.features.image_moderation', false);
+            Config::set('ai.features.nisoya_ai_arama', false);
         }
     }
 }

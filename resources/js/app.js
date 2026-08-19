@@ -143,6 +143,50 @@ Alpine.data('commandPalette', (staticEntries) => ({
     },
 }));
 
+// Anasayfa "Nisoya AI ile ara" çubuğu. Cmd+K'nin TERSİNE canlı-yazarken değil
+// GÖNDERİNCE çalışır: AI çağrısı ücretli, her tuş vuruşunda tetiklemek
+// maliyeti gereksiz büyütürdü (bkz. App\Http\Controllers\NisoyaAiAramaController).
+Alpine.data('nisoyaAiArama', () => ({
+    query: '',
+    loading: false,
+    submitted: false,
+    error: false,
+    result: null,
+
+    async search() {
+        const q = this.query.trim();
+        if (q.length < 3 || this.loading) return;
+
+        this.loading = true;
+        this.error = false;
+        this.submitted = true;
+
+        try {
+            const response = await fetch(`/arama/ai?q=${encodeURIComponent(q)}`, {
+                headers: { Accept: 'application/json' },
+            });
+            if (!response.ok) {
+                this.error = true;
+                this.result = null;
+                return;
+            }
+            this.result = await response.json();
+        } catch (e) {
+            this.error = true;
+            this.result = null;
+        } finally {
+            this.loading = false;
+        }
+    },
+
+    reset() {
+        this.query = '';
+        this.submitted = false;
+        this.error = false;
+        this.result = null;
+    },
+}));
+
 // Header Faz H4: aşağı kaydırınca hafifçe küçülür (gölge + daha az padding),
 // belli bir eşiği (160px) geçip aşağı kaydırırken tamamen gizlenir, yukarı
 // kaydırınca hemen geri açılır — native-app hissi. prefers-reduced-motion'da

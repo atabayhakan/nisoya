@@ -43,6 +43,7 @@ use App\Http\Controllers\PortfolioItemController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileSettingsController;
 use App\Http\Controllers\PropertyBrowseController;
+use App\Http\Controllers\NisoyaAiAramaController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\QuickListingController;
 use App\Http\Controllers\QuickSearchController;
@@ -106,6 +107,13 @@ Route::middleware('module:is_ilanlari')->group(function () {
 Route::get('/arama/hizli', [QuickSearchController::class, 'index'])
     ->middleware('throttle:quick-search')
     ->name('search.quick');
+
+// Anasayfa "Nisoya AI ile ara" çubuğu — herkese açık, salt-okunur JSON.
+// AI çağrısı içerdiği için perMinute+perDay ikilisi (bkz. bootstrap/app.php),
+// quick-search'ün tek perMinute'ünden bilerek farklı.
+Route::get('/arama/ai', [NisoyaAiAramaController::class, 'ara'])
+    ->middleware('throttle:nisoya-ai-arama')
+    ->name('search.ai');
 
 // Statik sayfalar (işlevsel olanlar kodda kalır; kurumsal metinler yönetilebilir sayfalara taşındı)
 Route::get('/nasil-calisir', [PagesController::class, 'nasilCalisir'])->name('pages.how');

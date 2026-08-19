@@ -133,8 +133,14 @@
                     {{ \App\Support\Hero::altBaslik() }}
                 </p>
 
+                {{-- Nisoya AI çubuğu — normal arama kutusunun ÜSTÜNDE, kendini
+                     kapatır (sağlayıcı/ayar kapalıysa hiç basılmaz). --}}
+                <div class="mx-auto mt-8 max-w-2xl">
+                    <x-nisoya-ai-arama />
+                </div>
+
                 {{-- Arama kutusu --}}
-                <form action="{{ url('/ilanlar') }}" method="GET" class="mx-auto mt-8 flex max-w-2xl flex-col gap-2 rounded-2xl bg-white p-2 shadow-lg ring-1 ring-stone-200 sm:flex-row dark:bg-stone-900 dark:ring-stone-800">
+                <form action="{{ url('/ilanlar') }}" method="GET" class="mx-auto mt-3 flex max-w-2xl flex-col gap-2 rounded-2xl bg-white p-2 shadow-lg ring-1 ring-stone-200 sm:flex-row dark:bg-stone-900 dark:ring-stone-800">
                     <input type="text" name="q" placeholder="{{ setting('home.arama_placeholder') }}"
                            class="flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:text-stone-100 dark:placeholder-stone-500">
                     <select name="ulke" class="rounded-xl border-0 bg-stone-50 px-4 py-3 text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:text-stone-200">
