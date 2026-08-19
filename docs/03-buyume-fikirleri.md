@@ -101,6 +101,74 @@ yüksek), ve varsa somut ilk adım.
 
 ---
 
+## [2026-08-19]
+
+### USAilan bulguları — hareket planı (ajan turu dışında)
+
+Sahip 2026-08-18 girişindeki USAilan incelemesinden çıkan iki notu somut önerilere
+dönüştürüp bir hareket planı istedi. Karar defteri hâlâ **6/6 dolu** (2026-08-10
+girişi, hiçbiri kararlanmadı) — bu yüzden aşağıdaki iki madde resmî sıraya
+girmiyor, ama karar verilmeye hazır şekilde tam yazıldı. Sahip isterse bunlara
+doğrudan karar verebilir (kuyruk dolu olması karar vermeyi engellemez, yalnız
+ajanın kendiliğinden YENİ öneri YAZMASINI engeller).
+
+**1. Satıcı kıdemi rozeti** *(kategori 3: ürün içi güven sinyali)*
+
+*Ölçüm:* İlan kartında ve detay sayfasında satıcı hakkında bugün hiçbir güven
+sinyali yok. `users.created_at` zaten var, hiç kullanılmıyor.
+
+*Neden işe yarayabilir:* Envanter kapısına takılmıyor — "3 aydır üye" de "yeni
+üye" de dürüst bilgi, sıfır ilan riski taşımıyor (bkz. 2026-08-18 girişi).
+Markanın "kendi insanından güven" vurgusuna doğrudan hizmet ediyor.
+
+*Efor:* Düşük. `created_at`'ten ay farkı hesapla, kart + detay sayfasına küçük
+bir rozet ekle.
+
+*İlk adım:* İlan kartı ve detay sayfasına "Nisoya'da N aydır üye" (N < 1 ay ise
+"yeni üye") rozeti.
+
+*Önerim:* **YAP** — blokeri yok, küçük iş, karar defteri doluluğundan bağımsız
+uygulanabilir.
+
+**2. Rehberi "pratik yaşam" konularına genişletmek** *(kategori 2: içerik/SEO)*
+
+*Ölçüm:* USAilan'ın en çok görüntülenen üç sayfası (14.160 / 9.025 / 3.708
+görüntülenme) konsolosluk işlemi DEĞİL — kredi skoru, SSN'siz banka hesabı,
+ehliyet çevirme gibi gündelik yaşam rehberleri. Nisoya'nın rehberi bugün yalnız
+temsilcilik × işlem türü (vekaletname, pasaport vb.) ile sınırlı; bu kategori
+hiç yok.
+
+*Neden işe yarayabilir:* Varsayım değil — aynı niş, aynı kitleye hizmet eden
+gerçek bir emsalden ölçülmüş talep verisi.
+
+*Dürüst uyarı:* İki gerçek engel var. (a) **Veri modeli uygun değil** —
+`Temsilcilik`×`IslemTuru` "hangi konsolosluk hangi işlemi yapar" sorusuna göre
+kurulu; "kredi skoru nasıl yükselir" belirli bir konsolosluğa bağlı değil,
+ülke geneli bir bilgi. Var olan tabloya satır eklemek değil, yeni bir içerik
+türü gerekir. (b) **Derinlik önceliği** — 2026-08-01 tasarımının kendi ilkesi
+"tek konuda %100 dolu, on konuda %20 dolu olmaktan iyidir"; bugün konsolosluk
+rehberi bile yalnız 2 ülkede (DE, US) hazır. Yeni bir içerik sütunu açmak
+var olanın derinleşmesini geciktirebilir.
+
+*Efor:* Yüksek (içerik araştırma + doğrulama — "gerçek bilgi kuralı" gereği her
+bilgi doğrulanmalı, uydurulamaz) + orta (yeni sayfa tipi/route, mevcut
+Temsilcilik altyapısına asalak değil).
+
+*Önerim:* Tam kapsam yerine **tek pilot sayfa**. USAilan'ın verisi ABD ağırlıklı
+ve Nisoya'da ABD zaten hazır ülkelerden biri — örn. "ABD'de SSN'siz banka
+hesabı açma" tek sayfa olarak yazılır, gerçek trafik/etkileşim birkaç hafta
+ölçülür; işe yararsa sütun genişletilir, yaramazsa tek sayfalık kayıpla
+kapanır. Bu, envanter kapısının ruhuyla uyumlu: geniş söz vermeden önce ucuz
+doğrulama.
+
+**Sıraya alınmayan (bkz. 2026-08-18):** "+İlan Ver" akışını ilan/şirket
+seçimine dallandırma — şirket profili modülü henüz herkese açık bir Nisoya
+özelliği değil, blokeri değişmedi.
+
+*Karar bekliyor.*
+
+---
+
 ## [2026-08-18]
 
 ### Ek — USAilan.com incelemesi (ajan turu dışında)
