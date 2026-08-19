@@ -130,6 +130,8 @@ bir rozet ekle.
 *Önerim:* **YAP** — blokeri yok, küçük iş, karar defteri doluluğundan bağımsız
 uygulanabilir.
 
+> **KARAR · 2026-08-19 · YAP** — sahip onayladı. Sorumlu: Claude (uygulama).
+
 **2. Rehberi "pratik yaşam" konularına genişletmek** *(kategori 2: içerik/SEO)*
 
 *Ölçüm:* USAilan'ın en çok görüntülenen üç sayfası (14.160 / 9.025 / 3.708
