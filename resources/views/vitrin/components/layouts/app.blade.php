@@ -63,7 +63,14 @@
                      yer kaplıyor ve başlık taşıyordu (360px'te 17px, 320px'te
                      57px yatay kaydırma). İkon tek başına markayı taşıyor ve
                      yine ana sayfaya götürüyor. --}}
-                <span class="text-xl font-extrabold text-stone-800 max-[380px]:hidden dark:text-stone-50">{{ Str::lower(setting('genel.site_adi')) }}</span>
+                @if (\App\Support\TemaJetonlari::logoAnimasyonuAktifMi())
+                    {{-- Hareketli çizim her zaman "Nisoya" (düzgün büyük harfle)
+                         gösterir — küçük harfli vitrin stiline BİLEREK uymuyor,
+                         çizim yolu bu kelime için üretildi (bkz. bileşen). --}}
+                    <x-hareketli-logo class="h-8 max-[380px]:hidden" />
+                @else
+                    <span class="text-xl font-extrabold text-stone-800 max-[380px]:hidden dark:text-stone-50">{{ Str::lower(setting('genel.site_adi')) }}</span>
+                @endif
             </a>
 
             <nav class="hidden items-center gap-6 text-sm font-semibold text-stone-600 md:flex dark:text-stone-300">
