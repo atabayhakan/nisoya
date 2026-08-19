@@ -107,6 +107,19 @@ final class TemaJetonlari
             'bilesen' => 'x-hareketli-logo',
             'bilesen_dosyasi' => 'resources/views/components/hareketli-logo.blade.php',
         ],
+        // Yazı animasyonundan BAĞIMSIZ: ikon rozeti (marka yazısının solundaki
+        // kare) düz metinle de gizlenebilir — sahibin isteği (2026-08-19),
+        // mobilde başlıkta sağdaki ülke/Acil/Üye ol kümesine yer açmak için.
+        // `x-logo-ikon` YALNIZCA görünürlük kapısı — her iki header kendi
+        // ikon markup'ını (klasik düz zümrüt, Vitrin gradyan) AYNEN korur,
+        // bileşen yalnız slot'u gösterip göstermemeye karar verir.
+        'gorunum.logo_ikon_gizle' => [
+            'etiket' => 'Logo ikonunu gizle',
+            'temalar' => ['klasik', 'vitrin'],
+            'okuyan' => 'app/Support/TemaJetonlari.php',
+            'bilesen' => 'x-logo-ikon',
+            'bilesen_dosyasi' => 'resources/views/components/logo-ikon.blade.php',
+        ],
     ];
 
     /**
@@ -220,6 +233,12 @@ final class TemaJetonlari
     {
         return Settings::get('gorunum.logo_animasyon', '0') === '1'
             && Settings::get('genel.site_adi', 'Nisoya') === 'Nisoya';
+    }
+
+    /** Marka yazısının solundaki ikon rozeti gizlenmeli mi? (bkz. x-logo-ikon) */
+    public static function logoIkonuGizliMi(): bool
+    {
+        return Settings::get('gorunum.logo_ikon_gizle', '0') === '1';
     }
 
     /**

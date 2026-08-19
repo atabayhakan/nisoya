@@ -443,22 +443,35 @@
         <x-slot name="heading">
             <span class="flex items-center gap-2.5">
                 <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-700 text-xs font-bold text-white">5</span>
-                Hareketli logo yazısı
+                Başlıktaki logo
                 <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">Her iki temada geçerli</span>
             </span>
         </x-slot>
         <x-slot name="description">
-            Başlıktaki "Nisoya" yazısı el yazısıyla çizilerek açılır.
+            "Nisoya" yazısını el yazısıyla çizerek aç ya da yanındaki ikon rozetini gizle.
             <strong>"Değişiklikleri kaydet"e basana kadar yayına girmez.</strong>
         </x-slot>
 
-        <label class="flex cursor-pointer items-start gap-3">
-            <input type="checkbox" wire:model.live="logoAnimasyon" class="fi-checkbox-input mt-0.5" />
-            <span>
-                <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">Açık</span>
-                <span class="block text-xs text-gray-500 dark:text-gray-400">Kapalıyken bugünkü düz "Nisoya" yazısı aynen kalır.</span>
-            </span>
-        </label>
+        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-x-8">
+            <label class="flex cursor-pointer items-start gap-3">
+                <input type="checkbox" wire:model.live="logoAnimasyon" class="fi-checkbox-input mt-0.5" />
+                <span>
+                    <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">Yazı animasyonu açık</span>
+                    <span class="block text-xs text-gray-500 dark:text-gray-400">Kapalıyken bugünkü düz "Nisoya" yazısı aynen kalır.</span>
+                </span>
+            </label>
+
+            {{-- Yazı animasyonundan BAĞIMSIZ: ikon rozeti düz metinle de
+                 gizlenebilir — mobilde başlıkta sağdaki ülke/Acil/Üye ol
+                 kümesine yer açmak için (sahibin isteği, 2026-08-19). --}}
+            <label class="flex cursor-pointer items-start gap-3">
+                <input type="checkbox" wire:model.live="logoIkonGizle" class="fi-checkbox-input mt-0.5" />
+                <span>
+                    <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">İkonu gizle</span>
+                    <span class="block text-xs text-gray-500 dark:text-gray-400">Marka yazısının solundaki kare rozeti kaldırır, başlıkta yer açar.</span>
+                </span>
+            </label>
+        </div>
 
         <div @class(['mt-4 grid gap-6 sm:grid-cols-2', 'pointer-events-none opacity-50' => ! $logoAnimasyon])>
             <div>
