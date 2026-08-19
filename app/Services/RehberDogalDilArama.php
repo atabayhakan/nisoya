@@ -64,26 +64,62 @@ class RehberDogalDilArama
             }
         }
 
-        if ($anahtarKelimeler === []) {
-            return collect();
+        if ($anahtarKelimeler !== []) {
+            $kelimeBazli = $this->sorgula(function ($q) use ($anahtarKelimeler, $ulkeKodu) {
+                $q->when($ulkeKodu, fn ($q2) => $q2->whereHas('temsilcilik', fn ($t) => $t->where('is_active', true)->where('country_code', $ulkeKodu)));
+
+                $q->where(function ($sub) use ($anahtarKelimeler) {
+                    foreach ($anahtarKelimeler as $kelime) {
+                        $kelime = trim($kelime);
+                        if ($kelime === '') {
+                            continue;
+                        }
+
+                        $sub->orWhereHas('islemTuru', fn ($t) => $t->where('ad', 'like', "%{$kelime}%"))
+                            ->orWhereHas('temsilcilik', fn ($t) => $t->where('ad', 'like', "%{$kelime}%")
+                                ->orWhere('sehir', 'like', "%{$kelime}%"));
+                    }
+                });
+            });
+
+            if ($kelimeBazli->isNotEmpty()) {
+                return $kelimeBazli;
+            }
         }
 
-        return $this->sorgula(function ($q) use ($anahtarKelimeler, $ulkeKodu) {
-            $q->when($ulkeKodu, fn ($q2) => $q2->whereHas('temsilcilik', fn ($t) => $t->where('is_active', true)->where('country_code', $ulkeKodu)));
+        /*
+         * Hiçbir İŞLEM kaydı eşleşmedi. Ülke biliniyorsa temsilciliğin
+         * KENDİSİNİ öner — "elçilik nerede", "hangi şehirde" gibi sorular
+         * bir işlem türüne değil doğrudan temsilciliğe karşılık gelir.
+         * Özellikle henüz yapılandırılmış işlemi olmayan, yalnız
+         * yönlendirme notu taşıyan temsilcilikler için (ör. Bişkek) TEK
+         * anlamlı sonuç budur — üstteki aramalar orada hep boş döner
+         * çünkü hiç yayında TemsilcilikIslemi kaydı yoktur.
+         */
+        return $ulkeKodu !== null ? $this->temsilciklerleBul($ulkeKodu) : collect();
+    }
 
-            $q->where(function ($sub) use ($anahtarKelimeler) {
-                foreach ($anahtarKelimeler as $kelime) {
-                    $kelime = trim($kelime);
-                    if ($kelime === '') {
-                        continue;
-                    }
+    /**
+     * @return Collection<int, array{baslik: string, altbaslik: string, url: string}>
+     */
+    private function temsilciklerleBul(string $ulkeKodu): Collection
+    {
+        return Temsilcilik::query()
+            ->aktif()
+            ->where('country_code', $ulkeKodu)
+            ->orderBy('sort_order')
+            ->limit(self::SONUC_LIMIT)
+            ->get()
+            ->map(fn (Temsilcilik $t): array => [
+                'baslik' => $t->ad,
+                'altbaslik' => $this->temsilcilikAltBaslik($t),
+                'url' => route('rehber.temsilcilik', [strtolower($t->country_code), $t->slug]),
+            ]);
+    }
 
-                    $sub->orWhereHas('islemTuru', fn ($t) => $t->where('ad', 'like', "%{$kelime}%"))
-                        ->orWhereHas('temsilcilik', fn ($t) => $t->where('ad', 'like', "%{$kelime}%")
-                            ->orWhere('sehir', 'like', "%{$kelime}%"));
-                }
-            });
-        });
+    private function temsilcilikAltBaslik(Temsilcilik $temsilcilik): string
+    {
+        return $temsilcilik->sehir.' — temsilcilik bilgileri';
     }
 
     /**

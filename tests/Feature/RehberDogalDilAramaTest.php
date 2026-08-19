@@ -110,7 +110,13 @@ class RehberDogalDilAramaTest extends TestCase
 
         $sonuc = app(RehberDogalDilArama::class)->ara('DE', 'vekaletname', []);
 
-        $this->assertTrue($sonuc->isEmpty(), 'K7: taslak içerik hiçbir yoldan sızmamalı');
+        // K7: taslak İŞLEM sonuç olarak dönmez — ama ülke bilindiği için
+        // temsilcilik-seviyesi yedek devreye girer (bkz.
+        // test_yayinda_islemi_olmayan_temsilcilik_yine_de_onerilir). Sızan
+        // şey taslağın içeriği değil, zaten aktif/genel temsilcilik kaydı.
+        $this->assertCount(1, $sonuc);
+        $this->assertSame('Köln Başkonsolosluğu', $sonuc->first()['baslik']);
+        $this->assertStringNotContainsString('/vekaletname', $sonuc->first()['url']);
     }
 
     public function test_hicbir_ipucu_ve_anahtar_kelime_yoksa_bos_doner(): void
@@ -129,5 +135,47 @@ class RehberDogalDilAramaTest extends TestCase
         $sonuc = app(RehberDogalDilArama::class)->ara(null, null, ['Köln']);
 
         $this->assertCount(1, $sonuc);
+    }
+
+    /**
+     * Gerçek olay (2026-08-19, canlıda ölçüldü): "Kırgızistan elçilik nerede"
+     * cevapsız kaldı. Kök neden — Bişkek'in hiç yayında İşlem kaydı yok,
+     * yalnız yönlendirme notu var; üstteki üç arama da orada hep boş döner.
+     * Bu test o boşluğu kilitliyor: hiç işlem kaydı olmasa bile ülke
+     * biliniyorsa temsilciliğin kendisi önerilmeli.
+     */
+    public function test_yayinda_islemi_olmayan_temsilcilik_yine_de_onerilir(): void
+    {
+        $this->temsilcilik([
+            'country_code' => 'KG', 'ad' => 'Bişkek Büyükelçiliği', 'slug' => 'biskek', 'sehir' => 'Bişkek',
+            'yonlendirme_notu' => 'Bu temsilcilik işlem bilgisini kendi sitesinde yayınlamıyor.',
+        ]);
+        // KG'de hiç yayında TemsilcilikIslemi YOK — bilerek.
+
+        $sonuc = app(RehberDogalDilArama::class)->ara('KG', null, ['elçilik']);
+
+        $this->assertCount(1, $sonuc);
+        $this->assertSame('Bişkek Büyükelçiliği', $sonuc->first()['baslik']);
+        $this->assertStringContainsString('/kg/biskek', $sonuc->first()['url']);
+    }
+
+    public function test_hicbir_temsilcilik_de_yoksa_bos_doner(): void
+    {
+        // KG hiç seed edilmedi — ülke geçerli ama temsilcilik hiç yok.
+        $sonuc = app(RehberDogalDilArama::class)->ara('KG', null, ['elçilik']);
+
+        $this->assertTrue($sonuc->isEmpty());
+    }
+
+    public function test_pasif_temsilcilik_yedek_olarak_da_onerilmez(): void
+    {
+        $this->temsilcilik([
+            'country_code' => 'KG', 'ad' => 'Bişkek Büyükelçiliği', 'slug' => 'biskek', 'sehir' => 'Bişkek',
+            'is_active' => false,
+        ]);
+
+        $sonuc = app(RehberDogalDilArama::class)->ara('KG', null, []);
+
+        $this->assertTrue($sonuc->isEmpty());
     }
 }
