@@ -25,10 +25,12 @@
         @if ($temsilcilikler->isEmpty())
             <div class="mt-10 rounded-2xl border border-stone-200 bg-stone-50 p-8 text-center dark:border-stone-700 dark:bg-stone-800/50">
                 <p class="font-medium text-stone-700 dark:text-stone-200">Bu ülkenin rehberi henüz hazırlanıyor.</p>
-                <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">Şu an içerik girilmiş ülkeleri ana sayfadan bulabilirsin.</p>
+                <x-rehber.ulke-secici :aktif="$country" baslik="Şu an hazır olan ülkeler:" class="mt-4 justify-center" />
             </div>
         @else
-            <div class="mt-8 grid gap-4 sm:grid-cols-2">
+            <x-rehber.ulke-secici :aktif="$country" class="mt-6" />
+
+            <div class="mt-6 grid gap-4 sm:grid-cols-2">
                 @foreach ($temsilcilikler as $t)
                     <a href="{{ route('rehber.temsilcilik', [strtolower($country->code), $t->slug]) }}"
                         class="group rounded-2xl border border-stone-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:shadow dark:border-stone-700 dark:bg-stone-800/50 dark:hover:border-emerald-700">

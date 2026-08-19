@@ -136,6 +136,59 @@ class RehberTest extends TestCase
         $this->get('/de/koeln/vekaletname')->assertNotFound();
     }
 
+    // ------------------------------------------------- Ülke değiştirici (F3)
+
+    public function test_ulke_sayfasinda_baska_hazir_ulkeye_gecis_baglantisi_var(): void
+    {
+        $tur = $this->islemTuru();
+        $this->yayindaIslem($this->temsilcilik(), $tur);
+        $this->yayindaIslem($this->temsilcilik([
+            'country_code' => 'KG', 'ad' => 'Bişkek Büyükelçiliği', 'slug' => 'biskek', 'sehir' => 'Bişkek',
+        ]), $tur);
+
+        $this->get('/de')
+            ->assertOk()
+            ->assertSee('Başka ülke:')
+            ->assertSee('Kırgızistan')
+            ->assertSee(route('rehber.ulke', 'kg'));
+    }
+
+    public function test_tek_hazir_ulke_varken_degistirici_gorunmez(): void
+    {
+        // Geçilecek başka bir ülke yokken "Başka ülke:" etiketi de görünmemeli
+        // — boş bir seçenek satırı yalancı seçenek sunardı.
+        $this->yayindaIslem($this->temsilcilik(), $this->islemTuru());
+
+        $this->get('/de')->assertOk()->assertDontSee('Başka ülke:');
+    }
+
+    public function test_bos_ulke_sayfasi_hazir_ulkeleri_sayfa_icinde_onerir(): void
+    {
+        // US aktif ama içeriksiz. Eski davranış yalnız "ana sayfadan
+        // bulabilirsin" derdi (geri yönlendirme); yenisi hazır ülkeyi
+        // (Almanya) doğrudan sayfanın İÇİNDE önerir.
+        $this->yayindaIslem($this->temsilcilik(), $this->islemTuru());
+
+        $this->get('/us')
+            ->assertOk()
+            ->assertSee('Bu ülkenin rehberi henüz hazırlanıyor.')
+            ->assertSee('Almanya')
+            ->assertSee(route('rehber.ulke', 'de'))
+            ->assertDontSee('ana sayfadan bulabilirsin');
+    }
+
+    public function test_temsilcilik_ve_islem_sayfalarinda_da_degistirici_gorunur(): void
+    {
+        $tur = $this->islemTuru();
+        $this->yayindaIslem($this->temsilcilik(), $tur);
+        $this->yayindaIslem($this->temsilcilik([
+            'country_code' => 'KG', 'ad' => 'Bişkek Büyükelçiliği', 'slug' => 'biskek', 'sehir' => 'Bişkek',
+        ]), $tur);
+
+        $this->get('/de/koeln')->assertOk()->assertSee('Kırgızistan');
+        $this->get('/de/koeln/vekaletname')->assertOk()->assertSee('Kırgızistan');
+    }
+
     // ------------------------------------------- Catch-all / CMS komşuluğu
 
     public function test_cms_sayfalari_rehber_rotalarindan_etkilenmez(): void

@@ -20,6 +20,8 @@
             <span class="text-stone-700 dark:text-stone-200">{{ $islemKaydi->islemTuru->ad }}</span>
         </nav>
 
+        <x-rehber.ulke-secici :aktif="$country" class="mt-3" />
+
         <h1 class="mt-4 text-3xl font-bold text-stone-900 dark:text-stone-50">{{ $islemKaydi->islemTuru->ad }}</h1>
         <p class="mt-2 text-stone-600 dark:text-stone-300">{{ $temsilcilik->ad }}</p>
 
