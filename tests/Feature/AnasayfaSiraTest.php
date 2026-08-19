@@ -160,6 +160,42 @@ class AnasayfaSiraTest extends TestCase
         }
     }
 
+    /**
+     * ÖLÇÜLEN HATA (2026-08-19, sahip canlıda fark etti): Vitrin'de
+     * `kategoriler` bölümü hero'ya YAPIŞMIŞ duruyordu. Sekiz bölümün yedisi
+     * `<section ... pt-14>` kullanıyordu, `kategoriler.blade.php` bu sınıfı
+     * hiç taşımıyordu — kopyala-yapıştır sırasında unutulmuş. `kategoriler`
+     * varsayılan sırada hero'dan hemen SONRA geldiği için (bkz.
+     * VARSAYILAN_SIRA['vitrin'][0]) etkisi ilk kurulumda bile görünür.
+     *
+     * Klasik temada aynı kural YOK (kendi tutarlı `py-14` deseni var, bu
+     * bekçi yalnız Vitrin'i kapsıyor).
+     */
+    public function test_vitrin_bolumlerinin_hepsi_ust_bosluk_tasir(): void
+    {
+        $kok = resource_path('views/vitrin/partials/home/');
+
+        $dosyalar = HomeSections::VARSAYILAN_SIRA['vitrin'];
+
+        foreach (array_keys(HomeSections::CAPALAR['vitrin']) as $capa) {
+            $dosyalar[] = $capa === 'zone_orta' ? 'capa-zone-orta' : 'capa-'.$capa;
+        }
+
+        foreach ($dosyalar as $anahtar) {
+            $yol = $kok.$anahtar.'.blade.php';
+            $this->assertTrue(File::exists($yol), "'{$anahtar}' partial'ı yok.");
+
+            preg_match('/<section\s+class="([^"]*)"/', File::get($yol), $eslesme);
+
+            $this->assertNotEmpty($eslesme, "'{$anahtar}' bölümünde <section class=\"...\"> kalıbı bulunamadı.");
+            $this->assertStringContainsString(
+                'pt-14',
+                $eslesme[1],
+                "Vitrin'de '{$anahtar}' bölümünün üst boşluğu (pt-14) yok — bir öncekine yapışık görünür."
+            );
+        }
+    }
+
     // ------------------------------------------------ Panel
 
     public function test_panel_sirayi_tasir_ve_kaydeder(): void

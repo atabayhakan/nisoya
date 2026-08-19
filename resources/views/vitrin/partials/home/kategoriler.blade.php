@@ -10,7 +10,7 @@
                 ['bg-[#f1ecfe] text-[#8a6bf2] dark:bg-violet-950/60 dark:text-violet-300'],
             ];
         @endphp
-        <section class="mx-auto max-w-6xl px-4" x-data x-reveal>
+        <section class="mx-auto max-w-6xl px-4 pt-14" x-data x-reveal>
             {{-- MOBİL: yatay kaydırılan ikon şeridi ("uygulama" düzeni).
                  Telefonda 2 sütunlu kart ızgarası ekranın büyük kısmını yiyor
                  ve ziyaretçi bir bakışta yalnız 4 kategori görüyordu. Şerit
