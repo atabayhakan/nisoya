@@ -4,11 +4,11 @@ namespace Tests\Feature;
 
 use App\Support\Settings;
 use App\Support\Tema;
-use DOMDocument;
-use DOMXPath;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
+use DOMDocument;
+use DOMXPath;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -52,7 +52,7 @@ class BaslikDugmeHizalamaTest extends TestCase
     /** @return list<string> */
     private function classlariBul(string $html, string $xpath): array
     {
-        $dom = new DOMDocument();
+        $dom = new DOMDocument;
         @$dom->loadHTML($html);
         $x = new DOMXPath($dom);
 
