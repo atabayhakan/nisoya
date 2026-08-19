@@ -28,7 +28,7 @@
     <button
         type="button"
         @click="openPalette()"
-        class="inline-flex items-center gap-1.5 rounded-lg p-2 text-stone-600 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+        class="inline-flex h-9 items-center gap-1.5 rounded-lg px-2 text-stone-600 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
         aria-label="Ara (Cmd/Ctrl+K)"
         title="Ara (Cmd/Ctrl+K)"
     >
