@@ -432,4 +432,65 @@
             </x-filament::section>
         </div>
     </div>
+
+    {{-- 5. HAREKETLİ LOGO YAZISI — YUKARIDAKİ fieldset'in (2-4) DIŞINDA:
+         diğerlerinin aksine Vitrin'de de çalışır (bkz.
+         TemaJetonlari::logoAnimasyonuAktifMi, JETONLAR'da 'temalar' => hem
+         'klasik' hem 'vitrin'). Bu yüzden burada "yalnız Klasik" uyarısı YOK
+         ve @disabled($aktifTema === 'vitrin') YOK — koyarsak sahibi Vitrin
+         açıkken bu ayarın da işe yaramayacağına yanlış inandırırdık. --}}
+    <x-filament::section>
+        <x-slot name="heading">
+            <span class="flex items-center gap-2.5">
+                <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-700 text-xs font-bold text-white">5</span>
+                Hareketli logo yazısı
+                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">Her iki temada geçerli</span>
+            </span>
+        </x-slot>
+        <x-slot name="description">
+            Başlıktaki "Nisoya" yazısı el yazısıyla çizilerek açılır.
+            <strong>"Değişiklikleri kaydet"e basana kadar yayına girmez.</strong>
+        </x-slot>
+
+        <label class="flex cursor-pointer items-start gap-3">
+            <input type="checkbox" wire:model.live="logoAnimasyon" class="fi-checkbox-input mt-0.5" />
+            <span>
+                <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">Açık</span>
+                <span class="block text-xs text-gray-500 dark:text-gray-400">Kapalıyken bugünkü düz "Nisoya" yazısı aynen kalır.</span>
+            </span>
+        </label>
+
+        <div @class(['mt-4 grid gap-6 sm:grid-cols-2', 'pointer-events-none opacity-50' => ! $logoAnimasyon])>
+            <div>
+                <label for="logo-renk-hex" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">Renk</label>
+                <div class="mt-1.5 flex items-center gap-3">
+                    <label for="logo-renk" class="sr-only">Logo yazısı renk seçici</label>
+                    <input id="logo-renk" type="color" wire:model.live="logoRenk"
+                           class="h-11 w-16 cursor-pointer rounded-lg border-0 bg-transparent p-0 shadow" />
+                    <input id="logo-renk-hex" type="text" wire:model.live="logoRenk"
+                           class="w-32 rounded-lg border-gray-300 text-sm focus:border-primary-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+                </div>
+            </div>
+
+            <div>
+                <label for="logo-font" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">El yazısı fontu</label>
+                <select id="logo-font" wire:model.live="logoFont"
+                        class="mt-1.5 w-full rounded-xl border-gray-300 text-sm focus:border-primary-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                    @foreach (\App\Support\TemaJetonlari::elYazisiSecenekleri() as $fontAnahtar => $fontEtiket)
+                        <option value="{{ $fontAnahtar }}">{{ $fontEtiket }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
+        {{-- CANLI ÖNİZLEME — sayfanın genel ilkesiyle aynı: gerçek bileşenin
+             bastığı AYNI SVG yolundan türer, ayrı bir kopya değil (bkz.
+             dosya başındaki "KORUNAN İLKELER"). --}}
+        <div class="mt-4 rounded-xl border border-gray-200 bg-stone-50 p-4 dark:border-gray-700 dark:bg-stone-900">
+            @php $logoOnizleme = \App\Support\TemaJetonlari::elYazisiFontu($logoFont); @endphp
+            <svg viewBox="{{ $logoOnizleme['viewBox'] }}" class="h-10" role="img" aria-label="Nisoya" fill="none">
+                <path d="{{ $logoOnizleme['yol'] }}" stroke="{{ $logoRenk }}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </div>
+    </x-filament::section>
 </x-filament-panels::page>

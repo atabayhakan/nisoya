@@ -49,6 +49,12 @@ class TasarimAyarlari extends Page
         'gorunum.border_radius' => 'modern',
         'gorunum.glassmorphism' => '1',
         'gorunum.smooth_animations' => '1',
+        // Klasik-only ayarların aksine bu üçü her iki temada da geçerli
+        // (bkz. TemaJetonlari::JETONLAR) ama sıfırlama tek düğmeden hepsini
+        // kapsar — sahibin "her şeyi fabrikaya döndür" beklentisiyle tutarlı.
+        'gorunum.logo_animasyon' => '0',
+        'gorunum.logo_rengi' => '#059669',
+        'gorunum.logo_yazi_tipi' => 'indie-flower',
     ];
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSwatch;
@@ -83,6 +89,12 @@ class TasarimAyarlari extends Page
 
     public bool $smoothAnimations = true;
 
+    public bool $logoAnimasyon = false;
+
+    public string $logoRenk = '#059669';
+
+    public string $logoFont = 'indie-flower'; // indie-flower, dancing-script — bkz. TemaJetonlari::EL_YAZISI_FONTLAR
+
     public function getTitle(): string
     {
         return 'Görünüm ve Tema';
@@ -103,6 +115,9 @@ class TasarimAyarlari extends Page
         $this->borderRadius = Settings::get('gorunum.border_radius', 'modern');
         $this->glassmorphism = Settings::get('gorunum.glassmorphism', '1') === '1';
         $this->smoothAnimations = Settings::get('gorunum.smooth_animations', '1') === '1';
+        $this->logoAnimasyon = Settings::get('gorunum.logo_animasyon', '0') === '1';
+        $this->logoRenk = Settings::get('gorunum.logo_rengi', '#059669');
+        $this->logoFont = Settings::get('gorunum.logo_yazi_tipi', 'indie-flower');
     }
 
     /**
@@ -235,6 +250,9 @@ class TasarimAyarlari extends Page
             'gorunum.border_radius' => $this->borderRadius,
             'gorunum.glassmorphism' => $this->glassmorphism ? '1' : '0',
             'gorunum.smooth_animations' => $this->smoothAnimations ? '1' : '0',
+            'gorunum.logo_animasyon' => $this->logoAnimasyon ? '1' : '0',
+            'gorunum.logo_rengi' => $this->logoRenk,
+            'gorunum.logo_yazi_tipi' => $this->logoFont,
         ]);
 
         Notification::make()

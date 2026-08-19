@@ -313,6 +313,32 @@ body > header {
     }
 }
 
+/* Hareketli logo yazısı (2026-08-19) — bkz. components/hareketli-logo.blade.php.
+   `pathLength="1"` sayesinde stroke-dasharray/dashoffset her font için aynı
+   "1" birimiyle çalışır, gerçek path uzunluğu fark etmez. Genel
+   prefers-reduced-motion kuralı (yukarıda) süreyi zaten 0.01ms'e indirir;
+   burada da zil animasyonuyla aynı çift-katman ihtiyatı uygulanıyor —
+   `animation:none` + sabit "tam çizili" durum, 0.01ms'lik bir "flaş"a bile
+   bel bağlamaz. */
+.hareketli-logo-cizgi {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: nisoya-logo-ciz 2s 0.2s ease-in-out forwards;
+}
+
+@keyframes nisoya-logo-ciz {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hareketli-logo-cizgi {
+        animation: none;
+        stroke-dashoffset: 0;
+    }
+}
+
 /* iOS Safari autofill "geç boyama" TESPİTİ (bkz. resources/js/app.js).
    WebKit, Face ID ile autofill'lenen değeri kutucuk odaklanana kadar görsel
    olarak boyamıyor (değer DOM'da vardır). Aşağıdaki boş animasyon, autofill

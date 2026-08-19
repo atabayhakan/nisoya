@@ -80,7 +80,11 @@
                          kaplıyor ve başlık taşıyordu (360px'te 17px, 320px'te 57px
                          yatay kaydırma). İkon tek başına markayı taşıyor ve yine
                          ana sayfaya götürüyor. --}}
+                @if (\App\Support\TemaJetonlari::logoAnimasyonuAktifMi())
+                    <x-hareketli-logo class="h-8 max-[380px]:hidden" />
+                @else
                     <span class="text-xl font-bold text-stone-900 max-[380px]:hidden dark:text-stone-50">{{ setting('genel.site_adi') }}</span>
+                @endif
             </a>
 
             <nav class="hidden items-center gap-6 text-sm font-medium text-stone-600 md:flex dark:text-stone-300">
