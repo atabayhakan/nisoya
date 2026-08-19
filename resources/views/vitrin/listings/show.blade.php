@@ -571,7 +571,7 @@
                                 <x-trust-badge :user="$listing->user" />
                                 @if ($listing->user->is_verified)<x-verified-badge />@endif
                             </div>
-                            <div class="mt-1 text-xs font-semibold text-stone-500 dark:text-stone-400">Üyelik: {{ $listing->user->created_at->translatedFormat('F Y') }}</div>
+                            <div class="mt-1 text-xs font-semibold text-stone-500 dark:text-stone-400">{{ $listing->user->kidemMetni() }}</div>
                         </div>
                     </div>
 

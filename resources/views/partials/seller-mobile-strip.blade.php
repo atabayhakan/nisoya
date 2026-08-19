@@ -49,7 +49,7 @@
                 @if ($sellerRating['count'] > 0)
                     ★ {{ $sellerRating['avg'] }} · {{ $sellerRating['count'] }} değerlendirme ·
                 @endif
-                {{ $listing->user->created_at->year }}'ten beri üye
+                {{ $listing->user->kidemMetni() }}
             </div>
         </div>
         {{-- text-stone-400 DEĞİL: MetinKontrastTest onu 2.59:1 ile yakalıyor. --}}

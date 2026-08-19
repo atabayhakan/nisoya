@@ -110,6 +110,9 @@
                         <x-heroicon-s-check class="h-2.5 w-2.5" /> Doğrulandı
                     </span>
                 @endif
+                @if ($kidem = $listing->user->kidemKisa())
+                    <span class="rounded-full bg-stone-100 px-2.5 py-1.5 text-2xs font-bold text-stone-600 dark:bg-stone-800 dark:text-stone-400" title="{{ $listing->user->kidemMetni() }}">{{ $kidem }}</span>
+                @endif
             </span>
         </div>
     </div>
