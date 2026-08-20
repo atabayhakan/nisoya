@@ -149,7 +149,7 @@
                         <span class="hidden max-w-[110px] truncate text-sm font-medium md:inline">{{ auth()->user()->name }}</span>
                     </a>
                     <a href="{{ route('dashboard') }}" class="hidden rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Panelim</a>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-bold text-white shadow-[0_10px_20px_-10px_rgba(62,99,240,.9)] transition hover:-translate-y-0.5 hover:bg-emerald-800 md:inline-flex dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900 dark:shadow-none">
+                    <a href="{{ route('panel.listings.create') }}" class="hidden items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-bold text-white shadow-[0_10px_20px_-10px_rgba(62,99,240,.9)] transition hover:-translate-y-0.5 hover:bg-emerald-800 md:inline-flex dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900 dark:shadow-none">
                         <x-heroicon-o-plus class="h-4 w-4" />İlan Ver
                     </a>
                     <form method="POST" action="{{ route('logout') }}" class="hidden md:block">
@@ -159,7 +159,7 @@
                 @else
                     <a href="{{ route('login') }}" class="hidden rounded-lg px-3 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Giriş</a>
                     <a href="{{ route('register') }}" class="hidden rounded-lg px-3 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Kayıt</a>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-bold text-white shadow-[0_10px_20px_-10px_rgba(62,99,240,.9)] transition hover:-translate-y-0.5 hover:bg-emerald-800 md:inline-flex dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900 dark:shadow-none">
+                    <a href="{{ route('panel.listings.create') }}" class="hidden items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-bold text-white shadow-[0_10px_20px_-10px_rgba(62,99,240,.9)] transition hover:-translate-y-0.5 hover:bg-emerald-800 md:inline-flex dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900 dark:shadow-none">
                         <x-heroicon-o-plus class="h-4 w-4" />İlan Ver
                     </a>
                 @endauth
@@ -207,7 +207,7 @@
             <div>
                 <h3 class="text-sm font-bold text-stone-800 dark:text-stone-100">Keşfet</h3>
                 <ul class="mt-3 space-y-2 text-sm font-medium text-stone-500 dark:text-stone-400">
-                    <li><a href="{{ url('/ilanlar') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Tüm İlanlar</a></li>
+                    <li><a href="{{ route('listings.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Tüm İlanlar</a></li>
                     @if (\App\Support\Modules::enabled('is_ilanlari'))
                         <li><a href="{{ route('jobs.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İş İlanları</a></li>
                         <li><a href="{{ route('candidates.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Yetenek Havuzu</a></li>
@@ -219,16 +219,16 @@
                     @if (\App\Support\Modules::enabled('rehber') && ($rehberFooterUlke = app(\App\Services\RehberYuzeyi::class)->girisNoktasiUlkeKodu(request()->user(), request())) !== null)
                         <li><a href="{{ route('rehber.ulke', $rehberFooterUlke) }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Ülke Rehberi</a></li>
                     @endif
-                    <li><a href="{{ url('/nasil-calisir') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a></li>
+                    <li><a href="{{ route('pages.how') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a></li>
                     <li><a href="{{ route('nabiz') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nisoya Nabzı</a></li>
                 </ul>
             </div>
             <div>
                 <h3 class="text-sm font-bold text-stone-800 dark:text-stone-100">Hesap</h3>
                 <ul class="mt-3 space-y-2 text-sm font-medium text-stone-500 dark:text-stone-400">
-                    <li><a href="{{ url('/giris') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Giriş Yap</a></li>
-                    <li><a href="{{ url('/kayit') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Kayıt Ol</a></li>
-                    <li><a href="{{ url('/panel/ilan/yeni') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İlan Ver</a></li>
+                    <li><a href="{{ route('login') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Giriş Yap</a></li>
+                    <li><a href="{{ route('register') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Kayıt Ol</a></li>
+                    <li><a href="{{ route('panel.listings.create') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İlan Ver</a></li>
                 </ul>
             </div>
             <div>
@@ -238,7 +238,7 @@
                         <li><a href="{{ url('/'.$navPage->slug) }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">{{ $navPage->title }}</a></li>
                     @endforeach
                     <li><a href="{{ route('pages.contact') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İletişim</a></li>
-                    <li><a href="/cerez-tercihleri" class="hover:text-emerald-700 dark:hover:text-emerald-400">Çerez Tercihleri</a></li>
+                    <li><a href="{{ route('pages.cookie-preferences') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Çerez Tercihleri</a></li>
                 </ul>
             </div>
         </div>

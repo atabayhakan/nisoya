@@ -11,12 +11,16 @@
 <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
 <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
 
-{{-- JSON-LD: WebSite + Organization (SEO + AdSense kalite) --}}
+{{-- JSON-LD: WebSite + Organization (SEO + AdSense kalite).
+     `seo.default_description` bilerek kullanılıyor — `footer.aciklama` DEĞİL.
+     İkisi eskiden ayrı ayrı "Nisoya'yı nasıl tanımlarız" sorusuna cevap
+     veriyordu (SEO panelinden biri güncellenince diğeri sessizce eskide
+     kalıyordu); footer.aciklama yalnız görünür footer metni için kalsın. --}}
 <x-json-ld type="WebSite" :data="[
     'name' => setting('genel.site_adi'),
     'alternateName' => 'Nisoya',
     'url' => url('/'),
-    'description' => setting('footer.aciklama'),
+    'description' => setting('seo.default_description'),
     'inLanguage' => 'tr-TR',
     'potentialAction' => [
         '@type' => 'SearchAction',
@@ -31,7 +35,7 @@
     'name' => setting('genel.site_adi'),
     'url' => url('/'),
     'logo' => asset('icons/icon-192.png'),
-    'description' => setting('footer.aciklama'),
+    'description' => setting('seo.default_description'),
 ]" />
 
 {{-- Google AdSense doğrulama meta etiketi (yayıncı id .env / admin panelden) --}}

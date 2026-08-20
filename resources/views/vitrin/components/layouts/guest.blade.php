@@ -9,14 +9,11 @@
          override edilmezse emerald sınıfları Tailwind'in varsayılan YEŞİLİ
          olarak çözülür ve giriş/kayıt sayfaları mavi sitenin ortasında yeşil
          kalırdı. Tek fark: vitrin-theme + Vitrin hex'leri. --}}
-    <title>{{ $title ?? 'Nisoya' }}</title>
-    {{-- Renk sabit değil brandColorHex()'ten: Vitrin aktifken zaten #3E63F0
-         döndürür — tek kaynak, iki guest iskeleti arasında sürüklenme olmaz. --}}
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%23{{ ltrim(brandColorHex(), '#') }}'/><path d='M7 17V7L17 17V7' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
-    <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="{{ brandColorHex() }}" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)">
-    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    {{-- SEO/og/favicon/manifest meta'ları — paylaşılan tek kopya (ana vitrin
+         iskeletiyle aynı bileşen). Öncesinde bu layout kendi
+         title/favicon/manifest'ini elle basıyordu ve canonical etiketi hiç
+         yoktu. --}}
+    <x-layout-head-meta :title="$title ?? null" />
 
     <x-theme-init />
 
