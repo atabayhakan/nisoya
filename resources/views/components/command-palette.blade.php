@@ -6,7 +6,7 @@
     // ağ isteği gerektirmez, canlı sonuçlardan (ilan/iş/aday) önce görünür.
     $staticEntries = $navLinks
         ->map(fn ($link) => ['category' => 'Menü', 'title' => $link->label, 'url' => $link->url])
-        ->push(['category' => 'Sayfa', 'title' => 'İlan Ver', 'url' => url('/panel/ilan/yeni')]);
+        ->push(['category' => 'Sayfa', 'title' => 'İlan Ver', 'url' => route('panel.listings.create')]);
 
     if (auth()->check()) {
         $staticEntries->push(['category' => 'Sayfa', 'title' => 'Panelim', 'url' => route('dashboard')]);

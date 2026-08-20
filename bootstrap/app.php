@@ -8,6 +8,7 @@ use App\Http\Middleware\PerformanceMetricsMiddleware;
 use App\Http\Middleware\QueryLogMiddleware;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\TemaViewYollari;
+use App\Http\Middleware\TrailingSlashRedirect;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Application;
@@ -25,6 +26,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
+            // Sondaki eğik çizgiyi en erken burada temizle — geri kalan
+            // middleware'ler (tema, oturum-bağımlı kontroller) 301'e giden
+            // bir istek için gereksiz iş yapmasın.
+            TrailingSlashRedirect::class,
             // Tema motoru (Vitrin): StartSession core web grubunda olduğu
             // için append edilen bu middleware her zaman ondan sonra koşar
             // (admin tema-önizleme oturumu okunabilir).

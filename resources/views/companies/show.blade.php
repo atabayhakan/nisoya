@@ -84,7 +84,7 @@
                 <div class="mt-5 grid grid-cols-2 gap-3 border-t border-stone-100 pt-4 dark:border-stone-800 sm:grid-cols-4">
                     @foreach ($company->galleryImages as $item)
                         <a href="{{ $item->url('large') }}" target="_blank" rel="noopener" class="group relative overflow-hidden rounded-xl border border-stone-200 dark:border-stone-800">
-                            <img src="{{ $item->url('medium') }}" alt="{{ $item->caption }}" loading="lazy" class="aspect-square w-full object-cover transition group-hover:scale-105">
+                            <img src="{{ $item->url('medium') }}" alt="{{ $item->caption ?: $company->name.' galeri fotoğrafı' }}" loading="lazy" class="aspect-square w-full object-cover transition group-hover:scale-105">
                             @if ($item->caption)
                                 <div class="absolute inset-x-0 bottom-0 truncate bg-stone-900/60 px-2 py-1 text-xs text-white">{{ $item->caption }}</div>
                             @endif

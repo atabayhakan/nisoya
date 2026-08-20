@@ -20,7 +20,7 @@
 
     {{-- JSON-LD: Service, Product veya RealEstateListing --}}
     @if ($listing->type->value === 'emlak')
-        <x-json-ld type="RealEstateListing" :data="[
+        <x-json-ld type="RealEstateListing" :data="array_filter([
             'name' => $listing->title,
             'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
             'image' => $listing->coverImage?->enIyiUrl('large'),
@@ -36,9 +36,9 @@
                 'price' => $listing->price,
                 'priceCurrency' => $listing->currency,
             ] : null,
-        ]" />
+        ])" />
     @elseif ($listing->type->value === 'vasita')
-        <x-json-ld type="Product" :data="[
+        <x-json-ld type="Product" :data="array_filter([
             'name' => $listing->title,
             'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
             'image' => $listing->coverImage?->enIyiUrl('large'),
@@ -48,7 +48,7 @@
                 'price' => $listing->price,
                 'priceCurrency' => $listing->currency,
             ] : null,
-        ]" />
+        ])" />
     @elseif ($listing->type->value === 'urun')
         <x-json-ld type="Product" :data="array_filter([
             'name' => $listing->title,
@@ -65,7 +65,7 @@
             ],
         ])" />
     @else
-        <x-json-ld type="Service" :data="[
+        <x-json-ld type="Service" :data="array_filter([
             'name' => $listing->title,
             'description' => \Illuminate\Support\Str::limit(strip_tags($listing->description), 300),
             'image' => $listing->coverImage?->enIyiUrl('large'),
@@ -82,7 +82,7 @@
                 'price' => $listing->price,
                 'priceCurrency' => $listing->currency,
             ] : null,
-        ]" />
+        ])" />
     @endif
     @endunless
 
