@@ -45,6 +45,12 @@
                     <line x1="24" y1="32" x2="24" y2="59" opacity="0.45" />
                     <line x1="96" y1="32" x2="96" y2="59" opacity="0.45" />
                     @break
+
+                @case('camera')
+                    <rect x="24" y="34" width="72" height="46" rx="6" />
+                    <path d="M48 34 52 24h16l4 10" />
+                    <circle cx="60" cy="57" r="14" />
+                    @break
             @endswitch
 
             {{-- Ortak "boş raf" motifi — tüm illüstrasyonların üstünde durduğu kesikli çizgi. --}}

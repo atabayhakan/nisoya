@@ -103,11 +103,11 @@
         @endif
 
         {{-- Breadcrumb --}}
-        <nav class="flex items-center gap-2 text-xs font-semibold text-stone-500 dark:text-stone-400">
-            <a href="{{ url('/ilanlar') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İlanlar</a>
+        <nav class="text-sm text-stone-500 dark:text-stone-400" aria-label="breadcrumb">
+            <a href="{{ route('listings.index') }}" class="hover:underline">İlanlar</a>
             @if ($listing->category)
-                <span class="text-stone-300 dark:text-stone-400">/</span>
-                <a href="{{ url('/ilanlar/kategori/'.$listing->category->slug) }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">{{ $listing->category->name }}</a>
+                <span aria-hidden="true"> / </span>
+                <a href="{{ url('/ilanlar/kategori/'.$listing->category->slug) }}" class="hover:underline">{{ $listing->category->name }}</a>
             @endif
         </nav>
 
@@ -185,7 +185,7 @@
                                              class="h-full min-h-[76px] w-full object-cover sm:h-[109px]">
                                         @if ($loop->last && $kalanFoto > 0)
                                             <span class="absolute inset-0 grid place-items-center bg-stone-900/35">
-                                                <span class="rounded-lg bg-white/90 px-2.5 py-1.5 text-xs font-bold text-stone-700">+{{ $kalanFoto }} foto</span>
+                                                <span class="rounded-lg bg-white/90 px-2.5 py-1.5 text-xs font-bold text-stone-700 dark:bg-stone-900/90 dark:text-stone-100">+{{ $kalanFoto }} foto</span>
                                             </span>
                                         @endif
                                     </div>
@@ -202,34 +202,24 @@
 
                 {{-- B. İçerik kartı --}}
                 <div class="rounded-2xl border border-stone-200 bg-white px-5 py-5 shadow-brand sm:px-6 dark:border-stone-700/70 dark:bg-stone-900">
-                    <div class="flex flex-wrap items-center gap-2 text-2xs font-bold">
+                    <div class="flex flex-wrap items-center gap-2">
                         @if ($listing->category)
-                            <span class="rounded-full bg-emerald-50 px-2.5 py-1.5 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">{{ $listing->category->name }}</span>
+                            <x-chip tone="emerald">{{ $listing->category->name }}</x-chip>
                         @endif
                         @if ($listing->isCurrentlyFeatured())
-                            <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1.5 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-                                <x-heroicon-s-star class="h-3 w-3" /> Öne çıkan
-                            </span>
+                            <x-chip tone="amber"><x-heroicon-s-star class="h-3 w-3" /> Öne çıkan</x-chip>
                         @endif
                         @if ($listing->user->is_verified)
-                            <span class="inline-flex items-center gap-1 rounded-full bg-[#e7f7f1] px-2.5 py-1.5 text-[#0f9d76] dark:bg-teal-950/60 dark:text-teal-300">
-                                <x-heroicon-s-check class="h-3 w-3" /> Doğrulanmış satıcı
-                            </span>
+                            <x-chip tone="teal"><x-heroicon-s-check class="h-3 w-3" /> Doğrulanmış satıcı</x-chip>
                         @endif
                         @if ($listing->country)
-                            <span class="rounded-full bg-stone-100 px-2.5 py-1.5 text-stone-600 dark:bg-stone-800 dark:text-stone-300">
-                                {{ $listing->country->emoji }} @if ($listing->city){{ $listing->city }}, @endif{{ $listing->country->name_tr }}
-                            </span>
+                            <x-chip tone="neutral">{{ $listing->country->emoji }} @if ($listing->city){{ $listing->city }}, @endif{{ $listing->country->name_tr }}</x-chip>
                         @endif
                         @if ($listing->is_remote)
-                            <span class="inline-flex items-center gap-1 rounded-full bg-[#e7f7f1] px-2.5 py-1.5 text-[#0f9d76] dark:bg-teal-950/60 dark:text-teal-300">
-                                <x-heroicon-o-globe-alt class="h-3 w-3" /> Uzaktan / Online
-                            </span>
+                            <x-chip tone="teal"><x-heroicon-o-globe-alt class="h-3 w-3" /> Uzaktan / Online</x-chip>
                         @endif
                         @if ($listing->type->value === 'urun' && $listing->stock !== null)
-                            <span class="inline-flex items-center gap-1 rounded-full bg-[#fff6e8] px-2.5 py-1.5 text-[#b9741a] dark:bg-amber-950/60 dark:text-amber-300">
-                                <x-heroicon-o-archive-box class="h-3 w-3" /> Stokta {{ $listing->stock }} adet
-                            </span>
+                            <x-chip tone="amber"><x-heroicon-o-archive-box class="h-3 w-3" /> Stokta {{ $listing->stock }} adet</x-chip>
                         @endif
                     </div>
 
@@ -415,7 +405,7 @@
                             </summary>
                             <form method="POST" action="{{ route('reports.store', $listing) }}" class="mt-3 max-w-md space-y-2 rounded-2xl border border-stone-200 bg-white p-4 shadow-brand dark:border-stone-700/70 dark:bg-stone-900">
                                 @csrf
-                                <select name="reason" required class="w-full rounded-[9px] border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                                <select name="reason" required class="w-full rounded-lg border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                                     <option value="">Sebep seç...</option>
                                     <option value="Yanıltıcı / sahte ilan">Yanıltıcı / sahte ilan</option>
                                     <option value="Uygunsuz içerik">Uygunsuz içerik</option>
@@ -423,7 +413,7 @@
                                     <option value="Yanlış kategori">Yanlış kategori</option>
                                     <option value="Diğer">Diğer</option>
                                 </select>
-                                <textarea name="note" rows="2" placeholder="Eklemek istediğin not (ops.)" class="w-full rounded-[9px] border-stone-300 px-3 py-2 text-sm text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500"></textarea>
+                                <textarea name="note" rows="2" placeholder="Eklemek istediğin not (ops.)" class="w-full rounded-lg border-stone-300 px-3 py-2 text-sm text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500"></textarea>
                                 <button type="submit" class="rounded-[11px] bg-stone-800 px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 dark:bg-stone-700">Şikayeti gönder</button>
                             </form>
                         </details>
@@ -475,11 +465,11 @@
                              gelmeyecek bir mesajın yazılmasına davet olurdu;
                              asıl kapı MessageController::start() içinde. --}}
                         @if ($isArchived && ! $isOwner)
-                            <div class="rounded-[13px] bg-stone-100 px-4 py-3 text-center text-sm font-semibold text-stone-600 dark:bg-stone-800 dark:text-stone-300">
+                            <div class="rounded-xl bg-stone-100 px-4 py-3 text-center text-sm font-semibold text-stone-600 dark:bg-stone-800 dark:text-stone-300">
                                 Bu ilan yayından kalktığı için mesaj gönderilemez.
                             </div>
                         @elseif ($isOwner)
-                            <a href="{{ route('panel.listings.edit', $listing) }}" class="block w-full rounded-[13px] border border-stone-300 px-4 py-3 text-center text-sm font-bold text-stone-800 transition hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">İlanı Düzenle</a>
+                            <a href="{{ route('panel.listings.edit', $listing) }}" class="block w-full rounded-xl border border-stone-300 px-4 py-3 text-center text-sm font-bold text-stone-800 transition hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">İlanı Düzenle</a>
                         @elseif (auth()->check())
                             @php
                                 $isShortTerm = ($listing->type->value === 'emlak' && ($listing->category?->slug === 'kisa-donem-tatil' || $listing->propertyDetail?->max_guests))
@@ -492,19 +482,19 @@
                                         <p class="text-xs font-semibold text-stone-500 dark:text-stone-400">📅 Tarih seç, talep mesajına eklensin <span class="font-normal">(ops.)</span></p>
                                         <div class="mt-2 grid grid-cols-2 gap-2">
                                             <input name="giris" type="date" value="{{ old('giris') }}" aria-label="Giriş tarihi"
-                                                   class="w-full rounded-[9px] border-stone-300 px-2 py-1.5 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                                                   class="w-full rounded-lg border-stone-300 px-2 py-1.5 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                                             <input name="cikis" type="date" value="{{ old('cikis') }}" aria-label="Çıkış tarihi"
-                                                   class="w-full rounded-[9px] border-stone-300 px-2 py-1.5 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                                                   class="w-full rounded-lg border-stone-300 px-2 py-1.5 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                                         </div>
                                         <input name="kisi" type="number" min="1" max="50" value="{{ old('kisi') }}" placeholder="Kişi sayısı (ops.)"
-                                               class="mt-2 w-full rounded-[9px] border-stone-300 px-2 py-1.5 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">
+                                               class="mt-2 w-full rounded-lg border-stone-300 px-2 py-1.5 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">
                                         @error('giris') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                                         @error('cikis') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                                     </div>
                                 @endif
                                 @include('partials.quick-reply-chips')
                                 <textarea name="body" rows="3" required placeholder="{{ $listing->type->value === 'emlak' ? 'İlan sahibine bir mesaj yaz...' : 'Satıcıya bir mesaj yaz...' }}"
-                                          class="w-full rounded-[13px] border-stone-300 px-3 py-2.5 text-sm text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">{{ old('body') }}</textarea>
+                                          class="w-full rounded-xl border-stone-300 px-3 py-2.5 text-sm text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">{{ old('body') }}</textarea>
                                 @error('body') <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                                 <x-button type="submit" class="h-12 w-full">
                                     <x-heroicon-o-chat-bubble-left class="h-4 w-4" /> Mesaj Gönder
@@ -518,7 +508,7 @@
                             @unless ($isOwner)
                                 <form method="POST" action="{{ route('favorites.toggle', $listing) }}">
                                     @csrf
-                                    <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-[13px] border px-4 py-3 text-sm font-bold transition {{ $isFavorited ? 'border-red-200 bg-red-50 text-red-600 dark:border-red-800 dark:bg-red-950/30 dark:text-red-400' : 'border-stone-300 text-stone-800 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800' }}">
+                                    <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold transition {{ $isFavorited ? 'border-red-200 bg-red-50 text-red-600 dark:border-red-800 dark:bg-red-950/30 dark:text-red-400' : 'border-stone-300 text-stone-800 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800' }}">
                                         @if ($isFavorited)
                                             <x-heroicon-s-heart class="h-5 w-5" /> Favorilerde
                                         @else
@@ -539,7 +529,7 @@
                 {{-- Emlak/vasıta müsaitlik takvimi --}}
                 @if (in_array($listing->type->value, ['emlak', 'vasita'], true) && $listing->relationLoaded('unavailableRanges'))
                     <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-brand dark:border-stone-700/70 dark:bg-stone-900">
-                        <h2 class="text-sm font-extrabold tracking-[-0.015em] text-stone-800 dark:text-stone-100">📅 Müsaitlik</h2>
+                        <h2 class="text-sm font-extrabold text-stone-800 dark:text-stone-100">📅 Müsaitlik</h2>
                         <div class="mt-3">
                             <x-availability-calendar :ranges="$listing->unavailableRanges" />
                         </div>
@@ -627,7 +617,7 @@
                      Veri yalnız vitrin aktifken yükleniyor; yoksa blok basılmaz. --}}
                 @if ($similarListings->isNotEmpty())
                     <div class="rounded-2xl border border-stone-200 bg-white px-5 py-[18px] shadow-brand dark:border-stone-700/70 dark:bg-stone-900">
-                        <h2 class="text-sm font-extrabold tracking-[-0.015em] text-stone-800 dark:text-stone-100">Benzer ilanlar</h2>
+                        <h2 class="text-sm font-extrabold text-stone-800 dark:text-stone-100">Benzer ilanlar</h2>
                         <div class="mt-3.5 grid gap-3">
                             @foreach ($similarListings as $benzer)
                                 <a href="{{ route('listings.show', [$benzer, $benzer->slug]) }}" class="group flex items-center gap-3">

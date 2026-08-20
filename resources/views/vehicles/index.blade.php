@@ -150,14 +150,13 @@
                     </div>
                     <div class="mt-8">{{ $listings->links() }}</div>
                 @else
-                    <div class="rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center dark:border-stone-700 dark:bg-stone-900">
-                        <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400">
-                            <x-heroicon-o-truck class="h-6 w-6" />
-                        </span>
-                        <h2 class="mt-3 text-lg font-semibold text-stone-800 dark:text-stone-100">Henüz ilan yok</h2>
-                        <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Bu filtrelerle sonuç bulunamadı — ilk vasıta ilanını sen ver, binlerce kişiye ulaşsın.</p>
-                        <a href="{{ route('panel.listings.create', ['tip' => 'vasita']) }}" class="mt-5 inline-block rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-brand dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">Vasıta İlanı Ver</a>
-                    </div>
+                    <x-empty-state
+                        illustration="listing"
+                        title="Henüz ilan yok"
+                        description="Bu filtrelerle sonuç bulunamadı — ilk vasıta ilanını sen ver, binlerce kişiye ulaşsın."
+                        cta-text="Vasıta İlanı Ver"
+                        :cta-href="route('panel.listings.create', ['tip' => 'vasita'])"
+                    />
                 @endif
             </main>
         </div>

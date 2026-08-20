@@ -51,7 +51,7 @@
                                 <span class="rounded-full bg-emerald-50 px-2.5 py-1 font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">{{ $vitrinOne->category->name }}</span>
                             @endif
                             @if ($vitrinOne->is_remote)
-                                <span class="rounded-full bg-[#e7f7f1] px-2.5 py-1 font-bold text-[#0f9d76] dark:bg-teal-950/60 dark:text-teal-300">Online</span>
+                                <x-chip tone="teal">Online</x-chip>
                             @endif
                         </div>
                         <h3 class="mt-2.5 text-xl font-extrabold text-stone-800 group-hover:text-emerald-700 sm:text-2xl dark:text-stone-50 dark:group-hover:text-emerald-400">{{ $vitrinOne->title }}</h3>

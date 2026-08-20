@@ -62,7 +62,7 @@
          götürür. Formu burada TEKRARLAMAK iki ayrı form, iki ayrı old()
          durumu ve iki bakım noktası demekti. --}}
     @if (! $isArchived && ! $isOwner)
-        <a href="#satici-iletisim" class="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-[13px] bg-emerald-700 text-sm font-bold text-white transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900">
+        <a href="#satici-iletisim" class="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 text-sm font-bold text-white transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900">
             <x-heroicon-o-chat-bubble-left class="h-4 w-4" /> Satıcıya mesaj yaz
         </a>
     @endif

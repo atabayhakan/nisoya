@@ -52,7 +52,7 @@
             <div class="hidden grid-cols-2 gap-3.5 sm:grid sm:grid-cols-3 lg:grid-cols-5">
                 @foreach ($categories->take(10) as $category)
                     <a href="{{ route('listings.category', $category) }}"
-                       class="group rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand transition hover:-translate-y-0.5 hover:border-emerald-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-emerald-700">
+                       class="group rounded-2xl border border-stone-200/60 bg-white p-4 shadow-brand transition hover:-translate-y-0.5 hover:border-emerald-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-emerald-700">
                         <div class="flex items-center justify-between">
                             <span class="grid h-10 w-10 place-items-center rounded-xl {{ $kategoriRenkleri[$loop->index % 5][0] }}">
                                 <x-dynamic-component :component="'heroicon-o-'.\App\Support\CategoryIcon::heroicon($category->icon)" class="h-5 w-5" />
