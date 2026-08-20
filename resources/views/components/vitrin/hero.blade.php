@@ -67,7 +67,7 @@
     @else
         {{-- Dekoratif radial (saf CSS, görsel dosyası yok) --}}
         <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-            <div class="absolute -left-32 -top-40 h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,rgba(62,99,240,.13),transparent_68%)] dark:bg-[radial-gradient(circle,rgba(107,138,253,.12),transparent_68%)]"></div>
+            <div class="absolute -left-32 -top-40 h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--color-emerald-600)_13%,transparent),transparent_68%)] dark:bg-[radial-gradient(circle,color-mix(in_srgb,var(--color-emerald-400)_12%,transparent),transparent_68%)]"></div>
             <div class="absolute -right-24 top-1/3 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(22,169,127,.08),transparent_70%)]"></div>
         </div>
     @endif
@@ -142,16 +142,10 @@
             @if ($cta1 || $cta2)
                 <div class="mt-6 flex flex-wrap gap-3 {{ $sahne ? 'justify-center' : '' }}">
                     @if ($cta1)
-                        <a href="{{ $cta1['url'] }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-[0_12px_22px_-12px_rgba(62,99,240,1)] transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none">
-                            {{ $cta1['etiket'] }}
-                        </a>
+                        <x-button :href="$cta1['url']" size="lg">{{ $cta1['etiket'] }}</x-button>
                     @endif
                     @if ($cta2)
-                        <a href="{{ $cta2['url'] }}" class="inline-flex items-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition {{ $koyu
-                            ? 'border-white/30 text-white hover:bg-white/10'
-                            : 'border-stone-300 text-stone-800 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800' }}">
-                            {{ $cta2['etiket'] }}
-                        </a>
+                        <x-button :href="$cta2['url']" :variant="$koyu ? 'outline-dark' : 'secondary'" size="lg">{{ $cta2['etiket'] }}</x-button>
                     @endif
                 </div>
             @endif

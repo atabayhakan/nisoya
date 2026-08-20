@@ -212,7 +212,7 @@
                     {{-- Harita kısayolu --}}
                     <a href="{{ route('listings.map', $filters['tip'] ? ['tip' => $filters['tip']] : []) }}"
                        class="group relative flex h-[150px] items-end justify-center overflow-hidden rounded-[18px] border border-stone-200/60 bg-gradient-to-br from-emerald-50 via-stone-100 to-emerald-50/40 p-3 shadow-brand dark:border-stone-800 dark:from-emerald-950/40 dark:via-stone-900 dark:to-stone-950">
-                        <span class="absolute left-[30%] top-[35%] h-[9px] w-[9px] rounded-full bg-emerald-600 shadow-[0_0_0_5px_rgba(62,99,240,.2)]" aria-hidden="true"></span>
+                        <span class="absolute left-[30%] top-[35%] h-[9px] w-[9px] rounded-full bg-emerald-600 shadow-[0_0_0_5px_color-mix(in_srgb,var(--color-emerald-600)_20%,transparent)]" aria-hidden="true"></span>
                         <span class="vitrin-pulse absolute right-[32%] top-[52%] h-2 w-2 rounded-full bg-[#16a97f] shadow-[0_0_0_5px_rgba(22,169,127,.2)]" aria-hidden="true"></span>
                         <span class="inline-flex h-[38px] items-center gap-2 rounded-[11px] bg-stone-800 px-4 text-xs font-bold text-white transition group-hover:brightness-110 dark:bg-stone-700">
                             <x-heroicon-o-map class="h-4 w-4" /> Haritada gör

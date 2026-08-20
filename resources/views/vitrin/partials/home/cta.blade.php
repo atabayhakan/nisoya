@@ -2,17 +2,17 @@
     @if (\App\Support\HomeSections::visible('cta'))
         <section class="mx-auto max-w-6xl px-4 pt-14" x-data x-reveal>
             <div class="relative overflow-hidden rounded-[24px] bg-stone-800 p-8 text-white sm:p-10 dark:bg-stone-900 dark:ring-1 dark:ring-stone-800">
-                <div class="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(62,99,240,.35),transparent_70%)]" aria-hidden="true"></div>
+                <div class="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--color-emerald-600)_35%,transparent),transparent_70%)]" aria-hidden="true"></div>
                 <div class="relative grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
                     <div>
                         <span class="inline-flex rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-300">Satıcı ol</span>
                         <h2 class="mt-3 text-2xl font-extrabold sm:text-3xl" style="text-wrap: pretty">{{ setting('home.cta_baslik') }}</h2>
                         <p class="mt-2 max-w-lg text-sm font-medium leading-relaxed text-white/70">{{ setting('home.cta_metin') }}</p>
                         <div class="mt-6 flex flex-wrap gap-3">
-                            <a href="{{ url('/panel/ilan/yeni') }}" class="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-stone-800 transition hover:bg-stone-100">
+                            <x-button :href="route('panel.listings.create')" variant="inverse" size="lg">
                                 <x-heroicon-o-plus class="h-4 w-4" />{{ setting('home.cta_buton') }}
-                            </a>
-                            <a href="{{ url('/nasil-calisir') }}" class="inline-flex items-center gap-2 rounded-xl border border-white/25 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10">Nasıl çalışır?</a>
+                            </x-button>
+                            <x-button :href="route('pages.how')" variant="outline-dark" size="lg">Nasıl çalışır?</x-button>
                         </div>
                     </div>
                     {{-- SAYIM DEĞİL, SÖZ (2026-08-05).
