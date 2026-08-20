@@ -59,13 +59,19 @@ class TasarimDenetimiUyarilariTest extends TestCase
 
     public function test_aktif_sayfanin_menu_baglantisi_isaretlenir(): void
     {
+        // Gerçek olay (2026-08-21, canlıda ölçüldü): admin panelinden
+        // kaydedilen $navLink->url GÖRECELİ yoldur ("/nasil-calisir") —
+        // url()/route() ile üretilen TAM adres DEĞİL. İlk sürüm bunu
+        // request()->url() (tam adres) ile birebir karşılaştırıyordu ve asla
+        // eşleşmiyordu; fixture'da yanlışlıkla url() kullanılınca bu hata
+        // testte gizli kalmıştı. Burada bilerek GERÇEK biçim kullanılıyor.
         Settings::setMany(['gorunum.tema' => 'vitrin']);
 
         NavigationLink::query()->create([
-            'label' => 'İş İlanları', 'url' => url('/is-ilanlari'), 'sort_order' => 1, 'is_active' => true,
+            'label' => 'İş İlanları', 'url' => '/is-ilanlari', 'sort_order' => 1, 'is_active' => true,
         ]);
         NavigationLink::query()->create([
-            'label' => 'Nasıl Çalışır', 'url' => url('/nasil-calisir'), 'sort_order' => 2, 'is_active' => true,
+            'label' => 'Nasıl Çalışır', 'url' => '/nasil-calisir', 'sort_order' => 2, 'is_active' => true,
         ]);
 
         $html = $this->get('/nasil-calisir')->assertOk()->getContent();
@@ -81,16 +87,30 @@ class TasarimDenetimiUyarilariTest extends TestCase
         // Her bağlantının KENDİ etiketi — href'inden başlayıp yalnız ileri
         // doğru kısa bir pencere (komşu bağlantıya taşmadan) — ayrı ayrı
         // incelenir. "Nasıl Çalışır" işaretli, "İş İlanları" işaretsiz olmalı.
-        $aktifKonum = strpos($menu, 'href="'.url('/nasil-calisir').'"');
+        $aktifKonum = strpos($menu, 'href="/nasil-calisir"');
         $this->assertNotFalse($aktifKonum, 'Aktif bağlantı menüde bulunamadı.');
         $aktifEtiket = substr($menu, $aktifKonum, 300);
         $this->assertStringContainsString('aria-current="page"', $aktifEtiket);
         $this->assertStringContainsString('after:w-full', $aktifEtiket);
 
-        $pasifKonum = strpos($menu, 'href="'.url('/is-ilanlari').'"');
+        $pasifKonum = strpos($menu, 'href="/is-ilanlari"');
         $this->assertNotFalse($pasifKonum, 'Pasif bağlantı menüde bulunamadı.');
         $pasifEtiket = substr($menu, $pasifKonum, 300);
         $this->assertStringNotContainsString('aria-current', $pasifEtiket);
+    }
+
+    public function test_harici_baglanti_hicbir_zaman_aktif_isaretlenmez(): void
+    {
+        // Aynı yol segmentini taşıyan ama BAŞKA bir siteye giden bağlantı
+        // yanlışlıkla aktif işaretlenmemeli — yalnız yol değil, host da
+        // (varsa) eşleşmeli.
+        Settings::setMany(['gorunum.tema' => 'vitrin']);
+
+        NavigationLink::query()->create([
+            'label' => 'Dış Bağlantı', 'url' => 'https://baska-site.test/nasil-calisir', 'sort_order' => 1, 'is_active' => true, 'opens_new_tab' => true,
+        ]);
+
+        $this->get('/nasil-calisir')->assertOk()->assertDontSee('aria-current="page"', false);
     }
 
     public function test_aktif_olmayan_sayfada_hicbir_baglanti_isaretlenmez(): void
@@ -102,6 +122,43 @@ class TasarimDenetimiUyarilariTest extends TestCase
         ]);
 
         $this->get('/')->assertOk()->assertDontSee('aria-current="page"', false);
+    }
+
+    // ------------------------------------------------------ Favori butonu
+
+    /**
+     * Gerçek olay: favori butonu hiç yükleniyor göstergesi vermiyordu.
+     * Form YÖNTEMİ bilerek DEĞİŞMEDİ — hâlâ normal POST + tam sayfa
+     * yönlendirmesi; yalnız gönderim anında düğme kilitlenip aynı sitedeki
+     * diğer göstergelerle aynı ikonu gösteriyor.
+     */
+    public function test_favori_butonu_gonderim_kilidi_tasir(): void
+    {
+        Settings::setMany(['gorunum.tema' => 'vitrin']);
+
+        $uye = User::factory()->create(['email_verified_at' => now()]);
+        $satici = User::factory()->create(['email_verified_at' => now(), 'country_code' => 'DE']);
+        $kategori = Category::query()->whereNotNull('parent_id')->firstOrFail();
+        $listing = Listing::factory()->for($satici)->create(['category_id' => $kategori->id, 'status' => 'aktif']);
+
+        $html = $this->actingAs($uye)->get(route('listings.index'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('gonderiliyor', $html, 'Favori formu yükleniyor durumu taşımıyor.');
+        $this->assertStringContainsString(':disabled="gonderiliyor"', $html);
+    }
+
+    public function test_favori_butonu_hala_normal_post_ile_calisir(): void
+    {
+        // Yükleniyor göstergesi eklenirken favori işlevi BOZULMAMALI — hâlâ
+        // gerçek bir sunucu isteği ve durum değişikliği.
+        $uye = User::factory()->create(['email_verified_at' => now()]);
+        $satici = User::factory()->create(['email_verified_at' => now(), 'country_code' => 'DE']);
+        $kategori = Category::query()->whereNotNull('parent_id')->firstOrFail();
+        $listing = Listing::factory()->for($satici)->create(['category_id' => $kategori->id, 'status' => 'aktif']);
+
+        $this->actingAs($uye)->post(route('favorites.toggle', $listing))->assertRedirect();
+
+        $this->assertTrue($uye->fresh()->favorilerindeMi($listing->id));
     }
 
     // -------------------------------------------------------------- Avatar
