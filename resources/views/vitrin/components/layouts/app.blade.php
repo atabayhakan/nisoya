@@ -78,7 +78,18 @@
             <nav class="hidden items-center gap-6 text-sm font-semibold text-stone-600 md:flex dark:text-stone-300">
                 <x-mega-menu :items="$navLinksMega" />
                 @foreach ($navLinksSingle as $navLink)
-                    @php $navLinkAktif = request()->url() === $navLink->url; @endphp
+                    {{-- Gerçek olay (2026-08-21, canlıda ölçüldü): $navLink->url
+                         admin panelinden GÖRECELİ yol olarak kaydediliyor
+                         ("/nasil-calisir"), request()->url() ise HER ZAMAN TAM
+                         adres ("https://nisoya.com/nasil-calisir") döner —
+                         ikisi asla birebir eşleşmiyordu, aktif işaret hiç
+                         basılmıyordu. parse_url() ile ikisi de saf yola
+                         indirgenip öyle karşılaştırılıyor. --}}
+                    @php
+                        $navLinkHost = parse_url((string) $navLink->url, PHP_URL_HOST);
+                        $navLinkAktif = ($navLinkHost === null || $navLinkHost === request()->getHost())
+                            && trim((string) parse_url((string) $navLink->url, PHP_URL_PATH), '/') === trim(request()->path(), '/');
+                    @endphp
                     <a href="{{ $navLink->url }}" @if ($navLink->opens_new_tab) target="_blank" rel="noopener noreferrer" @endif
                        @if ($navLinkAktif) aria-current="page" @endif
                        class="relative py-1 after:absolute after:-bottom-0.5 after:left-0 after:h-0.5 after:bg-emerald-600 after:transition-all after:duration-300 hover:text-emerald-700 hover:after:w-full dark:after:bg-emerald-400 dark:hover:text-emerald-400 {{ $navLinkAktif ? 'text-emerald-700 after:w-full dark:text-emerald-400' : 'after:w-0' }}">{{ $navLink->label }}</a>
