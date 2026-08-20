@@ -18,9 +18,11 @@
                         $unread = $last && $last->sender_id !== $me && is_null($last->read_at);
                     @endphp
                     <a href="{{ route('panel.messages.show', $conversation) }}" class="flex items-center gap-3 px-4 py-3 transition hover:bg-stone-50 dark:hover:bg-stone-800">
-                        <div class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-emerald-100 font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                            {{ mb_strtoupper(mb_substr($other?->name ?? '?', 0, 1)) }}
-                        </div>
+                        @if ($other)
+                            <x-avatar :user="$other" size="h-11 w-11" />
+                        @else
+                            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-emerald-100 font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">?</div>
+                        @endif
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center justify-between gap-2">
                                 <span class="truncate font-semibold text-stone-800 dark:text-stone-100">{{ $other?->name ?? 'Kullanıcı' }}</span>

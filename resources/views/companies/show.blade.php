@@ -38,7 +38,7 @@
                 </div>
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2">
-                        <h1 class="text-xl font-bold text-stone-900 dark:text-stone-50">{{ $company->name }}</h1>
+                        <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">{{ $company->name }}</h1>
                         @if ($company->is_verified)
                             {{-- Faz İ3: "2. Tasarım"da mühür renkleriyle, "1. Tasarım"da eski turkuaz pil aynen kalıyor. --}}
                             @if (\App\Support\Tema::tasarimModu() === 'yeni')

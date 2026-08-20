@@ -103,12 +103,10 @@
             </span>
             <span class="flex shrink-0 items-center gap-1.5">
                 @if ($listing->is_remote)
-                    <span class="rounded-full bg-[#e7f7f1] px-2.5 py-1.5 text-2xs font-bold text-[#0f9d76] dark:bg-teal-950/60 dark:text-teal-300">Online</span>
+                    <x-chip tone="teal">Online</x-chip>
                 @endif
                 @if ($listing->user->is_verified)
-                    <span class="inline-flex items-center gap-1 rounded-full bg-[#e7f7f1] px-2.5 py-1.5 text-2xs font-bold text-[#0f9d76] dark:bg-teal-950/60 dark:text-teal-300" title="Doğrulanmış üye">
-                        <x-heroicon-s-check class="h-2.5 w-2.5" /> Doğrulandı
-                    </span>
+                    <x-chip tone="teal" title="Doğrulanmış üye"><x-heroicon-s-check class="h-2.5 w-2.5" /> Doğrulandı</x-chip>
                 @endif
                 <x-kidem-rozeti :user="$listing->user" />
             </span>
@@ -131,17 +129,29 @@
          misafire kalp göstermek tutulamayacak bir vaat olurdu. --}}
     @auth
         @php($favorili = auth()->user()->favorilerindeMi($listing->id))
-        <form method="POST" action="{{ route('favorites.toggle', $listing) }}" class="absolute right-2 top-2 z-10">
+        {{-- Tasarım denetimi (2026-08-20): bu buton hiç yükleniyor göstergesi
+             vermiyordu — istek gerçek sayfa yönlendirmesiyle bitiyor (Alpine
+             değil) ama tıklama ile yönlendirme arasında bağlantı sunucuya
+             gidip dönene kadar boşlukta kalıyordu. Form YÖNTEMİ değişmedi
+             (hâlâ normal POST + tam sayfa yönlendirmesi); yalnız gönderim
+             anında düğme kilitlenip aynı sitedeki diğer yükleniyor
+             göstergeleriyle aynı ikonu (bkz. nisoya-ai-arama.blade.php) gösteriyor. --}}
+        <form method="POST" action="{{ route('favorites.toggle', $listing) }}" class="absolute right-2 top-2 z-10" x-data="{ gonderiliyor: false }" @submit="gonderiliyor = true">
             @csrf
-            <button type="submit"
-                    class="grid h-9 w-9 place-items-center rounded-full bg-white/90 shadow-sm backdrop-blur transition hover:bg-white dark:bg-stone-900/90 dark:hover:bg-stone-900 {{ $favorili ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-stone-300' }}"
+            <button type="submit" :disabled="gonderiliyor"
+                    class="grid h-9 w-9 place-items-center rounded-full bg-white/90 shadow-sm backdrop-blur transition hover:bg-white disabled:cursor-wait dark:bg-stone-900/90 dark:hover:bg-stone-900 {{ $favorili ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-stone-300' }}"
                     title="{{ $favorili ? 'Favorilerden çıkar' : 'Favorilere ekle' }}"
                     aria-label="{{ $favorili ? 'Favorilerden çıkar' : 'Favorilere ekle' }}">
-                @if ($favorili)
-                    <x-heroicon-s-heart class="h-5 w-5" />
-                @else
-                    <x-heroicon-o-heart class="h-5 w-5" />
-                @endif
+                <svg x-show="gonderiliyor" x-cloak class="h-4 w-4 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                <template x-if="!gonderiliyor">
+                    <span>
+                        @if ($favorili)
+                            <x-heroicon-s-heart class="h-5 w-5" />
+                        @else
+                            <x-heroicon-o-heart class="h-5 w-5" />
+                        @endif
+                    </span>
+                </template>
             </button>
         </form>
     @endauth

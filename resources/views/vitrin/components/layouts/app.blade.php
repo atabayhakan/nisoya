@@ -78,7 +78,10 @@
             <nav class="hidden items-center gap-6 text-sm font-semibold text-stone-600 md:flex dark:text-stone-300">
                 <x-mega-menu :items="$navLinksMega" />
                 @foreach ($navLinksSingle as $navLink)
-                    <a href="{{ $navLink->url }}" @if ($navLink->opens_new_tab) target="_blank" rel="noopener noreferrer" @endif class="relative py-1 after:absolute after:-bottom-0.5 after:left-0 after:h-0.5 after:w-0 after:bg-emerald-600 after:transition-all after:duration-300 hover:text-emerald-700 hover:after:w-full dark:after:bg-emerald-400 dark:hover:text-emerald-400">{{ $navLink->label }}</a>
+                    @php $navLinkAktif = request()->url() === $navLink->url; @endphp
+                    <a href="{{ $navLink->url }}" @if ($navLink->opens_new_tab) target="_blank" rel="noopener noreferrer" @endif
+                       @if ($navLinkAktif) aria-current="page" @endif
+                       class="relative py-1 after:absolute after:-bottom-0.5 after:left-0 after:h-0.5 after:bg-emerald-600 after:transition-all after:duration-300 hover:text-emerald-700 hover:after:w-full dark:after:bg-emerald-400 dark:hover:text-emerald-400 {{ $navLinkAktif ? 'text-emerald-700 after:w-full dark:text-emerald-400' : 'after:w-0' }}">{{ $navLink->label }}</a>
                 @endforeach
             </nav>
 

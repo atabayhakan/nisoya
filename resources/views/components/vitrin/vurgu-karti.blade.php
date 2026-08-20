@@ -15,7 +15,7 @@
 <div
     @if ($highlights->count()) x-data="activityTicker({{ $highlights->count() }})" @endif
     @class([
-        'relative overflow-hidden rounded-[22px] text-white shadow-brand-lg',
+        'relative overflow-hidden rounded-3xl text-white shadow-brand-lg',
         'min-h-[224px] bg-gradient-to-br from-emerald-600 to-emerald-700 lg:col-span-2 lg:row-span-2 dark:from-emerald-700 dark:to-emerald-800' => $buyuk,
         'min-h-[152px] bg-gradient-to-br from-stone-800 to-stone-900' => ! $buyuk,
     ])

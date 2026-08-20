@@ -205,26 +205,26 @@
                 <div>
                     <label for="name" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Ad Soyad</label>
                     <input id="name" name="name" type="text" value="{{ old('name', $user->name) }}" required class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
-                    @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    @error('name') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="username" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Kullanıcı adı</label>
                     <input id="username" name="username" type="text" value="{{ old('username', $user->username) }}" required class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
-                    @error('username') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    @error('username') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
             </div>
 
             <div>
                 <label for="bio" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Hakkında <span class="text-stone-600">(ops.)</span></label>
                 <textarea id="bio" name="bio" rows="3" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">{{ old('bio', $user->bio) }}</textarea>
-                @error('bio') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                @error('bio') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="skills" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Yetenekler <span class="text-stone-600">(ops.)</span></label>
                 <input id="skills" name="skills" type="text" value="{{ old('skills', $user->skills ? implode(', ', $user->skills) : '') }}" placeholder="ör. İngilizce, Web Tasarım, Photoshop" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                 <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">Virgülle ayırarak yaz, profilinde rozet olarak görünür.</p>
-                @error('skills') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                @error('skills') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
 
             <div class="grid gap-4 sm:grid-cols-3">
@@ -322,12 +322,12 @@
                                     </option>
                                 @endforeach
                             </select>
-                            @error('method') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            @error('method') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label for="pl_detail" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Bağlantı veya bilgi <span class="text-stone-600">(ops.)</span></label>
                             <input id="pl_detail" name="detail" type="text" value="{{ old('detail') }}" placeholder="ör. paypal.me/kullaniciadi veya IBAN" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
-                            @error('detail') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            @error('detail') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                         </div>
                     </div>
                     <div>
@@ -417,13 +417,13 @@
             <div>
                 <label for="current_password" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Mevcut şifre</label>
                 <x-password-input id="current_password" name="current_password" autocomplete="current-password" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 pr-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100" />
-                @error('current_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                @error('current_password') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
                     <label for="new_password" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Yeni şifre</label>
                     <x-password-input id="new_password" name="password" autocomplete="new-password" class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 pr-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100" />
-                    @error('password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    @error('password') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="password_confirmation" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Yeni şifre (tekrar)</label>
@@ -540,7 +540,7 @@
                 <div>
                     <label for="delete_current_password" class="block text-sm font-medium text-red-800 dark:text-red-200">Mevcut şifren</label>
                     <x-password-input id="delete_current_password" name="current_password" required class="mt-1 w-full rounded-lg border-red-300 px-3 py-2 pr-10 text-sm shadow-sm focus:border-red-500 focus:ring-red-500 dark:border-red-700 dark:bg-red-950/40 dark:text-red-100" />
-                    @error('current_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    @error('current_password') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
@@ -548,7 +548,7 @@
                         Onaylamak için tam olarak <code class="rounded bg-red-100 px-1.5 py-0.5 font-mono text-red-700 dark:bg-red-900/40 dark:text-red-200">HESABIMI SİL</code> yaz
                     </label>
                     <input id="delete_confirm_text" name="confirm_text" type="text" required autocomplete="off" placeholder="HESABIMI SİL" class="mt-1 w-full rounded-lg border-red-300 px-3 py-2 font-mono text-sm uppercase shadow-sm focus:border-red-500 focus:ring-red-500 dark:border-red-700 dark:bg-red-950/40 dark:text-red-100">
-                    @error('confirm_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    @error('confirm_text') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
 
                 <button type="submit" class="w-full rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400 dark:text-stone-900">

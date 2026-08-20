@@ -91,7 +91,7 @@
                         <input id="name" name="name" type="text" required minlength="2" maxlength="100"
                                value="{{ old('name', $myGuest?->name) }}" placeholder="{{ __('davet.ad_soyad_ornek') }}"
                                class="mt-1 w-full rounded-xl border-stone-300 bg-white px-3 py-2.5 text-stone-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">
-                        @error('name') <p class="mt-1 text-sm text-red-500">{{ $message }}</p> @enderror
+                        @error('name') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -107,7 +107,7 @@
                                 </label>
                             @endforeach
                         </div>
-                        @error('status') <p class="mt-1 text-sm text-red-500">{{ $message }}</p> @enderror
+                        @error('status') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
@@ -116,14 +116,14 @@
                             <input id="party_size" name="party_size" type="number" min="1" max="20" required
                                    value="{{ old('party_size', $myGuest?->party_size ?? 1) }}"
                                    class="mt-1 w-full rounded-xl border-stone-300 bg-white px-3 py-2.5 text-stone-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100">
-                            @error('party_size') <p class="mt-1 text-sm text-red-500">{{ $message }}</p> @enderror
+                            @error('party_size') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label for="note" class="block text-sm font-medium opacity-80">{{ __('davet.not') }} <span class="opacity-60">{{ __('davet.ops') }}</span></label>
                             <input id="note" name="note" type="text" maxlength="255"
                                    value="{{ old('note', $myGuest?->note) }}" placeholder="{{ __('davet.not_ornek') }}"
                                    class="mt-1 w-full rounded-xl border-stone-300 bg-white px-3 py-2.5 text-stone-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">
-                            @error('note') <p class="mt-1 text-sm text-red-500">{{ $message }}</p> @enderror
+                            @error('note') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                         </div>
                     </div>
 

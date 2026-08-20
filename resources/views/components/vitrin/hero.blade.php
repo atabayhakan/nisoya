@@ -194,7 +194,7 @@
                          uydurma grafik olamaz — kart gerçek veriye bağlandı.
                          Veri yoksa kart DOM'a hiç basılmaz. --}}
                     @if ($ulkeHareketi->isNotEmpty())
-                        <div class="col-span-2 rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                        <div class="col-span-2 rounded-2xl border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
                             <div class="flex items-start justify-between gap-3">
                                 <div>
                                     <div class="text-sm font-bold text-stone-800 dark:text-stone-100">Şu an nerede ilan var</div>
@@ -235,7 +235,7 @@
                          Başlık taze içerik yoksa "canlı" demez — nabız noktası da
                          yalnız o zaman yanar. --}}
                     @if (\App\Support\HomeSections::visible('canli_akis') && $activityFeed->isNotEmpty())
-                        <div class="col-span-2 rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                        <div class="col-span-2 rounded-2xl border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
                             <div class="flex items-center gap-1.5 text-2xs font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
                                 @if ($akisTaze)
                                     <span class="relative inline-flex h-1.5 w-1.5" aria-hidden="true"><span class="vitrin-pulse absolute inset-0 rounded-full bg-emerald-500"></span><span class="absolute inset-0 rounded-full bg-emerald-500"></span></span>
@@ -265,7 +265,7 @@
                              ürün, emlak, vasıta hepsini taşıyor ve vitrini tek tipe
                              indirmek envanteri gizlemek olurdu. Kapsam mesajını
                              artık gerçek kategorilerden kurulan çip satırı veriyor. --}}
-                        <a href="{{ route('listings.show', [$oneCikanIlan, $oneCikanIlan->slug]) }}" class="vitrin-float col-span-2 block rounded-[18px] border border-stone-200/60 bg-white p-3 shadow-brand-lg transition hover:border-emerald-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-emerald-700">
+                        <a href="{{ route('listings.show', [$oneCikanIlan, $oneCikanIlan->slug]) }}" class="vitrin-float col-span-2 block rounded-2xl border border-stone-200/60 bg-white p-3 shadow-brand-lg transition hover:border-emerald-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-emerald-700">
                             <div class="relative h-24 overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800">
                                 @if ($oneCikanIlan->coverImage)
                                     <img src="{{ $oneCikanIlan->coverImage->enIyiUrl('thumb') }}"

@@ -59,7 +59,7 @@
         {{-- Yapışkan arama bandı --}}
         <div class="sticky top-0 z-20 border-b border-stone-200/60 bg-white/95 backdrop-blur dark:border-stone-800 dark:bg-stone-900/95">
             <div class="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
-                <div class="flex h-[46px] min-w-0 flex-1 items-center gap-2 rounded-[13px] border border-stone-200 bg-stone-100 px-3.5 dark:border-stone-700 dark:bg-stone-800">
+                <div class="flex h-[46px] min-w-0 flex-1 items-center gap-2 rounded-xl border border-stone-200 bg-stone-100 px-3.5 dark:border-stone-700 dark:bg-stone-800">
                     <x-heroicon-o-magnifying-glass class="h-4 w-4 shrink-0 text-stone-700 dark:text-stone-300" />
                     <input type="text" name="q" id="q" form="vitrin-filtreler" value="{{ $filters['q'] }}" placeholder="Anahtar kelime"
                            class="w-full min-w-0 border-0 bg-transparent p-0 text-sm font-semibold text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-0 dark:text-stone-100 dark:placeholder-stone-500">
@@ -70,12 +70,12 @@
                 </div>
 
                 <button type="submit" form="vitrin-filtreler"
-                        class="h-[46px] shrink-0 rounded-[13px] bg-emerald-700 px-4 text-sm font-bold text-white transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900">
+                        class="h-[46px] shrink-0 rounded-xl bg-emerald-700 px-4 text-sm font-bold text-white transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900">
                     Ara
                 </button>
 
                 <button type="button" @click="filtreAcik = !filtreAcik" :aria-expanded="filtreAcik"
-                        class="inline-flex h-[46px] shrink-0 items-center gap-2 rounded-[13px] border border-stone-300 bg-white px-3.5 text-sm font-bold text-stone-800 transition hover:bg-stone-100 lg:hidden dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:hover:bg-stone-800">
+                        class="inline-flex h-[46px] shrink-0 items-center gap-2 rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-bold text-stone-800 transition hover:bg-stone-100 lg:hidden dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:hover:bg-stone-800">
                     <x-heroicon-o-funnel class="h-3.5 w-3.5" />
                     Filtreler
                     @if ($aktifFiltreler->isNotEmpty())
@@ -100,7 +100,7 @@
 
                     <form method="GET" action="{{ route('listings.index') }}" id="vitrin-filtreler" class="grid content-start gap-3.5">
                         {{-- Tür --}}
-                        <div class="rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                        <div class="rounded-2xl border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
                             <h3 class="text-sm font-bold text-stone-800 dark:text-stone-100">Tür</h3>
                             <div class="mt-3 flex flex-wrap gap-1.5">
                                 @foreach ([['', 'Tümü'], ['hizmet', '🧰 Hizmetler'], ['urun', '📦 Ürünler'], ['emlak', '🏡 Emlak'], ['vasita', '🚗 Vasıta']] as [$deger, $etiket])
@@ -113,7 +113,7 @@
                         </div>
 
                         {{-- Kategori --}}
-                        <div class="rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                        <div class="rounded-2xl border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
                             <h3 class="text-sm font-bold text-stone-800 dark:text-stone-100">Kategori</h3>
                             <div class="mt-3 grid max-h-64 gap-2.5 overflow-y-auto pr-1">
                                 @foreach (collect([(object) ['slug' => '', 'name' => 'Tüm kategoriler', 'icon' => null]])->concat($categories) as $cat)
@@ -134,10 +134,10 @@
                         </div>
 
                         {{-- Konum --}}
-                        <div class="rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                        <div class="rounded-2xl border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
                             <h3 class="text-sm font-bold text-stone-800 dark:text-stone-100">Konum</h3>
                             <label for="ulke" class="mt-3 block text-xs font-semibold text-stone-600">Ülke</label>
-                            <select name="ulke" id="ulke" class="mt-1 w-full rounded-[9px] border border-stone-300 bg-white px-2.5 py-2 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                            <select name="ulke" id="ulke" class="mt-1 w-full rounded-lg border border-stone-300 bg-white px-2.5 py-2 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                                 <option value="">Tüm ülkeler</option>
                                 @foreach ($countries as $country)
                                     <option value="{{ $country->code }}" @selected($filters['ulke'] === $country->code)>{{ $country->emoji }} {{ $country->name_tr }}</option>
@@ -145,11 +145,11 @@
                             </select>
                             <label for="sehir" class="mt-3 block text-xs font-semibold text-stone-600">Şehir</label>
                             <input type="text" name="sehir" id="sehir" value="{{ $filters['sehir'] }}"
-                                   class="mt-1 w-full rounded-[9px] border border-stone-300 bg-white px-2.5 py-2 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                                   class="mt-1 w-full rounded-lg border border-stone-300 bg-white px-2.5 py-2 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                         </div>
 
                         {{-- Fiyat --}}
-                        <div class="rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                        <div class="rounded-2xl border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
                             <div class="flex items-baseline justify-between gap-2">
                                 <h3 class="text-sm font-bold text-stone-800 dark:text-stone-100">Fiyat aralığı</h3>
                                 @if (! empty($fiyatDagilimi))
@@ -187,15 +187,15 @@
 
                             <div class="mt-3.5 flex items-center gap-2">
                                 <input type="number" name="min" min="0" value="{{ $filters['min'] }}" placeholder="En az" aria-label="En az fiyat"
-                                       class="h-[34px] w-full rounded-[9px] border border-stone-300 bg-white px-2.5 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                                       class="h-[34px] w-full rounded-lg border border-stone-300 bg-white px-2.5 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                                 <span class="text-stone-600">—</span>
                                 <input type="number" name="max" min="0" value="{{ $filters['max'] }}" placeholder="En çok" aria-label="En çok fiyat"
-                                       class="h-[34px] w-full rounded-[9px] border border-stone-300 bg-white px-2.5 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                                       class="h-[34px] w-full rounded-lg border border-stone-300 bg-white px-2.5 text-xs font-semibold text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
                             </div>
                         </div>
 
                         {{-- Satıcı / sunum --}}
-                        <div class="rounded-[18px] border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
+                        <div class="rounded-2xl border border-stone-200/60 bg-white p-4 shadow-brand dark:border-stone-800 dark:bg-stone-900">
                             <h3 class="text-sm font-bold text-stone-800 dark:text-stone-100">Sunum</h3>
                             <label class="mt-3 flex cursor-pointer items-center justify-between gap-3">
                                 <span class="text-xs font-semibold leading-tight text-stone-700 dark:text-stone-300">Sadece uzaktan / online</span>
@@ -206,12 +206,12 @@
                             </label>
                         </div>
 
-                        <button type="submit" class="h-[42px] rounded-[13px] bg-stone-800 text-sm font-bold text-white transition hover:brightness-110 dark:bg-stone-700">Filtrele</button>
+                        <button type="submit" class="h-[42px] rounded-xl bg-stone-800 text-sm font-bold text-white transition hover:brightness-110 dark:bg-stone-700">Filtrele</button>
                     </form>
 
                     {{-- Harita kısayolu --}}
                     <a href="{{ route('listings.map', $filters['tip'] ? ['tip' => $filters['tip']] : []) }}"
-                       class="group relative flex h-[150px] items-end justify-center overflow-hidden rounded-[18px] border border-stone-200/60 bg-gradient-to-br from-emerald-50 via-stone-100 to-emerald-50/40 p-3 shadow-brand dark:border-stone-800 dark:from-emerald-950/40 dark:via-stone-900 dark:to-stone-950">
+                       class="group relative flex h-[150px] items-end justify-center overflow-hidden rounded-2xl border border-stone-200/60 bg-gradient-to-br from-emerald-50 via-stone-100 to-emerald-50/40 p-3 shadow-brand dark:border-stone-800 dark:from-emerald-950/40 dark:via-stone-900 dark:to-stone-950">
                         <span class="absolute left-[30%] top-[35%] h-[9px] w-[9px] rounded-full bg-emerald-600 shadow-[0_0_0_5px_color-mix(in_srgb,var(--color-emerald-600)_20%,transparent)]" aria-hidden="true"></span>
                         <span class="vitrin-pulse absolute right-[32%] top-[52%] h-2 w-2 rounded-full bg-[#16a97f] shadow-[0_0_0_5px_rgba(22,169,127,.2)]" aria-hidden="true"></span>
                         <span class="inline-flex h-[38px] items-center gap-2 rounded-[11px] bg-stone-800 px-4 text-xs font-bold text-white transition group-hover:brightness-110 dark:bg-stone-700">

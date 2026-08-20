@@ -21,9 +21,11 @@
     class="rounded-xl border border-stone-200 bg-white p-3 shadow-sm dark:border-stone-800 dark:bg-stone-900"
 >
     <div class="flex items-start gap-2">
-        <div class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-            {{ mb_strtoupper(mb_substr($aday?->name ?? '?', 0, 1)) }}
-        </div>
+        @if ($aday)
+            <x-avatar :user="$aday" size="h-9 w-9" text="text-sm" />
+        @else
+            <div class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">?</div>
+        @endif
         <div class="min-w-0">
             @if ($aday)
                 <a href="{{ route('profiles.show', $aday->username) }}" target="_blank"
