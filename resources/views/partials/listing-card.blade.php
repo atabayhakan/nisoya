@@ -61,9 +61,7 @@
                     {{ collect([$listing->vehicleDetail->year, $listing->vehicleDetail->mileage_km !== null ? number_format($listing->vehicleDetail->mileage_km, 0, ',', '.').' km' : null])->filter()->implode(' · ') }}
                 </span>
             @endif
-            @if ($kidem = $listing->user->kidemKisa())
-                <span class="rounded-full bg-stone-100 px-2 py-0.5 text-stone-600 dark:bg-stone-800 dark:text-stone-400" title="{{ $listing->user->kidemMetni() }}">{{ $kidem }}</span>
-            @endif
+            <x-kidem-rozeti :user="$listing->user" />
         </div>
 
         <x-ornek-isareti :listing="$listing" class="mt-2" />

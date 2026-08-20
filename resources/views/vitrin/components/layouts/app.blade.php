@@ -149,9 +149,9 @@
                         <span class="hidden max-w-[110px] truncate text-sm font-medium md:inline">{{ auth()->user()->name }}</span>
                     </a>
                     <a href="{{ route('dashboard') }}" class="hidden rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Panelim</a>
-                    <a href="{{ route('panel.listings.create') }}" class="hidden items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-bold text-white shadow-[0_10px_20px_-10px_rgba(62,99,240,.9)] transition hover:-translate-y-0.5 hover:bg-emerald-800 md:inline-flex dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900 dark:shadow-none">
+                    <x-button :href="route('panel.listings.create')" class="hidden md:inline-flex">
                         <x-heroicon-o-plus class="h-4 w-4" />İlan Ver
-                    </a>
+                    </x-button>
                     <form method="POST" action="{{ route('logout') }}" class="hidden md:block">
                         @csrf
                         <button type="submit" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Çıkış</button>
@@ -159,9 +159,9 @@
                 @else
                     <a href="{{ route('login') }}" class="hidden rounded-lg px-3 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Giriş</a>
                     <a href="{{ route('register') }}" class="hidden rounded-lg px-3 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Kayıt</a>
-                    <a href="{{ route('panel.listings.create') }}" class="hidden items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-bold text-white shadow-[0_10px_20px_-10px_rgba(62,99,240,.9)] transition hover:-translate-y-0.5 hover:bg-emerald-800 md:inline-flex dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900 dark:shadow-none">
+                    <x-button :href="route('panel.listings.create')" class="hidden md:inline-flex">
                         <x-heroicon-o-plus class="h-4 w-4" />İlan Ver
-                    </a>
+                    </x-button>
                 @endauth
             </div>
         </div>

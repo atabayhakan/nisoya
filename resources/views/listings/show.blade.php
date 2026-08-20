@@ -494,7 +494,7 @@
                                     <x-trust-badge :user="$listing->user" />
                                     @if ($listing->user->is_verified)<x-verified-badge />@endif
                                 </div>
-                                <div class="text-xs text-stone-500 dark:text-stone-400">{{ $listing->user->kidemMetni() }}</div>
+                                <x-kidem-rozeti :user="$listing->user" variant="text" />
                                 @if ($sellerRating['count'] > 0)
                                     <div class="text-xs font-medium text-amber-500 dark:text-amber-400">★ {{ $sellerRating['avg'] }} <span class="text-stone-600 dark:text-stone-400">({{ $sellerRating['count'] }} değerlendirme)</span></div>
                                 @endif

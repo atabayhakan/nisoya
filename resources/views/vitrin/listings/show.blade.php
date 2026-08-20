@@ -506,12 +506,12 @@
                                 <textarea name="body" rows="3" required placeholder="{{ $listing->type->value === 'emlak' ? 'İlan sahibine bir mesaj yaz...' : 'Satıcıya bir mesaj yaz...' }}"
                                           class="w-full rounded-[13px] border-stone-300 px-3 py-2.5 text-sm text-stone-800 focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500">{{ old('body') }}</textarea>
                                 @error('body') <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-                                <button type="submit" class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[13px] bg-emerald-700 text-sm font-bold text-white shadow-[0_14px_26px_-14px_rgba(62,99,240,1)] transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none">
+                                <x-button type="submit" class="h-12 w-full">
                                     <x-heroicon-o-chat-bubble-left class="h-4 w-4" /> Mesaj Gönder
-                                </button>
+                                </x-button>
                             </form>
                         @else
-                            <a href="{{ route('login') }}" class="block w-full rounded-[13px] bg-emerald-700 px-4 py-3 text-center text-sm font-bold text-white shadow-[0_14px_26px_-14px_rgba(62,99,240,1)] transition hover:brightness-95 dark:bg-emerald-500 dark:text-stone-900 dark:shadow-none">Mesaj göndermek için giriş yap</a>
+                            <x-button :href="route('login')" class="w-full">Mesaj göndermek için giriş yap</x-button>
                         @endif
 
                         @auth
@@ -571,7 +571,7 @@
                                 <x-trust-badge :user="$listing->user" />
                                 @if ($listing->user->is_verified)<x-verified-badge />@endif
                             </div>
-                            <div class="mt-1 text-xs font-semibold text-stone-500 dark:text-stone-400">{{ $listing->user->kidemMetni() }}</div>
+                            <x-kidem-rozeti :user="$listing->user" variant="text" class="mt-1" />
                         </div>
                     </div>
 

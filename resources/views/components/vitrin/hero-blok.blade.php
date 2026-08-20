@@ -48,7 +48,7 @@
         {{-- Degrade yalnız mobilde: tam genişlikte düz bir renk yassı duruyor,
              hafif bir geçiş düğmeye derinlik veriyor. Masaüstünde düğme küçük;
              orada degrade fark edilmeden karmaşa ekler. --}}
-        <button type="submit" class="inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-800 to-emerald-600 px-6 text-base font-bold text-white shadow-[0_12px_22px_-12px_rgba(62,99,240,1)] transition hover:brightness-95 sm:h-12 sm:w-auto sm:rounded-xl sm:bg-emerald-700 sm:bg-none sm:text-sm sm:hover:bg-emerald-800 dark:from-emerald-500 dark:to-emerald-400 dark:text-stone-900 dark:shadow-none sm:dark:bg-emerald-500">
+        <button type="submit" class="inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-800 to-emerald-600 px-6 text-base font-bold text-white shadow-brand-lg transition hover:brightness-95 sm:h-12 sm:w-auto sm:rounded-xl sm:bg-emerald-700 sm:bg-none sm:text-sm sm:hover:bg-emerald-800 dark:from-emerald-500 dark:to-emerald-400 dark:text-stone-900 dark:shadow-none sm:dark:bg-emerald-500">
             <span class="sm:hidden">Hemen bul</span>
             <span class="hidden sm:inline">Ara</span>
             <x-heroicon-o-arrow-right class="h-4 w-4" />

@@ -73,12 +73,8 @@
                  Yayınlama yolu da AYNI TURDA eklendi (İlanlarım satırındaki
                  "Yayınla" düğmesi) — aksi hâlde taslak bir hapishane olurdu. --}}
             <div class="flex flex-wrap items-center gap-3 pt-2">
-                <button type="submit" name="eylem" value="yayinla" class="rounded-lg bg-emerald-700 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
-                    İlanı Yayınla
-                </button>
-                <button type="submit" name="eylem" value="taslak" class="rounded-lg border border-stone-300 px-5 py-2.5 font-semibold text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">
-                    Taslak olarak kaydet
-                </button>
+                <x-button type="submit" name="eylem" value="yayinla" size="lg">İlanı Yayınla</x-button>
+                <x-button type="submit" name="eylem" value="taslak" variant="secondary" size="lg">Taslak olarak kaydet</x-button>
                 <a href="{{ route('panel.listings.index') }}" class="text-sm font-medium text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200">Vazgeç</a>
             </div>
         </form>
