@@ -124,6 +124,43 @@ class TasarimDenetimiUyarilariTest extends TestCase
         $this->get('/')->assertOk()->assertDontSee('aria-current="page"', false);
     }
 
+    // ------------------------------------------------------ Favori butonu
+
+    /**
+     * Gerçek olay: favori butonu hiç yükleniyor göstergesi vermiyordu.
+     * Form YÖNTEMİ bilerek DEĞİŞMEDİ — hâlâ normal POST + tam sayfa
+     * yönlendirmesi; yalnız gönderim anında düğme kilitlenip aynı sitedeki
+     * diğer göstergelerle aynı ikonu gösteriyor.
+     */
+    public function test_favori_butonu_gonderim_kilidi_tasir(): void
+    {
+        Settings::setMany(['gorunum.tema' => 'vitrin']);
+
+        $uye = User::factory()->create(['email_verified_at' => now()]);
+        $satici = User::factory()->create(['email_verified_at' => now(), 'country_code' => 'DE']);
+        $kategori = Category::query()->whereNotNull('parent_id')->firstOrFail();
+        $listing = Listing::factory()->for($satici)->create(['category_id' => $kategori->id, 'status' => 'aktif']);
+
+        $html = $this->actingAs($uye)->get(route('listings.index'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('gonderiliyor', $html, 'Favori formu yükleniyor durumu taşımıyor.');
+        $this->assertStringContainsString(':disabled="gonderiliyor"', $html);
+    }
+
+    public function test_favori_butonu_hala_normal_post_ile_calisir(): void
+    {
+        // Yükleniyor göstergesi eklenirken favori işlevi BOZULMAMALI — hâlâ
+        // gerçek bir sunucu isteği ve durum değişikliği.
+        $uye = User::factory()->create(['email_verified_at' => now()]);
+        $satici = User::factory()->create(['email_verified_at' => now(), 'country_code' => 'DE']);
+        $kategori = Category::query()->whereNotNull('parent_id')->firstOrFail();
+        $listing = Listing::factory()->for($satici)->create(['category_id' => $kategori->id, 'status' => 'aktif']);
+
+        $this->actingAs($uye)->post(route('favorites.toggle', $listing))->assertRedirect();
+
+        $this->assertTrue($uye->fresh()->favorilerindeMi($listing->id));
+    }
+
     // -------------------------------------------------------------- Avatar
 
     public function test_mesajlar_listesinde_avatar_bilesen_kullanir(): void
