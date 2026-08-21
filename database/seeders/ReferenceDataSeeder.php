@@ -33,6 +33,10 @@ class ReferenceDataSeeder extends Seeder
             NavigationLinkSeeder::class,
             HomeHighlightSeeder::class,
 
+            // Yaşam Rehberi'nin 8 sabit kategorisi — ülkeden bağımsız
+            // taksonomi, aynı firstOrCreate sözleşmesi.
+            YasamKategorileriSeeder::class,
+
             // Temsilcilikler referans veridir (ülke/şehir gibi): kamuya açık,
             // yavaş değişen gerçekler. Seeder MUHAFAZAKÂR davranır — var olan
             // kaydın yalnız ÖLÇÜLMÜŞ kırık adresini onarır, başka alana

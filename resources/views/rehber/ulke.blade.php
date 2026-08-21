@@ -22,6 +22,20 @@
             ne kadar sürüyor, ne kadar tutuyor — Türkçe, tek yerde.
         </p>
 
+        {{-- Yaşam Rehberi bloğu (2026-08-21) — ayrı veri modeli, ayrı yüzey
+             (bkz. docs/plans/2026-08-21-yasam-rehberi-tasarimi.md). Yalnız
+             yayında içerik varsa görünür; controller boşsa hiç göndermiyor. --}}
+        @if ($yasamRehberiVar)
+            <a href="{{ route('yasam-rehberi.kategoriler', strtolower($country->code)) }}"
+                class="mt-6 flex items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 transition hover:border-emerald-300 dark:border-emerald-800 dark:bg-emerald-950/30">
+                <span>
+                    <span class="font-semibold text-stone-900 dark:text-stone-50">Yaşam Rehberi</span>
+                    <span class="mt-0.5 block text-sm text-stone-600 dark:text-stone-300">Bankacılık, barınma, sağlık ve daha fazlası — gündelik hayat için pratik bilgiler.</span>
+                </span>
+                <span class="text-emerald-700 dark:text-emerald-400" aria-hidden="true">→</span>
+            </a>
+        @endif
+
         @if ($temsilcilikler->isEmpty())
             <div class="mt-10 rounded-2xl border border-stone-200 bg-stone-50 p-8 text-center dark:border-stone-700 dark:bg-stone-800/50">
                 <p class="font-medium text-stone-700 dark:text-stone-200">Bu ülkenin rehberi henüz hazırlanıyor.</p>

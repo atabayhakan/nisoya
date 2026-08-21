@@ -12,6 +12,8 @@ use App\Models\RehberGeriBildirimi;
 use App\Models\Report;
 use App\Models\Story;
 use App\Models\TemsilcilikIslemi;
+use App\Models\YasamKonuIcerigi;
+use App\Models\YasamKonuOnerisi;
 use App\Services\Rehber\RehberBoslukAvcisi;
 use App\Support\Modules;
 
@@ -141,6 +143,23 @@ class BekleyenIsler
                 'adet' => RehberGeriBildirimi::query()->where('incelendi', false)->count(),
                 'aciliyet' => 'orta',
                 'aciklama' => 'Ziyaretçi "bilgi güncel değil" dedi',
+            ];
+
+            // Yaşam Rehberi (2026-08-21) — Ülke Rehberi ile AYNI bayatlık
+            // kuralı, AYNI modül anahtarı altında (bkz. tasarım K7/F0).
+            $kuyruklar[] = [
+                'anahtar' => 'yasam_bayat',
+                'etiket' => 'Doğrulaması eskimiş Yaşam Rehberi içeriği',
+                'adet' => YasamKonuIcerigi::query()->bayat()->count(),
+                'aciliyet' => 'orta',
+                'aciklama' => YasamKonuIcerigi::BAYATLIK_GUN.' günden eski doğrulama — yayında',
+            ];
+            $kuyruklar[] = [
+                'anahtar' => 'yasam_oneri_bekleyen',
+                'etiket' => 'Bekleyen Yaşam Rehberi önerisi',
+                'adet' => YasamKonuOnerisi::query()->bekleyen()->count(),
+                'aciliyet' => 'orta',
+                'aciklama' => 'Üye düzeltme/ek bilgi önerdi',
             ];
         }
 
