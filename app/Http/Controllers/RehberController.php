@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Country;
 use App\Models\Temsilcilik;
 use App\Models\TemsilcilikIslemi;
+use App\Models\YasamKonuIcerigi;
 use Illuminate\View\View;
 
 /**
@@ -32,9 +33,15 @@ class RehberController extends Controller
             ->orderBy('ad')
             ->get();
 
+        // Yaşam Rehberi bloğu (2026-08-21, tasarım §5): ayrı veri modeli,
+        // yalnız o ülkede yayında içerik VARSA gösterilir — boş bir link
+        // "hazırlanıyor" yalanı olurdu (K6).
+        $yasamRehberiVar = YasamKonuIcerigi::query()->yayinda()->where('country_code', $country->code)->exists();
+
         return view('rehber.ulke', [
             'country' => $country,
             'temsilcilikler' => $temsilcilikler,
+            'yasamRehberiVar' => $yasamRehberiVar,
         ]);
     }
 

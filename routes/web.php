@@ -58,6 +58,7 @@ use App\Http\Controllers\TemaOzellestiriciController;
 use App\Http\Controllers\TemsiliGorselController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\VehicleBrowseController;
+use App\Http\Controllers\YasamRehberiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -429,6 +430,22 @@ Route::middleware('module:rehber')->group(function () {
     Route::get('/{ulke}', [RehberController::class, 'ulke'])
         ->where('ulke', '[a-z]{2}')
         ->name('rehber.ulke');
+
+    // Yaşam Rehberi (2026-08-21) — /de/yasam, /de/yasam/bankacilik-finans, ...
+    // KONUM ÖNEMLİ: rehber.temsilcilik'ten (/{ulke}/{temsilcilik}) ÖNCE
+    // olmalı. O rotanın {temsilcilik} deseni [a-z0-9\-]+ olduğu için "yasam"
+    // literalini de eşleştirir — sıra ters olsaydı /de/yasam, temsilcilik
+    // sanılıp 404 verirdi (Laravel ilk eşleşen rotayı kullanır).
+    Route::get('/{ulke}/yasam', [YasamRehberiController::class, 'kategoriler'])
+        ->where('ulke', '[a-z]{2}')
+        ->name('yasam-rehberi.kategoriler');
+    Route::get('/{ulke}/yasam/{kategori}', [YasamRehberiController::class, 'konular'])
+        ->where(['ulke' => '[a-z]{2}', 'kategori' => '[a-z0-9\-]+'])
+        ->name('yasam-rehberi.konular');
+    Route::get('/{ulke}/yasam/{kategori}/{konu}', [YasamRehberiController::class, 'icerik'])
+        ->where(['ulke' => '[a-z]{2}', 'kategori' => '[a-z0-9\-]+', 'konu' => '[a-z0-9\-]+'])
+        ->name('yasam-rehberi.icerik');
+
     Route::get('/{ulke}/{temsilcilik}', [RehberController::class, 'temsilcilik'])
         ->where(['ulke' => '[a-z]{2}', 'temsilcilik' => '[a-z0-9\-]+'])
         ->name('rehber.temsilcilik');
