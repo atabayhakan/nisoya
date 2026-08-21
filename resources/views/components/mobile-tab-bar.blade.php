@@ -45,19 +45,140 @@
             Keşfet
         </button>
 
-        {{-- MİSAFİR KAYDA GİDER, GİRİŞE DEĞİL.
+        @auth
+            <a href="{{ url('/panel/ilan/yeni') }}" class="flex flex-1 flex-col items-center justify-center gap-0.5 py-1 text-2xs font-medium text-stone-500 dark:text-stone-400">
+                <span class="-mt-5 grid h-11 w-11 place-items-center rounded-full bg-emerald-700 text-white shadow-lg ring-4 ring-white dark:bg-emerald-500 dark:ring-stone-900">
+                    <x-heroicon-o-plus class="h-6 w-6" />
+                </span>
+                İlan Ver
+            </a>
+        @else
+            {{-- MİSAFİR: YELPAZE (2026-08-21) — eskiden başlıkta ayrı bir "Üye
+                 ol" düğmesiydi (bkz. x-mobil-hesap git geçmişi). Taşınma iki
+                 sebepten:
 
-             Rota `auth` altında olduğu için misafir /giris'e düşüyordu:
-             "hemen ilan vereyim" diye dokunan, hesabı OLMAYAN kişi kayıt
-             değil giriş formu görüyor ve ne yapacağını bilemiyordu. Kayıt
-             sayfasında "Zaten hesabın var mı? Giriş yap" bağlantısı var,
-             yani dönen kullanıcı da kaybolmuyor. --}}
-        <a href="{{ auth()->check() ? url('/panel/ilan/yeni') : route('register') }}" class="flex flex-1 flex-col items-center justify-center gap-0.5 py-1 text-2xs font-medium text-stone-500 dark:text-stone-400">
-            <span class="-mt-5 grid h-11 w-11 place-items-center rounded-full bg-emerald-700 text-white shadow-lg ring-4 ring-white dark:bg-emerald-500 dark:ring-stone-900">
-                <x-heroicon-o-plus class="h-6 w-6" />
-            </span>
-            İlan Ver
-        </a>
+                 1. YER. Başlıkta acil+giriş+üye-ol aynı 390px'i paylaşıyordu.
+                    Bu FAB zaten alt çubukta, tetikleyicinin ETRAFINDA —
+                    özellikle YUKARISINDA — boş sayfa var; dairesel/yelpaze
+                    açılım için başlığın köşesinde hiç olmayan bir şey.
+                 2. TEKRAR YOK. "İlan Ver" zaten buradaydı; misafir için aynı
+                    düğmeye "Giriş" ve "Üye ol"u da yükleyince ayrı bir başlık
+                    düğmesine gerek kalmadı — tek FAB, tek yer, dört eylem.
+
+                 SIRA BİLİNÇLİ (miras: eski başlık yelpazesinden): birincil
+                 eylem hâlâ ÜYE OLMAK — o öğe daha büyük ve dolu emerald.
+                 "İlan Ver" misafir için de register'a gider, `/panel/ilan/yeni`
+                 DEĞİL: rota `auth` altında olduğu için misafir oraya dokununca
+                 GİRİŞ formuna düşerdi — hesabı olmayan biri için yanlış form.
+                 Kayıt sayfasında "Zaten hesabın var mı?" bağlantısı var, dönen
+                 kullanıcı kaybolmuyor.
+
+                 ACİL DE BURADA: eskiden başlıkta ayrı kırmızı düğmeydi,
+                 mobilde misafir için kaldırıldı (bkz. layouts/app.blade.php)
+                 ve tek gerçek kaynağı x-emergency-button'ı `acil-yardim-ac`
+                 olayıyla buradan açıyor — numara/konsolosluk mantığı
+                 ÇOĞALTILMADI, tek modal tek yerde kalıyor. --}}
+            <div
+                x-data="{
+                    acik: false,
+                    ac() { this.acik = true; this.$nextTick(() => this.$refs.ilk?.focus()); },
+                    kapat(odakla = false) { this.acik = false; if (odakla) this.$refs.tetik?.focus(); },
+                }"
+                @keydown.escape.window="acik && kapat(true)"
+                @click.outside="kapat()"
+                class="relative flex flex-1 flex-col items-center justify-center"
+            >
+                <button
+                    type="button"
+                    x-ref="tetik"
+                    @click="acik ? kapat() : ac()"
+                    :aria-expanded="acik ? 'true' : 'false'"
+                    aria-controls="misafir-yelpaze"
+                    class="flex flex-col items-center justify-center gap-0.5 py-1 text-2xs font-medium text-stone-500 dark:text-stone-400"
+                >
+                    <span class="-mt-5 grid h-11 w-11 place-items-center rounded-full bg-emerald-700 text-white shadow-lg ring-4 ring-white dark:bg-emerald-500 dark:ring-stone-900">
+                        <span class="transition-transform duration-200 motion-reduce:transition-none" :class="acik && 'rotate-45'">
+                            <x-heroicon-o-plus class="h-6 w-6" />
+                        </span>
+                    </span>
+                    İlan Ver
+                </button>
+
+                {{-- Konum matematiği (macOS Dock "Fan" hissi): 4 öğe, FAB'ın
+                     YUKARISINDA yarım dairede, ölçüler sabit (N sabit 4 olduğu
+                     için trigonometriyi çalışma anında hesaplamaya gerek yok).
+                     `--tx`/`--ty` her öğenin merkezden kayması; satır-içi
+                     `transform` animasyondan BAĞIMSIZ olarak zaten o değeri
+                     taşıyor, yani `animation: none` olunca (motion-reduce)
+                     öğe son karede kalır, başlangıç noktasına dönmez. --}}
+                <div
+                    id="misafir-yelpaze"
+                    x-show="acik"
+                    x-cloak
+                    x-transition:enter="transition ease-out duration-150 motion-reduce:transition-none"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition ease-in duration-100 motion-reduce:transition-none"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="absolute bottom-full left-1/2 z-40"
+                >
+                    @foreach ([
+                        ['route' => 'login', 'etiket' => 'Giriş yap', 'ikon' => 'arrow-right-on-rectangle', 'tx' => -87, 'ty' => -23],
+                        ['route' => 'register', 'etiket' => 'Üye ol', 'ikon' => 'user-plus', 'tx' => -38, 'ty' => -82, 'birincil' => true],
+                        ['route' => 'register', 'etiket' => 'İlan Ver', 'ikon' => 'plus-circle', 'tx' => 38, 'ty' => -82],
+                    ] as $i => $oge)
+                        <a
+                            href="{{ route($oge['route']) }}"
+                            @if ($i === 0) x-ref="ilk" @endif
+                            style="--tx: {{ $oge['tx'] }}px; --ty: {{ $oge['ty'] }}px; transform: translateX(-50%) translate(var(--tx), var(--ty)); animation-delay: {{ $i * 45 }}ms"
+                            class="yelpaze-oge absolute bottom-0 left-0 flex flex-col items-center gap-1"
+                        >
+                            <span class="grid {{ ($oge['birincil'] ?? false) ? 'h-14 w-14' : 'h-12 w-12' }} place-items-center rounded-full shadow-lg ring-4 ring-white transition dark:ring-stone-900 {{ ($oge['birincil'] ?? false) ? 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-stone-900' : 'bg-white text-emerald-700 dark:bg-stone-800 dark:text-emerald-400' }}">
+                                <x-dynamic-component :component="'heroicon-o-'.$oge['ikon']" class="{{ ($oge['birincil'] ?? false) ? 'h-6 w-6' : 'h-5 w-5' }}" />
+                            </span>
+                            <span class="whitespace-nowrap rounded-full bg-white/95 px-2 py-0.5 text-2xs font-semibold text-stone-700 shadow-sm dark:bg-stone-800/95 dark:text-stone-200">{{ $oge['etiket'] }}</span>
+                        </a>
+                    @endforeach
+
+                    {{-- ACİL — link değil düğme: modal x-emergency-button'da
+                         yaşıyor, burada yalnız olayı fırlatıyoruz. --}}
+                    <button
+                        type="button"
+                        @click="$dispatch('acil-yardim-ac'); kapat()"
+                        style="--tx: 87px; --ty: -23px; transform: translateX(-50%) translate(var(--tx), var(--ty)); animation-delay: 135ms"
+                        class="yelpaze-oge absolute bottom-0 left-0 flex flex-col items-center gap-1"
+                    >
+                        <span class="grid h-12 w-12 place-items-center rounded-full bg-[#E30A17] text-white shadow-lg ring-4 ring-white transition dark:ring-stone-900">
+                            <x-heroicon-s-exclamation-triangle class="h-5 w-5" />
+                        </span>
+                        <span class="whitespace-nowrap rounded-full bg-white/95 px-2 py-0.5 text-2xs font-semibold text-rose-700 shadow-sm dark:bg-stone-800/95 dark:text-rose-400">Acil</span>
+                    </button>
+                </div>
+            </div>
+
+            @once
+                <style>
+                    /* Yelpaze (alt çubuk): macOS Dock "Fan" hissi — öğeler
+                       FAB'ın merkezinden yarım daire üstünde belirir, hafif
+                       fazla-sıçramalı (spring) easing ile. Yalnız GİRİŞ
+                       (opacity/scale) animasyonu var; kapanış sarmalayıcının
+                       basit fade'ine bırakılıyor (bkz. mobil-hesap.blade.php
+                       tarihindeki aynı karar: bu ölçüde bir yelpaze için
+                       ikisi de gerekli değil). */
+                    @keyframes ilanYelpazeAc {
+                        from { opacity: 0; transform: translateX(-50%) translate(0, 0) scale(.4); }
+                        to   { opacity: 1; transform: translateX(-50%) translate(var(--tx), var(--ty)) scale(1); }
+                    }
+                    .yelpaze-oge {
+                        animation: ilanYelpazeAc .28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+                    }
+                    @media (prefers-reduced-motion: reduce) {
+                        .yelpaze-oge { animation: none; opacity: 1; }
+                    }
+                </style>
+            @endonce
+        @endauth
 
         <a href="{{ route('panel.messages.index') }}" class="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-2xs font-medium {{ request()->routeIs('panel.messages.*') ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-500 dark:text-stone-400' }}">
             <span class="relative">
