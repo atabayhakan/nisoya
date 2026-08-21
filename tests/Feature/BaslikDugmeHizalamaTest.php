@@ -15,7 +15,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * Başlıktaki mobil düğme kümesi (ara/ülke/acil/üye ol) hizalaması (2026-08-19).
+ * Başlıktaki mobil düğme kümesi (ara/ülke/acil) hizalaması (2026-08-19).
  *
  * ÖLÇÜLEN HATA (sahip ekran görüntüsüyle bildirdi): canlıda dört düğme
  * 28-38px arası yükseklikte saçılmıştı ve iki farklı köşe yuvarlaklığı
@@ -25,7 +25,12 @@ use Tests\TestCase;
  * sonra dördü de tam 36px/aynı top).
  *
  * Bu test piksel ölçemez (headless HTTP, tarayıcı değil) — DOM üzerinden
- * dört düğmenin de AYNI `h-9` yükseklik sınıfını taşıdığını doğrular.
+ * düğmelerin AYNI `h-9` yükseklik sınıfını taşıdığını doğrular.
+ *
+ * DÖRTTEN ÜÇE (2026-08-21): "Üye ol" bu pill sırasından çıkıp alt sekme
+ * çubuğundaki "İlan Ver" yelpazesine taşındı (bkz. x-mobile-tab-bar) —
+ * artık raised bir FAB, bu satırın h-9/rounded-full ailesine ait değil.
+ * Kalan üç düğme (ara/ülke/acil) hizalama kaygısını hâlâ taşıyor.
  */
 class BaslikDugmeHizalamaTest extends TestCase
 {
@@ -82,10 +87,5 @@ class BaslikDugmeHizalamaTest extends TestCase
             $this->assertNotEmpty($classlar, "[{$tema}] '{$isim}' düğmesi bulunamadı");
             $this->assertStringContainsString('h-9', $classlar[0], "[{$tema}] '{$isim}' düğmesi h-9 yükseklik sınıfını taşımıyor");
         }
-
-        // Üye ol'un aria-label'ı yok (görünür metni zaten "Üye ol"); metniyle bul.
-        $uyeOlClasslar = $this->classlariBul($html, '//button[contains(normalize-space(.), "Üye ol")]');
-        $this->assertNotEmpty($uyeOlClasslar, "[{$tema}] 'Üye ol' düğmesi bulunamadı");
-        $this->assertStringContainsString('h-9', $uyeOlClasslar[0], "[{$tema}] 'Üye ol' düğmesi h-9 yükseklik sınıfını taşımıyor");
     }
 }

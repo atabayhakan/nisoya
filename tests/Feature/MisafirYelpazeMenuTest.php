@@ -11,15 +11,21 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * Başlıktaki misafir "yelpaze" menüsü.
+ * Misafir "yelpaze" menüsü.
  *
  * ---------------------------------------------------------------------------
  * NE KORUYOR
  *
- * Başlıkta yer yoktu: "Acil" etiketi geri gelince "Giriş" metni dar ekranlarda
- * gizlenmek zorunda kalmıştı, yani bir eylem tamamen kayboluyordu. Yelpaze tek
- * düğme kadar yer kaplayıp üç eylem taşıyor. Bu testler o üç eylemin ve
+ * Yer darlığı yüzünden bir eylem kaybolmasın diye yelpaze tek düğme kadar
+ * yer kaplayıp birden çok eylem taşıyor. Bu testler o eylemlerin ve
  * erişilebilirlik kancalarının kaybolmadığını zorlar.
+ *
+ * TAŞINDI (2026-08-21): eskiden BAŞLIKTA, üç eylemliydi (Üye ol/Giriş/İlan
+ * Ver). Artık ALT SEKME ÇUBUĞUNDAKİ "İlan Ver" FAB'ında, dört eylemli (aynı
+ * üçü + Acil) — bkz. x-mobile-tab-bar. `id="misafir-yelpaze"` ve
+ * `class="yelpaze-oge"` kasıtlı olarak AYNI kaldı: bu dosyanın assertSee
+ * çağrıları konum bağımsız çalıştığı için taşınma testleri kırmadı, yalnız
+ * bu docblock ve aşağıdaki iki test güncellendi/eklendi.
  *
  * ---------------------------------------------------------------------------
  * SINIR — BU TESTİN ÖLÇEMEDİĞİ ŞEY
@@ -50,7 +56,7 @@ class MisafirYelpazeMenuTest extends TestCase
     }
 
     #[DataProvider('temalar')]
-    public function test_misafir_uc_eylemi_de_gorur(string $tema): void
+    public function test_misafir_dort_eylemi_de_gorur(string $tema): void
     {
         $this->temayiKur($tema);
 
@@ -59,7 +65,27 @@ class MisafirYelpazeMenuTest extends TestCase
             ->assertSee('misafir-yelpaze', false)
             ->assertSee('Üye ol')
             ->assertSee('Giriş yap')
-            ->assertSee('İlan Ver');
+            ->assertSee('İlan Ver')
+            ->assertSee('Acil');
+    }
+
+    #[DataProvider('temalar')]
+    public function test_acil_ogesi_tek_modali_olay_ile_acar(string $tema): void
+    {
+        /*
+         * Acil'in kendi numara/konsolosluk mantığı x-emergency-button'da tek
+         * kaynak olarak kalıyor — burada AYNI modalı `acil-yardim-ac` olayıyla
+         * açıyoruz, ikinci bir modal KOPYALANMADI. İki taraf da test edilir:
+         * yelpaze öğesi olayı fırlatıyor, emergency-button onu dinliyor.
+         */
+        $this->temayiKur($tema);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString("\$dispatch('acil-yardim-ac')", $html,
+            'Yelpazenin Acil öğesi acil-yardim-ac olayını fırlatmıyor.');
+        $this->assertStringContainsString('@acil-yardim-ac.window="ac()"', $html,
+            'Acil modalı acil-yardim-ac olayını dinlemiyor — yelpazeden açılamaz.');
     }
 
     #[DataProvider('temalar')]

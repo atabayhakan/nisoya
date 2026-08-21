@@ -134,6 +134,11 @@
         },
     }"
     @keydown.escape.window="open && kapat()"
+    {{-- Mobil misafirde başlıktaki tetikleyici gizli (bkz.
+         layouts/app.blade.php) — o durumda x-mobile-tab-bar'daki yelpazenin
+         "Acil" öğesi bu olayı fırlatarak AYNI modalı açar. Numara/konsolosluk
+         mantığı tek yerde kalsın diye modal ÇOĞALTILMADI. --}}
+    @acil-yardim-ac.window="ac()"
     {{-- Modal açıkken arkadaki sayfa kaymasın: telefonda parmak panelin
          dışına taştığında sayfa kayıyor, panel yerinde kalıyordu. --}}
     x-effect="document.body.style.overflow = open ? 'hidden' : ''"

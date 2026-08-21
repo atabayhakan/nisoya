@@ -104,12 +104,21 @@
                      x-ulke-secici'de). --}}
                 <x-ulke-secici :country="$visitorCountry" :countries="$emergencyCountries" />
 
-                <x-emergency-button
-                    :categories="$emergencyCategories"
-                    :countries="$emergencyCountries"
-                    :default-country="$emergencyDefaultCountry"
-                    :city="$emergencyCity"
-                />
+                {{-- Misafirde mobilde GİZLİ (2026-08-21): Acil artık alt sekme
+                     çubuğundaki "İlan Ver" yelpazesinin bir öğesi (bkz.
+                     x-mobile-tab-bar) — modal AYNI bileşen, yalnız tetikleyici
+                     burada iki kez basılmasın diye kapalı. Üye için burada
+                     kalıyor: onun mobil FAB'ı yelpazeye açılmıyor, yer de
+                     zaten daralmıyor (üye ol/giriş düğmesi yok). Masaüstünde
+                     her iki durumda da açık. --}}
+                <div class="{{ auth()->check() ? '' : 'hidden md:block' }}">
+                    <x-emergency-button
+                        :categories="$emergencyCategories"
+                        :countries="$emergencyCountries"
+                        :default-country="$emergencyDefaultCountry"
+                        :city="$emergencyCity"
+                    />
+                </div>
 
                 {{-- Dark mode toggle — obsidian teması koyu moda kilitli olduğu
                      için o modda gizlenir (aksi hâlde no-op buton kalırdı). --}}
