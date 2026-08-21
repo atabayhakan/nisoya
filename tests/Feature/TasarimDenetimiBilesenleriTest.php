@@ -59,6 +59,31 @@ class TasarimDenetimiBilesenleriTest extends TestCase
         $this->assertStringContainsString('border-stone-300', $secondary);
     }
 
+    /**
+     * Gerçek olay (2026-08-21, mobilde ölçüldü): üst menüdeki "İlan Ver"
+     * butonu `class="hidden md:inline-flex"` alıyordu ama mobilde de
+     * görünüp taşıyordu. Derlenmiş CSS'te `.inline-flex` `.hidden`'dan
+     * SONRA geliyor (HTML'deki sınıf sırasının önemi yok) — bileşenin kendi
+     * sabit `inline-flex`'i her zaman kazanıyordu. Çağıran bir görünürlük
+     * sınıfı verdiğinde bileşen kendi `inline-flex`'ini eklememeli.
+     */
+    public function test_caginan_gorunurluk_sinifi_verince_kendi_inline_flexini_eklemez(): void
+    {
+        $html = view('components.button', [
+            'attributes' => new ComponentAttributeBag(['class' => 'hidden md:inline-flex']),
+        ])->with('slot', 'İlan Ver')->render();
+
+        $this->assertStringContainsString('hidden md:inline-flex', $html);
+        $this->assertStringNotContainsString('inline-flex items-center', $html, 'Bileşen kendi sabit inline-flex\'ini eklerse "hidden" ile çakışıp mobilde de görünür.');
+    }
+
+    public function test_caginan_gorunurluk_sinifi_vermeyince_varsayilan_inline_flex_korunur(): void
+    {
+        $html = view('components.button', [])->with('slot', 'Devam')->render();
+
+        $this->assertStringContainsString('inline-flex items-center', $html);
+    }
+
     public function test_ekstra_oznitelikler_ve_siniflar_birlesir(): void
     {
         // Panel formundaki "Yayınla"/"Taslak olarak kaydet" düğmeleri name/value
