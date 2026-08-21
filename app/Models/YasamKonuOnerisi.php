@@ -23,18 +23,21 @@ class YasamKonuOnerisi extends Model
 
     protected $fillable = ['yasam_konu_icerigi_id', 'user_id', 'onerilen_metin', 'kaynak_url', 'durum'];
 
+    /** @return BelongsTo<YasamKonuIcerigi, $this> */
     public function icerik(): BelongsTo
     {
         return $this->belongsTo(YasamKonuIcerigi::class, 'yasam_konu_icerigi_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function kullanici(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function scopeBekleyen(Builder $query): Builder
+    /** @param Builder<YasamKonuOnerisi> $query */
+    public function scopeBekleyen(Builder $query): void
     {
-        return $query->where('durum', self::DURUM_BEKLIYOR);
+        $query->where('durum', self::DURUM_BEKLIYOR);
     }
 }

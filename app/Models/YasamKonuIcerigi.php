@@ -12,10 +12,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Rehberi'ndeki `TemsilcilikIslemi`nin karşılığı — aynı taslak/yayın ve
  * bayatlık (K7) desenini taşır.
  *
- * `icerik` markdown DEĞİL, yapılandırılmış blok listesi:
- * `[{"tip": "baslik|paragraf|liste", "metin": "..."} , ...]`
- * ("liste" için `metin` yerine `ogeler: string[]`). Bu depoda gövde içerik
- * hiçbir yerde serbest markdown olarak saklanmıyor (bkz. migration yorumu).
+ * `icerik` markdown DEĞİL, DÜZ (iç içe olmayan) blok listesi:
+ * `[{"tip": "baslik|paragraf|madde", "metin": "..."}, ...]`. Ardışık "madde"
+ * blokları Blade'de tek `<ul>`'a toplanır. Bu depoda gövde içerik hiçbir
+ * yerde serbest markdown olarak saklanmıyor (bkz. migration yorumu).
  */
 class YasamKonuIcerigi extends Model
 {
@@ -47,34 +47,40 @@ class YasamKonuIcerigi extends Model
         ];
     }
 
+    /** @return BelongsTo<YasamKonusu, $this> */
     public function konu(): BelongsTo
     {
         return $this->belongsTo(YasamKonusu::class, 'yasam_konusu_id');
     }
 
+    /** @return BelongsTo<Country, $this> */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class, 'country_code', 'code');
     }
 
+    /** @return HasMany<YasamKonuOnerisi, $this> */
     public function oneriler(): HasMany
     {
         return $this->hasMany(YasamKonuOnerisi::class, 'yasam_konu_icerigi_id');
     }
 
-    public function scopeYayinda(Builder $query): Builder
+    /** @param Builder<YasamKonuIcerigi> $query */
+    public function scopeYayinda(Builder $query): void
     {
-        return $query->where('status', self::STATUS_YAYIN);
+        $query->where('status', self::STATUS_YAYIN);
     }
 
     /**
      * Yayında ama doğrulanmamış ya da doğrulaması BAYATLIK_GUN'dan eski.
      * Ülke Rehberi'ndeki TemsilcilikIslemi::scopeBayat() ile birebir aynı
      * kural — Kâhya'nın BekleyenIsler'ı aynı desenle tüketir.
+     *
+     * @param  Builder<YasamKonuIcerigi>  $query
      */
-    public function scopeBayat(Builder $query): Builder
+    public function scopeBayat(Builder $query): void
     {
-        return $query->yayinda()
+        $query->yayinda()
             ->where(function (Builder $q) {
                 $q->whereNull('dogrulanma_tarihi')
                     ->orWhere('dogrulanma_tarihi', '<', now()->subDays(self::BAYATLIK_GUN));

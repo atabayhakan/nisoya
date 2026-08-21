@@ -21,18 +21,21 @@ class YasamKonusu extends Model
         ];
     }
 
+    /** @return BelongsTo<YasamKategorisi, $this> */
     public function kategori(): BelongsTo
     {
         return $this->belongsTo(YasamKategorisi::class, 'kategori_id');
     }
 
+    /** @return HasMany<YasamKonuIcerigi, $this> */
     public function icerikler(): HasMany
     {
         return $this->hasMany(YasamKonuIcerigi::class, 'yasam_konusu_id');
     }
 
-    public function scopeAktif(Builder $query): Builder
+    /** @param Builder<YasamKonusu> $query */
+    public function scopeAktif(Builder $query): void
     {
-        return $query->where('is_active', true);
+        $query->where('is_active', true);
     }
 }

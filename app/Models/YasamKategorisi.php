@@ -20,13 +20,15 @@ class YasamKategorisi extends Model
         ];
     }
 
+    /** @return HasMany<YasamKonusu, $this> */
     public function konular(): HasMany
     {
         return $this->hasMany(YasamKonusu::class, 'kategori_id');
     }
 
-    public function scopeAktif(Builder $query): Builder
+    /** @param Builder<YasamKategorisi> $query */
+    public function scopeAktif(Builder $query): void
     {
-        return $query->where('is_active', true);
+        $query->where('is_active', true);
     }
 }

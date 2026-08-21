@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Country;
 use App\Models\YasamKategorisi;
 use App\Models\YasamKonuIcerigi;
-use App\Models\YasamKonusu;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\View\View;
 
 /**
@@ -20,11 +20,20 @@ class YasamRehberiController extends Controller
     {
         $country = $this->aktifUlke($ulke);
 
+        // whereHas kapanışları status'u DOĞRUDAN sütun karşılaştırmasıyla
+        // kontrol ediyor (yayinda() scope'u değil) — Larastan iç içe ilişki
+        // yollarında ("konular.icerikler") kapanış parametresinin tipini
+        // scope'un ait olduğu modele bağlayamıyor; düz where() belirsizlik
+        // bırakmıyor.
         $kategoriler = YasamKategorisi::query()
             ->aktif()
-            ->whereHas('konular.icerikler', fn ($q) => $q->yayinda()->where('country_code', $country->code))
+            ->whereHas('konular.icerikler', function (Builder $q) use ($country) {
+                $q->where('status', YasamKonuIcerigi::STATUS_YAYIN)->where('country_code', $country->code);
+            })
             ->withCount(['konular as yayinda_konu_sayisi' => function ($q) use ($country) {
-                $q->whereHas('icerikler', fn ($qq) => $qq->yayinda()->where('country_code', $country->code));
+                $q->whereHas('icerikler', function (Builder $qq) use ($country) {
+                    $qq->where('status', YasamKonuIcerigi::STATUS_YAYIN)->where('country_code', $country->code);
+                });
             }])
             ->orderBy('sort_order')
             ->orderBy('ad')
@@ -40,7 +49,9 @@ class YasamRehberiController extends Controller
 
         $konular = $kategori->konular()
             ->aktif()
-            ->whereHas('icerikler', fn ($q) => $q->yayinda()->where('country_code', $country->code))
+            ->whereHas('icerikler', function (Builder $q) use ($country) {
+                $q->where('status', YasamKonuIcerigi::STATUS_YAYIN)->where('country_code', $country->code);
+            })
             ->orderBy('sort_order')
             ->orderBy('baslik')
             ->get();
