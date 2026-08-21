@@ -53,7 +53,7 @@
                  ekran okuyucu hâlâ "İlan Ver" duyar. --}}
             <a href="{{ url('/panel/ilan/yeni') }}" aria-label="İlan Ver" class="flex flex-1 flex-col items-center justify-center py-1">
                 <span class="-mt-5 grid h-11 w-11 place-items-center rounded-full bg-emerald-700 shadow-lg ring-4 ring-white dark:bg-emerald-500 dark:ring-stone-900">
-                    <x-nazar-boncugu class="h-6 w-6" />
+                    <x-nazar-boncugu class="h-10 w-10" />
                 </span>
             </a>
         @else
@@ -108,7 +108,7 @@
                     class="flex flex-col items-center justify-center py-1"
                 >
                     <span class="-mt-5 grid h-11 w-11 place-items-center rounded-full bg-emerald-700 shadow-lg ring-4 ring-white dark:bg-emerald-500 dark:ring-stone-900">
-                        <x-nazar-boncugu class="h-6 w-6" />
+                        <x-nazar-boncugu class="h-10 w-10" />
                     </span>
                 </button>
 
