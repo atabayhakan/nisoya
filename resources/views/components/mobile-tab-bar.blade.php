@@ -46,11 +46,15 @@
         </button>
 
         @auth
-            <a href="{{ url('/panel/ilan/yeni') }}" class="flex flex-1 flex-col items-center justify-center gap-0.5 py-1 text-2xs font-medium text-stone-500 dark:text-stone-400">
-                <span class="-mt-5 grid h-11 w-11 place-items-center rounded-full bg-emerald-700 text-white shadow-lg ring-4 ring-white dark:bg-emerald-500 dark:ring-stone-900">
-                    <x-heroicon-o-plus class="h-6 w-6" />
+            {{-- İKON + ETİKET (2026-08-21): "+" nazar boncuğuyla değişti (bkz.
+                 x-nazar-boncugu gerekçesi), etiket metni kaldırıldı — beş sekme
+                 arasında yalnız bu FAB zaten büyük/yükseltilmiş, ikon tek
+                 başına ayırt edici. `aria-label` görünür metnin yerini alıyor,
+                 ekran okuyucu hâlâ "İlan Ver" duyar. --}}
+            <a href="{{ url('/panel/ilan/yeni') }}" aria-label="İlan Ver" class="flex flex-1 flex-col items-center justify-center py-1">
+                <span class="-mt-5 grid h-11 w-11 place-items-center rounded-full bg-emerald-700 shadow-lg ring-4 ring-white dark:bg-emerald-500 dark:ring-stone-900">
+                    <x-nazar-boncugu class="h-6 w-6" />
                 </span>
-                İlan Ver
             </a>
         @else
             {{-- MİSAFİR: YELPAZE (2026-08-21) — eskiden başlıkta ayrı bir "Üye
@@ -88,20 +92,24 @@
                 @click.outside="kapat()"
                 class="relative flex flex-1 flex-col items-center justify-center"
             >
+                {{-- İKON + ETİKET (2026-08-21): "+" nazar boncuğuyla değişti,
+                     etiket metni kaldırıldı (bkz. yukarıdaki @auth dalındaki
+                     aynı gerekçe). Dönen "+/×" ikonu da kalktı: nazar boncuğu
+                     45° döndüğünde "kapat" anlamına gelen bir şekle
+                     dönüşmüyor (artı gibi), o yüzden sabit duruyor — açık/kapalı
+                     durumu zaten `aria-expanded` + yelpazenin kendisi anlatıyor. --}}
                 <button
                     type="button"
                     x-ref="tetik"
                     @click="acik ? kapat() : ac()"
                     :aria-expanded="acik ? 'true' : 'false'"
                     aria-controls="misafir-yelpaze"
-                    class="flex flex-col items-center justify-center gap-0.5 py-1 text-2xs font-medium text-stone-500 dark:text-stone-400"
+                    aria-label="İlan Ver"
+                    class="flex flex-col items-center justify-center py-1"
                 >
-                    <span class="-mt-5 grid h-11 w-11 place-items-center rounded-full bg-emerald-700 text-white shadow-lg ring-4 ring-white dark:bg-emerald-500 dark:ring-stone-900">
-                        <span class="transition-transform duration-200 motion-reduce:transition-none" :class="acik && 'rotate-45'">
-                            <x-heroicon-o-plus class="h-6 w-6" />
-                        </span>
+                    <span class="-mt-5 grid h-11 w-11 place-items-center rounded-full bg-emerald-700 shadow-lg ring-4 ring-white dark:bg-emerald-500 dark:ring-stone-900">
+                        <x-nazar-boncugu class="h-6 w-6" />
                     </span>
-                    İlan Ver
                 </button>
 
                 {{-- Konum matematiği (macOS Dock "Fan" hissi): 4 öğe, FAB'ın
