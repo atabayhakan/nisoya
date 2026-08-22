@@ -49,6 +49,12 @@ class ReferenceDataSeeder extends Seeder
             // deploy onu EZMEZ.
             Rehber\VefatCenazeSeeder::class,
             Rehber\ApostilSeeder::class,
+
+            // Yaşam Rehberi F1 içeriği (2026-08-21) — 5 konu x 5 ülke, AI
+            // araştır+bağımsız doğrula (Workflow). TASLAK girer (K7), sahip
+            // panelden onaylayıp yayına alır. firstOrCreate — yalnız kayıt
+            // YOKSA oluşturur, panel düzenlemelerini ezmez.
+            YasamRehberi\BankacilikFinansSeeder::class,
         ]);
     }
 }
