@@ -210,6 +210,14 @@ class HomeController extends Controller
         return ['tip' => 'cagri'];
     }
 
+    /**
+     * Ülke Rehberi VE Yaşam Rehberi'nin ortak ana sayfa yüzeyi (F2).
+     *
+     * Bölüm ikisinden EN AZ BİRİ hazırsa görünür — yalnız Ülke Rehberi'ne
+     * kilitli eski kapı, Yaşam Rehberi'nin ilk partisi (Almanya/Hollanda/
+     * Fransa/Belçika/Avusturya) Ülke Rehberi'nin kapsamadığı ülkelerde
+     * bölümü tamamen gizlerdi (bkz. tasarım §5, "mevcut bölüm genişletilir").
+     */
     private function rehberVerisi(Request $request, RehberYuzeyi $yuzey): ?array
     {
         if (! Modules::enabled('rehber')) {
@@ -217,19 +225,24 @@ class HomeController extends Controller
         }
 
         $ulkeler = $yuzey->hazirUlkeler();
+        $yasamUlkeler = $yuzey->yasamHazirUlkeler();
 
-        if ($ulkeler->isEmpty()) {
+        if ($ulkeler->isEmpty() && $yasamUlkeler->isEmpty()) {
             return null;
         }
 
         $cozulenKod = $yuzey->cozulenUlkeKodu($request->user(), $request);
         $secili = $cozulenKod !== null ? $ulkeler->firstWhere('code', $cozulenKod) : null;
+        $yasamSecili = $cozulenKod !== null ? $yasamUlkeler->firstWhere('code', $cozulenKod) : null;
 
         return [
             'ulkeler' => $ulkeler,
             'secili' => $secili,
             'cozulenKod' => $cozulenKod,
             'ozet' => $secili !== null ? $yuzey->ulkeOzeti($secili) : null,
+            'yasamUlkeler' => $yasamUlkeler,
+            'yasamSecili' => $yasamSecili,
+            'yasamOzeti' => $yasamSecili !== null ? $yuzey->yasamOzeti($yasamSecili) : null,
         ];
     }
 }

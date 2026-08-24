@@ -60,6 +60,12 @@ class Country extends Model
         return $this->hasMany(Temsilcilik::class, 'country_code', 'code');
     }
 
+    /** @return HasMany<YasamKonuIcerigi, $this> */
+    public function yasamIcerikleri(): HasMany
+    {
+        return $this->hasMany(YasamKonuIcerigi::class, 'country_code', 'code');
+    }
+
     public function defaultCurrency(): BelongsTo
     {
         return $this->belongsTo(Currency::class, 'default_currency', 'code');

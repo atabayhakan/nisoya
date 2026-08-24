@@ -7,6 +7,8 @@ use App\Models\IslemTuru;
 use App\Models\Temsilcilik;
 use App\Models\TemsilcilikIslemi;
 use App\Models\User;
+use App\Models\YasamKategorisi;
+use App\Models\YasamKonuIcerigi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -23,6 +25,12 @@ use Illuminate\Support\Facades\Cache;
  * bilinçli TERSİ — tatildeki kullanıcıya tatil ülkesinin konsolosluğu
  * gösterilmez. Çözülen ülke hazır değilse bölüm hazır ülkeleri önerir;
  * varsayılan DAYATILMAZ.
+ *
+ * YAŞAM REHBERİ (2026-08-22, F2) — `yasamHazirUlkeler()`/`yasamOzeti()` aynı
+ * sınıfta yaşıyor, AYRI bir servis açılmadı: tasarım belgesinin kararı
+ * "mevcut rehber bölümü genişletilir" — iki rehber tek ana sayfa yüzeyinin
+ * parçası. Yayın kapısı ve K1 önceliği BİREBİR aynı desen, yalnız model
+ * farklı.
  */
 class RehberYuzeyi
 {
@@ -110,6 +118,48 @@ class RehberYuzeyi
                 ->limit(6)
                 ->get(),
         ];
+    }
+
+    /**
+     * Yaşam Rehberi'nin hazır (yayında içeriği olan) aktif ülkeleri.
+     * `hazirUlkeler()`'in Yaşam Rehberi karşılığı — aynı K7 mantığı.
+     *
+     * @return Collection<int, Country>
+     */
+    public function yasamHazirUlkeler(): Collection
+    {
+        return Country::query()
+            ->where('is_active', true)
+            ->whereHas('yasamIcerikleri', fn ($q) => $q->where('status', YasamKonuIcerigi::STATUS_YAYIN))
+            ->orderBy('sort_order')
+            ->get();
+    }
+
+    /**
+     * Seçili ülkenin Yaşam Rehberi özeti: yayında içeriği olan kategoriler,
+     * her biri kaç konu taşıdığıyla. `ulkeOzeti()`'nin Yaşam Rehberi karşılığı.
+     *
+     * @return Collection<int, array{kategori: YasamKategorisi, konuSayisi: int}>
+     */
+    public function yasamOzeti(Country $country): Collection
+    {
+        return YasamKategorisi::query()
+            ->aktif()
+            ->whereHas(
+                'konular.icerikler',
+                fn ($q) => $q->where('status', YasamKonuIcerigi::STATUS_YAYIN)->where('country_code', $country->code)
+            )
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (YasamKategorisi $kategori) => [
+                'kategori' => $kategori,
+                'konuSayisi' => $kategori->konular()
+                    ->whereHas(
+                        'icerikler',
+                        fn ($q) => $q->where('status', YasamKonuIcerigi::STATUS_YAYIN)->where('country_code', $country->code)
+                    )
+                    ->count(),
+            ]);
     }
 
     /**

@@ -6,6 +6,9 @@ use App\Models\IslemTuru;
 use App\Models\Temsilcilik;
 use App\Models\TemsilcilikIslemi;
 use App\Models\User;
+use App\Models\YasamKategorisi;
+use App\Models\YasamKonuIcerigi;
+use App\Models\YasamKonusu;
 use App\Services\RehberYuzeyi;
 use App\Support\Settings;
 use Database\Seeders\CategorySeeder;
@@ -68,6 +71,43 @@ class RehberYuzeyTest extends TestCase
     private function yayindaAlmanya(): void
     {
         $this->islem($this->temsilcilik(), $this->islemTuru());
+    }
+
+    private function yasamKategori(array $overrides = []): YasamKategorisi
+    {
+        return YasamKategorisi::query()->create(array_merge([
+            'ad' => 'Bankacılık & Finans',
+            'slug' => 'bankacilik-finans',
+            'ikon' => '🏦',
+            'is_active' => true,
+            'sort_order' => 1,
+        ], $overrides));
+    }
+
+    private function yasamKonu(YasamKategorisi $kategori, array $overrides = []): YasamKonusu
+    {
+        return YasamKonusu::query()->create(array_merge([
+            'kategori_id' => $kategori->id,
+            'baslik' => "SSN'siz banka hesabı açma",
+            'slug' => 'ssnsiz-hesap-acma',
+            'kisa_aciklama' => 'Sosyal güvenlik numarası olmadan hesap açmak mümkün mü?',
+            'is_active' => true,
+            'sort_order' => 1,
+        ], $overrides));
+    }
+
+    private function yasamYayindaIcerik(YasamKonusu $konu, string $ulke): YasamKonuIcerigi
+    {
+        return YasamKonuIcerigi::query()->create([
+            'yasam_konusu_id' => $konu->id,
+            'country_code' => $ulke,
+            'icerik' => [['tip' => 'paragraf', 'metin' => 'Test içerik paragrafı.']],
+            'kaynak_url' => 'https://example.com/kaynak',
+            'kaynak_aciklama' => 'Resmî kaynak',
+            'dogrulanma_tarihi' => now()->subDays(5),
+            'status' => YasamKonuIcerigi::STATUS_YAYIN,
+            'yazan_tur' => YasamKonuIcerigi::YAZAN_AI,
+        ]);
     }
 
     // ----------------------------------------------------- Ana sayfa bölümü
@@ -146,6 +186,60 @@ class RehberYuzeyTest extends TestCase
             ->assertOk()
             ->assertSee('Ülke Rehberi')
             ->assertSee('Almanya');
+    }
+
+    // ------------------------------------------- Yaşam Rehberi köprüsü (F2)
+
+    /** Ülke Rehberi zaten hazırsa Yaşam Rehberi İKİNCİL blok olarak eklenir. */
+    public function test_yasam_rehberi_ulke_rehberi_varken_ikincil_blok_olarak_gorunur(): void
+    {
+        $this->yayindaAlmanya();
+        $this->yasamYayindaIcerik($this->yasamKonu($this->yasamKategori()), 'DE');
+
+        $uye = User::factory()->create(['country_code' => 'DE', 'email_verified_at' => now()]);
+
+        $this->actingAs($uye)->get('/')
+            ->assertOk()
+            ->assertSeeInOrder(['Ülke Rehberi', 'Almanya için konsolosluk rehberi', 'Yaşam Rehberi', 'Bankacılık & Finans']);
+    }
+
+    /** Ülke Rehberi'nin kapsamadığı ülkede Yaşam Rehberi BİRİNCİL olur. */
+    public function test_yasam_rehberi_ulke_rehberinin_kapsamadigi_ulkede_birincil_olur(): void
+    {
+        $this->yasamYayindaIcerik($this->yasamKonu($this->yasamKategori()), 'NL');
+
+        $uye = User::factory()->create(['country_code' => 'NL', 'email_verified_at' => now()]);
+
+        $this->actingAs($uye)->get('/')
+            ->assertOk()
+            ->assertDontSee('Ülke Rehberi')
+            ->assertSee('Hollanda için yaşam rehberi')
+            ->assertSee('Bankacılık & Finans');
+    }
+
+    /** Misafir + çözülemeyen ülke → jenerik başlık, dayatma yok (K1 ile aynı desen). */
+    public function test_yasam_rehberi_misafir_icin_jenerik_baslikla_birincil_gorunur(): void
+    {
+        $this->yasamYayindaIcerik($this->yasamKonu($this->yasamKategori()), 'NL');
+
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee('Ülke Rehberi')
+            ->assertSee('Gündelik hayat rehberi')
+            ->assertSee('Hollanda');
+    }
+
+    public function test_vitrin_temasinda_yasam_rehberi_ikincil_blok_gorunur(): void
+    {
+        $this->yayindaAlmanya();
+        $this->yasamYayindaIcerik($this->yasamKonu($this->yasamKategori()), 'DE');
+        Settings::setMany(['gorunum.tema' => 'vitrin']);
+
+        $uye = User::factory()->create(['country_code' => 'DE', 'email_verified_at' => now()]);
+
+        $this->actingAs($uye)->get('/')
+            ->assertOk()
+            ->assertSeeInOrder(['Ülke Rehberi', 'Almanya için konsolosluk rehberi', 'Yaşam Rehberi', 'Bankacılık & Finans']);
     }
 
     // ---------------------------------------------------------------- Footer
