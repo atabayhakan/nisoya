@@ -6,6 +6,9 @@ use App\Contracts\AiProvider;
 use App\Models\IslemTuru;
 use App\Models\Temsilcilik;
 use App\Models\TemsilcilikIslemi;
+use App\Models\YasamKategorisi;
+use App\Models\YasamKonuIcerigi;
+use App\Models\YasamKonusu;
 use App\Services\NisoyaAiYonlendirici;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
@@ -69,6 +72,43 @@ class NisoyaAiYonlendiriciTest extends TestCase
         return $sahte;
     }
 
+    private function yasamKategori(array $overrides = []): YasamKategorisi
+    {
+        return YasamKategorisi::query()->create(array_merge([
+            'ad' => 'Bankacılık & Finans',
+            'slug' => 'bankacilik-finans',
+            'ikon' => '🏦',
+            'is_active' => true,
+            'sort_order' => 1,
+        ], $overrides));
+    }
+
+    private function yasamKonu(YasamKategorisi $kategori, array $overrides = []): YasamKonusu
+    {
+        return YasamKonusu::query()->create(array_merge([
+            'kategori_id' => $kategori->id,
+            'baslik' => "SSN'siz banka hesabı açma",
+            'slug' => 'ssnsiz-hesap-acma',
+            'kisa_aciklama' => 'Sosyal güvenlik numarası olmadan hesap açmak mümkün mü?',
+            'is_active' => true,
+            'sort_order' => 1,
+        ], $overrides));
+    }
+
+    private function yasamYayindaAlmanya(): void
+    {
+        YasamKonuIcerigi::query()->create([
+            'yasam_konusu_id' => $this->yasamKonu($this->yasamKategori())->id,
+            'country_code' => 'DE',
+            'icerik' => [['tip' => 'paragraf', 'metin' => 'Test içerik paragrafı.']],
+            'kaynak_url' => 'https://example.com/kaynak',
+            'kaynak_aciklama' => 'Resmî kaynak',
+            'dogrulanma_tarihi' => now()->subDays(5),
+            'status' => YasamKonuIcerigi::STATUS_YAYIN,
+            'yazan_tur' => YasamKonuIcerigi::YAZAN_AI,
+        ]);
+    }
+
     public function test_ayar_kapaliyken_pasif(): void
     {
         config(['ai.features.nisoya_ai_arama' => false]);
@@ -110,6 +150,89 @@ class NisoyaAiYonlendiriciTest extends TestCase
         $this->assertSame('ilan', $sonuc['niyet']);
         $this->assertTrue($sonuc['sonuclar']->isEmpty());
         $this->assertStringContainsString('/ilanlar?q=', $sonuc['ilanBaglantisi']);
+    }
+
+    public function test_yasam_niyeti_gercek_sonuca_yonlendirir(): void
+    {
+        $this->yasamYayindaAlmanya();
+        $this->sahteBagla([
+            'niyet' => 'yasam', 'ulke_kodu' => 'DE', 'yasam_kategori_slug' => 'bankacilik-finans',
+            'anahtar_kelimeler' => ['banka', 'hesap'],
+        ]);
+
+        $sonuc = app(NisoyaAiYonlendirici::class)->ara('Almanyada SSNsiz banka hesabı nasıl açılır', null);
+
+        $this->assertSame('yasam', $sonuc['niyet']);
+        $this->assertCount(1, $sonuc['sonuclar']);
+        $this->assertNull($sonuc['ilanBaglantisi']);
+    }
+
+    public function test_is_niyeti_yeniden_uretmez_sadece_isler_baglantisi_verir(): void
+    {
+        $this->sahteBagla([
+            'niyet' => 'is', 'ulke_kodu' => null, 'anahtar_kelimeler' => ['satış', 'temsilcisi'],
+        ]);
+
+        $sonuc = app(NisoyaAiYonlendirici::class)->ara('İstanbulda satış temsilcisi iş arıyorum', null);
+
+        $this->assertSame('is', $sonuc['niyet']);
+        $this->assertTrue($sonuc['sonuclar']->isEmpty());
+        $this->assertStringContainsString('/isler?', $sonuc['ilanBaglantisi']);
+        $this->assertStringContainsString('q=', $sonuc['ilanBaglantisi']);
+    }
+
+    public function test_is_baglantisina_gecerli_ulke_kodu_eklenir(): void
+    {
+        $this->sahteBagla([
+            'niyet' => 'is', 'ulke_kodu' => 'DE', 'anahtar_kelimeler' => ['yazılımcı'],
+        ]);
+
+        $sonuc = app(NisoyaAiYonlendirici::class)->ara('Almanyada uzaktan yazılımcı iş ilanı', null);
+
+        $this->assertStringContainsString('ulke=DE', $sonuc['ilanBaglantisi']);
+    }
+
+    public function test_is_baglantisina_uydurulmus_ulke_kodu_eklenmez(): void
+    {
+        $this->sahteBagla([
+            'niyet' => 'is', 'ulke_kodu' => 'ZZ', 'anahtar_kelimeler' => ['yazılımcı'],
+        ]);
+
+        $sonuc = app(NisoyaAiYonlendirici::class)->ara('ZZ ülkesinde yazılımcı iş ilanı', null);
+
+        $this->assertStringNotContainsString('ulke=', $sonuc['ilanBaglantisi']);
+    }
+
+    /** AI 'rehber' dese bile, o motor boşsa Yaşam Rehberi güvenlik ağı devreye girer. */
+    public function test_rehber_bossa_yasam_guvenlik_agina_duser(): void
+    {
+        $this->yasamYayindaAlmanya(); // Rehber içeriği YOK, yalnız Yaşam Rehberi var
+
+        $this->sahteBagla([
+            'niyet' => 'rehber', 'ulke_kodu' => 'DE', 'islem_turu_slug' => null,
+            'yasam_kategori_slug' => 'bankacilik-finans', 'anahtar_kelimeler' => ['banka'],
+        ]);
+
+        $sonuc = app(NisoyaAiYonlendirici::class)->ara('Almanyada banka hesabı nasıl açılır', null);
+
+        $this->assertSame('yasam', $sonuc['niyet']);
+        $this->assertCount(1, $sonuc['sonuclar']);
+    }
+
+    /** Simetrik: AI 'yasam' dese bile, o motor boşsa Rehber güvenlik ağı devreye girer. */
+    public function test_yasam_bossa_rehber_guvenlik_agina_duser(): void
+    {
+        $this->yayindaAlmanya(); // Yaşam Rehberi içeriği YOK, yalnız Rehber var
+
+        $this->sahteBagla([
+            'niyet' => 'yasam', 'ulke_kodu' => 'DE', 'islem_turu_slug' => 'vekaletname',
+            'yasam_kategori_slug' => null, 'anahtar_kelimeler' => ['vekaletname'],
+        ]);
+
+        $sonuc = app(NisoyaAiYonlendirici::class)->ara('Almanyada vekaletname', null);
+
+        $this->assertSame('rehber', $sonuc['niyet']);
+        $this->assertCount(1, $sonuc['sonuclar']);
     }
 
     public function test_rehber_sonucu_bossa_ilan_baglantisina_duser(): void

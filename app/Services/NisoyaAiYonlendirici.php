@@ -3,26 +3,30 @@
 namespace App\Services;
 
 use App\Contracts\AiProvider;
+use App\Models\Country;
 use App\Models\IslemTuru;
+use App\Models\YasamKategorisi;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
- * Anasayfa "Nisoya AI ile ara" çubuğu (docs/plans/2026-08-19-…, madde C).
+ * Anasayfa "Nisoya AI ile ara" çubuğu (docs/plans/2026-08-19-…, madde C;
+ * kapsam genişletmesi docs/plans/2026-08-25-…).
  *
  * ---------------------------------------------------------------------------
  * YÖNLENDİRİR, ÜRETMEZ
  *
  * Kullanıcının serbest metinle yazdığı soruyu TEK bir AI çağrısıyla
- * sınıflandırır (rehber/ilan/belirsiz) ve var olan iki motordan birine
- * devreder: rehber niyeti → RehberDogalDilArama (var olan Rehber sayfalarını
- * bulur), ilan niyeti → var olan `/ilanlar` doğal dil aramasına link verir.
- * Kendisi hiçbir zaman yeni bir cevap METNİ ÜRETMEZ — yalnız var olan,
- * insan doğrulamalı sayfalara işaret eder. Konsolosluk/göçmenlik gibi hassas
- * bir alanda modelin "cevap uydurması" gerçek zarar demek; bu sınıf o riski
- * yapısal olarak taşımaz.
+ * sınıflandırır (rehber/yasam/ilan/is/belirsiz) ve var olan motorlardan
+ * birine devreder: rehber niyeti → RehberDogalDilArama, yasam niyeti →
+ * YasamDogalDilArama (ikisi de var olan sayfaları bulur, AI çağırmaz),
+ * ilan/is niyeti → sırasıyla `/ilanlar` ve `/isler`'ın kendi doğal dil/LIKE
+ * aramasına ham metni link olarak devreder. Kendisi hiçbir zaman yeni bir
+ * cevap METNİ ÜRETMEZ — yalnız var olan, insan doğrulamalı sayfalara işaret
+ * eder. Konsolosluk/göçmenlik gibi hassas bir alanda modelin "cevap
+ * uydurması" gerçek zarar demek; bu sınıf o riski yapısal olarak taşımaz.
  *
  * ---------------------------------------------------------------------------
  * MALİYET
@@ -40,6 +44,7 @@ class NisoyaAiYonlendirici
     public function __construct(
         private readonly AiProvider $ai,
         private readonly RehberDogalDilArama $rehberArama,
+        private readonly YasamDogalDilArama $yasamArama,
         private readonly RehberYuzeyi $rehberYuzeyi,
     ) {}
 
@@ -68,38 +73,55 @@ class NisoyaAiYonlendirici
         $yorum = $this->yorumla($sorgu);
 
         if ($yorum['niyet'] === 'ilan') {
-            return [
-                'niyet' => 'ilan',
-                'sonuclar' => collect(),
-                'ilanBaglantisi' => $this->ilanBaglantisi($sorgu),
-            ];
+            return $this->linkSonucu('ilan', $this->ilanBaglantisi($sorgu));
+        }
+
+        if ($yorum['niyet'] === 'is') {
+            return $this->linkSonucu('is', $this->isBaglantisi($sorgu, $yorum['ulke_kodu']));
         }
 
         /*
-         * 'rehber' VEYA 'belirsiz' — ikisinde de Rehber denenir: "belirsiz"
-         * çıkan bir soru yine de resmî bir konu olabilir, sessiz kalınmaz.
+         * 'rehber' / 'yasam' / 'belirsiz' — üçünde de HER İKİ motor (Rehber +
+         * Yaşam Rehberi) sırayla denenir: "belirsiz" çıkan bir soru yine de
+         * resmî bir konu ya da gündelik-yaşam konusu olabilir, sessiz
+         * kalınmaz. Net sınıflandırılan niyetin motoru ÖNCE denenir, diğeri
+         * yalnız güvenlik ağı — AI'nin rehber/yasam ayrımını yanlış çizdiği
+         * durumlarda bile bir sonuç kaybolmaz.
          *
-         * ZİYARETÇİNİN KENDİ ÜLKESİNE düşme (varsayılanUlkeKodu) YALNIZ
-         * "rehber" niyetinde — yani AI bunun resmî bir konu OLDUĞUNDAN emin
-         * ama ülkeyi çıkaramadığında. "belirsiz" durumunda bu kişiselleştirme
-         * UYGULANMAZ: soruda hiçbir gerçek ipucu (ülke/işlem/anahtar kelime)
-         * yoksa "belirsiz" + varsayılan ülke = soruyla hiç ilgisi olmayan
-         * bir "işte elçiliğin" cevabı üretirdi. Gerçek olay (2026-08-20,
-         * canlıda ölçüldü): "merhaba naber nasılsın" gibi rastgele bir
-         * selamlama bile ziyaretçinin ülkesindeki temsilciliği döndürüyordu.
+         * ZİYARETÇİNİN KENDİ ÜLKESİNE düşme (varsayılanUlkeKodu) YALNIZ o
+         * motora NET işaret eden niyette — yani AI bunun o türden bir konu
+         * OLDUĞUNDAN emin ama ülkeyi çıkaramadığında. "belirsiz" durumunda bu
+         * kişiselleştirme UYGULANMAZ: soruda hiçbir gerçek ipucu (ülke/işlem/
+         * kategori/anahtar kelime) yoksa "belirsiz" + varsayılan ülke =
+         * soruyla hiç ilgisi olmayan bir "işte elçiliğin" cevabı üretirdi.
+         * Gerçek olay (2026-08-20, canlıda ölçüldü): "merhaba naber
+         * nasılsın" gibi rastgele bir selamlama bile ziyaretçinin
+         * ülkesindeki temsilciliği döndürüyordu.
          */
-        $sonuclar = $this->rehberArama->ara(
-            $yorum['ulke_kodu'],
-            $yorum['islem_turu_slug'],
-            $yorum['anahtar_kelimeler'],
-            $yorum['niyet'] === 'rehber' ? $varsayilanUlkeKodu : null,
-        );
+        $rehberVarsayilan = $yorum['niyet'] === 'rehber' ? $varsayilanUlkeKodu : null;
+        $yasamVarsayilan = $yorum['niyet'] === 'yasam' ? $varsayilanUlkeKodu : null;
 
-        return [
-            'niyet' => $sonuclar->isNotEmpty() ? 'rehber' : 'belirsiz',
-            'sonuclar' => $sonuclar,
-            'ilanBaglantisi' => $sonuclar->isEmpty() ? $this->ilanBaglantisi($sorgu) : null,
-        ];
+        $sira = $yorum['niyet'] === 'yasam' ? ['yasam', 'rehber'] : ['rehber', 'yasam'];
+
+        foreach ($sira as $motor) {
+            $sonuclar = $motor === 'rehber'
+                ? $this->rehberArama->ara($yorum['ulke_kodu'], $yorum['islem_turu_slug'], $yorum['anahtar_kelimeler'], $rehberVarsayilan)
+                : $this->yasamArama->ara($yorum['ulke_kodu'], $yorum['yasam_kategori_slug'], $yorum['anahtar_kelimeler'], $yasamVarsayilan);
+
+            if ($sonuclar->isNotEmpty()) {
+                return ['niyet' => $motor, 'sonuclar' => $sonuclar, 'ilanBaglantisi' => null];
+            }
+        }
+
+        return $this->linkSonucu('belirsiz', $this->ilanBaglantisi($sorgu));
+    }
+
+    /**
+     * @return array{niyet: string, sonuclar: Collection<int, array{baslik: string, altbaslik: string, url: string}>, ilanBaglantisi: ?string}
+     */
+    private function linkSonucu(string $niyet, string $baglanti): array
+    {
+        return ['niyet' => $niyet, 'sonuclar' => collect(), 'ilanBaglantisi' => $baglanti];
     }
 
     private function ilanBaglantisi(string $sorgu): string
@@ -108,7 +130,37 @@ class NisoyaAiYonlendirici
     }
 
     /**
-     * @return array{niyet: string, ulke_kodu: ?string, islem_turu_slug: ?string, anahtar_kelimeler: list<string>}
+     * `is` niyeti için yeni bir arama motoru YOK — `JobBrowseController`
+     * zaten `q` (başlık+açıklama LIKE) ve `ulke` filtresini destekliyor;
+     * `ilan` niyetinin `/ilanlar`'a yaptığı ham-metin handoff'unun aynısı.
+     * `ulke_kodu` burada da uydurulmuş olabilir — linke eklemeden önce
+     * gerçek aktif ülke listesine karşı doğrulanır.
+     */
+    private function isBaglantisi(string $sorgu, ?string $ulkeKodu): string
+    {
+        $params = ['q' => $sorgu];
+
+        $ulkeKodu = $this->dogrulaUlke($ulkeKodu);
+        if ($ulkeKodu !== null) {
+            $params['ulke'] = $ulkeKodu;
+        }
+
+        return url('/isler').'?'.http_build_query($params);
+    }
+
+    private function dogrulaUlke(?string $kod): ?string
+    {
+        if ($kod === null || trim($kod) === '') {
+            return null;
+        }
+
+        $kod = strtoupper(trim($kod));
+
+        return Country::query()->where('is_active', true)->where('code', $kod)->exists() ? $kod : null;
+    }
+
+    /**
+     * @return array{niyet: string, ulke_kodu: ?string, islem_turu_slug: ?string, yasam_kategori_slug: ?string, anahtar_kelimeler: list<string>}
      */
     private function yorumla(string $sorgu): array
     {
@@ -130,21 +182,23 @@ class NisoyaAiYonlendirici
             'niyet' => 'belirsiz',
             'ulke_kodu' => null,
             'islem_turu_slug' => null,
+            'yasam_kategori_slug' => null,
             'anahtar_kelimeler' => $this->kabaKelimelerAyikla($sorgu),
         ];
     }
 
     /**
      * @param  array<string, mixed>  $veri
-     * @return array{niyet: string, ulke_kodu: ?string, islem_turu_slug: ?string, anahtar_kelimeler: list<string>}
+     * @return array{niyet: string, ulke_kodu: ?string, islem_turu_slug: ?string, yasam_kategori_slug: ?string, anahtar_kelimeler: list<string>}
      */
     private function dogrula(array $veri): array
     {
-        // Ülke/işlem türü kodlarının GEÇERLİ olup olmadığı burada değil,
-        // RehberDogalDilArama'da doğrulanır — tek doğrulama kaynağı orada
-        // kalsın diye kasıtlı olarak burada tekrarlanmıyor.
+        // Ülke/işlem türü/yaşam kategorisi kodlarının GEÇERLİ olup olmadığı
+        // burada değil, RehberDogalDilArama/YasamDogalDilArama'da doğrulanır
+        // — tek doğrulama kaynağı orada kalsın diye kasıtlı olarak burada
+        // tekrarlanmıyor.
         $niyet = $veri['niyet'] ?? null;
-        if (! in_array($niyet, ['rehber', 'ilan', 'belirsiz'], true)) {
+        if (! in_array($niyet, ['rehber', 'yasam', 'ilan', 'is', 'belirsiz'], true)) {
             $niyet = 'belirsiz';
         }
 
@@ -159,6 +213,7 @@ class NisoyaAiYonlendirici
             'niyet' => $niyet,
             'ulke_kodu' => filled($veri['ulke_kodu'] ?? null) ? (string) $veri['ulke_kodu'] : null,
             'islem_turu_slug' => filled($veri['islem_turu_slug'] ?? null) ? (string) $veri['islem_turu_slug'] : null,
+            'yasam_kategori_slug' => filled($veri['yasam_kategori_slug'] ?? null) ? (string) $veri['yasam_kategori_slug'] : null,
             'anahtar_kelimeler' => $anahtarKelimeler,
         ];
     }
@@ -190,25 +245,40 @@ class NisoyaAiYonlendirici
             ->map(fn ($t) => $t->slug.' ('.$t->ad.')')
             ->implode(', ');
 
+        $yasamKategorileri = YasamKategorisi::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get(['ad', 'slug'])
+            ->map(fn ($k) => $k->slug.' ('.$k->ad.')')
+            ->implode(', ');
+
         return implode("\n", [
             'Kullanıcı, yurt dışındaki Türklere yönelik "Nisoya" adlı sitenin anasayfasındaki',
             'yapay zeka arama çubuğuna bir soru yazdı. Görevin bu sorunun NİYETİNİ sınıflandırmak.',
             '',
             'NİYET SEÇENEKLERİ:',
             '- "rehber": resmî/konsolosluk/göçmenlik/hukuki bir konu (ör. pasaport, vekaletname,',
-            '  askerlik, apostil, banka hesabı açma, vergi numarası, ehliyet gibi).',
+            '  askerlik, apostil, vergi numarası, ehliyet gibi).',
+            '- "yasam": resmî bir işlem DEĞİL, gündelik yaşam pratiği (ör. "Almanya\'da kira nasıl',
+            '  ödenir", "SSN\'siz banka hesabı açma", sağlık sigortası, iş arama süreci gibi).',
             '- "ilan": bir hizmet/ürün/usta/hoca aranıyor (ör. "Berlin\'de temizlikçi", "ikinci el araba").',
-            '- "belirsiz": ikisine de net uymuyor.',
+            '- "is": bir İŞ/kariyer ilanı aranıyor (ör. "İstanbul\'da satış temsilcisi", "uzaktan yazılımcı iş").',
+            '- "belirsiz": hiçbirine net uymuyor.',
             '',
             'KURALLAR:',
             '- `ulke_kodu` YALNIZ aşağıdaki listeden bir kod olabilir; soruda ülke geçmiyorsa ya da',
             '  listede yoksa null bırak — uydurma.',
-            '- `islem_turu_slug` YALNIZ aşağıdaki listeden bir slug olabilir; net değilse null bırak.',
+            '- `islem_turu_slug` YALNIZ niyet "rehber" ise VE aşağıdaki listeden net bir slug',
+            '  eşleşiyorsa doldur; değilse null bırak.',
+            '- `yasam_kategori_slug` YALNIZ niyet "yasam" ise VE aşağıdaki listeden net bir slug',
+            '  eşleşiyorsa doldur; değilse null bırak.',
             '- `anahtar_kelimeler`: sorunun özünü yakalayan 2-4 kelime, HER ZAMAN doldur (arama yedeği).',
             '',
             'HAZIR ÜLKELER: '.($ulkeler ?: '(şu an hiçbiri hazır değil)'),
             '',
-            'İŞLEM TÜRLERİ: '.($islemTurleri ?: '(şu an tanımlı değil)'),
+            'İŞLEM TÜRLERİ (yalnız "rehber" niyeti için): '.($islemTurleri ?: '(şu an tanımlı değil)'),
+            '',
+            'YAŞAM REHBERİ KATEGORİLERİ (yalnız "yasam" niyeti için): '.($yasamKategorileri ?: '(şu an tanımlı değil)'),
             '',
             '--- SORU ---',
             Str::limit($sorgu, 200, ''),
@@ -223,12 +293,13 @@ class NisoyaAiYonlendirici
         return [
             'type' => 'object',
             'properties' => [
-                'niyet' => ['type' => 'string', 'enum' => ['rehber', 'ilan', 'belirsiz']],
+                'niyet' => ['type' => 'string', 'enum' => ['rehber', 'yasam', 'ilan', 'is', 'belirsiz']],
                 'ulke_kodu' => ['type' => ['string', 'null']],
                 'islem_turu_slug' => ['type' => ['string', 'null']],
+                'yasam_kategori_slug' => ['type' => ['string', 'null']],
                 'anahtar_kelimeler' => ['type' => 'array', 'items' => ['type' => 'string']],
             ],
-            'required' => ['niyet', 'ulke_kodu', 'islem_turu_slug', 'anahtar_kelimeler'],
+            'required' => ['niyet', 'ulke_kodu', 'islem_turu_slug', 'yasam_kategori_slug', 'anahtar_kelimeler'],
             'additionalProperties' => false,
         ];
     }

@@ -52,9 +52,8 @@
             </template>
             <template x-if="!error && (!result || !result.sonuclar || !result.sonuclar.length)">
                 <div class="p-4">
-                    <p class="text-sm text-stone-600 dark:text-stone-300">Bu konuda hazır bir rehberimiz yok.</p>
-                    <a :href="result && result.ilanBaglantisi ? result.ilanBaglantisi : '/ilanlar'" class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[var(--color-emerald-600,#059669)] hover:underline">
-                        İlanlarda ara →
+                    <p class="text-sm text-stone-600 dark:text-stone-300" x-text="result && result.niyet === 'is' ? 'Bu konuda hazır bir iş ilanı bulamadım.' : 'Bu konuda hazır bir rehberimiz yok.'"></p>
+                    <a :href="result && result.ilanBaglantisi ? result.ilanBaglantisi : '/ilanlar'" class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[var(--color-emerald-600,#059669)] hover:underline" x-text="(result && result.niyet === 'is' ? 'İş ilanlarında ara' : 'İlanlarda ara') + ' →'">
                     </a>
                 </div>
             </template>
