@@ -139,7 +139,7 @@ class RehberYuzeyi
      * Seçili ülkenin Yaşam Rehberi özeti: yayında içeriği olan kategoriler,
      * her biri kaç konu taşıdığıyla. `ulkeOzeti()`'nin Yaşam Rehberi karşılığı.
      *
-     * @return Collection<int, array{kategori: YasamKategorisi, konuSayisi: int}>
+     * @return Collection<int, array{kategori: YasamKategorisi, konuSayisi: int<0, max>}>
      */
     public function yasamOzeti(Country $country): Collection
     {
