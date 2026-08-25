@@ -115,8 +115,8 @@ class RehberAlmanyaSeeder extends Seeder
                 TemsilcilikIslemi::query()->firstOrCreate(
                     ['temsilcilik_id' => $temsilcilik->id, 'islem_turu_id' => $tur->id],
                     [
-                        'evraklar' => $this->genelEvraklar($slug),
-                        'notlar' => $this->genelNot($slug),
+                        'evraklar' => self::genelEvraklar($slug),
+                        'notlar' => self::genelNot($slug),
                         'resmi_kaynak_url' => 'https://www.konsolosluk.gov.tr',
                         'status' => TemsilcilikIslemi::STATUS_TASLAK,
                     ],
@@ -129,9 +129,14 @@ class RehberAlmanyaSeeder extends Seeder
      * Tür başına GENEL başlangıç evrak listesi — doğrulanmamış taslak
      * malzemesi, yayın öncesi sahip resmî kaynakla karşılaştırır.
      *
+     * `public static`: RehberEvrenselDogrulamaSeeder (diğer 56 ülke) bu
+     * ÜLKE-BAĞIMSIZ içeriği aynen yeniden kullanıyor — kopyalamak yerine
+     * tek kaynaktan okumak, ikisinin sessizce ayrışmasını (bir tanesi
+     * güncellenip diğeri unutulmasını) önler.
+     *
      * @return list<array{ad: string, not?: string}>
      */
-    protected function genelEvraklar(string $slug): array
+    public static function genelEvraklar(string $slug): array
     {
         $kimlik = ['ad' => 'T.C. kimlik kartı veya geçerli pasaport'];
         $randevu = ['ad' => 'Konsolosluk randevusu', 'not' => 'www.konsolosluk.gov.tr üzerinden alınır'];
@@ -213,7 +218,8 @@ class RehberAlmanyaSeeder extends Seeder
         };
     }
 
-    protected function genelNot(string $slug): string
+    /** @see genelEvraklar() docblock'u — aynı gerekçeyle public static. */
+    public static function genelNot(string $slug): string
     {
         $ortak = 'Bu içerik genel bir başlangıç taslağıdır; bu temsilciliğe özgü farklar '
             .'ve güncel harç tutarları resmî kaynaktan doğrulanmadan yayınlanmamalıdır.';
