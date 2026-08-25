@@ -18,10 +18,14 @@ use Illuminate\Database\Seeder;
  *
  *     php artisan db:seed --class=RehberAlmanyaYerelEkSeeder --force
  *
- * KASITLI SINIRLAMA: yalnız BUGÜNKÜ araştırmadan zaten elde somut kaynağı
- * olan (temsilcilik, tür) çiftlerine dokunuyor — Frankfurt/Karlsruhe/Essen/
- * Mainz/Münih/Münster/Nürnberg/Büyükelçilik için o gün özel bir şehir sayfası
- * bulunmamıştı, YENİ ARAŞTIRMA OLMADAN buraya bir şey uydurulmadı.
+ * KASITLI SINIRLAMA: yalnız somut kaynağı olan (temsilcilik, tür) çiftlerine
+ * dokunuyor. İKİNCİ TUR (aynı gün, 7 ayrı ajan): Frankfurt/Karlsruhe/Essen/
+ * Mainz/Münih/Münster/Nürnberg de eklendi — yalnız Berlin Büyükelçiliği
+ * (Başkonsolosluğun aksine) hâlâ araştırılmadı, kasıtlı olarak dışarıda.
+ * Essen'in canlı randevu sisteminde bir oturum/cache hatası gözlendi (alt
+ * sayfa tıklamaları başka bir temsilciliğin verisini gösterdi) — o yüzden
+ * Essen için yalnız ANA LİSTEDEN doğrulanan randevu/posta bilgisi kullanıldı,
+ * detay sayfalarındaki (muhtemelen yanlış) evrak/ücret bilgisi ALINMADI.
  *
  * STATUS'A DOKUNULMAZ: kayıtlar artık (2026-08-26, sahibin kararıyla) yayında
  * — bu tur içeriği İYİLEŞTİRİYOR, geri taslağa düşürmüyor.
@@ -54,7 +58,9 @@ class RehberAlmanyaYerelEkSeeder extends Seeder
                 continue;
             }
 
-            $kayit->resmi_kaynak_url = $kaynakUrl;
+            if ($kaynakUrl !== null) {
+                $kayit->resmi_kaynak_url = $kaynakUrl;
+            }
             if ($notEki !== null && ! str_contains((string) $kayit->notlar, $notEki)) {
                 $kayit->notlar = trim((string) $kayit->notlar).' '.$notEki;
             }
@@ -73,7 +79,7 @@ class RehberAlmanyaYerelEkSeeder extends Seeder
      * turunda gerçekten ziyaret edilip okunmuştu (bkz. RehberAlmanyaDogrulamaSeeder
      * commit mesajları).
      *
-     * @return list<array{0: string, 1: string, 2: string, 3: ?string}>
+     * @return list<array{0: string, 1: string, 2: ?string, 3: ?string}>
      */
     private function yerelEkler(): array
     {
@@ -107,6 +113,47 @@ class RehberAlmanyaYerelEkSeeder extends Seeder
 
             // Stuttgart Başkonsolosluğu
             ['stuttgart', 'ehliyet', 'https://stuttgart-bk.mfa.gov.tr/Mission/ShowInfoNote/409079', null],
+
+            // --- 2026-08-26, ikinci tur: kalan 7 temsilcilik (7 paralel ajan) ---
+
+            // Frankfurt Başkonsolosluğu — adres kaydı randevusuz (Köln/Düsseldorf'a üçüncü katılan)
+            ['frankfurt', 'adres-kaydi', 'https://frankfurt-bk.mfa.gov.tr/Mission/ShowInfoNote/366596', 'Bu temsilcilikte (Frankfurt) randevu GEREKMEZ — danışma masasında hafta içi 09:00-13:30 ve 14:00-16:30 arası.'],
+            ['frankfurt', 'noter-tasdik', 'https://frankfurt-bk.mfa.gov.tr/Mission/ShowInfoNote/353277', null],
+            ['frankfurt', 'tercume-tasdiki', 'https://frankfurt-bk.mfa.gov.tr/Mission/ShowInfoNote/364237', null],
+            ['frankfurt', 'vatandaslik', 'https://frankfurt-bk.mfa.gov.tr/Mission/ShowInfoNote/353280', null],
+            ['frankfurt', 'bosanma-tescili', 'https://frankfurt-bk.mfa.gov.tr/Mission/ShowInfoNote/353356', null],
+            ['frankfurt', 'adli-sicil', 'https://frankfurt-bk.mfa.gov.tr/Mission/ShowAnnouncement/397639', 'Bu temsilcilik (Frankfurt) belgeyi 29 dilde düzenleyebiliyor (2022 itibarıyla).'],
+            ['frankfurt', 'evlilik-tescili', 'https://frankfurt-bk.mfa.gov.tr/Mission/ShowInfoNote/353358', null],
+
+            // Karlsruhe Başkonsolosluğu — adres kaydı VE e-Devlet şifresi randevusuz
+            ['karlsruhe', 'adres-kaydi', 'https://karlsruhe-bk.mfa.gov.tr/Mission/ShowAnnouncement/401287', 'Bu temsilcilikte (Karlsruhe) randevu GEREKMEZ (09:00-15:00) — aynı saatlerde e-Devlet şifresi de randevusuz alınabiliyor.'],
+            ['karlsruhe', 'noter-tasdik', 'https://karlsruhe-bk.mfa.gov.tr/Mission/ShowAnnouncement/250826', 'Bu temsilcilikte (Karlsruhe) randevu KESİNLİKLE gerekli — her başvuru sahibi için ayrı randevu alınmalı.'],
+            ['karlsruhe', 'tercume-tasdiki', null, 'Bu temsilcilikte (Karlsruhe) çeviriyi yapan tercümanın Karlsruhe\'de yeminli olması şart, randevu gereklidir.'],
+            ['karlsruhe', 'adli-sicil', null, 'Bu temsilcilikte (Karlsruhe) e-Devlet şifresi henüz yoksa randevusuz şahsen temin edilebiliyor (09:00-15:00); şifre alındıktan sonra adli sicil kaydı da e-Devlet üzerinden randevusuz sorgulanır.'],
+
+            // Essen Başkonsolosluğu — TERSİNE istisna: evlilik bildirimi postayla, randevusuz
+            ['essen', 'evlilik-tescili', null, 'Bu temsilcilikte (Essen) POSTAYLA başvuru yeterli, randevu gerekmiyor — diğer 7 kategorinin aksine.'],
+
+            // Mainz Başkonsolosluğu
+            ['mainz', 'adres-kaydi', 'https://mainz-bk.mfa.gov.tr/Mission/ShowAnnouncement/401541', null],
+            ['mainz', 'noter-tasdik', 'https://mainz-bk.mfa.gov.tr/Mission/ShowAnnouncement/250915', 'Bu temsilcilikte (Mainz) randevu GEREKLİ (2016\'dan beri noterlik/nüfus/vatandaşlık/askerlik işlemleri randevuya bağlı).'],
+
+            // Münih Başkonsolosluğu — iki görev-bölgesi/ikamet şartı
+            ['muenchen', 'adres-kaydi', 'https://munih-bk.mfa.gov.tr/Mission/ShowAnnouncement/401541', null],
+            ['muenchen', 'ehliyet', null, 'Münih\'te Alman ehliyetine ÇEVİRME (konsolosluğun yapmadığı işlem) için yerel yetkili makam: KVR Führerscheinstelle, Eichstätter Str. 2.'],
+            ['muenchen', 'bosanma-tescili', 'https://munih-bk.mfa.gov.tr/Mission/ShowInfoNote/368235', 'Bu temsilcilik (Münih) YALNIZ Oberbayern/Niederbayern/Schwaben bölgesindeki Alman mahkemesi kararlarını tescil eder — başka bölgeden ise doğru temsilciliğe başvurulmalı.'],
+            ['muenchen', 'evlilik-tescili', 'https://munih-bk.mfa.gov.tr/Mission/ShowInfoNote/390492', 'Bu temsilcilikte (Münih) taraflardan en az birinin Münih konsolosluk görev bölgesinde ikamet etmesi şart.'],
+
+            // Münster Başkonsolosluğu — noter+tercüme randevusuz (dördüncü şehir)
+            ['muenster', 'adres-kaydi', 'https://munster-bk.mfa.gov.tr/Mission/ShowAnnouncement/401541', null],
+            ['muenster', 'ehliyet', 'https://munster-bk.mfa.gov.tr/Mission/ShowInfoNote/407481', 'Bu temsilcilikte (Münster) BAŞVURU için randevu gerekli, ama HAZIR ehliyetin TESLİM ALINMASI randevusuz yapılabiliyor (09:00-12:00 / 13:00-16:00).'],
+            ['muenster', 'noter-tasdik', null, 'Bu temsilcilikte (Münster) İmza/Mühür Tasdiki için randevu GEREKMEZ.'],
+            ['muenster', 'tercume-tasdiki', null, 'Bu temsilcilikte (Münster) randevu GEREKMEZ.'],
+            ['muenster', 'bosanma-tescili', 'https://munster-bk.mfa.gov.tr/Mission/ShowInfoNote/389711', 'Bu temsilciliğin (Münster) giriş katındaki bekleme salonunda fotoğraf çekme kabini ve fotokopi makinesi var.'],
+
+            // Nürnberg Başkonsolosluğu
+            ['nuernberg', 'vatandaslik', null, 'Bu temsilcilikte (Nürnberg) izinle çıkma başvurusunda Alman vatandaşlık belgesinin (Einbürgerungsurkunde/-zusicherung) TÜRKÇE TERCÜMESİNE GEREK YOK; reşit olmayan çocuk için muvafakatname noter servisinden AYRI bir randevu gerektiriyor.'],
+            ['nuernberg', 'bosanma-tescili', null, 'Bu temsilcilikte (Nürnberg) çeviri MUTLAKA kayıtlı yeminli tercümandan olmalı — kayıtlı tercüman listesi kendi sayfasında yayında (Nürnberg/Bayreuth/Bamberg/Hof/Würzburg bölgesini kapsıyor).'],
         ];
     }
 }
