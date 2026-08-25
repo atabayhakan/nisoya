@@ -83,6 +83,51 @@ class RehberEvrenselDogrulamaSeeder extends Seeder
         }
 
         $this->command?->info("Eklendi: {$eklenen} yeni taslak kayıt ({$temsilcilikler->count()} ülke × ".count($turler).' tür).');
+
+        $this->apostilOlmayanUlkeleriDuzelt($turler->get('apostil'));
+    }
+
+    /**
+     * "Apostil" kategorisi TÜM ülkelere aynı genel şablonla gitti, ama apostil
+     * kavramı YALNIZ Lahey Apostil Sözleşmesi'ne (1961) taraf ülkeler arasında
+     * anlamlı — üye olmayan bir ülke için "apostil alın" demek kullanıcıyı var
+     * olmayan bir işleme yönlendirir. HCCH'nin resmî güncel listesinden
+     * (hcch.net, 2026-08-26'da çekildi) doğrulanan, Nisoya'nın 60 ülkesi
+     * içindeki 6 ÜYE OLMAYAN ülke için içerik "konsolosluk tasdik zinciri"ne
+     * çevrilir. KKTC (XN) uluslararası tanınmazlığı nedeniyle Lahey listesinde
+     * zaten yer alamaz — güvenli varsayılan olarak aynı gruba alındı.
+     */
+    private function apostilOlmayanUlkeleriDuzelt(?IslemTuru $apostilTuru): void
+    {
+        if ($apostilTuru === null) {
+            $this->command?->warn('"apostil" İşlem Türü bulunamadı, düzeltme atlandı.');
+
+            return;
+        }
+
+        $uyeOlmayanUlkeler = ['TM', 'AE', 'QA', 'KW', 'KH', 'XN'];
+
+        $veri = [
+            'evraklar' => [
+                ['ad' => 'Bu ülke Lahey Apostil Sözleşmesi\'ne TARAF DEĞİL', 'not' => 'Apostil yerine "konsolosluk tasdik zinciri" uygulanır'],
+                ['ad' => 'Tasdiklenecek belgenin aslı'],
+                ['ad' => 'Belgeyi düzenleyen yerel makamın üst onayı', 'not' => 'Genelde o ülkenin Dışişleri Bakanlığınca ön onaylanmış olmalı'],
+            ],
+            'resmi_kaynak_url' => 'https://www.konsolosluk.gov.tr',
+            'notlar' => 'Bu ülke Lahey Apostil Sözleşmesi\'ne (1961) TARAF DEĞİL (hcch.net resmî liste, 2026-08-26 doğrulandı) — bu yüzden "apostil" yerine KONSOLOSLUK TASDİK ZİNCİRİ uygulanır: belge önce düzenleyen ülkenin kendi yetkili makamınca (genelde Dışişleri Bakanlığı) onaylanır, sonra ilgili T.C. temsilciliği tarafından tasdiklenir. Süreç ve gereken ek onaylar ülkeye göre değişir, mutlaka temsilcilikten güncel bilgi alın.',
+            'status' => TemsilcilikIslemi::STATUS_TASLAK,
+        ];
+
+        $duzeltilen = Temsilcilik::query()
+            ->whereIn('country_code', $uyeOlmayanUlkeler)
+            ->get()
+            ->each(fn (Temsilcilik $t) => TemsilcilikIslemi::query()->updateOrCreate(
+                ['temsilcilik_id' => $t->id, 'islem_turu_id' => $apostilTuru->id],
+                $veri,
+            ))
+            ->count();
+
+        $this->command?->info("Apostil-dışı düzeltme: {$duzeltilen} ülke (TM/AE/QA/KW/KH/XN).");
     }
 
     /**
