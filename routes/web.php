@@ -99,7 +99,13 @@ Route::middleware('module:davetiye')->group(function () {
 // Modül kapalıysa tüm iş ilanları yüzeyi 404.
 Route::middleware('module:is_ilanlari')->group(function () {
     Route::get('/isler', [JobBrowseController::class, 'index'])->name('jobs.index');
-    Route::get('/is/{job}/{slug?}', [JobListingController::class, 'show'])->name('jobs.show');
+    // {job} sayısal ID'ye kilitli: kilitlenmezse "is" (İzlanda'nın ülke kodu)
+    // Rehber'in /{ulke}/{temsilcilik} rotasıyla çakışıyor — "/is/reykjavik"
+    // burada "reykjavik" job ID'si sanılıp bulunamayınca sessizce 404 veriyor,
+    // Rehber rotasına hiç sıra gelmiyordu (2026-08-25 canlıda ölçüldü).
+    Route::get('/is/{job}/{slug?}', [JobListingController::class, 'show'])
+        ->where('job', '[0-9]+')
+        ->name('jobs.show');
     Route::get('/sirket/{company}', [CompanyController::class, 'show'])->name('companies.show');
     Route::get('/adaylar', [CandidateController::class, 'index'])->name('candidates.index');
 });
@@ -360,6 +366,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Başvurular (aday + işveren)
     Route::post('/is/{job}/basvur', [JobApplicationController::class, 'store'])
+        ->where('job', '[0-9]+')
         ->middleware(['honeypot', 'throttle:job-apply'])
         ->name('jobs.apply');
     Route::get('/panel/basvurularim', [JobApplicationController::class, 'mine'])->name('panel.applications.mine');

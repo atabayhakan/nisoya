@@ -83,6 +83,25 @@ class RehberTest extends TestCase
             ->assertSee('Köln Başkonsolosluğu');
     }
 
+    /**
+     * Gerçek olay (2026-08-25, canlıda ölçüldü): İzlanda'nın ülke kodu "is",
+     * iş ilanları modülünün "/is/{job}/{slug?}" rotasıyla AYNI ilk segment.
+     * {job} sayısal ID'ye kilitli değilken "reykjavik" job ID'si sanılıp
+     * bulunamıyor, Rehber'in /{ulke}/{temsilcilik} rotasına sıra hiç
+     * gelmiyordu — ülke sayfası temsilciliği DOĞRU listeliyordu ama link
+     * 404 veriyordu. bootstrap/app.php'deki rota sırası DEĞİL, {job}'ın
+     * sayısal olmayan bir değerle de eşleşebilmesi kök sebepti.
+     */
+    public function test_ulke_kodu_is_ilanlari_rotasiyla_carpismaz(): void
+    {
+        Country::firstOrCreate(['code' => 'IS'], ['name_tr' => 'İzlanda', 'emoji' => '🇮🇸', 'is_active' => true]);
+        $this->temsilcilik(['country_code' => 'IS', 'slug' => 'reykjavik', 'sehir' => 'Reykjavik', 'ad' => 'Reykjavik Büyükelçiliği']);
+
+        $this->get('/is/reykjavik')
+            ->assertOk()
+            ->assertSee('Reykjavik Büyükelçiliği');
+    }
+
     public function test_pasif_veya_bilinmeyen_ulke_404(): void
     {
         Country::query()->where('code', 'DE')->update(['is_active' => false]);
