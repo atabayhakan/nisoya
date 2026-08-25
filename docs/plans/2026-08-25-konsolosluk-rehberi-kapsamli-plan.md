@@ -41,7 +41,10 @@ Araştırma resmî kaynaktan (mfa.gov.tr) net cevap verdi: **T.C. konsolosluklar
 
 ## 3. İçerik derinliği — asıl büyük iş, gerçek sayılarla
 
-Ölçülen durum: 77 temsilcilikten yalnız **DE (14) + US (7) = 21'inde** gerçek İşlem içeriği var (Bişkek dahil geri kalan 56'sında YALNIZ adres + genel yönlendirme notu — bugün ayrıca harita+ipuçları eklendi ama adım-adım süreç bilgisi yok). Mevcut 8 İşlem Türü de T.C.'nin gerçekte sunduğu ~15 kategorinin altında kalıyor (bkz. §4).
+**[2026-08-26 düzeltme — üretimden yeniden ölçüldü, önceki paragraf yanlıştı]**
+15 İşlem Türü zaten TASLAK iskelet olarak tanımlı (`RehberAlmanyaSeeder`, 2026-08-XX'te elle çalıştırılmış — mavi-kart/vatandaşlık/ehliyet dahil, "eksik" sanılan kategorilerin üçü de zaten var). 225 `TemsilcilikIslemi` kaydından yalnız **58'i YAYINDA** (DE 43, US 15) — geri kalan 167 kayıt hâlâ TASLAK. Yayındaki 58 kayıt yalnız **8 kategoriyi** kapsıyor (vekaletname, pasaport, kimlik-kartı, doğum-tescili, ölüm-cenaze, askerlik, apostil, mavi-kart); **7 kategori** (evlilik-tescili, vatandaşlık, noter-tasdik, ehliyet, adres-kaydı, nüfus-kayıt-örneği, tercüme-tasdiki) taslak olarak var ama HİÇ doğrulanıp yayına alınmamış. 77 temsilcilikten yalnız DE+US dışındaki 75'i hâlâ yalnız adres + genel not taşıyor.
+
+**Sonuç: asıl darboğaz kategori EKSİKLİĞİ değil, DOĞRULAMA/YAYINLAMA.** §4'ün altındaki "eksik kategoriler" listesi büyük ölçüde yanlış çıktı — gerçekten hiç var olmayan yalnız 3 kategori var (aşağıda). Öncelik sırası buna göre değişti: önce mevcut 7 doğrulanmamış kategoriyi (özellikle DE için) gerçek kaynaktan doğrulayıp yayına almak, yeni kategori eklemekten daha yüksek değerli — yeni taslak eklemek zaten büyük olan bekleyen-doğrulama yığınını büyütmekten öteye geçmiyor.
 
 Bu açığı "210 taslağı doğrula" mantığıyla kapatmaya çalışmak (2026-08-04'te denenmiş, 2026-08-10'da "18'e indir" ile kısmen çözülmüştü) yanlış BİRİM üzerinden düşünüyor. Araştırma kritik bir yapısal gerçek buldu:
 
@@ -57,19 +60,20 @@ Bugünkü `TemsilcilikIslemi` (temsilcilik × işlem türü, HER kombinasyon iç
 
 ---
 
-## 4. Gerçek kapsam — eksik kategoriler (önceliklendirilmiş)
+## 4. Gerçek kapsam — eksik kategoriler (düzeltildi 2026-08-26)
 
-Resmî konsolosluk.gov.tr menüsünden doğrulanan tam liste, Nisoya'nın bugünkü 8 kategorisinin ÜSTÜNDE:
+**Zaten TASLAK olarak var, yalnız doğrulanmamış (yeni kategori AÇMAYA gerek yok, doğrulama işi):**
+evlilik-tescili, vatandaşlık, noter-tasdik, ehliyet (sürücü belgesi), adres-kaydı, nüfus-kayıt-örneği, tercüme-tasdiki.
+
+**Gerçekten hiç taslağı bile olmayan, konsolosluk.gov.tr menüsünden doğrulanan yeni kategoriler:**
 
 | Eksik kategori | Tahmini talep | Not |
 |---|---|---|
-| Nüfus/adres beyanı + **yurt dışı seçmen kaydı** | Yüksek (seçim dönemlerinde) | Kayıt süreci basit, tek sayfa |
-| **T.C. Vatandaşlık + Mavi Kart** | Yüksek | İkinci kuşak diaspora için kritik |
-| Sürücü belgesi (yenileme + yabancı ehliyet çevirme) | Orta-yüksek | USAilan'ın en çok görüntülenen konularından biri (bkz. büyüme günlüğü 2026-08-19) |
+| **Yurt dışı seçmen kaydı** | Yüksek (seçim dönemlerinde) | Kayıt süreci basit, tek sayfa; adres-kaydı'ndan AYRI (o zaten var) |
 | Boşanma tescili | Orta | Evlenme bildirimiyle aynı ailede, ucuz ek |
 | Adli konular (sabıka kaydı) | Orta | Sık istenen tek belge türü |
-| e-Devlet şifresi | Düşük-orta | Basit, tek sayfa, düşük efor/yüksek hacim adayı |
-| Çalışma/SGK bilgisi | Düşük | Daha çok Yaşam Rehberi'ne yakın (ülkeye özgü değil) — oraya mı, buraya mı karar gerekir |
+
+Kapsam dışı bırakılanlar (Yaşam Rehberi'nin alanı, burada değil): e-Devlet şifresi, Çalışma/SGK bilgisi.
 
 **Not:** YTB'nin "Yurtdışı Vatandaş Rehberi" konsolosluğun ötesine (gümrük, SGK, eğitim/diploma denkliği, vergi) geçiyor — bunlar zaten Nisoya'nın ayrı **Yaşam Rehberi** modülünün doğal alanı, Konsolosluk Rehberi'nin değil. İki modül arasındaki sınır burada teyit edildi: Konsolosluk Rehberi = T.C. temsilciliğinin YAPTIĞI iş; Yaşam Rehberi = ülkede yaşamanın GENEL bürokrasisi.
 
@@ -103,10 +107,13 @@ Kritik ek kural (araştırmadan): taslak SERBEST üretim değil, doğrudan İLG�
 
 ## 7. Açık kararlar (sahipten)
 
-1. **§2 (AI dürüstlük düzeltmesi)** — küçük, düşük riskli, hemen uygulanabilir. Onay?
-2. **§4'teki eksik kategoriler** — hangileri öncelikli? (Önerim: seçmen kaydı + vatandaşlık/Mavi Kart + sürücü belgesi, üçü de yüksek/orta-yüksek talep.)
+1. ~~**§2 (AI dürüstlük düzeltmesi)**~~ — ✅ YAPILDI, canlıda (2026-08-25, commit `3c2db50`).
+2. **İçerik önceliği** (§4 düzeltmesi sonrası) — iki ayrı eksen, hangisi önce?
+   - (a) **Doğrulama**: DE'nin 7 taslak-ama-yayınsız kategorisini (ehliyet, vatandaşlık, noter-tasdik, adres-kaydı, nüfus-kayıt-örneği, tercüme-tasdiki, evlilik-tescili) resmî kaynaktan doğrulayıp yayına almak — mevcut iskelet üzerine, yeni araştırma nispeten az.
+   - (b) **Genişletme**: 3 gerçekten yeni kategoriyi (seçmen kaydı, boşanma, adli sicil) sıfırdan araştırıp taslak olarak eklemek.
+   - Önerim: **(a) önce** — zaten var olan iskeleti gerçek içerikle doldurmak, yeni taslak yığınına eklemekten daha hızlı kullanıcı-görünür değer üretir.
 3. **§3.2 veri modeli genişletmesi** (İşlem Türü'ne ortak alan ekleme) — ayrı bir tasarım turu gerektirir, onaylanırsa `/brainstorming` ile detaylandırılır.
-4. **§5.1 üretim hattı** — hangi ülke/işlem kombinasyonuyla pilot yapılsın? (Önerim: Fransa ya da Hollanda — zaten temsilcilik kaydı var, büyük diaspora, sıfır İşlem içeriği.)
+4. **§5.1 üretim hattı pilotu** — DE'nin mevcut taslaklarını doğrulamak mı (bkz. madde 2a), yoksa sıfır-içerikli yeni bir ülkeyi (Fransa/Hollanda) baştan kurmak mı? Madde 2 kararına bağlı.
 5. **§6 Keşfet+Sor birleşimi** — şimdi mi, sonra mı?
 
-Hiçbiri acil değil — §1 zaten canlıya hazır, §2 küçük ve bağımsız, §3-6 sahibin yönlendirmesini bekliyor.
+Hiçbiri acil değil — §1 ve §2 canlıda, §3-6 sahibin yönlendirmesini bekliyor.
