@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Contracts\AiProvider;
 use App\Models\IslemTuru;
+use App\Models\SssSorusu;
 use App\Models\Temsilcilik;
 use App\Models\TemsilcilikIslemi;
 use App\Models\YasamKategorisi;
@@ -107,6 +108,16 @@ class NisoyaAiYonlendiriciTest extends TestCase
             'status' => YasamKonuIcerigi::STATUS_YAYIN,
             'yazan_tur' => YasamKonuIcerigi::YAZAN_AI,
         ]);
+    }
+
+    private function sssSorusu(array $overrides = []): SssSorusu
+    {
+        return SssSorusu::query()->create(array_merge([
+            'soru' => 'Nisoya ücretli mi?',
+            'cevap' => 'Hayır, kayıt olmak ve ilan vermek tamamen ücretsiz.',
+            'is_active' => true,
+            'sort_order' => 1,
+        ], $overrides));
     }
 
     public function test_ayar_kapaliyken_pasif(): void
@@ -232,6 +243,56 @@ class NisoyaAiYonlendiriciTest extends TestCase
         $sonuc = app(NisoyaAiYonlendirici::class)->ara('Almanyada vekaletname', null);
 
         $this->assertSame('rehber', $sonuc['niyet']);
+        $this->assertCount(1, $sonuc['sonuclar']);
+    }
+
+    public function test_sss_niyeti_gercek_sonuca_yonlendirir(): void
+    {
+        $this->sssSorusu();
+        $this->sahteBagla([
+            'niyet' => 'sss', 'ulke_kodu' => null, 'anahtar_kelimeler' => ['ücretli'],
+        ]);
+
+        $sonuc = app(NisoyaAiYonlendirici::class)->ara('Nisoya ücretli mi acaba', null);
+
+        $this->assertSame('sss', $sonuc['niyet']);
+        $this->assertCount(1, $sonuc['sonuclar']);
+        $this->assertNull($sonuc['ilanBaglantisi']);
+    }
+
+    /**
+     * 'sss' kendi başına bir dal — boşsa rehber/yaşam'a SIÇRAMAZ (örtüşme
+     * yok), doğrudan belirsize düşer. Bunu kanıtlamak için rehber içeriği
+     * BİLEREK de hazır — sıçrasaydı 'rehber' dönerdi.
+     */
+    public function test_sss_bossa_rehber_yasama_sicramaz_belirsize_duser(): void
+    {
+        $this->yayindaAlmanya();
+
+        $this->sahteBagla([
+            'niyet' => 'sss', 'ulke_kodu' => null, 'anahtar_kelimeler' => ['alakasız', 'kelimeler'],
+        ]);
+
+        $sonuc = app(NisoyaAiYonlendirici::class)->ara('bu ne anlama geliyor', null);
+
+        $this->assertSame('belirsiz', $sonuc['niyet']);
+        $this->assertTrue($sonuc['sonuclar']->isEmpty());
+        $this->assertNotNull($sonuc['ilanBaglantisi']);
+    }
+
+    /** Rehber VE Yaşam Rehberi ikisi de boşsa SSS son güvenlik ağı olarak denenir. */
+    public function test_rehber_ve_yasam_bossa_sss_son_guvenlik_agina_duser(): void
+    {
+        $this->sssSorusu();
+
+        $this->sahteBagla([
+            'niyet' => 'rehber', 'ulke_kodu' => null, 'islem_turu_slug' => null,
+            'yasam_kategori_slug' => null, 'anahtar_kelimeler' => ['ücretli'],
+        ]);
+
+        $sonuc = app(NisoyaAiYonlendirici::class)->ara('Nisoya ücretli mi', null);
+
+        $this->assertSame('sss', $sonuc['niyet']);
         $this->assertCount(1, $sonuc['sonuclar']);
     }
 

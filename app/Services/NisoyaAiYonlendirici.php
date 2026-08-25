@@ -19,11 +19,12 @@ use Illuminate\Support\Str;
  * YÖNLENDİRİR, ÜRETMEZ
  *
  * Kullanıcının serbest metinle yazdığı soruyu TEK bir AI çağrısıyla
- * sınıflandırır (rehber/yasam/ilan/is/belirsiz) ve var olan motorlardan
+ * sınıflandırır (rehber/yasam/ilan/is/sss/belirsiz) ve var olan motorlardan
  * birine devreder: rehber niyeti → RehberDogalDilArama, yasam niyeti →
- * YasamDogalDilArama (ikisi de var olan sayfaları bulur, AI çağırmaz),
- * ilan/is niyeti → sırasıyla `/ilanlar` ve `/isler`'ın kendi doğal dil/LIKE
- * aramasına ham metni link olarak devreder. Kendisi hiçbir zaman yeni bir
+ * YasamDogalDilArama, sss niyeti → SssDogalDilArama (üçü de var olan
+ * sayfaları bulur, AI çağırmaz), ilan/is niyeti → sırasıyla `/ilanlar` ve
+ * `/isler`'ın kendi doğal dil/LIKE aramasına ham metni link olarak devreder.
+ * Kendisi hiçbir zaman yeni bir
  * cevap METNİ ÜRETMEZ — yalnız var olan, insan doğrulamalı sayfalara işaret
  * eder. Konsolosluk/göçmenlik gibi hassas bir alanda modelin "cevap
  * uydurması" gerçek zarar demek; bu sınıf o riski yapısal olarak taşımaz.
@@ -45,6 +46,7 @@ class NisoyaAiYonlendirici
         private readonly AiProvider $ai,
         private readonly RehberDogalDilArama $rehberArama,
         private readonly YasamDogalDilArama $yasamArama,
+        private readonly SssDogalDilArama $sssArama,
         private readonly RehberYuzeyi $rehberYuzeyi,
     ) {}
 
@@ -81,6 +83,20 @@ class NisoyaAiYonlendirici
         }
 
         /*
+         * 'sss' KENDİ BAŞINA bir dal — rehber/yaşam çapraz güvenlik ağına
+         * KARIŞMAZ. SSS platformun kendisiyle ilgili (ücretsiz mi, ödeme
+         * nasıl gibi); boş dönerse resmî/gündelik-yaşam motorlarını denemek
+         * anlamsız (örtüşme yok) — doğrudan belirsize düşülür.
+         */
+        if ($yorum['niyet'] === 'sss') {
+            $sonuclar = $this->sssArama->ara($yorum['anahtar_kelimeler']);
+
+            return $sonuclar->isNotEmpty()
+                ? ['niyet' => 'sss', 'sonuclar' => $sonuclar, 'ilanBaglantisi' => null]
+                : $this->linkSonucu('belirsiz', $this->ilanBaglantisi($sorgu));
+        }
+
+        /*
          * 'rehber' / 'yasam' / 'belirsiz' — üçünde de HER İKİ motor (Rehber +
          * Yaşam Rehberi) sırayla denenir: "belirsiz" çıkan bir soru yine de
          * resmî bir konu ya da gündelik-yaşam konusu olabilir, sessiz
@@ -111,6 +127,16 @@ class NisoyaAiYonlendirici
             if ($sonuclar->isNotEmpty()) {
                 return ['niyet' => $motor, 'sonuclar' => $sonuclar, 'ilanBaglantisi' => null];
             }
+        }
+
+        /*
+         * Rehber VE Yaşam Rehberi ikisi de boş — SSS'i son güvenlik ağı
+         * olarak dene ("nasıl kayıt olurum" gibi AI'nin belirsiz dediği ama
+         * aslında platform sorusu olan durumlar için).
+         */
+        $sssSonuclari = $this->sssArama->ara($yorum['anahtar_kelimeler']);
+        if ($sssSonuclari->isNotEmpty()) {
+            return ['niyet' => 'sss', 'sonuclar' => $sssSonuclari, 'ilanBaglantisi' => null];
         }
 
         return $this->linkSonucu('belirsiz', $this->ilanBaglantisi($sorgu));
@@ -198,7 +224,7 @@ class NisoyaAiYonlendirici
         // — tek doğrulama kaynağı orada kalsın diye kasıtlı olarak burada
         // tekrarlanmıyor.
         $niyet = $veri['niyet'] ?? null;
-        if (! in_array($niyet, ['rehber', 'yasam', 'ilan', 'is', 'belirsiz'], true)) {
+        if (! in_array($niyet, ['rehber', 'yasam', 'ilan', 'is', 'sss', 'belirsiz'], true)) {
             $niyet = 'belirsiz';
         }
 
@@ -263,6 +289,8 @@ class NisoyaAiYonlendirici
             '  ödenir", "SSN\'siz banka hesabı açma", sağlık sigortası, iş arama süreci gibi).',
             '- "ilan": bir hizmet/ürün/usta/hoca aranıyor (ör. "Berlin\'de temizlikçi", "ikinci el araba").',
             '- "is": bir İŞ/kariyer ilanı aranıyor (ör. "İstanbul\'da satış temsilcisi", "uzaktan yazılımcı iş").',
+            '- "sss": Nisoya\'nın kendisiyle ilgili genel bir soru (ör. "Nisoya ücretsiz mi",',
+            '  "ödeme nasıl yapılıyor", "ilanım neden görünmüyor", "kime güvenebilirim").',
             '- "belirsiz": hiçbirine net uymuyor.',
             '',
             'KURALLAR:',
@@ -293,7 +321,7 @@ class NisoyaAiYonlendirici
         return [
             'type' => 'object',
             'properties' => [
-                'niyet' => ['type' => 'string', 'enum' => ['rehber', 'yasam', 'ilan', 'is', 'belirsiz']],
+                'niyet' => ['type' => 'string', 'enum' => ['rehber', 'yasam', 'ilan', 'is', 'sss', 'belirsiz']],
                 'ulke_kodu' => ['type' => ['string', 'null']],
                 'islem_turu_slug' => ['type' => ['string', 'null']],
                 'yasam_kategori_slug' => ['type' => ['string', 'null']],

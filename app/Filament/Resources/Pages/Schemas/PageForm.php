@@ -7,12 +7,14 @@ use App\Filament\Support\ContentBlocks;
 use App\Models\Page;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -21,6 +23,21 @@ class PageForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
+            // SSS 2026-08-25: içerik SssSorusu'ya taşındı, blocks'a burada
+            // yazılan HİÇBİR ŞEY /sss'te görünmez (PageController::show()
+            // slug='sss' için bu view'ı hiç render etmiyor) — bu depoda 5 kez
+            // düşülen "yanlış yeri düzenle, sessizce hiçbir şey olmasın"
+            // tuzağına 6.'sını eklememek için erken ve net uyarı.
+            Placeholder::make('sss_uyarisi')
+                ->hiddenLabel()
+                ->content(new HtmlString(
+                    '<div class="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">'
+                    .'⚠️ Bu sayfanın içeriği artık aşağıdaki "İçerik blokları" alanından DEĞİL, <strong>SSS</strong> panelinden yönetiliyor. '
+                    .'Buradan yalnız başlık, footer görünürlüğü ve SEO açıklaması düzenlenir.'
+                    .'</div>'
+                ))
+                ->visible(fn (?Page $record) => $record?->slug === 'sss'),
+
             Section::make('Sayfa bilgileri')
                 ->columns(2)
                 ->schema([

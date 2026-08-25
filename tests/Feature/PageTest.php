@@ -5,10 +5,12 @@ namespace Tests\Feature;
 use App\Enums\PageStatus;
 use App\Enums\UserRole;
 use App\Models\Page;
+use App\Models\SssSorusu;
 use App\Models\User;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
+use Database\Seeders\SssSorulariSeeder;
 use Database\Seeders\StaticPagesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -77,13 +79,42 @@ class PageTest extends TestCase
 
     public function test_migrated_corporate_pages_are_seeded_and_visible(): void
     {
-        $this->seed(StaticPagesSeeder::class);
+        // SSS 2026-08-25: içerik artık SssSorusu'da (bkz. PageController::show()),
+        // StaticPagesSeeder yalnız footer/meta kaydını taşır.
+        $this->seed([StaticPagesSeeder::class, SssSorulariSeeder::class]);
 
         $this->get('/hakkimizda')->assertOk()->assertSee('Hakkımızda')->assertSee('Ne İş Olursa Yaparız');
         $this->get('/sss')->assertOk()->assertSee('Nisoya ücretli mi');
         $this->get('/kosullar')->assertOk()->assertSee('Platformun niteliği');
 
         $this->assertSame(4, Page::navPages()->count());
+    }
+
+    public function test_sss_sayfasi_bosken_de_hatasiz_acilir(): void
+    {
+        // SssSorusu hiç seed edilmedi — Page(slug=sss) kaydı yine de var
+        // olmalı (footer/meta) ama içerik listesi boş.
+        $this->seed(StaticPagesSeeder::class);
+
+        $this->get('/sss')->assertOk()->assertSee('Şu an yayında bir soru yok');
+    }
+
+    public function test_sss_sayfasi_pasif_soruyu_gostermez(): void
+    {
+        $this->seed([StaticPagesSeeder::class, SssSorulariSeeder::class]);
+
+        SssSorusu::query()->update(['is_active' => false]);
+        SssSorusu::query()->create([
+            'soru' => 'Aktif tek soru',
+            'cevap' => 'Aktif tek cevap',
+            'is_active' => true,
+            'sort_order' => 99,
+        ]);
+
+        $this->get('/sss')
+            ->assertOk()
+            ->assertSee('Aktif tek soru')
+            ->assertDontSee('Nisoya ücretli mi');
     }
 
     public function test_reserved_slugs_are_defined(): void

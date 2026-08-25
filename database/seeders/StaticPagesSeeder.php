@@ -60,9 +60,12 @@ class StaticPagesSeeder extends Seeder
                 'show_in_footer' => true,
                 'sort_order' => 4,
                 'meta_description' => 'Nisoya hakkında sıkça sorulan sorular.',
-                'blocks' => [
-                    ['type' => 'metin', 'data' => ['content' => '<h3>Nisoya ücretli mi?</h3><p>Hayır, kayıt olmak ve ilan vermek tamamen ücretsiz. İleride isteğe bağlı öne çıkarma seçenekleri eklenebilir.</p><h3>Ödeme Nisoya üzerinden mi yapılıyor?</h3><p>Hayır. Nisoya bir ilan ve iletişim platformudur. Ödeme ve anlaşma doğrudan kullanıcılar arasında yapılır.</p><h3>Türkiye\'den kullanabilir miyim?</h3><p>Nisoya yurt dışında yaşayan Türklere yöneliktir ve Türk Lirası kullanmaz. Fiyatlar bulunduğun ülkenin para biriminde gösterilir.</p><h3>Bir ilana nasıl güvenirim?</h3><p>Satıcının profilini, değerlendirmelerini ve puanını incele. Şüpheli durumda "şikayet et" özelliğini kullan.</p><h3>İlanım neden görünmüyor?</h3><p>İlanlar genelde anında yayınlanır. Kurallara aykırı bulunan ilanlar yöneticiler tarafından pasifleştirilebilir.</p>']],
-                ],
+                // 2026-08-25: içerik SssSorusu'ya taşındı (bkz. SssSorulariSeeder).
+                // Bu kayıt yalnız footer linki + meta açıklaması için yaşıyor —
+                // PageController::show() slug='sss' için blocks'u hiç render
+                // etmiyor. Boş bırakıldı ki panelde "düzenlenebilir ama hiçbir
+                // etkisi yok" tuzağı somutlaşmasın (PageForm'daki uyarıya bkz.).
+                'blocks' => [],
             ],
         ];
     }

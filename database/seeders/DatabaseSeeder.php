@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             SiteSettingSeeder::class,
             StaticPagesSeeder::class,
+            SssSorulariSeeder::class,
 
             // DİKKAT: bu liste ReferenceDataSeeder'ınkiyle AYNI DEĞİL (o
             // deploy'da koşar ve Zone/NavigationLink/HomeHighlight/Property-
