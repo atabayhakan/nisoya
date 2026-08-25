@@ -214,6 +214,30 @@ class NisoyaAiYonlendiriciTest extends TestCase
         $this->assertStringNotContainsString('ulke=', $sonuc['ilanBaglantisi']);
     }
 
+    /**
+     * Gerçek olay (2026-08-25, canlıda ölçüldü): "Tayland vize işlemleri"
+     * gibi bir soru rehber/yasam ikisinde de boş dönüp sessizce
+     * /ilanlar'a düşüyordu — ziyaretçi neden sonuç alamadığını hiç
+     * öğrenmiyordu. 'kapsam_disi' GÜVENLİK AĞINA (rehber/yasam/sss) HİÇ
+     * girmemeli — eşleşecek rehber içeriği BİLEREK hazır, yine de
+     * kullanılmamalı.
+     */
+    public function test_kapsam_disi_niyeti_guvenlik_agina_sicramaz(): void
+    {
+        $this->yayindaAlmanya();
+
+        $this->sahteBagla([
+            'niyet' => 'kapsam_disi', 'ulke_kodu' => 'DE', 'islem_turu_slug' => 'vekaletname',
+            'yasam_kategori_slug' => null, 'anahtar_kelimeler' => ['tayland', 'vize'],
+        ]);
+
+        $sonuc = app(NisoyaAiYonlendirici::class)->ara('Tayland vize işlemleri nasıl yapılır', null);
+
+        $this->assertSame('kapsam_disi', $sonuc['niyet']);
+        $this->assertTrue($sonuc['sonuclar']->isEmpty());
+        $this->assertNull($sonuc['ilanBaglantisi']);
+    }
+
     /** AI 'rehber' dese bile, o motor boşsa Yaşam Rehberi güvenlik ağı devreye girer. */
     public function test_rehber_bossa_yasam_guvenlik_agina_duser(): void
     {

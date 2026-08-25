@@ -83,6 +83,21 @@ class NisoyaAiYonlendirici
         }
 
         /*
+         * 'kapsam_disi' KENDİ BAŞINA bir dal, GÜVENLİK AĞINA HİÇ GİRMEZ.
+         * Gerçek olay (2026-08-25): "Tayland vize işlemleri" gibi bir soru
+         * rehber/yasam ikisinde de boş dönüp sessizce belirsize düşüyordu —
+         * ziyaretçi NEDEN sonuç alamadığını hiç öğrenmiyordu. T.C.
+         * konsoloslukları ÜÇÜNCÜ BİR ÜLKEYE vize hizmeti sunmaz (bu tamamen
+         * gidilecek ülkenin işi); rehber/yasam motorlarına düşürmek anahtar
+         * kelime eşleşmesiyle alakasız bir sonuç göstermek riski taşır —
+         * bunun yerine dürüst, sabit bir mesaj (frontend'te niyet='kapsam_disi'
+         * kontrolü) gösterilir. Metin burada ÜRETİLMEZ, sabit dizedir.
+         */
+        if ($yorum['niyet'] === 'kapsam_disi') {
+            return ['niyet' => 'kapsam_disi', 'sonuclar' => collect(), 'ilanBaglantisi' => null];
+        }
+
+        /*
          * 'sss' KENDİ BAŞINA bir dal — rehber/yaşam çapraz güvenlik ağına
          * KARIŞMAZ. SSS platformun kendisiyle ilgili (ücretsiz mi, ödeme
          * nasıl gibi); boş dönerse resmî/gündelik-yaşam motorlarını denemek
@@ -224,7 +239,7 @@ class NisoyaAiYonlendirici
         // — tek doğrulama kaynağı orada kalsın diye kasıtlı olarak burada
         // tekrarlanmıyor.
         $niyet = $veri['niyet'] ?? null;
-        if (! in_array($niyet, ['rehber', 'yasam', 'ilan', 'is', 'sss', 'belirsiz'], true)) {
+        if (! in_array($niyet, ['rehber', 'yasam', 'ilan', 'is', 'sss', 'kapsam_disi', 'belirsiz'], true)) {
             $niyet = 'belirsiz';
         }
 
@@ -283,8 +298,12 @@ class NisoyaAiYonlendirici
             'yapay zeka arama çubuğuna bir soru yazdı. Görevin bu sorunun NİYETİNİ sınıflandırmak.',
             '',
             'NİYET SEÇENEKLERİ:',
-            '- "rehber": resmî/konsolosluk/göçmenlik/hukuki bir konu (ör. pasaport, vekaletname,',
-            '  askerlik, apostil, vergi numarası, ehliyet gibi).',
+            '- "rehber": T.C.\'nin KENDİ vatandaşına KENDİ konsolosluğunda sunduğu resmî işlem',
+            '  (ör. pasaport, vekaletname, askerlik, apostil, vergi numarası, ehliyet gibi).',
+            '- "kapsam_disi": ÜÇÜNCÜ BİR ÜLKEYE seyahat/göç için gereken vize/ikamet işlemi',
+            '  (ör. "Tayland vizesi nasıl alınır", "Amerika\'ya turist vizesi", "Schengen vizesi',
+            '  başvurusu") — T.C. konsoloslukları bu hizmeti SUNMAZ, tamamen gidilecek ülkenin',
+            '  kendi işidir. "rehber" ile KARIŞTIRMA: rehber T.C.\'nin kendi işlemleridir.',
             '- "yasam": resmî bir işlem DEĞİL, gündelik yaşam pratiği (ör. "Almanya\'da kira nasıl',
             '  ödenir", "SSN\'siz banka hesabı açma", sağlık sigortası, iş arama süreci gibi).',
             '- "ilan": bir hizmet/ürün/usta/hoca aranıyor (ör. "Berlin\'de temizlikçi", "ikinci el araba").',
@@ -321,7 +340,7 @@ class NisoyaAiYonlendirici
         return [
             'type' => 'object',
             'properties' => [
-                'niyet' => ['type' => 'string', 'enum' => ['rehber', 'yasam', 'ilan', 'is', 'sss', 'belirsiz']],
+                'niyet' => ['type' => 'string', 'enum' => ['rehber', 'yasam', 'ilan', 'is', 'sss', 'kapsam_disi', 'belirsiz']],
                 'ulke_kodu' => ['type' => ['string', 'null']],
                 'islem_turu_slug' => ['type' => ['string', 'null']],
                 'yasam_kategori_slug' => ['type' => ['string', 'null']],

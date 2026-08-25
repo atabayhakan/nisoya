@@ -38,6 +38,19 @@
             <template x-if="error">
                 <p class="p-4 text-sm text-stone-500 dark:text-stone-400">Şu an yanıt veremedim — normal aramayı deneyebilirsin.</p>
             </template>
+            {{--
+                'kapsam_disi': üçüncü ülke vizesi gibi T.C. konsolosluğunun
+                SUNMADIĞI bir konu. Gerçek olay (2026-08-25): bu ayrım yokken
+                "Tayland vize işlemleri" sessizce /ilanlar'a düşüyordu —
+                ziyaretçi neden sonuç alamadığını hiç öğrenmiyordu. Burada da
+                LİNK YOK — yanlış bir sonraki adım önermek, hiç önermemekten
+                kötüdür (ilanBaglantisi zaten backend'te null).
+            --}}
+            <template x-if="!error && result && result.niyet === 'kapsam_disi'">
+                <div class="p-4">
+                    <p class="text-sm text-stone-600 dark:text-stone-300">Bu, T.C. konsolosluklarının kapsamında değil. Üçüncü bir ülkeye (vize, ikamet vb.) başvuru için o ülkenin kendi konsolosluğuna ya da e-vize sistemine bakman gerekir.</p>
+                </div>
+            </template>
             <template x-if="!error && result && result.sonuclar && result.sonuclar.length">
                 <ul class="max-h-80 divide-y divide-stone-100 overflow-y-auto dark:divide-stone-800">
                     <template x-for="item in (result ? result.sonuclar : [])" :key="item.url">
@@ -50,7 +63,7 @@
                     </template>
                 </ul>
             </template>
-            <template x-if="!error && (!result || !result.sonuclar || !result.sonuclar.length)">
+            <template x-if="!error && (!result || result.niyet !== 'kapsam_disi') && (!result || !result.sonuclar || !result.sonuclar.length)">
                 <div class="p-4">
                     <p class="text-sm text-stone-600 dark:text-stone-300" x-text="result && result.niyet === 'is' ? 'Bu konuda hazır bir iş ilanı bulamadım.' : 'Bu konuda hazır bir rehberimiz yok.'"></p>
                     <a :href="result && result.ilanBaglantisi ? result.ilanBaglantisi : '/ilanlar'" class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[var(--color-emerald-600,#059669)] hover:underline" x-text="(result && result.niyet === 'is' ? 'İş ilanlarında ara' : 'İlanlarda ara') + ' →'">
