@@ -34,6 +34,37 @@
             @endif
         </div>
 
+        {{-- HARİTA DÜĞMELERİ — yalnız koordinat varsa basılır (bkz.
+             Temsilcilik::haritaBaglantilari() docblock'u). Boş bir "haritada
+             aç" sözü yerine düğme hiç görünmez. --}}
+        @php($haritalar = $temsilcilik->haritaBaglantilari())
+        @if ($haritalar->isNotEmpty())
+            <div class="mt-4 flex flex-wrap gap-2">
+                @foreach ($haritalar as $harita)
+                    <a href="{{ $harita['url'] }}" target="_blank" rel="noopener nofollow"
+                        class="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3.5 py-1.5 text-sm font-medium text-stone-700 transition hover:border-emerald-300 hover:text-emerald-700 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:border-emerald-700 dark:hover:text-emerald-400">
+                        <x-heroicon-o-map-pin class="h-4 w-4 shrink-0" />
+                        {{ $harita['ad'] }}'ta aç
+                    </a>
+                @endforeach
+            </div>
+        @endif
+
+        {{-- ZİYARET ÖNCESİ — ülkeden/temsilcilikten BAĞIMSIZ, genel ve
+             doğrulanmış tavsiye (docs/plans/2026-08-25-…). Belirli bir
+             noter/fotoğrafçı/print noktası İSİMLENDİRİLMİYOR — bu depoda
+             hiçbir temsilciliğin çevresi tek tek doğrulanmadı, isim vermek
+             uydurma olurdu. Genel pratikler ise her yerde gerçek. --}}
+        <div class="mt-6 rounded-2xl border border-stone-200 bg-stone-50 p-5 dark:border-stone-700 dark:bg-stone-800/50">
+            <h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100">Ziyaret öncesi</h2>
+            <ul class="mt-2.5 space-y-1.5 text-sm text-stone-600 dark:text-stone-300">
+                <li>• Yabancı dilde düzenlenmiş evrakların çoğu için <strong>yeminli tercüme</strong> istenir — bulunduğun şehirdeki bir yeminli tercümanı önceden araştır.</li>
+                <li>• Vekaletname/pasaport gibi işlemler <strong>vesikalık/biyometrik fotoğraf</strong> ister; standartlar ülkeye göre değişir, gitmeden önce evrak listesindeki ölçüleri kontrol et.</li>
+                <li>• Bazı işlemler evrakların <strong>fotokopisini veya ıslak imzalı çıktısını</strong> ister — yanına yedek bulundurmak randevunun aynı gün bitmesini sağlar.</li>
+                <li>• Vekaletname gibi işlemler yerel bir <strong>noterden</strong> onay gerektirebilir — temsilciliğin evrak listesi "noter onaylı" diyorsa bunu önceden hallet.</li>
+            </ul>
+        </div>
+
         <h2 class="mt-10 text-xl font-semibold text-stone-900 dark:text-stone-50">İşlem rehberleri</h2>
 
         @if ($islemler->isEmpty() && $temsilcilik->yonlendirme_notu)

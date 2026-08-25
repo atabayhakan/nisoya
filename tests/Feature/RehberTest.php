@@ -105,6 +105,30 @@ class RehberTest extends TestCase
             ->assertDontSee('Pasaport');
     }
 
+    public function test_temsilcilik_sayfasi_ziyaret_oncesi_ipuclarini_her_zaman_gosterir(): void
+    {
+        $this->get(route('rehber.temsilcilik', ['de', $this->temsilcilik()->slug]))
+            ->assertOk()
+            ->assertSee('Ziyaret öncesi')
+            ->assertSee('yeminli tercüme');
+    }
+
+    public function test_temsilcilik_sayfasi_koordinat_varsa_harita_dugmesi_gosterir(): void
+    {
+        $t = $this->temsilcilik(['latitude' => 50.8816558, 'longitude' => 6.8923562]);
+
+        $this->get(route('rehber.temsilcilik', ['de', $t->slug]))
+            ->assertOk()
+            ->assertSee('Google Haritalar');
+    }
+
+    public function test_temsilcilik_sayfasi_koordinat_yoksa_harita_dugmesi_gostermez(): void
+    {
+        $this->get(route('rehber.temsilcilik', ['de', $this->temsilcilik()->slug]))
+            ->assertOk()
+            ->assertDontSee("'ta aç", escape: false);
+    }
+
     public function test_islem_sayfasi_evrak_listesi_ve_resmi_kaynak_gosterir(): void
     {
         $this->yayindaIslem($this->temsilcilik(), $this->islemTuru());

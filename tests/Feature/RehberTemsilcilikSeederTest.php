@@ -94,4 +94,36 @@ class RehberTemsilcilikSeederTest extends TestCase
 
         $this->assertSame($ilk, Temsilcilik::count());
     }
+
+    public function test_adres_ve_koordinat_dolduruluyor(): void
+    {
+        $this->tohumla();
+
+        $berlin = Temsilcilik::where('slug', 'berlin-buyukelciligi')->first();
+
+        $this->assertNotEmpty($berlin->adres);
+        $this->assertNotNull($berlin->latitude);
+        $this->assertNotNull($berlin->longitude);
+    }
+
+    public function test_panelden_girilen_adres_ezilmez(): void
+    {
+        Country::firstOrCreate(['code' => 'DE'], ['name_tr' => 'Almanya', 'emoji' => '🇩🇪', 'is_active' => true]);
+
+        // Sahip panelden adresi düzeltmiş olsun (ör. bina taşındı).
+        $koln = Temsilcilik::create([
+            'country_code' => 'DE', 'ad' => 'Köln Başkonsolosluğu', 'slug' => 'koeln',
+            'tur' => Temsilcilik::TUR_BASKONSOLOSLUK, 'sehir' => 'Köln',
+            'resmi_url' => 'https://koln-bk.mfa.gov.tr',
+            'adres' => 'Sahibin girdiği yeni bina adresi',
+            'latitude' => 1.111111, 'longitude' => 2.222222,
+            'is_active' => true, 'sort_order' => 8,
+        ]);
+
+        $this->seed(RehberTemsilcilikleriSeeder::class);
+
+        $taze = $koln->fresh();
+        $this->assertSame('Sahibin girdiği yeni bina adresi', $taze->adres);
+        $this->assertEquals(1.111111, $taze->latitude);
+    }
 }

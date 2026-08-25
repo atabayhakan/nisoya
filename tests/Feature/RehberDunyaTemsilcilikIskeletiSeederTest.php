@@ -100,4 +100,55 @@ class RehberDunyaTemsilcilikIskeletiSeederTest extends TestCase
             ->assertSee('Lahey')
             ->assertDontSee('Bu ülkenin rehberi henüz hazırlanıyor.');
     }
+
+    public function test_adres_ve_koordinat_dolduruluyor(): void
+    {
+        $this->seed(RehberDunyaTemsilcilikIskeletiSeeder::class);
+
+        $lahey = Temsilcilik::query()->where('country_code', 'NL')->first();
+
+        $this->assertNotEmpty($lahey->adres);
+        $this->assertNotNull($lahey->latitude);
+        $this->assertNotNull($lahey->longitude);
+    }
+
+    /** İzlanda için güvenilir kaynaktan adres bulunamadı — bilerek boş (uydurma yok). */
+    public function test_adres_bulunamayan_ulke_bos_kalir(): void
+    {
+        $this->seed(RehberDunyaTemsilcilikIskeletiSeeder::class);
+
+        $reykjavik = Temsilcilik::query()->where('country_code', 'IS')->first();
+
+        $this->assertNull($reykjavik->adres);
+        $this->assertNull($reykjavik->latitude);
+    }
+
+    /** Akredite eden ülkenin (Bern/İsviçre) gerçek binası — aynı koordinat. */
+    public function test_akredite_ulke_gercek_binanin_koordinatini_tasir(): void
+    {
+        $this->seed(RehberDunyaTemsilcilikIskeletiSeeder::class);
+
+        $li = Temsilcilik::query()->where('country_code', 'LI')->first();
+
+        $this->assertNotNull($li->latitude);
+        $this->assertEquals(46.9382347, (float) $li->latitude);
+    }
+
+    public function test_panelden_girilen_adres_ezilmez(): void
+    {
+        Country::firstOrCreate(['code' => 'NL'], ['name_tr' => 'Hollanda', 'emoji' => '🇳🇱', 'is_active' => true]);
+
+        $lahey = Temsilcilik::create([
+            'country_code' => 'NL', 'ad' => 'Lahey Büyükelçiliği', 'slug' => 'lahey',
+            'tur' => Temsilcilik::TUR_BUYUKELCILIK, 'sehir' => 'Lahey',
+            'adres' => 'Sahibin girdiği adres', 'latitude' => 1.111111, 'longitude' => 2.222222,
+            'is_active' => true, 'sort_order' => 0,
+        ]);
+
+        $this->seed(RehberDunyaTemsilcilikIskeletiSeeder::class);
+
+        $taze = $lahey->fresh();
+        $this->assertSame('Sahibin girdiği adres', $taze->adres);
+        $this->assertEquals(1.111111, $taze->latitude);
+    }
 }
