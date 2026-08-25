@@ -132,6 +132,13 @@ uygulanabilir.
 
 > **KARAR · 2026-08-19 · YAP** — sahip onayladı. Sorumlu: Claude (uygulama).
 
+> **KARAR · 2026-08-20 · YAPILDI** — bu günlüğe kapanış notu hiç düşülmemiş
+> ama iş bir gün sonraki tasarım denetiminde fiilen bitmişti: `User::kidemMetni()`/
+> `kidemKisa()` + paylaşılan `<x-kidem-rozeti>` bileşeni (`resources/views/
+> components/kidem-rozeti.blade.php`) hem klasik hem Vitrin temasında hem
+> ilan kartında hem detay sayfasında canlı. 2026-08-25'te canlıdan doğrulandı
+> (`/ilanlar` "aydır üye" basıyor). Kendi testi: `SaticiKidemiTest.php`.
+
 **2. Rehberi "pratik yaşam" konularına genişletmek** *(kategori 2: içerik/SEO)*
 
 *Ölçüm:* USAilan'ın en çok görüntülenen üç sayfası (14.160 / 9.025 / 3.708

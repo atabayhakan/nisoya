@@ -23,7 +23,9 @@ use App\Services\Growth\Discovery\GooglePlacesDiscoverySource;
 use App\Services\Growth\Discovery\OverpassDiscoverySource;
 use App\Services\Kahya\Dis\HamleGonderici;
 use App\Services\PerformanceService;
+use App\Services\RehberYuzeyi;
 use App\Services\VisitorLocationService;
+use App\Support\Modules;
 use App\Support\Settings;
 use App\Support\YapilandirmaOnbellegi;
 use Illuminate\Mail\Markdown;
@@ -208,6 +210,45 @@ class AppServiceProvider extends ServiceProvider
             $navLinks = Schema::hasTable('navigation_links')
                 ? NavigationLink::activeCached()
                 : collect();
+
+            /*
+             * "Konsolosluk Rehberi" gibi bir kart REHBER_GIRIS_SENTINEL
+             * taşıyorsa ziyaretçinin KENDİ ülkesine çözülür — footer
+             * linkinin zaten kullandığı K1 önceliğiyle (üye ikameti > GeoIP)
+             * BİREBİR aynı. `activeCached()` paylaşılan/cache'li olduğu için
+             * bu çözümleme cache'İN DIŞINDA, istek başına, TEK YERDE yapılır
+             * (bkz. sentinel'in kendi docblock'u) — mega menü kartı, mobil
+             * Keşfet paneli VE Cmd+K komut paleti (bkz. command-palette.blade.php)
+             * hepsi bu tek `$navLinks`'ten beslendiği için üçü de otomatik
+             * doğru çözülür; yalnız derive edilen `navLinksMega` gibi bir alt
+             * kümeyi düzeltmek Cmd+K'yı (ham `$navLinks` alır) atlıyordu —
+             * 2026-08-25'te canlıda tam bu şekilde ölçüldü. Modül kapalıysa
+             * ya da hiç hazır ülke yoksa kart TAMAMEN kaldırılır — kırık bir
+             * söz vermek yerine hiç basılmaz.
+             */
+            $navLinks = $navLinks
+                ->map(function (NavigationLink $link) {
+                    if ($link->url !== NavigationLink::REHBER_GIRIS_SENTINEL) {
+                        return $link;
+                    }
+
+                    if (! Modules::enabled('rehber')) {
+                        return null;
+                    }
+
+                    $kod = app(RehberYuzeyi::class)->girisNoktasiUlkeKodu(request()->user(), request());
+                    if ($kod === null) {
+                        return null;
+                    }
+
+                    $link = clone $link;
+                    $link->url = route('rehber.ulke', $kod);
+
+                    return $link;
+                })
+                ->filter()
+                ->values();
+
             $view->with('navLinks', $navLinks);
 
             // Masaüstü header Faz H1 (mega menü): group_key dolu linkler tek

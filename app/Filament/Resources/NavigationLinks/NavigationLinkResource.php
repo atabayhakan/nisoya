@@ -63,7 +63,12 @@ class NavigationLinkResource extends Resource
                 ->label('Bağlantı')
                 ->required()
                 ->maxLength(255)
-                ->helperText('Site içi göreli yol (ör. /ilanlar) ya da tam URL (ör. https://...).'),
+                ->helperText(
+                    'Site içi göreli yol (ör. /ilanlar) ya da tam URL (ör. https://...). '
+                    .'Özel değer "'.NavigationLink::REHBER_GIRIS_SENTINEL.'" — '
+                    .'sabit bir ülkeye değil, HER ziyaretçinin kendi ülkesindeki Rehber '
+                    .'sayfasına gider (Konsolosluk Rehberi kartında kullanılır).'
+                ),
             Select::make('group_key')
                 ->label('Grup')
                 ->options([

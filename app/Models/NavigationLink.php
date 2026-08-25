@@ -18,6 +18,23 @@ class NavigationLink extends Model
     /** Bu grup anahtarına sahip linkler header'da "Keşfet" mega menüsünde kart olarak gösterilir. */
     public const GROUP_KESFET = 'kesfet';
 
+    /**
+     * `url` alanına yazılabilecek özel bir DEĞER (gerçek bir rota DEĞİL) —
+     * admin bu linki oluştururken sabit bir ülkeye (ör. `/de`) değil,
+     * ziyaretçinin KENDİ ülkesine gitmesini istiyorsa bunu yazar.
+     *
+     * Gerçek olay (2026-08-25, canlıda ölçüldü): "Konsolosluk Rehberi" kartı
+     * elle `/de` olarak eklenmişti — Kırgızistan'daki bir ziyaretçi bile
+     * Almanya'ya düşüyordu. `navigation_links` tablosu `Cache::rememberForever`
+     * ile TEK, paylaşılan bir listede tutulduğu için (bkz. activeCached())
+     * ziyaretçiye özel bir URL doğrudan CACHE'E yazılamaz; bu sentinel,
+     * çözümlemenin cache'İN DIŞINDA, istek başına (bkz.
+     * AppServiceProvider'daki View Composer) yapılmasını sağlar — footer
+     * linkinin zaten kullandığı `RehberYuzeyi::girisNoktasiUlkeKodu()` ile
+     * BİREBİR aynı K1 önceliği (üye ikameti > GeoIP).
+     */
+    public const REHBER_GIRIS_SENTINEL = '/rehber-giris';
+
     protected $fillable = [
         'label',
         'url',
