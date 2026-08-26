@@ -8,8 +8,8 @@ use App\Models\TemsilcilikIslemi;
 use Illuminate\Database\Seeder;
 
 /**
- * Ülke Rehberi'ni Almanya+ABD DIŞINDAKİ TÜM ülkelere genişletir (2026-08-26,
- * elle çalıştırılır, deploy zincirinde DEĞİL):
+ * Ülke Rehberi'ni Almanya DIŞINDAKİ TÜM ülkelere (ABD dahil) genişletir
+ * (2026-08-26, elle çalıştırılır, deploy zincirinde DEĞİL):
  *
  *     php artisan db:seed --class=RehberEvrenselDogrulamaSeeder --force
  *
@@ -24,9 +24,18 @@ use Illuminate\Database\Seeder;
  * TASLAK başlangıç sağlanır. Almanya'daki gibi ülkeye özel derinleştirme
  * (yerel kurum adı, Apostil Sözleşmesi üyeliği vb.) SONRAKİ, ayrı bir tur.
  *
- * DE ve US kasıtlı olarak DIŞLANIR: DE zaten daha iyi/özel içeriğe sahip
- * (bu genel şablon onu GERİLETİRDİ), US'nin zaten 15 yayında kaydı var
- * (dokunulursa yayındaki içerik sessizce taslağa düşer — bkz. K7).
+ * YALNIZ DE DIŞLANIR: Almanya'nın kendi özel/derinlemesine araştırılmış
+ * içeriği var, bu genel şablon onu GERİLETİRDİ.
+ *
+ * DÜZELTME (2026-08-26, aynı gün): İlk sürümde US de dışlanmıştı, gerekçe
+ * "zaten 15 yayında kaydı var, dokunulursa sessizce taslağa düşer" idi —
+ * bu YANLIŞTI. `firstOrCreate` YALNIZ (temsilcilik, tür) çifti hiç yoksa
+ * satır oluşturur, var olan bir satırı ASLA güncellemez/geriletmez — yani
+ * US'yi dışlamanın hiçbir koruyucu etkisi yoktu, sadece ABD'nin 7
+ * temsilciliğini (yalnız 6 kategoride, 15 kayıtla) bu evrensel tabandan
+ * mahrum bırakıyordu. Üretimde ölçüldü: ABD'de TOPLAM 15 kayıt/7 temsilcilik
+ * (18 kategori × 7 = 126 olması gerekirken) — Almanya'nın başlangıç
+ * iskeletini (RehberAlmanyaSeeder) bile hiç almamış. Artık dahil.
  *
  * K7 sözleşmesi aynen geçerli: hepsi TASLAK doğar. `firstOrCreate` deseni:
  * ikinci koşu zararsız, panelden yapılmış elle düzenlemeleri EZMEZ (yalnız
@@ -36,7 +45,7 @@ use Illuminate\Database\Seeder;
  */
 class RehberEvrenselDogrulamaSeeder extends Seeder
 {
-    private const HARIC_TUTULAN_ULKELER = ['DE', 'US'];
+    private const HARIC_TUTULAN_ULKELER = ['DE'];
 
     public function run(): void
     {
