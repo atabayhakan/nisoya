@@ -69,6 +69,49 @@ class RehberAlmanyaYerelEkSeeder extends Seeder
         }
 
         $this->command?->info("Yerel ek işlendi: {$guncellenen} kayıt.");
+
+        $this->buyukelciligiYonlendirmesiEkle();
+    }
+
+    /**
+     * KRİTİK DÜZELTME (2026-08-26): Berlin Büyükelçiliği bu 8 kategoriyi
+     * (ve genel olarak günlük konsolosluk hizmetlerini) KENDİSİ YÜRÜTMÜYOR —
+     * araştırma bunu doğruladı: Büyükelçiliğin kendi "Konsolosluk İşlemleri"
+     * linki konsolosluk.gov.tr'ye yönleniyor, oradaki Almanya temsilcilik
+     * listesinde "Büyükelçilik" seçeneği YOK, yalnız 14 başkonsolosluk var.
+     * Berlin'in kendisi bile Berlin BAŞKONSOLOSLUĞU'nun görev bölgesinde.
+     *
+     * Ama berlin-buyukelciligi'nin TemsilcilikIslemi kayıtları (Almanya'nın
+     * diğer 13 temsilciliğiyle AYNI genel şablonla, RehberAlmanyaDogrulamaSeeder
+     * ve RehberAlmanyaSeeder'ın foreach'iyle) sanki Büyükelçilik bu hizmetleri
+     * kendisi veriyormuş gibi görünüyordu — yanlış muhataba yönlendirirdi.
+     */
+    private function buyukelciligiYonlendirmesiEkle(): void
+    {
+        $buyukelcilik = Temsilcilik::query()->where('slug', 'berlin-buyukelciligi')->first();
+        if ($buyukelcilik === null) {
+            $this->command?->warn('berlin-buyukelciligi bulunamadı, yönlendirme atlandı.');
+
+            return;
+        }
+
+        $uyari = 'ÖNEMLİ: Bu işlemler için doğru muhatap Berlin BÜYÜKELÇİLİĞİ DEĞİL, Berlin BAŞKONSOLOSLUĞU\'dur (Heerstr. 21, 14052 Berlin, +49 30 89680211, konsulat.berlin@mfa.gov.tr) — Büyükelçilik diplomatik bir kurumdur, günlük konsolosluk hizmetlerini (pasaport, vekaletname, nüfus işlemleri vb.) yürütmez; bunlar Almanya\'daki 14 başkonsoloslukta yapılır, Berlin için de Başkonsolosluk yetkilidir. Aşağıdaki bilgiler Başkonsolosluğun hizmetini yansıtır, doğrudan bu binaya gitmeyin.';
+
+        $isaret = 'doğru muhatap Berlin BÜYÜKELÇİLİĞİ DEĞİL';
+
+        $guncellenen = 0;
+        foreach (TemsilcilikIslemi::query()->where('temsilcilik_id', $buyukelcilik->id)->get() as $kayit) {
+            if (str_contains((string) $kayit->notlar, $isaret)) {
+                continue;
+            }
+
+            $kayit->notlar = $uyari.' '.trim((string) $kayit->notlar);
+            $kayit->resmi_kaynak_url = 'https://berlin-bk.mfa.gov.tr/Mission/Contact';
+            $kayit->save();
+            $guncellenen++;
+        }
+
+        $this->command?->info("Büyükelçilik yönlendirmesi: {$guncellenen} kayıt.");
     }
 
     /**
@@ -85,11 +128,14 @@ class RehberAlmanyaYerelEkSeeder extends Seeder
     {
         return [
             // Berlin Başkonsolosluğu
-            ['berlin', 'adres-kaydi', 'https://berlin-bk.mfa.gov.tr/Mission/ShowInfoNote/414042', null],
+            ['berlin', 'adres-kaydi', 'https://berlin-bk.mfa.gov.tr/Mission/ShowInfoNote/414042', 'Bu temsilcilikte (Berlin) randevu GEREKMEZ.'],
             ['berlin', 'ehliyet', 'https://berlin-bk.mfa.gov.tr/Mission/ShowInfoNote/413722', null],
-            ['berlin', 'vatandaslik', 'https://berlin-bk.mfa.gov.tr/Mission/ShowInfoNote/413729', 'Bu URL özellikle "evlilik yoluyla" alt sürecinin Berlin bilgi notudur.'],
+            ['berlin', 'noter-tasdik', null, 'Bu temsilcilikte (Berlin) randevu GEREKMEZ — hafta içi 09:00-12:00 arası randevusuz başvurulabiliyor.'],
+            ['berlin', 'vatandaslik', 'https://berlin-bk.mfa.gov.tr/Mission/ShowInfoNote/413729', 'Bu URL özellikle "evlilik yoluyla" alt sürecinin Berlin bilgi notudur. İzinle çıkmada Alman vatandaşlığı da varsa çifte vatandaşlığın önceden Türk nüfus kütüğüne tescilli olması şart; yeniden kazanma ve evlilik yoluyla süreçlerinde eş/çocuk adlarını içeren "Erweiterte Meldebescheinigung" (genişletilmiş Alman hane kayıt belgesi) + yeminli tercümesi isteniyor.'],
             ['berlin', 'bosanma-tescili', 'https://berlin-bk.mfa.gov.tr/Mission/ShowInfoNote/413733', null],
-            ['berlin', 'tercume-tasdiki', 'https://berlin-bk.mfa.gov.tr/Mission/ShowInfoNote/413735', null],
+            ['berlin', 'adli-sicil', null, 'Bu temsilcilikte (Berlin) randevu GEREKMEZ — belge 44 dilde düzenlenebiliyor.'],
+            ['berlin', 'evlilik-tescili', null, 'Bu temsilcilikte (Berlin) randevu GEREKMEZ, POSTAYLA da başvurulabiliyor. Yerel Alman belgesiyle tescilde bölge şartı var (Berlin/Brandenburg/Mecklenburg-Vorpommern/Sachsen sakinleri), ama Uluslararası Evlilik Belgesi (Formül B) ile başvuruda bölge sınırı yok.'],
+            ['berlin', 'tercume-tasdiki', 'https://berlin-bk.mfa.gov.tr/Mission/ShowInfoNote/413735', 'Bu temsilcilikte (Berlin) randevu GEREKMEZ — hafta içi 09:00-12:00 arası randevusuz başvurulabiliyor.'],
 
             // Köln Başkonsolosluğu — randevu GEREKMEZ (noter-tasdik + tercüme tasdiki)
             ['koeln', 'adres-kaydi', 'https://koln-bk.mfa.gov.tr/Mission/ShowAnnouncement/401480', null],
