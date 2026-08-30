@@ -1,4 +1,4 @@
-<x-layouts.app>
+﻿<x-layouts.app>
     <div class="mx-auto max-w-lg px-4 py-12 text-center">
         <div class="rounded-3xl border border-stone-200 bg-white p-8 shadow-sm dark:border-stone-800 dark:bg-stone-900">
             <span class="text-4xl">👑</span>
@@ -10,7 +10,7 @@
             </p>
             <div class="mt-6 flex flex-col gap-2">
                 <a href="{{ route('football.teams.create') }}"
-                   class="rounded-2xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-500">
+                   class="rounded-2xl bg-emerald-700 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-500">
                     🏆 Yeni Takımını Kur & Kaptan Ol
                 </a>
                 <a href="{{ route('football.index') }}"

@@ -1,4 +1,4 @@
-{{-- Ülke rehberi + Yaşam Rehberi (F2) — ana sayfanın ortak rehber yüzü.
+﻿{{-- Ülke rehberi + Yaşam Rehberi (F2) — ana sayfanın ortak rehber yüzü.
 
      Veri sözleşmesi HomeController::rehberVerisi: modül kapalıysa ya da
      HİÇBİR rehberin (Ülke ya da Yaşam) YAYINDA içeriği yoksa $rehber null

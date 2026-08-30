@@ -1,4 +1,4 @@
-    @if (\App\Support\HomeSections::visible('kategoriler'))
+﻿    @if (\App\Support\HomeSections::visible('kategoriler'))
     {{-- KATEGORİLER: KART DUVARI → ÇİP ŞERİDİ (2026-08-08)
 
          ÖLÇÜLDÜ (1280px, canlı DOM): bu bölüm 831px ile sayfanın EN BÜYÜK
@@ -43,7 +43,7 @@
                    class="group inline-flex items-center gap-2 rounded-2xl border border-emerald-300/80 bg-emerald-50/80 px-4 py-2.5 text-sm font-semibold text-emerald-900 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400 hover:bg-emerald-100 hover:shadow-md dark:border-emerald-800/80 dark:bg-emerald-950/40 dark:text-emerald-200 dark:hover:bg-emerald-900/60">
                     <span class="text-base">⚽</span>
                     <span>Halı Saha & Spor</span>
-                    <span class="rounded-md bg-emerald-600 px-1.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider dark:bg-emerald-500 dark:text-stone-950">Yeni</span>
+                    <span class="rounded-md bg-emerald-700 px-1.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider dark:bg-emerald-500 dark:text-stone-950">Yeni</span>
                 </a>
             @endif
 

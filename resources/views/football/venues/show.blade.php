@@ -1,4 +1,4 @@
-<x-layouts.app>
+﻿<x-layouts.app>
     <div class="mx-auto max-w-5xl px-4 py-8">
         {{-- Bildirimler --}}
         @if (session('status'))
@@ -14,7 +14,7 @@
                     <a href="{{ route('football.venues.index', \Illuminate\Support\Str::slug($venue->city)) }}" class="text-xs font-semibold text-emerald-700 hover:underline dark:text-emerald-400">
                         ← {{ $venue->city }} Halı Sahalarına Dön
                     </a>
-                    <h1 class="mt-1 text-2xl font-black text-stone-900 sm:text-3xl dark:text-stone-100">
+                    <h1 class="mt-1 text-2xl font-bold text-stone-900 sm:text-3xl dark:text-stone-100">
                         {{ $venue->name }}
                     </h1>
                     <p class="mt-1 text-sm text-stone-600 dark:text-stone-400">
@@ -24,7 +24,7 @@
 
                 <div class="flex items-center gap-3">
                     <div class="rounded-2xl bg-amber-50 px-4 py-3 text-center ring-1 ring-amber-200 dark:bg-amber-950/40 dark:ring-amber-800">
-                        <span class="text-2xl font-black text-amber-700 dark:text-amber-300">⭐ {{ number_format($venue->rating, 1) }}</span>
+                        <span class="text-2xl font-bold text-amber-700 dark:text-amber-300">⭐ {{ number_format($venue->rating, 1) }}</span>
                         <p class="text-3xs font-semibold text-amber-800 dark:text-amber-400">{{ $venue->reviews_count }} Değerlendirme</p>
                     </div>
                 </div>
@@ -39,25 +39,25 @@
             {{-- Saha Özellikleri Grid --}}
             <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 border-t border-stone-100 pt-6 dark:border-stone-800">
                 <div class="rounded-2xl bg-stone-50 p-3.5 dark:bg-stone-800/60">
-                    <p class="text-3xs uppercase font-bold text-stone-400">Saha Tipi</p>
+                    <p class="text-3xs uppercase font-bold text-stone-500">Saha Tipi</p>
                     <p class="mt-1 text-sm font-bold text-stone-900 dark:text-stone-100">
                         {{ \App\Models\FootballVenue::PITCH_TYPES[$venue->pitch_type] ?? $venue->pitch_type }}
                     </p>
                 </div>
                 <div class="rounded-2xl bg-stone-50 p-3.5 dark:bg-stone-800/60">
-                    <p class="text-3xs uppercase font-bold text-stone-400">Zemin Türü</p>
+                    <p class="text-3xs uppercase font-bold text-stone-500">Zemin Türü</p>
                     <p class="mt-1 text-sm font-bold text-stone-900 dark:text-stone-100">
                         {{ \App\Models\FootballVenue::SURFACE_TYPES[$venue->surface_type] ?? $venue->surface_type }}
                     </p>
                 </div>
                 <div class="rounded-2xl bg-stone-50 p-3.5 dark:bg-stone-800/60">
-                    <p class="text-3xs uppercase font-bold text-stone-400">Fiyat</p>
+                    <p class="text-3xs uppercase font-bold text-stone-500">Fiyat</p>
                     <p class="mt-1 text-sm font-bold text-emerald-700 dark:text-emerald-400">
                         {{ $venue->price_info ?: 'Belirtilmedi' }}
                     </p>
                 </div>
                 <div class="rounded-2xl bg-stone-50 p-3.5 dark:bg-stone-800/60">
-                    <p class="text-3xs uppercase font-bold text-stone-400">İletişim / Tel</p>
+                    <p class="text-3xs uppercase font-bold text-stone-500">İletişim / Tel</p>
                     <p class="mt-1 text-sm font-bold text-stone-900 dark:text-stone-100 truncate">
                         {{ $venue->phone ?: 'Belirtilmedi' }}
                     </p>
@@ -99,7 +99,7 @@
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-2">
                                             <strong class="text-sm font-bold text-stone-900 dark:text-stone-100">{{ $review->user?->name }}</strong>
-                                            <span class="text-2xs text-stone-400">{{ $review->created_at->translatedFormat('d M Y') }}</span>
+                                            <span class="text-2xs text-stone-500">{{ $review->created_at->translatedFormat('d M Y') }}</span>
                                         </div>
                                         <span class="text-xs font-bold text-amber-600 dark:text-amber-400">
                                             ⭐ {{ $review->rating }} / 5
@@ -145,7 +145,7 @@
                                           class="mt-1 w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs focus:border-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"></textarea>
                             </div>
 
-                            <button type="submit" class="w-full rounded-xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-500">
+                            <button type="submit" class="w-full rounded-xl bg-emerald-700 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-500">
                                 Değerlendirmeyi Gönder
                             </button>
                         </form>

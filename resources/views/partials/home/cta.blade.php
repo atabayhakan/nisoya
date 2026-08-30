@@ -1,4 +1,4 @@
-    @if (\App\Support\HomeSections::visible('cta'))
+﻿    @if (\App\Support\HomeSections::visible('cta'))
     {{-- CTA (Konteyner İçinde / Modern Degrade Kart) --}}
     <section class="mx-auto max-w-6xl px-4 py-8 sm:py-12" x-data x-reveal>
         <div class="relative overflow-hidden rounded-3xl border border-stone-200/80 bg-gradient-to-br from-stone-900 via-stone-900 to-emerald-950 px-6 py-10 text-white shadow-xl sm:px-12 sm:py-14 dark:border-stone-800">
@@ -31,19 +31,19 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3 lg:col-span-5">
                     <div class="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur text-center">
-                        <p class="text-2xl font-black text-emerald-400">%0</p>
+                        <p class="text-2xl font-bold text-emerald-400">%0</p>
                         <p class="mt-1 text-xs text-stone-300">Komisyon Yok</p>
                     </div>
                     <div class="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur text-center">
-                        <p class="text-2xl font-black text-white">Ücretsiz</p>
+                        <p class="text-2xl font-bold text-white">Ücretsiz</p>
                         <p class="mt-1 text-xs text-stone-300">İlan & Üyelik</p>
                     </div>
                     <div class="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur text-center">
-                        <p class="text-2xl font-black text-white">Doğrudan</p>
+                        <p class="text-2xl font-bold text-white">Doğrudan</p>
                         <p class="mt-1 text-xs text-stone-300">Kullanıcı İletişimi</p>
                     </div>
                     <div class="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur text-center">
-                        <p class="text-2xl font-black text-emerald-400">Türkçe</p>
+                        <p class="text-2xl font-bold text-emerald-400">Türkçe</p>
                         <p class="mt-1 text-xs text-stone-300">Yerel Topluluk</p>
                     </div>
                 </div>

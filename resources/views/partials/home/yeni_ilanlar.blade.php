@@ -1,4 +1,4 @@
-    @if (\App\Support\HomeSections::visible('yeni_ilanlar'))
+﻿    @if (\App\Support\HomeSections::visible('yeni_ilanlar'))
     {{-- Yeni ilanlar (Konteyner İçinde) --}}
     <section class="mx-auto max-w-6xl px-4 py-8 sm:py-12" x-data x-reveal>
         <div class="flex items-end justify-between">

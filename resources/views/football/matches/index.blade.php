@@ -1,11 +1,11 @@
-<x-layouts.app>
+﻿<x-layouts.app>
     <div class="mx-auto max-w-6xl px-4 py-8">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <a href="{{ route('football.city', \Illuminate\Support\Str::slug($currentCity)) }}" class="text-xs font-semibold text-emerald-700 hover:underline dark:text-emerald-400">
                     ← {{ $currentCity }} Futbol Ana Sayfası
                 </a>
-                <h1 class="mt-1 text-2xl font-black tracking-tight text-stone-900 sm:text-3xl dark:text-stone-100">
+                <h1 class="mt-1 text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl dark:text-stone-100">
                     {{ $currentCity }} Maç Takvimi & Skorlar
                 </h1>
                 <p class="text-sm text-stone-600 dark:text-stone-400">
@@ -13,7 +13,7 @@
                 </p>
             </div>
             <a href="{{ route('football.matches.create') }}"
-               class="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-emerald-500">
+               class="inline-flex items-center gap-2 rounded-2xl bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-emerald-500">
                 + Yeni Maç Planla
             </a>
         </div>
@@ -46,7 +46,7 @@
                                 <span class="rounded-full bg-stone-100 px-2.5 py-0.5 text-3xs font-bold text-stone-700 dark:bg-stone-800 dark:text-stone-300">
                                     {{ $match->status->getLabel() }}
                                 </span>
-                                <span class="text-2xs text-stone-400 font-medium">
+                                <span class="text-2xs text-stone-500 font-medium">
                                     {{ $match->match_date->translatedFormat('d M H:i') }}
                                 </span>
                             </div>
@@ -58,7 +58,7 @@
                                         {{ $match->homeTeam?->name }}
                                     </p>
                                 </div>
-                                <div class="px-3 py-1 rounded-xl bg-stone-900 text-white font-black text-sm dark:bg-stone-700">
+                                <div class="px-3 py-1 rounded-xl bg-stone-900 text-white font-bold text-sm dark:bg-stone-700">
                                     @if ($match->home_score !== null && $match->away_score !== null)
                                         {{ $match->home_score }} - {{ $match->away_score }}
                                     @else

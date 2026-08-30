@@ -1,4 +1,4 @@
-{{-- Nisoya Spor & Halı Saha Bölümü (Ana Sayfa) --}}
+﻿{{-- Nisoya Spor & Halı Saha Bölümü (Ana Sayfa) --}}
 @if (\App\Support\HomeSections::visible('spor') && isset($spor) && $spor !== null)
     <section class="mx-auto max-w-6xl px-4 py-8" x-data x-reveal>
         <div class="rounded-3xl border border-stone-200 bg-gradient-to-br from-emerald-950 via-stone-900 to-stone-950 p-6 text-white shadow-xl sm:p-8 dark:border-stone-800">
@@ -16,7 +16,7 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     <a href="{{ route('football.city', \Illuminate\Support\Str::slug($spor['sehir'])) }}"
-                       class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-emerald-500">
+                       class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-emerald-500">
                         <span>⚽</span> Şehrin Futbol Hub'ı
                         <span aria-hidden="true">→</span>
                     </a>
@@ -30,20 +30,20 @@
             {{-- Canlı Şehir Sayaçları --}}
             <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <div class="rounded-2xl bg-white/5 p-3.5 backdrop-blur ring-1 ring-white/10">
-                    <p class="text-2xs font-semibold uppercase text-stone-400">Aktif Takım</p>
-                    <p class="mt-1 text-xl font-extrabold text-white">{{ $spor['istatistikler']['takim'] }}</p>
+                    <p class="text-2xs font-semibold uppercase text-stone-500">Aktif Takım</p>
+                    <p class="mt-1 text-xl font-bold text-white">{{ $spor['istatistikler']['takim'] }}</p>
                 </div>
                 <div class="rounded-2xl bg-white/5 p-3.5 backdrop-blur ring-1 ring-white/10">
-                    <p class="text-2xs font-semibold uppercase text-stone-400">Doğrulanmış Maç</p>
-                    <p class="mt-1 text-xl font-extrabold text-emerald-400">{{ $spor['istatistikler']['mac'] }}</p>
+                    <p class="text-2xs font-semibold uppercase text-stone-500">Doğrulanmış Maç</p>
+                    <p class="mt-1 text-xl font-bold text-emerald-400">{{ $spor['istatistikler']['mac'] }}</p>
                 </div>
                 <div class="rounded-2xl bg-white/5 p-3.5 backdrop-blur ring-1 ring-white/10">
-                    <p class="text-2xs font-semibold uppercase text-stone-400">Kayıtlı Saha</p>
-                    <p class="mt-1 text-xl font-extrabold text-white">{{ $spor['istatistikler']['saha'] }}</p>
+                    <p class="text-2xs font-semibold uppercase text-stone-500">Kayıtlı Saha</p>
+                    <p class="mt-1 text-xl font-bold text-white">{{ $spor['istatistikler']['saha'] }}</p>
                 </div>
                 <div class="rounded-2xl bg-white/5 p-3.5 backdrop-blur ring-1 ring-white/10">
-                    <p class="text-2xs font-semibold uppercase text-stone-400">Oyuncu Havuzu</p>
-                    <p class="mt-1 text-xl font-extrabold text-amber-400">{{ $spor['istatistikler']['oyuncu'] }}</p>
+                    <p class="text-2xs font-semibold uppercase text-stone-500">Oyuncu Havuzu</p>
+                    <p class="mt-1 text-xl font-bold text-amber-400">{{ $spor['istatistikler']['oyuncu'] }}</p>
                 </div>
             </div>
 
@@ -54,7 +54,7 @@
                         <h3 class="text-sm font-semibold uppercase tracking-wider text-emerald-400">
                             Son Doğrulanan Maç Skorları
                         </h3>
-                        <a href="{{ route('football.league', \Illuminate\Support\Str::slug($spor['sehir'])) }}" class="text-xs font-medium text-stone-400 hover:text-white">
+                        <a href="{{ route('football.league', \Illuminate\Support\Str::slug($spor['sehir'])) }}" class="text-xs font-medium text-stone-500 hover:text-white">
                             Şehir Puan Tablosu →
                         </a>
                     </div>
@@ -73,12 +73,12 @@
                                             {{ $match->awayTeam?->name ?: 'Deplasman' }}
                                         </span>
                                     </div>
-                                    <p class="mt-2 text-2xs text-stone-400">
+                                    <p class="mt-2 text-2xs text-stone-500">
                                         📍 {{ $match->venueDisplay() }} · {{ $match->match_date->translatedFormat('d M H:i') }}
                                     </p>
                                 </div>
                                 <div class="flex flex-col items-center justify-center rounded-xl bg-stone-950 px-4 py-2 ring-1 ring-white/10">
-                                    <span class="text-lg font-black text-emerald-400">
+                                    <span class="text-lg font-bold text-emerald-400">
                                         {{ $match->home_score }} - {{ $match->away_score }}
                                     </span>
                                     <span class="text-3xs font-semibold uppercase text-stone-500">Bitti</span>

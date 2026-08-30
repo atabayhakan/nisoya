@@ -1,4 +1,4 @@
-    {{-- Popüler ülkeler (Sadeleştirilmiş & Akıllı Genişletilebilir Düzen) --}}
+﻿    {{-- Popüler ülkeler (Sadeleştirilmiş & Akıllı Genişletilebilir Düzen) --}}
     @if (\App\Support\HomeSections::visible('ulkeler') && $countries->isNotEmpty())
         <section class="mx-auto max-w-6xl px-4 py-8" x-data="{ showAll: false }" x-reveal>
             <div class="flex items-end justify-between">

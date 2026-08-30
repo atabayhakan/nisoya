@@ -1,4 +1,4 @@
-<x-layouts.app>
+﻿<x-layouts.app>
     <div class="mx-auto max-w-4xl px-4 py-8">
         {{-- Bildirimler --}}
         @if (session('status'))
@@ -32,7 +32,7 @@
             <div class="mt-8 grid grid-cols-3 items-center gap-4 text-center">
                 {{-- Ev Sahibi --}}
                 <div class="flex flex-col items-center">
-                    <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/10 text-2xl font-black backdrop-blur ring-1 ring-white/20">
+                    <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/10 text-2xl font-bold backdrop-blur ring-1 ring-white/20">
                         @if ($match->homeTeam?->logo_path)
                             <img src="{{ Storage::url($match->homeTeam->logo_path) }}" alt="{{ $match->homeTeam->name }}" class="h-full w-full rounded-3xl object-cover">
                         @else
@@ -44,25 +44,25 @@
                             {{ $match->homeTeam?->name }}
                         </a>
                     </h2>
-                    <p class="text-2xs text-stone-400">Kaptan: {{ $match->homeTeam?->captain?->name }}</p>
+                    <p class="text-2xs text-stone-500">Kaptan: {{ $match->homeTeam?->captain?->name }}</p>
                 </div>
 
                 {{-- Skor --}}
                 <div class="flex flex-col items-center justify-center">
                     @if ($match->home_score !== null && $match->away_score !== null)
-                        <span class="text-4xl sm:text-5xl font-black text-emerald-400 tracking-tight">
+                        <span class="text-4xl sm:text-5xl font-bold text-emerald-400 tracking-tight">
                             {{ $match->home_score }} - {{ $match->away_score }}
                         </span>
-                        <span class="mt-1 text-3xs uppercase font-bold text-stone-400">Karşılaşma Skoru</span>
+                        <span class="mt-1 text-3xs uppercase font-bold text-stone-500">Karşılaşma Skoru</span>
                     @else
-                        <span class="text-3xl font-black text-stone-400">VS</span>
+                        <span class="text-3xl font-bold text-stone-500">VS</span>
                         <span class="mt-1 text-2xs font-semibold text-emerald-400">Maç Bekleniyor</span>
                     @endif
                 </div>
 
                 {{-- Deplasman --}}
                 <div class="flex flex-col items-center">
-                    <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/10 text-2xl font-black backdrop-blur ring-1 ring-white/20">
+                    <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/10 text-2xl font-bold backdrop-blur ring-1 ring-white/20">
                         @if ($match->awayTeam?->logo_path)
                             <img src="{{ Storage::url($match->awayTeam->logo_path) }}" alt="{{ $match->awayTeam->name }}" class="h-full w-full rounded-3xl object-cover">
                         @else
@@ -79,7 +79,7 @@
                         @endif
                     </h2>
                     @if ($match->awayTeam)
-                        <p class="text-2xs text-stone-400">Kaptan: {{ $match->awayTeam->captain?->name }}</p>
+                        <p class="text-2xs text-stone-500">Kaptan: {{ $match->awayTeam->captain?->name }}</p>
                     @endif
                 </div>
             </div>
@@ -117,7 +117,7 @@
                                 Maç tamamlandıysa skoru girin. Rakip kaptan onayladığında lig puan tablosu güncellenecektir.
                             </p>
                             <a href="{{ route('football.matches.score-form', $match) }}"
-                               class="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-500">
+                               class="rounded-xl bg-emerald-700 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-500">
                                 ⚽ Maç Skorunu Gir
                             </a>
                         </div>
@@ -141,7 +141,7 @@
                                 <div class="flex items-center gap-2">
                                     <form method="POST" action="{{ route('football.matches.score-verify', $match) }}">
                                         @csrf
-                                        <button type="submit" class="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-500">
+                                        <button type="submit" class="rounded-xl bg-emerald-700 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-500">
                                             ✅ Skoru Onayla
                                         </button>
                                     </form>
@@ -191,13 +191,13 @@
                         <span>📰</span> Nisoya Spor Gazetesi
                     </span>
                     <a href="https://api.whatsapp.com/send?text={{ urlencode($whatsAppShareText) }}" target="_blank"
-                       class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-500">
+                       class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-500">
                         <span>📲</span> WhatsApp'ta Paylaş
                     </a>
                 </div>
 
                 <article class="mt-6">
-                    <h2 class="text-xl font-extrabold text-stone-900 sm:text-2xl dark:text-stone-100">
+                    <h2 class="text-xl font-bold text-stone-900 sm:text-2xl dark:text-stone-100">
                         {{ $match->news_title }}
                     </h2>
                     <p class="mt-2 text-sm font-semibold text-emerald-800 dark:text-emerald-300">

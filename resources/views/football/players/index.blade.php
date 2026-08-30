@@ -1,11 +1,11 @@
-<x-layouts.app>
+﻿<x-layouts.app>
     <div class="mx-auto max-w-6xl px-4 py-8">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <a href="{{ route('football.city', \Illuminate\Support\Str::slug($currentCity)) }}" class="text-xs font-semibold text-emerald-700 hover:underline dark:text-emerald-400">
                     ← {{ $currentCity }} Futbol Ana Sayfası
                 </a>
-                <h1 class="mt-1 text-2xl font-black tracking-tight text-stone-900 sm:text-3xl dark:text-stone-100">
+                <h1 class="mt-1 text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl dark:text-stone-100">
                     {{ $currentCity }} Futbolcu Havuzu
                 </h1>
                 <p class="text-sm text-stone-600 dark:text-stone-400">
@@ -13,7 +13,7 @@
                 </p>
             </div>
             <a href="{{ route('football.player.edit') }}"
-               class="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-emerald-500">
+               class="inline-flex items-center gap-2 rounded-2xl bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-emerald-500">
                 ⚡ Futbol Profilimi Düzenle
             </a>
         </div>
@@ -40,7 +40,7 @@
                 </select>
             </div>
             <label class="flex items-center gap-2 text-xs font-semibold text-stone-700 dark:text-stone-300 cursor-pointer">
-                <input type="checkbox" name="looking_for_team" value="1" @checked(request('looking_for_team')) class="rounded text-emerald-600 focus:ring-emerald-500">
+                <input type="checkbox" name="looking_for_team" value="1" @checked(request('looking_for_team')) class="rounded text-emerald-700 focus:ring-emerald-500">
                 <span>Takım Arayanlar</span>
             </label>
             <button type="submit" class="rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-800 dark:bg-stone-700 dark:hover:bg-stone-600">

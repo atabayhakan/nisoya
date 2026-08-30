@@ -1,4 +1,4 @@
-<x-layouts.app>
+﻿<x-layouts.app>
     <div class="mx-auto max-w-6xl px-4 py-8">
         {{-- Başlık --}}
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -6,7 +6,7 @@
                 <a href="{{ route('football.city', \Illuminate\Support\Str::slug($currentCity)) }}" class="text-xs font-semibold text-emerald-700 hover:underline dark:text-emerald-400">
                     ← {{ $currentCity }} Futbol Ana Sayfası
                 </a>
-                <h1 class="mt-1 text-2xl font-black tracking-tight text-stone-900 sm:text-3xl dark:text-stone-100">
+                <h1 class="mt-1 text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl dark:text-stone-100">
                     {{ $currentCity }} Halı Saha Takımları
                 </h1>
                 <p class="text-sm text-stone-600 dark:text-stone-400">
@@ -14,7 +14,7 @@
                 </p>
             </div>
             <a href="{{ route('football.teams.create') }}"
-               class="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-emerald-500">
+               class="inline-flex items-center gap-2 rounded-2xl bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-emerald-500">
                 + Takımını Kur
             </a>
         </div>
@@ -64,7 +64,7 @@
                                     <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
                                         {{ $team->level->badgeEmoji() }} {{ $team->level->getLabel() }}
                                     </span>
-                                    <span class="mt-1 text-sm font-black text-emerald-700 dark:text-emerald-400">
+                                    <span class="mt-1 text-sm font-bold text-emerald-700 dark:text-emerald-400">
                                         {{ $team->points }} Puan
                                     </span>
                                 </div>
@@ -87,9 +87,9 @@
                                 <span>👥 {{ $team->active_members_count }} Oyuncu</span>
                             </div>
 
-                            <div class="mt-3 flex items-center gap-2 text-2xs text-stone-400">
+                            <div class="mt-3 flex items-center gap-2 text-2xs text-stone-500">
                                 <span>{{ $team->matches_count }} Maç</span> ·
-                                <span class="text-emerald-600">{{ $team->wins_count }}G</span> ·
+                                <span class="text-emerald-700">{{ $team->wins_count }}G</span> ·
                                 <span class="text-amber-600">{{ $team->draws_count }}B</span> ·
                                 <span class="text-rose-600">{{ $team->losses_count }}M</span>
                             </div>

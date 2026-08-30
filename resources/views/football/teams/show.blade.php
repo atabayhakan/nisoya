@@ -1,4 +1,4 @@
-<x-layouts.app>
+﻿<x-layouts.app>
     <div class="mx-auto max-w-6xl px-4 py-8">
         {{-- Durum Bildirimleri --}}
         @if (session('status'))
@@ -21,7 +21,7 @@
         <div class="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8 dark:border-stone-800 dark:bg-stone-900">
             <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-5">
-                    <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-stone-100 text-3xl font-black text-stone-700 ring-1 ring-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:ring-stone-700">
+                    <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-stone-100 text-3xl font-bold text-stone-700 ring-1 ring-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:ring-stone-700">
                         @if ($team->logo_path)
                             <img src="{{ Storage::url($team->logo_path) }}" alt="{{ $team->name }}" class="h-full w-full rounded-3xl object-cover">
                         @else
@@ -30,11 +30,11 @@
                     </div>
                     <div>
                         <div class="flex flex-wrap items-center gap-2">
-                            <h1 class="text-2xl font-extrabold text-stone-900 sm:text-3xl dark:text-stone-100">
+                            <h1 class="text-2xl font-bold text-stone-900 sm:text-3xl dark:text-stone-100">
                                 {{ $team->name }}
                             </h1>
                             @if ($team->is_verified)
-                                <span title="Doğrulanmış Takım" class="text-emerald-600 text-lg">✓</span>
+                                <span title="Doğrulanmış Takım" class="text-emerald-700 text-lg">✓</span>
                             @endif
                             <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
                                 {{ $team->level->badgeEmoji() }} {{ $team->level->getLabel() }}
@@ -44,7 +44,7 @@
                             📍 {{ $team->city }}, {{ $team->country?->name_tr ?? $team->country_code }} · Kaptan: <strong>{{ $team->captain?->name }}</strong>
                         </p>
                         @if ($team->primary_kit_color || $team->secondary_kit_color)
-                            <p class="mt-1 text-2xs text-stone-400">
+                            <p class="mt-1 text-2xs text-stone-500">
                                 Forma: {{ $team->primary_kit_color }} {{ $team->secondary_kit_color ? '/ '.$team->secondary_kit_color : '' }}
                             </p>
                         @endif
@@ -70,7 +70,7 @@
                         @elseif ($userMembership && $userMembership->status === \App\Enums\FootballMemberStatus::DavetEdildi)
                             <form method="POST" action="{{ route('football.teams.respond-invite', $userMembership) }}" class="flex gap-2">
                                 @csrf
-                                <button type="submit" name="action" value="accept" class="rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-500">
+                                <button type="submit" name="action" value="accept" class="rounded-xl bg-emerald-700 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-500">
                                     Daveti Kabul Et
                                 </button>
                                 <button type="submit" name="action" value="reject" class="rounded-xl bg-stone-200 px-3.5 py-2 text-xs font-bold text-stone-700 transition hover:bg-stone-300">
@@ -80,7 +80,7 @@
                         @else
                             <form method="POST" action="{{ route('football.teams.join', $team) }}">
                                 @csrf
-                                <button type="submit" class="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-500">
+                                <button type="submit" class="rounded-xl bg-emerald-700 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-500">
                                     + Takıma Katılma İsteği Gönder
                                 </button>
                             </form>
@@ -93,7 +93,7 @@
                             </a>
                         @endif
                     @else
-                        <a href="{{ route('login') }}" class="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white">
+                        <a href="{{ route('login') }}" class="rounded-xl bg-emerald-700 px-4 py-2 text-xs font-bold text-white">
                             Giriş Yap & Katıl
                         </a>
                     @endauth
@@ -109,32 +109,32 @@
             {{-- Takım İstatistik Çubuğu --}}
             <div class="mt-6 grid grid-cols-2 gap-2 border-t border-stone-100 pt-6 sm:grid-cols-7 dark:border-stone-800">
                 <div class="rounded-2xl bg-stone-50 p-3 text-center dark:bg-stone-800/60">
-                    <p class="text-3xs uppercase font-bold text-stone-400">Puan</p>
-                    <p class="mt-1 text-lg font-black text-emerald-700 dark:text-emerald-400">{{ $team->points }}</p>
+                    <p class="text-3xs uppercase font-bold text-stone-500">Puan</p>
+                    <p class="mt-1 text-lg font-bold text-emerald-700 dark:text-emerald-400">{{ $team->points }}</p>
                 </div>
                 <div class="rounded-2xl bg-stone-50 p-3 text-center dark:bg-stone-800/60">
-                    <p class="text-3xs uppercase font-bold text-stone-400">Maç</p>
+                    <p class="text-3xs uppercase font-bold text-stone-500">Maç</p>
                     <p class="mt-1 text-lg font-bold text-stone-800 dark:text-stone-200">{{ $team->matches_count }}</p>
                 </div>
                 <div class="rounded-2xl bg-stone-50 p-3 text-center dark:bg-stone-800/60">
-                    <p class="text-3xs uppercase font-bold text-stone-400">Galibiyet</p>
-                    <p class="mt-1 text-lg font-bold text-emerald-600">{{ $team->wins_count }}</p>
+                    <p class="text-3xs uppercase font-bold text-stone-500">Galibiyet</p>
+                    <p class="mt-1 text-lg font-bold text-emerald-700">{{ $team->wins_count }}</p>
                 </div>
                 <div class="rounded-2xl bg-stone-50 p-3 text-center dark:bg-stone-800/60">
-                    <p class="text-3xs uppercase font-bold text-stone-400">Beraberlik</p>
+                    <p class="text-3xs uppercase font-bold text-stone-500">Beraberlik</p>
                     <p class="mt-1 text-lg font-bold text-amber-600">{{ $team->draws_count }}</p>
                 </div>
                 <div class="rounded-2xl bg-stone-50 p-3 text-center dark:bg-stone-800/60">
-                    <p class="text-3xs uppercase font-bold text-stone-400">Mağlubiyet</p>
+                    <p class="text-3xs uppercase font-bold text-stone-500">Mağlubiyet</p>
                     <p class="mt-1 text-lg font-bold text-rose-600">{{ $team->losses_count }}</p>
                 </div>
                 <div class="rounded-2xl bg-stone-50 p-3 text-center dark:bg-stone-800/60">
-                    <p class="text-3xs uppercase font-bold text-stone-400">Atılan/Yenen</p>
+                    <p class="text-3xs uppercase font-bold text-stone-500">Atılan/Yenen</p>
                     <p class="mt-1 text-sm font-bold text-stone-700 dark:text-stone-300">{{ $team->goals_for }}:{{ $team->goals_against }}</p>
                 </div>
                 <div class="rounded-2xl bg-stone-50 p-3 text-center dark:bg-stone-800/60">
-                    <p class="text-3xs uppercase font-bold text-stone-400">Averaj</p>
-                    <p class="mt-1 text-lg font-bold {{ $team->goalDifference() >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
+                    <p class="text-3xs uppercase font-bold text-stone-500">Averaj</p>
+                    <p class="mt-1 text-lg font-bold {{ $team->goalDifference() >= 0 ? 'text-emerald-700' : 'text-rose-600' }}">
                         {{ $team->goalDifference() > 0 ? '+'.$team->goalDifference() : $team->goalDifference() }}
                     </p>
                 </div>
@@ -201,7 +201,7 @@
                                     </select>
                                     <input type="number" name="jersey_number" placeholder="No (Örn: 10)" min="1" max="99"
                                            class="w-20 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs focus:border-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
-                                    <button type="submit" class="rounded-xl bg-emerald-700 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-600">
+                                    <button type="submit" class="rounded-xl bg-emerald-700 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700">
                                         Davet Gönder
                                     </button>
                                 </form>
@@ -235,7 +235,7 @@
                                         </span>
                                         <span class="truncate max-w-[100px]">{{ $match->awayTeam?->name }}</span>
                                     </div>
-                                    <p class="mt-2 text-3xs text-stone-400 text-center">
+                                    <p class="mt-2 text-3xs text-stone-500 text-center">
                                         {{ $match->match_date->translatedFormat('d M Y') }} · {{ $match->venueDisplay() }}
                                     </p>
                                 </a>
@@ -260,7 +260,7 @@
                                 <div class="rounded-2xl border border-stone-100 bg-stone-50 p-3 text-xs dark:border-stone-800 dark:bg-stone-800/60">
                                     <div class="flex items-center justify-between font-bold">
                                         <span class="truncate">{{ $match->homeTeam?->name }}</span>
-                                        <span class="text-stone-400">vs</span>
+                                        <span class="text-stone-500">vs</span>
                                         <span class="truncate">{{ $match->awayTeam?->name ?: 'Rakip Bekleniyor' }}</span>
                                     </div>
                                     <p class="mt-2 text-3xs text-emerald-700 dark:text-emerald-400 text-center font-semibold">

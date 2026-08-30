@@ -1,4 +1,4 @@
-<x-layouts.app>
+﻿<x-layouts.app>
     <div class="mx-auto max-w-6xl px-4 py-8">
         {{-- Üst Başlık & Şehir Seçici --}}
         <div class="rounded-3xl border border-stone-200 bg-gradient-to-r from-emerald-900 via-stone-900 to-emerald-950 p-6 text-white shadow-lg sm:p-10 dark:border-stone-800">
@@ -12,7 +12,7 @@
                             {{ $currentCity }}
                         </span>
                     </div>
-                    <h1 class="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">
+                    <h1 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
                         {{ $currentCity }}'de Futbol Zamanı
                     </h1>
                     <p class="mt-2 text-base text-stone-300">
@@ -23,7 +23,7 @@
                 {{-- Hızlı Eylem Butonları --}}
                 <div class="flex flex-wrap items-center gap-3">
                     <a href="{{ route('football.teams.create') }}"
-                       class="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-500">
+                       class="inline-flex items-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-500">
                         <span>+</span> Takımını Kur
                     </a>
                     <a href="{{ route('football.requests.create') }}"
@@ -36,20 +36,20 @@
             {{-- 4 Temel Metrik Kartı --}}
             <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <div class="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
-                    <p class="text-xs font-semibold text-stone-400">Aktif Takım</p>
-                    <p class="mt-1 text-2xl font-black text-white">{{ $metrics['teams_count'] }}</p>
+                    <p class="text-xs font-semibold text-stone-500">Aktif Takım</p>
+                    <p class="mt-1 text-2xl font-bold text-white">{{ $metrics['teams_count'] }}</p>
                 </div>
                 <div class="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
-                    <p class="text-xs font-semibold text-stone-400">Kayıtlı Oyuncu</p>
-                    <p class="mt-1 text-2xl font-black text-emerald-400">{{ $metrics['players_count'] }}</p>
+                    <p class="text-xs font-semibold text-stone-500">Kayıtlı Oyuncu</p>
+                    <p class="mt-1 text-2xl font-bold text-emerald-400">{{ $metrics['players_count'] }}</p>
                 </div>
                 <div class="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
-                    <p class="text-xs font-semibold text-stone-400">Halı Saha</p>
-                    <p class="mt-1 text-2xl font-black text-white">{{ $metrics['venues_count'] }}</p>
+                    <p class="text-xs font-semibold text-stone-500">Halı Saha</p>
+                    <p class="mt-1 text-2xl font-bold text-white">{{ $metrics['venues_count'] }}</p>
                 </div>
                 <div class="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
-                    <p class="text-xs font-semibold text-stone-400">Bu Hafta Maç</p>
-                    <p class="mt-1 text-2xl font-black text-amber-400">{{ $metrics['weekly_matches_count'] }}</p>
+                    <p class="text-xs font-semibold text-stone-500">Bu Hafta Maç</p>
+                    <p class="mt-1 text-2xl font-bold text-amber-400">{{ $metrics['weekly_matches_count'] }}</p>
                 </div>
             </div>
         </div>
@@ -151,7 +151,7 @@
                                                 {{ $team->name }}
                                             </h3>
                                             @if ($team->is_verified)
-                                                <span title="Doğrulanmış Takım" class="text-emerald-600">✓</span>
+                                                <span title="Doğrulanmış Takım" class="text-emerald-700">✓</span>
                                             @endif
                                         </div>
                                         <p class="text-2xs text-stone-500 dark:text-stone-400">
@@ -159,7 +159,7 @@
                                         </p>
                                     </div>
                                     <div class="text-right">
-                                        <span class="text-sm font-black text-emerald-700 dark:text-emerald-400">{{ $team->points }}p</span>
+                                        <span class="text-sm font-bold text-emerald-700 dark:text-emerald-400">{{ $team->points }}p</span>
                                     </div>
                                 </a>
                             @endforeach
@@ -233,7 +233,7 @@
                         <div class="mt-4 overflow-hidden">
                             <table class="w-full text-left text-xs">
                                 <thead>
-                                    <tr class="text-stone-400">
+                                    <tr class="text-stone-500">
                                         <th class="py-1">#</th>
                                         <th class="py-1">Takım</th>
                                         <th class="py-1 text-center">O</th>
@@ -244,7 +244,7 @@
                                 <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
                                     @foreach ($standings as $row)
                                         <tr class="transition hover:bg-stone-50 dark:hover:bg-stone-800/40">
-                                            <td class="py-2.5 font-bold {{ $row['rank'] <= 3 ? 'text-amber-600' : 'text-stone-400' }}">
+                                            <td class="py-2.5 font-bold {{ $row['rank'] <= 3 ? 'text-amber-600' : 'text-stone-500' }}">
                                                 {{ $row['rank'] }}
                                             </td>
                                             <td class="py-2.5 font-semibold text-stone-900 dark:text-stone-100 truncate max-w-[120px]">

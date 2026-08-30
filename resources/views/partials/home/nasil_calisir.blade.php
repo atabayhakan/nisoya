@@ -1,4 +1,4 @@
-    @if (\App\Support\HomeSections::visible('nasil_calisir'))
+﻿    @if (\App\Support\HomeSections::visible('nasil_calisir'))
     {{-- Nasıl çalışır (Konteyner İçinde / Modern 3 Adım Kartları) --}}
     <section class="mx-auto max-w-6xl px-4 py-10 sm:py-14" x-data x-reveal>
         <div class="text-center">
@@ -16,10 +16,10 @@
             @foreach ($adimlar as $a)
                 <div class="group relative rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-sm transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-md dark:border-stone-800 dark:bg-stone-900 dark:hover:border-emerald-700">
                     <div class="flex items-center justify-between">
-                        <div class="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-700 transition group-hover:bg-emerald-600 group-hover:text-white dark:bg-emerald-950/60 dark:text-emerald-400 dark:group-hover:bg-emerald-500 dark:group-hover:text-stone-950">
+                        <div class="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-700 transition group-hover:bg-emerald-700 group-hover:text-white dark:bg-emerald-950/60 dark:text-emerald-400 dark:group-hover:bg-emerald-500 dark:group-hover:text-stone-950">
                             <x-dynamic-component :component="'heroicon-o-'.$a['ikon']" class="h-6 w-6" />
                         </div>
-                        <span class="text-2xl font-black text-stone-200 transition group-hover:text-emerald-500/40 dark:text-stone-800 dark:group-hover:text-emerald-400/40">{{ $a['no'] }}</span>
+                        <span class="text-2xl font-bold text-stone-200 transition group-hover:text-emerald-500/40 dark:text-stone-800 dark:group-hover:text-emerald-400/40">{{ $a['no'] }}</span>
                     </div>
                     <h3 class="mt-5 text-lg font-bold text-stone-900 dark:text-stone-100">{{ $a['baslik'] }}</h3>
                     <p class="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-300">{{ $a['metin'] }}</p>

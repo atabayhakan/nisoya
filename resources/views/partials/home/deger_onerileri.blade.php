@@ -1,4 +1,4 @@
-    @if (\App\Support\HomeSections::visible('deger_onerileri'))
+﻿    @if (\App\Support\HomeSections::visible('deger_onerileri'))
     {{-- Değer önerileri + istatistik şeridi (Konteyner İçinde Bento Grid) --}}
     <section class="mx-auto max-w-6xl px-4 py-8 sm:py-12" x-data x-reveal>
         <div class="grid gap-4 lg:grid-cols-4 lg:grid-rows-2">

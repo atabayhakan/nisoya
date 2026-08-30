@@ -1,9 +1,9 @@
-<x-layouts.app>
+﻿<x-layouts.app>
     <div class="mx-auto max-w-2xl px-4 py-8">
         <div class="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8 dark:border-stone-800 dark:bg-stone-900">
             <div class="border-b border-stone-100 pb-4 dark:border-stone-800">
                 <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">📍 Halı Saha Rehberi</span>
-                <h1 class="mt-1 text-2xl font-extrabold text-stone-900 dark:text-stone-100">
+                <h1 class="mt-1 text-2xl font-bold text-stone-900 dark:text-stone-100">
                     Yeni Halı Saha Ekle
                 </h1>
                 <p class="mt-1 text-xs text-stone-600 dark:text-stone-400">
@@ -98,7 +98,7 @@
                     <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                         @foreach ($features as $key => $label)
                             <label class="flex items-center gap-2 rounded-xl border border-stone-100 bg-stone-50 p-2.5 text-xs text-stone-800 dark:border-stone-800 dark:bg-stone-800/60 dark:text-stone-200 cursor-pointer">
-                                <input type="checkbox" name="features[]" value="{{ $key }}" class="rounded text-emerald-600 focus:ring-emerald-500">
+                                <input type="checkbox" name="features[]" value="{{ $key }}" class="rounded text-emerald-700 focus:ring-emerald-500">
                                 <span>{{ $label }}</span>
                             </label>
                         @endforeach
@@ -113,7 +113,7 @@
                 </div>
 
                 <div class="pt-4">
-                    <button type="submit" class="w-full rounded-2xl bg-emerald-600 py-3.5 text-sm font-bold text-white shadow-md transition hover:bg-emerald-500">
+                    <button type="submit" class="w-full rounded-2xl bg-emerald-700 py-3.5 text-sm font-bold text-white shadow-md transition hover:bg-emerald-500">
                         📍 Halı Sahayı Kaydet
                     </button>
                 </div>

@@ -1,4 +1,4 @@
-    {{-- Canlı Akış: son ilanlar arasında geçiş yapan şerit (Konteyner İçinde) --}}
+﻿    {{-- Canlı Akış: son ilanlar arasında geçiş yapan şerit (Konteyner İçinde) --}}
     @if (\App\Support\HomeSections::visible('canli_akis') && $activityFeed->isNotEmpty())
         <div class="mx-auto max-w-6xl px-4 pt-3 sm:pt-4">
             <div

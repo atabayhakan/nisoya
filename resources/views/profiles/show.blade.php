@@ -1,4 +1,4 @@
-<x-layouts.app
+﻿<x-layouts.app
     :title="$user->name.' — Nisoya'"
     :description="$user->bio ? \Illuminate\Support\Str::limit(strip_tags($user->bio), 150) : ($user->jobCategory ? $user->jobCategory->name.' — '.$user->name.' Nisoya üzerinde hizmet veriyor.' : $user->name.' — Nisoya üzerinde yetenek ve hizmet sunuyor.')"
     :ogImage="$user->avatarDisplayPath() ? \Illuminate\Support\Facades\Storage::url($user->avatarDisplayPath()) : null"
@@ -221,13 +221,13 @@
 
                         @if ($user->footballTeams->isNotEmpty())
                             <div class="mt-3 border-t border-stone-100 pt-3 dark:border-stone-800">
-                                <p class="text-3xs uppercase font-bold text-stone-400">Takımları</p>
+                                <p class="text-3xs uppercase font-bold text-stone-500">Takımları</p>
                                 <div class="mt-1.5 space-y-1">
                                     @foreach ($user->footballTeams as $team)
                                         <a href="{{ route('football.teams.show', ['city' => \Illuminate\Support\Str::slug($team->city), 'team' => $team->slug]) }}"
                                            class="flex items-center justify-between text-xs font-semibold text-stone-800 hover:text-emerald-700 dark:text-stone-200 dark:hover:text-emerald-400">
                                             <span>🏆 {{ $team->name }} ({{ $team->city }})</span>
-                                            <span class="text-3xs text-stone-400">{{ $team->pivot->role === 'captain' ? '👑 Kaptan' : 'Oyuncu' }}</span>
+                                            <span class="text-3xs text-stone-500">{{ $team->pivot->role === 'captain' ? '👑 Kaptan' : 'Oyuncu' }}</span>
                                         </a>
                                     @endforeach
                                 </div>

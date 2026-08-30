@@ -1,4 +1,4 @@
-    {{-- Nisoya Nabzı: topluluk hedefi + şehir elçileri (Konteyner İçinde) --}}
+﻿    {{-- Nisoya Nabzı: topluluk hedefi + şehir elçileri (Konteyner İçinde) --}}
     @if ($nabizGoal)
         <section class="mx-auto max-w-6xl px-4 py-6 sm:py-8" x-data x-reveal>
             <a href="{{ route('nabiz') }}" class="block rounded-3xl border border-emerald-200/90 bg-emerald-50/50 p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:hover:border-emerald-700 sm:p-8">
@@ -20,7 +20,7 @@
                 </div>
 
                 <div class="mt-4 h-3 w-full overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/40">
-                    <div class="h-full rounded-full bg-emerald-600 transition-all duration-700 dark:bg-emerald-500" style="width: {{ $nabizGoal['yuzde'] }}%"></div>
+                    <div class="h-full rounded-full bg-emerald-700 transition-all duration-700 dark:bg-emerald-500" style="width: {{ $nabizGoal['yuzde'] }}%"></div>
                 </div>
 
                 @if ($nabizAmbassadors->isNotEmpty())
