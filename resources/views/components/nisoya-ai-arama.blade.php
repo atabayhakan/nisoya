@@ -34,7 +34,7 @@
 
         {{-- Sonuç paneli — sessiz başarısızlık YOK: her durumda (hata, boş,
              dolu) bir sonraki adımı gösterir, asla boş bırakmaz. --}}
-        <div x-show="submitted" x-cloak x-transition.opacity.duration.150ms class="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-xl dark:border-stone-700 dark:bg-stone-900">
+        <div x-show="submitted" x-cloak x-transition.opacity.duration.150ms class="absolute left-0 right-0 top-full z-50 mt-3 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl dark:border-stone-700 dark:bg-stone-900">
             <template x-if="error">
                 <p class="p-4 text-sm text-stone-500 dark:text-stone-400">Şu an yanıt veremedim — normal aramayı deneyebilirsin.</p>
             </template>

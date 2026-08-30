@@ -6,7 +6,7 @@
 
 @if ($anahtar === 'arama')
     <div class="mt-6 sm:mt-7" x-data="{ searchTab: 'ilan' }">
-        <div class="overflow-hidden rounded-3xl border border-stone-200/90 bg-white/95 p-2 sm:p-2.5 shadow-2xl backdrop-blur-xl transition dark:border-stone-700/80 dark:bg-stone-900/95">
+        <div class="rounded-3xl border border-stone-200/90 bg-white/95 p-2 sm:p-2.5 shadow-2xl backdrop-blur-xl transition dark:border-stone-700/80 dark:bg-stone-900/95">
             
             @if ($aiAktif)
                 {{-- Sekme Başlıkları (İlan Arama & AI Asistan) --}}
