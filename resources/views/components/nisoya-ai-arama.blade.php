@@ -7,22 +7,22 @@
 @php($aktif = app(\App\Services\NisoyaAiYonlendirici::class)->isEnabled())
 
 @if ($aktif)
-    <div x-data="nisoyaAiArama()" class="relative mb-3">
+    <div x-data="nisoyaAiArama()" class="relative">
         <form @submit.prevent="search()">
-            <div class="flex items-center gap-2 rounded-2xl border border-stone-200 bg-white px-4 py-3 shadow-sm ring-1 ring-[var(--color-emerald-600,#059669)]/15 transition focus-within:ring-2 focus-within:ring-[var(--color-emerald-600,#059669)]/40 dark:border-stone-700 dark:bg-stone-900">
-                <x-heroicon-s-sparkles class="h-5 w-5 shrink-0 text-[var(--color-emerald-600,#059669)]" aria-hidden="true" />
+            <div class="flex items-center gap-2 px-3 py-1">
+                <x-heroicon-s-sparkles class="h-5 w-5 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
                 <input
                     type="text"
                     x-model="query"
                     placeholder="Nisoya AI'ya sor: pasaportum kayboldu, SSN'siz banka hesabı..."
-                    class="w-full border-0 bg-transparent p-0 text-sm text-stone-800 placeholder-stone-400 focus:ring-0 dark:text-stone-100 dark:placeholder-stone-500"
+                    class="h-12 w-full border-0 bg-transparent p-0 text-sm sm:text-base font-medium text-stone-900 placeholder:text-stone-500 focus:outline-none focus:ring-0 dark:text-stone-100 dark:placeholder:text-stone-500"
                     aria-label="Nisoya AI ile ara"
                     maxlength="200"
                 >
                 <button
                     type="submit"
                     :disabled="loading || query.trim().length < 3"
-                    class="shrink-0 rounded-xl bg-[var(--color-emerald-600,#059669)] px-3.5 py-1.5 text-xs font-bold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-40"
+                    class="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-emerald-700 px-5 text-xs font-bold text-white shadow-brand transition hover:bg-emerald-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400"
                 >
                     <span x-show="!loading" x-cloak>Sor</span>
                     <span x-show="loading" x-cloak aria-hidden="true">
@@ -66,7 +66,7 @@
             <template x-if="!error && (!result || result.niyet !== 'kapsam_disi') && (!result || !result.sonuclar || !result.sonuclar.length)">
                 <div class="p-4">
                     <p class="text-sm text-stone-600 dark:text-stone-300" x-text="result && result.niyet === 'is' ? 'Bu konuda hazır bir iş ilanı bulamadım.' : 'Bu konuda hazır bir rehberimiz yok.'"></p>
-                    <a :href="result && result.ilanBaglantisi ? result.ilanBaglantisi : '/ilanlar'" class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[var(--color-emerald-600,#059669)] hover:underline" x-text="(result && result.niyet === 'is' ? 'İş ilanlarında ara' : 'İlanlarda ara') + ' →'">
+                    <a :href="result && result.ilanBaglantisi ? result.ilanBaglantisi : '/ilanlar'" class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 hover:underline dark:text-emerald-400" x-text="(result && result.niyet === 'is' ? 'İş ilanlarında ara' : 'İlanlarda ara') + ' →'">
                     </a>
                 </div>
             </template>

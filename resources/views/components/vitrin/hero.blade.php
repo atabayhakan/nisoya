@@ -80,9 +80,9 @@
     <div class="relative z-10 mx-auto max-w-6xl px-4 py-12 lg:py-14 {{ $sahne ? '' : 'grid items-center gap-10 lg:grid-cols-[minmax(0,560px)_minmax(0,1fr)]' }}">
         <div class="{{ $sahne ? 'mx-auto max-w-2xl text-center' : '' }}">
             @if ($hero::rozet())
-                <span class="inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-semibold shadow-sm {{ $koyu
-                    ? 'border-white/25 bg-white/10 text-white'
-                    : 'border-stone-200 bg-white text-emerald-700 dark:border-stone-800 dark:bg-stone-900 dark:text-emerald-400' }}">
+                <span class="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold backdrop-blur-md shadow-xs {{ $koyu
+                    ? 'border-white/20 bg-white/10 text-white'
+                    : 'border-emerald-200/80 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300' }}">
                     <span class="relative inline-flex h-2 w-2" aria-hidden="true">
                         <span class="vitrin-pulse absolute inset-0 rounded-full bg-[#16a97f]"></span>
                         <span class="absolute inset-0 rounded-full bg-[#16a97f]"></span>
@@ -91,40 +91,38 @@
                 </span>
             @endif
 
-            <h1 class="mt-5 text-4xl font-extrabold tracking-[-0.032em] sm:text-5xl {{ $koyu ? 'text-white' : 'text-stone-800 dark:text-stone-50' }}" style="text-wrap: pretty">
+            <h1 class="mt-4 text-3xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl {{ $koyu ? 'text-white' : 'text-stone-900 dark:text-stone-50' }}" style="text-wrap: pretty">
                 {{ $hero::baslik() }}
                 @if ($hero::vurgu())
-                    <br><span class="{{ $koyu ? 'text-emerald-300' : 'text-emerald-700 dark:text-emerald-400' }}">{{ $hero::vurgu() }}</span>
+                    <br><span class="{{ $koyu ? 'bg-gradient-to-r from-emerald-300 via-teal-200 to-emerald-400 bg-clip-text text-transparent drop-shadow-xs' : 'text-emerald-700 dark:text-emerald-400' }}">{{ $hero::vurgu() }}</span>
                 @endif
             </h1>
 
-            {{-- SLOGAN — artık H1 DEĞİL, bir basamak aşağıda.
-
-                 H1 eskiden sloganı taşıyordu ("Tarif etmeye çalışma.") ve
-                 ürünün NE OLDUĞU 250px'teki paragrafta bekliyordu. Ölçüm:
-                 ziyaretçilerin %79'u tarıyor, %16'sı okuyor — yani sitenin ne
-                 olduğunu anlatan tek cümle, okunmama olasılığı en yüksek
-                 biçimde yazılmıştı. H1 artık tanımlıyor; slogan burada
-                 duygusal çapa olarak kalıyor. Silinmedi, yeri değişti. --}}
             @if ($hero::altBaslik())
-                <p class="mt-3 text-base font-medium leading-relaxed {{ $koyu ? 'mx-auto max-w-xl text-white/70' : 'max-w-md text-stone-500 dark:text-stone-400' }}" style="text-wrap: pretty">
+                <p class="mt-3.5 text-sm sm:text-base font-medium leading-relaxed {{ $koyu ? 'mx-auto max-w-xl text-white/80' : 'max-w-md text-stone-600 dark:text-stone-300' }}" style="text-wrap: pretty">
                     {{ $hero::altBaslik() }}
                 </p>
             @endif
 
-            {{-- KAPSAM ÇİPLERİ — "bu ne?" sorusunun cevabı, ilk taramada.
-
-                 Aşağıdaki "popüler" çiplerle KARIŞTIRILMAMALI: onlar
-                 "bu kategoride GERÇEK ilan var" vaadidir ve demo süzgecinden
-                 geçer (bugün yalnız 2 tane çıkıyor). Bunlar ise sitenin
-                 KAPSAMINI anlatır — envanter vaadi değil.
-
-                 Bu yüzden TIKLANAMAZLAR. Tıklanabilir olsalardı boş bir
-                 kategori sayfasına götürür ve tutulmamış bir vaat olurlardı;
-                 envanter büyüyünce bağlanabilirler. --}}
+            {{-- KAPSAM ÇİPLERİ — Modern İkonlu Cam Kapsüller --}}
             <ul class="mt-4 flex flex-wrap gap-1.5 {{ $sahne ? 'justify-center' : '' }}" aria-label="Nisoya'da neler var">
-                @foreach (['Nakliyeci', 'Hoca', 'Tamirci', 'Kuaför', 'Tercüman', 'İkinci el', 'İş ilanı', 'Ülke rehberi'] as $kapsam)
-                    <li class="rounded-full px-2.5 py-1 text-xs font-medium {{ $koyu ? 'bg-white/15 text-white/90' : 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300' }}">{{ $kapsam }}</li>
+                @php
+                    $kapsamlar = [
+                        ['ikon' => '🚚', 'ad' => 'Nakliyeci'],
+                        ['ikon' => '📚', 'ad' => 'Özel Ders'],
+                        ['ikon' => '🔧', 'ad' => 'Tamirci'],
+                        ['ikon' => '✂️', 'ad' => 'Kuaför'],
+                        ['ikon' => '📄', 'ad' => 'Tercüman'],
+                        ['ikon' => '🏷️', 'ad' => 'İkinci el'],
+                        ['ikon' => '💼', 'ad' => 'İş ilanı'],
+                        ['ikon' => '🏛️', 'ad' => 'Ülke rehberi'],
+                    ];
+                @endphp
+                @foreach ($kapsamlar as $kapsam)
+                    <li class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-md transition hover:scale-105 {{ $koyu ? 'border border-white/20 bg-white/10 text-white/90 shadow-2xs' : 'border border-stone-200/80 bg-white text-stone-700 shadow-2xs dark:border-stone-800 dark:bg-stone-800 dark:text-stone-300' }}">
+                        <span class="text-xs">{{ $kapsam['ikon'] }}</span>
+                        <span>{{ $kapsam['ad'] }}</span>
+                    </li>
                 @endforeach
             </ul>
 
