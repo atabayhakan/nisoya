@@ -164,8 +164,9 @@ Alpine.data('commandPalette', (staticEntries) => ({
 // Anasayfa "Nisoya AI ile ara" çubuğu. Cmd+K'nin TERSİNE canlı-yazarken değil
 // GÖNDERİNCE çalışır: AI çağrısı ücretli, her tuş vuruşunda tetiklemek
 // maliyeti gereksiz büyütürdü (bkz. App\Http\Controllers\NisoyaAiAramaController).
-Alpine.data('nisoyaAiArama', () => ({
+Alpine.data('nisoyaAiArama', (config = {}) => ({
     query: '',
+    ulke: config.ulke || '',
     loading: false,
     submitted: false,
     error: false,
@@ -180,7 +181,8 @@ Alpine.data('nisoyaAiArama', () => ({
         this.submitted = true;
 
         try {
-            const response = await fetch(`/arama/ai?q=${encodeURIComponent(q)}`, {
+            const ulkeParam = this.ulke ? `&ulke=${encodeURIComponent(this.ulke)}` : '';
+            const response = await fetch(`/arama/ai?q=${encodeURIComponent(q)}${ulkeParam}`, {
                 headers: { Accept: 'application/json' },
             });
             if (!response.ok) {

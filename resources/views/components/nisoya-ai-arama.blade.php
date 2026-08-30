@@ -4,10 +4,11 @@
     yapılandırılmamışsa ya da admin panelden kapatılmışsa hiç basılmaz —
     çağıran taraf bir koşul yazmak zorunda kalmaz.
 --}}
+@props(['ziyaretciUlke' => null])
 @php($aktif = app(\App\Services\NisoyaAiYonlendirici::class)->isEnabled())
 
 @if ($aktif)
-    <div x-data="nisoyaAiArama()" class="relative">
+    <div x-data="nisoyaAiArama({ ulke: '{{ $ziyaretciUlke?->code ?? '' }}' })" class="relative">
         <form @submit.prevent="search()">
             <div class="flex items-center gap-2 px-3 py-1">
                 <x-heroicon-s-sparkles class="h-5 w-5 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />

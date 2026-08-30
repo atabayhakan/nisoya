@@ -109,4 +109,20 @@ class NisoyaAiAramaControllerTest extends TestCase
 
         $this->get('/')->assertOk()->assertSee("Nisoya AI'ya sor", false);
     }
+
+    public function test_acik_ulke_parametresi_onceliklidir(): void
+    {
+        $biskek = Temsilcilik::query()->create([
+            'country_code' => 'KG', 'ad' => 'Bişkek Büyükelçiliği', 'slug' => 'biskek',
+            'tur' => Temsilcilik::TUR_BUYUKELCILIK, 'sehir' => 'Bişkek', 'is_active' => true,
+        ]);
+
+        $this->sahteBagla(['niyet' => 'rehber', 'ulke_kodu' => null, 'islem_turu_slug' => 'pasaport', 'anahtar_kelimeler' => ['pasaport']]);
+
+        $yanit = $this->getJson('/arama/ai?q=pasaportum+kayboldu&ulke=KG')->assertOk()->json();
+
+        $this->assertSame('rehber', $yanit['niyet']);
+        $this->assertCount(1, $yanit['sonuclar']);
+        $this->assertSame('Bişkek Büyükelçiliği', $yanit['sonuclar'][0]['baslik']);
+    }
 }

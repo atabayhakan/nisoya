@@ -56,7 +56,7 @@
             {{-- 2. Nisoya AI Asistanı Arama Formu --}}
             @if ($aiAktif)
                 <div x-show="searchTab === 'ai'" x-cloak>
-                    <x-nisoya-ai-arama />
+                    <x-nisoya-ai-arama :ziyaretci-ulke="$ziyaretciUlke" />
                 </div>
             @endif
         </div>
