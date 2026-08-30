@@ -28,12 +28,13 @@
     <button
         type="button"
         @click="openPalette()"
-        class="inline-flex h-9 items-center gap-1.5 rounded-lg px-2 text-stone-600 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+        class="inline-flex h-9 items-center gap-2 rounded-full border border-stone-200/90 bg-stone-50/80 px-2.5 sm:px-3 text-xs font-medium text-stone-500 shadow-2xs transition hover:border-emerald-300 hover:bg-white hover:text-stone-800 dark:border-stone-800 dark:bg-stone-800/60 dark:text-stone-400 dark:hover:border-emerald-600 dark:hover:text-stone-200"
         aria-label="Ara (Cmd/Ctrl+K)"
         title="Ara (Cmd/Ctrl+K)"
     >
-        <x-heroicon-o-magnifying-glass class="h-5 w-5" />
-        <kbd class="hidden rounded border border-stone-300 px-1.5 py-0.5 text-2xs font-semibold text-stone-600 md:inline dark:border-stone-700 dark:text-stone-400">⌘K</kbd>
+        <x-heroicon-o-magnifying-glass class="h-4 w-4 text-stone-500 dark:text-stone-400" />
+        <span class="hidden lg:inline text-stone-500 dark:text-stone-400">Ara...</span>
+        <kbd class="hidden rounded-md border border-stone-200 bg-white px-1.5 py-0.5 text-[10px] font-bold text-stone-500 md:inline dark:border-stone-700 dark:bg-stone-800 dark:text-stone-400">⌘K</kbd>
     </button>
 
     <template x-teleport="body">

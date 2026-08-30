@@ -163,22 +163,16 @@
         type="button"
         x-ref="tetik"
         @click="ac()"
-        {{-- Odak halkası DIŞA taşınıyor: `ring-inset` ile kırmızının üstünde
-             kalan beyaz halka 2.86:1 veriyordu (gereken 3.0). Offset'li hâli
-             sayfa zeminine düşüyor ve net görünüyor.
-
-             rounded-full + h-9 (36px) — eskiden rounded-lg'ydi ve py-2 ile
-             38px'e çıkıyordu. Başlıktaki dört düğme (ara/ülke/acil/üye ol)
-             ölçüldüğünde 28-38px arasında saçılmış ve iki farklı köşe
-             yuvarlaklığı arasında dönüyordu — sıra "birbirinden bağımsız"
-             görünüyordu. Şimdi üç dolu/anahat pill (ülke, acil, üye ol) aynı
-             şekil ailesinde; yalnız arama (salt ikon) rounded-lg kalıyor. --}}
-        class="inline-flex h-9 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-[#E30A17] px-2.5 sm:gap-1.5 sm:px-3 text-sm font-bold text-white shadow-sm ring-1 ring-inset ring-white/20 transition hover:-translate-y-0.5 hover:bg-[#C10914] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2"
+        class="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-red-200/90 bg-red-50/90 px-3 text-xs font-bold text-red-700 shadow-2xs transition hover:-translate-y-0.5 hover:border-red-500 hover:bg-red-600 hover:text-white hover:shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-600 dark:hover:text-white"
         aria-label="Acil yardım — hızlı erişim"
         title="Acil yardım — hızlı erişim"
     >
-        <x-heroicon-s-exclamation-triangle class="h-4 w-4 shrink-0" />
-        Acil
+        <span class="relative flex h-2 w-2 shrink-0">
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
+        </span>
+        <x-heroicon-s-exclamation-triangle class="h-3.5 w-3.5 shrink-0" />
+        <span>Acil</span>
     </button>
 
     {{-- x-teleport: modal, header'ın backdrop-blur'unun (position:fixed

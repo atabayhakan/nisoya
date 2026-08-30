@@ -17,14 +17,14 @@
     <button
         type="button"
         @click="ac()"
-        class="inline-flex h-9 items-center gap-1 rounded-full border border-stone-200 px-2 sm:px-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+        class="inline-flex h-9 items-center gap-1.5 rounded-full border border-stone-200/90 bg-stone-50/80 px-2.5 sm:px-3 text-xs font-semibold text-stone-700 shadow-2xs transition hover:border-emerald-300 hover:bg-white hover:text-emerald-700 dark:border-stone-800 dark:bg-stone-800/60 dark:text-stone-200 dark:hover:border-emerald-600 dark:hover:text-emerald-300"
         :aria-expanded="acik ? 'true' : 'false'"
         aria-haspopup="dialog"
         aria-label="Ülke seç"
     >
-        <span aria-hidden="true" class="text-base leading-none">{{ $country?->emoji ?? '🌍' }}</span>
+        <span aria-hidden="true" class="text-sm leading-none">{{ $country?->emoji ?? '🌍' }}</span>
         <span class="hidden max-w-[92px] truncate sm:inline">{{ $country?->name ?? 'Ülke' }}</span>
-        <x-heroicon-o-chevron-down class="h-3.5 w-3.5 text-stone-600" />
+        <x-heroicon-o-chevron-down class="h-3 w-3 text-stone-500 dark:text-stone-400" />
     </button>
 
     <template x-teleport="body">

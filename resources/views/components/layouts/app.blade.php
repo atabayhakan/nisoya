@@ -61,56 +61,40 @@
         x-data="headerScroll()"
         @scroll.window.throttle.150ms="onScroll()"
         :style="hidden ? 'transform: translateY(-100%)' : ''"
-        class="sticky top-0 z-30 border-b border-stone-200 bg-white/90 backdrop-blur transition-transform duration-300 dark:border-stone-800 dark:bg-stone-900/90"
+        class="sticky top-0 z-30 border-b border-stone-200/80 bg-white/95 backdrop-blur-md transition-all duration-300 dark:border-stone-800/80 dark:bg-stone-900/95"
     >
-        {{-- Dar ekranda boşluk pahalı: `gap-4` sabitken logo + arama + ülke +
-             acil + giriş + üye-ol altı öğe 360px'e sığmıyor ve düğmeler
-             eziliyordu. Boşluk mobilde 0.5rem, sm'den itibaren eski hâline
-             döner — masaüstünde ferahlık korunur. --}}
-        <div :class="scrolled ? 'py-2 shadow-sm' : 'py-3'" class="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 transition-all duration-300 sm:gap-4">
-            <a href="{{ url('/') }}" class="group flex min-w-0 shrink items-center gap-2">
-                <x-logo-ikon>
-                    @if ($logoPath = setting('gorunum.logo_path'))
-                        <img src="{{ Storage::disk('public')->url($logoPath) }}" alt="{{ setting('genel.site_adi') }}" class="h-9 w-9 rounded-xl object-cover">
+        <div :class="scrolled ? 'py-2 shadow-sm' : 'py-3'" class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 transition-all duration-300 sm:gap-4">
+            {{-- Sol: Logo + Nav Menüleri --}}
+            <div class="flex items-center gap-5 sm:gap-6">
+                <a href="{{ url('/') }}" class="group flex items-center gap-2 shrink-0">
+                    <x-logo-ikon>
+                        @if ($logoPath = setting('gorunum.logo_path'))
+                            <img src="{{ Storage::disk('public')->url($logoPath) }}" alt="{{ setting('genel.site_adi') }}" class="h-9 w-9 rounded-xl object-cover">
+                        @else
+                            <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-700 text-white transition group-hover:bg-emerald-800 dark:bg-emerald-500 dark:group-hover:bg-emerald-400 dark:text-stone-900">
+                                <x-logo-mark class="h-5 w-5" />
+                            </span>
+                        @endif
+                    </x-logo-ikon>
+                    @if (\App\Support\TemaJetonlari::logoAnimasyonuAktifMi())
+                        <x-hareketli-logo class="h-8 max-[380px]:hidden" />
                     @else
-                        <span class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-700 text-white transition group-hover:bg-emerald-800 dark:bg-emerald-500 dark:group-hover:bg-emerald-400 dark:text-stone-900">
-                            <x-logo-mark class="h-5 w-5" />
-                        </span>
+                        <span class="text-xl font-bold text-stone-900 max-[380px]:hidden dark:text-stone-50">{{ setting('genel.site_adi') }}</span>
                     @endif
-                </x-logo-ikon>
-                {{-- ÇOK DAR EKRANDA YALNIZ İKON. 380px altında marka adı ~70px yer
-                         kaplıyor ve başlık taşıyordu (360px'te 17px, 320px'te 57px
-                         yatay kaydırma). İkon tek başına markayı taşıyor ve yine
-                         ana sayfaya götürüyor. --}}
-                @if (\App\Support\TemaJetonlari::logoAnimasyonuAktifMi())
-                    <x-hareketli-logo class="h-8 max-[380px]:hidden" />
-                @else
-                    <span class="text-xl font-bold text-stone-900 max-[380px]:hidden dark:text-stone-50">{{ setting('genel.site_adi') }}</span>
-                @endif
-            </a>
+                </a>
 
-            <nav class="hidden items-center gap-6 text-sm font-medium text-stone-600 md:flex dark:text-stone-300">
-                <x-mega-menu :items="$navLinksMega" />
-                @foreach ($navLinksSingle as $navLink)
-                    <a href="{{ $navLink->url }}" @if ($navLink->opens_new_tab) target="_blank" rel="noopener noreferrer" @endif class="relative py-1 after:absolute after:-bottom-0.5 after:left-0 after:h-0.5 after:w-0 after:bg-emerald-600 after:transition-all after:duration-300 hover:text-emerald-700 hover:after:w-full dark:after:bg-emerald-400 dark:hover:text-emerald-400">{{ $navLink->label }}</a>
-                @endforeach
-            </nav>
+                <nav class="hidden items-center gap-5 text-[13px] font-semibold text-stone-600 lg:flex dark:text-stone-300">
+                    <x-mega-menu :items="$navLinksMega" />
+                    @foreach ($navLinksSingle as $navLink)
+                        <a href="{{ $navLink->url }}" @if ($navLink->opens_new_tab) target="_blank" rel="noopener noreferrer" @endif class="relative py-1 transition hover:text-emerald-700 dark:hover:text-emerald-400">{{ $navLink->label }}</a>
+                    @endforeach
+                </nav>
+            </div>
 
-            <div class="flex items-center gap-1 sm:gap-2">
+            {{-- Sağ: Arama + Ülke + Acil + Tema + Kullanıcı & CTA --}}
+            <div class="flex items-center gap-1.5 sm:gap-2">
                 <x-command-palette :nav-links="$navLinks" />
-
-                {{-- Ülke seçici: eski `x-visitor-country-badge` mobilde hiç
-                     görünmüyor, masaüstünde de tıklanamıyordu (gerekçe
-                     x-ulke-secici'de). --}}
                 <x-ulke-secici :country="$visitorCountry" :countries="$emergencyCountries" />
-
-                {{-- Misafirde mobilde GİZLİ (2026-08-21): Acil artık alt sekme
-                     çubuğundaki "İlan Ver" yelpazesinin bir öğesi (bkz.
-                     x-mobile-tab-bar) — modal AYNI bileşen, yalnız tetikleyici
-                     burada iki kez basılmasın diye kapalı. Üye için burada
-                     kalıyor: onun mobil FAB'ı yelpazeye açılmıyor, yer de
-                     zaten daralmıyor (üye ol/giriş düğmesi yok). Masaüstünde
-                     her iki durumda da açık. --}}
                 <div class="{{ auth()->check() ? '' : 'hidden md:block' }}">
                     <x-emergency-button
                         :categories="$emergencyCategories"
@@ -120,76 +104,73 @@
                     />
                 </div>
 
-                {{-- Dark mode toggle — obsidian teması koyu moda kilitli olduğu
-                     için o modda gizlenir (aksi hâlde no-op buton kalırdı). --}}
-                {{-- Mobilde GİZLİ: 390px'lik başlıkta yer ülke seçici, arama,
-                     acil yardım, favoriler ve hesap düğmesi arasında paylaşılıyor.
-                     Bir kez ayarlanan tema tercihi, her ekranda yer kaplayan bir
-                     düğmeyi hak etmiyor — mobilde hesap sayfasının içinde
-                     (x-mobil-hesap). --}}
                 @unless (\App\Support\Tema::koyuKilit())
                     <button
                         type="button"
                         onclick="window.toggleTheme && window.toggleTheme()"
-                        class="hidden rounded-lg p-2 text-stone-600 transition hover:bg-stone-100 md:inline-flex dark:text-stone-300 dark:hover:bg-stone-800"
+                        class="hidden h-9 w-9 place-items-center rounded-full text-stone-500 transition hover:bg-stone-100 hover:text-stone-800 md:grid dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"
                         title="Temayı değiştir"
                         aria-label="Karanlık/aydınlık tema değiştir"
                     >
-                        <x-heroicon-o-moon class="h-5 w-5 dark:hidden" />
-                        <x-heroicon-o-sun class="hidden h-5 w-5 dark:inline" />
+                        <x-heroicon-o-moon class="h-4 w-4 dark:hidden" />
+                        <x-heroicon-o-sun class="hidden h-4 w-4 dark:inline" />
                     </button>
                 @endunless
 
-                {{-- Favoriler — mobilde başlıkta, yalnız giriş yapmışken
-                     (favori eklemek zaten hesap gerektiriyor). --}}
+                {{-- Favoriler — mobilde başlıkta --}}
                 @auth
-                    <a href="{{ route('panel.favorites.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg text-stone-600 transition hover:bg-stone-100 md:hidden dark:text-stone-300 dark:hover:bg-stone-800" title="Favorilerim" aria-label="Favorilerim">
-                        <x-heroicon-o-heart class="h-5 w-5" />
+                    <a href="{{ route('panel.favorites.index') }}" class="flex h-9 w-9 items-center justify-center rounded-full text-stone-600 transition hover:bg-stone-100 md:hidden dark:text-stone-300 dark:hover:bg-stone-800" title="Favorilerim" aria-label="Favorilerim">
+                        <x-heroicon-o-heart class="h-4 w-4" />
                     </a>
                 @endauth
 
-                {{-- Mobilde kimlik + çıkış (gerekçe bileşenin içinde). --}}
+                {{-- Mobilde kimlik + çıkış --}}
                 <x-mobil-hesap />
 
-                {{-- Faz H3: bildirim/profil/Panelim/İlan Ver/Giriş-Kayıt-Çıkış
-                     mobilde alt sekme çubuğuna taşındı (bkz. x-mobile-tab-bar) —
-                     burada yalnızca masaüstünde (md+) görünür. --}}
                 @auth
-                    @php($unreadCount = auth()->user()->okunmamisBildirimSayisi())
-                    {{-- MESAJLAR — masaüstünde başlıkta HİÇ YOKTU.
+                    <span class="hidden h-5 w-px bg-stone-200 md:block dark:bg-stone-800"></span>
 
-                         Mobilde alt sekme çubuğunda tek dokunuş ve kırmızı
-                         rozetle duruyor; masaüstünde ise Panelim → Bölümler
-                         (iki tık) ve hiçbir okunmamış sinyali yok. Yani
-                         asimetri iki yönlüydü: bildirimler mobilde eksikti,
-                         mesajlar masaüstünde. --}}
-                    <a href="{{ route('panel.messages.index') }}" class="relative hidden rounded-lg p-2 text-stone-600 hover:bg-stone-100 md:inline-flex dark:text-stone-300 dark:hover:bg-stone-800" title="Mesajlar">
-                        <x-heroicon-o-chat-bubble-left-right class="h-5 w-5" />
+                    @php($unreadCount = auth()->user()->okunmamisBildirimSayisi())
+                    <a href="{{ route('panel.messages.index') }}" class="relative hidden h-9 w-9 place-items-center rounded-full text-stone-600 transition hover:bg-stone-100 md:grid dark:text-stone-300 dark:hover:bg-stone-800" title="Mesajlar">
+                        <x-heroicon-o-chat-bubble-left-right class="h-4 w-4" />
                         @if ($okunmamisMesaj = auth()->user()->okunmamisMesajSayisi())
-                            <span class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-2xs font-bold leading-none text-white">{{ $okunmamisMesaj > 9 ? '9+' : $okunmamisMesaj }}</span>
+                            <span class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white dark:ring-stone-900">{{ $okunmamisMesaj > 9 ? '9+' : $okunmamisMesaj }}</span>
                         @endif
                     </a>
-                    <a href="{{ route('panel.notifications.index') }}" class="relative hidden rounded-lg p-2 text-stone-600 hover:bg-stone-100 md:inline-flex dark:text-stone-300 dark:hover:bg-stone-800" title="Bildirimler">
-                        {{-- Faz H4: okunmamış varsa sayfa yüklenince zil bir kez "çalar" (bkz. app.css nisoya-bell-ring) --}}
+                    <a href="{{ route('panel.notifications.index') }}" class="relative hidden h-9 w-9 place-items-center rounded-full text-stone-600 transition hover:bg-stone-100 md:grid dark:text-stone-300 dark:hover:bg-stone-800" title="Bildirimler">
                         <x-heroicon-o-bell class="h-5 w-5 {{ $unreadCount ? 'animate-[nisoya-bell-ring_0.6s_ease-in-out_1]' : '' }}" />
                         @if ($unreadCount)
-                            <span class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-2xs font-bold leading-none text-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
+                            <span class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white dark:ring-stone-900">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
                         @endif
                     </a>
-                    <a href="{{ route('panel.profile.edit') }}" class="hidden items-center gap-2 rounded-lg py-1.5 pl-1.5 pr-2 text-stone-700 hover:bg-stone-100 md:flex dark:text-stone-200 dark:hover:bg-stone-800" title="Hesabım">
-                        <x-avatar :user="auth()->user()" size="h-7 w-7" text="text-xs" />
-                        <span class="hidden max-w-[110px] truncate text-sm font-medium md:inline">{{ auth()->user()->name }}</span>
+
+                    <a href="{{ route('panel.profile.edit') }}" class="hidden items-center gap-2 rounded-full border border-stone-200/90 bg-stone-50/80 py-1 pl-1 pr-3 text-xs font-bold text-stone-700 shadow-2xs transition hover:border-emerald-300 hover:bg-white hover:text-emerald-700 md:flex dark:border-stone-800 dark:bg-stone-800/60 dark:text-stone-200 dark:hover:border-emerald-600 dark:hover:text-emerald-300" title="Hesabım">
+                        <x-avatar :user="auth()->user()" size="h-6 w-6" text="text-[10px]" />
+                        <span class="max-w-[100px] truncate">{{ auth()->user()->name }}</span>
                     </a>
-                    <a href="{{ route('dashboard') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Panelim</a>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-brand md:inline-block dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
+
+                    <a href="{{ route('dashboard') }}" class="hidden h-9 items-center rounded-full px-2.5 text-xs font-bold text-stone-700 transition hover:bg-stone-100 md:inline-flex dark:text-stone-300 dark:hover:bg-stone-800">Panelim</a>
+
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-emerald-700 px-3.5 text-xs font-bold text-white shadow-brand transition hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-md md:inline-flex dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">
+                        <x-heroicon-o-plus class="h-4 w-4 stroke-2" />
+                        <span>İlan Ver</span>
+                    </a>
+
                     <form method="POST" action="{{ route('logout') }}" class="hidden md:block">
                         @csrf
-                        <button type="submit" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Çıkış</button>
+                        <button type="submit" class="inline-flex h-9 items-center rounded-full px-2 text-xs font-semibold text-stone-500 transition hover:bg-red-50 hover:text-red-600 dark:text-stone-400 dark:hover:bg-red-950/30 dark:hover:text-red-400" title="Çıkış Yap">
+                            <x-heroicon-o-arrow-right-on-rectangle class="h-4 w-4" />
+                            <span class="sr-only">Çıkış</span>
+                        </button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Giriş</a>
-                    <a href="{{ route('register') }}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 md:inline-block dark:text-stone-200 dark:hover:bg-stone-800">Kayıt</a>
-                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-brand md:inline-block dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">İlan Ver</a>
+                    <span class="hidden h-5 w-px bg-stone-200 md:block dark:bg-stone-800"></span>
+                    <a href="{{ route('login') }}" class="hidden h-9 items-center rounded-full px-3 text-xs font-bold text-stone-700 transition hover:bg-stone-100 md:inline-flex dark:text-stone-200 dark:hover:bg-stone-800">Giriş</a>
+                    <a href="{{ route('register') }}" class="hidden h-9 items-center rounded-full px-3 text-xs font-bold text-stone-700 transition hover:bg-stone-100 md:inline-flex dark:text-stone-200 dark:hover:bg-stone-800">Kayıt</a>
+                    <a href="{{ url('/panel/ilan/yeni') }}" class="hidden h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-emerald-700 px-3.5 text-xs font-bold text-white shadow-brand transition hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-md md:inline-flex dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">
+                        <x-heroicon-o-plus class="h-4 w-4 stroke-2" />
+                        <span>İlan Ver</span>
+                    </a>
                 @endauth
             </div>
         </div>
