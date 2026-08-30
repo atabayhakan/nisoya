@@ -13,6 +13,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property FootballRequestType $type
  * @property FootballLevel|null $level
  * @property array<string>|null $positions
+ * @property-read User|null $user
+ * @property-read FootballTeam|null $team
+ * @property-read FootballMatch|null $match
  */
 class FootballPlayerRequest extends Model
 {
@@ -46,16 +49,19 @@ class FootballPlayerRequest extends Model
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /** @return BelongsTo<FootballTeam, $this> */
     public function team(): BelongsTo
     {
         return $this->belongsTo(FootballTeam::class, 'team_id');
     }
 
+    /** @return BelongsTo<FootballMatch, $this> */
     public function match(): BelongsTo
     {
         return $this->belongsTo(FootballMatch::class, 'match_id');

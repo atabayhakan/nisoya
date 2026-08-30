@@ -33,7 +33,7 @@ enum FootballLevel: string implements HasColor, HasIcon, HasLabel
         };
     }
 
-    public function getIcon(): ?string
+    public function getIcon(): string
     {
         return match ($this) {
             self::Baslangic => 'heroicon-m-sparkles',

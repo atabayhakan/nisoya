@@ -138,7 +138,7 @@ class FootballVenueController extends Controller
             'is_active' => true,
         ]);
 
-        return redirect()->route('football.venues.show', ['city' => Str::slug($venue->city), 'venue' => $venue->slug])
+        return to_route('football.venues.show', ['city' => Str::slug($venue->city), 'venue' => $venue->slug])
             ->with('status', 'Halı saha başarıyla eklendi.');
     }
 

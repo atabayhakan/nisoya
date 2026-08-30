@@ -3,7 +3,6 @@
 namespace Tests\Feature\Football;
 
 use App\Models\FootballVenue;
-use App\Models\FootballVenueReview;
 use App\Models\User;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;

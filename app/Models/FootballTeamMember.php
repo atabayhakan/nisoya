@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property FootballMemberStatus $status
  * @property FootballPosition|null $primary_position
+ * @property-read FootballTeam|null $team
+ * @property-read User|null $user
  */
 class FootballTeamMember extends Model
 {
@@ -36,11 +38,13 @@ class FootballTeamMember extends Model
         ];
     }
 
+    /** @return BelongsTo<FootballTeam, $this> */
     public function team(): BelongsTo
     {
         return $this->belongsTo(FootballTeam::class, 'team_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');

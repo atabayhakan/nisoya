@@ -12,6 +12,7 @@ use App\Models\FootballTeam;
 use App\Models\FootballTeamMember;
 use App\Models\FootballVenue;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -29,7 +30,7 @@ class FootballStatsService
      *     weekly_matches_count: int,
      *     verified_matches_count: int,
      *     open_requests_count: int,
-     *     recent_matches: \Illuminate\Support\Collection<int, FootballMatch>,
+     *     recent_matches: Collection<int, FootballMatch>,
      *     featured_match: ?FootballMatch
      * }
      */
@@ -46,7 +47,7 @@ class FootballStatsService
 
             $playersCount = FootballTeamMember::query()
                 ->where('status', FootballMemberStatus::Aktif->value)
-                ->whereHas('team', fn ($q) => $q->active()->city($city))
+                ->whereHas('team', fn ($q) => $q->where('is_active', true)->whereRaw('LOWER(city) = ?', [mb_strtolower(trim($city))]))
                 ->distinct('user_id')
                 ->count('user_id');
 

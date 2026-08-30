@@ -4,9 +4,7 @@ namespace App\Http\Controllers\Football;
 
 use App\Http\Controllers\Controller;
 use App\Models\City;
-use App\Models\Country;
 use App\Models\FootballMatch;
-use App\Models\FootballPlayerProfile;
 use App\Models\FootballPlayerRequest;
 use App\Models\FootballTeam;
 use App\Models\FootballVenue;
@@ -14,7 +12,6 @@ use App\Services\Football\FootballLeagueService;
 use App\Services\Football\FootballStatsService;
 use App\Services\VisitorLocationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class FootballBrowseController extends Controller

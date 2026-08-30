@@ -13,6 +13,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -33,6 +34,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property UserStatus $status UserStatus::class cast (bkz. casts())
  * @property UserRole $role UserRole::class cast (bkz. casts()); sütun NOT NULL, varsayılan 'uye'
  * @property array<int, string>|null $account_recovery_codes encrypted:array cast (bkz. casts())
+ * @property-read Collection<int, FootballTeam> $captainTeams
+ * @property-read FootballPlayerProfile|null $footballProfile
  */
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail, PasskeyUser
 {
@@ -761,13 +764,21 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
         return $this->hasMany(User::class, 'referred_by');
     }
 
-    /** Halı saha / futbol oyuncu profili. */
+    /**
+     * Halı saha / futbol oyuncu profili.
+     *
+     * @return HasOne<FootballPlayerProfile, $this>
+     */
     public function footballProfile(): HasOne
     {
         return $this->hasOne(FootballPlayerProfile::class, 'user_id');
     }
 
-    /** Kullanıcının üye olduğu futbol takımları. */
+    /**
+     * Kullanıcının üye olduğu futbol takımları.
+     *
+     * @return BelongsToMany<FootballTeam, $this>
+     */
     public function footballTeams(): BelongsToMany
     {
         return $this->belongsToMany(FootballTeam::class, 'football_team_members', 'user_id', 'team_id')
@@ -775,7 +786,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
             ->withTimestamps();
     }
 
-    /** Kullanıcının kaptanı olduğu futbol takımları. */
+    /**
+     * Kullanıcının kaptanı olduğu futbol takımları.
+     *
+     * @return HasMany<FootballTeam, $this>
+     */
     public function captainTeams(): HasMany
     {
         return $this->hasMany(FootballTeam::class, 'user_id');

@@ -63,13 +63,13 @@ class FootballNewsService
             '- Özet: 1-2 cümlelik net özet.',
             '- Gövde: 2-3 paragraflık keyifli spor haberi metni.',
             '',
-            "MAÇ BİLGİLERİ:",
+            'MAÇ BİLGİLERİ:',
             "- Şehir: {$city}",
             "- Saha: {$venue}",
             "- Tarih: {$date}",
             "- Ev Sahibi: {$homeName} ({$homeScore} gol)",
             "- Rakip / Deplasman: {$awayName} ({$awayScore} gol)",
-            "- Maçın Adamı: ".($mvp ?: 'Belirtilmedi'),
+            '- Maçın Adamı: '.($mvp ?: 'Belirtilmedi'),
         ]);
 
         $schema = [
@@ -124,9 +124,9 @@ class FootballNewsService
             }
             $summary = "{$city}'de oynanan halı saha karşılaşmasında {$homeName}, {$awayName} karşısında {$homeScore}-{$awayScore} galip gelerek haftayı 3 puanla tamamladı.";
             $body = "{$city} halı saha topluluğunun bu haftaki heyecan dolu karşılaşmasında {$homeName} ile {$awayName}, {$venue} tesislerinde karşı karşıya geldi.\n\n"
-                  . "Karşılıklı ataklarla geçen mücadelede {$homeName}, sahadan {$homeScore}-{$awayScore} galibiyetle ayrılarak şehir ligindeki puanını artırdı."
-                  . ($mvp ? "\n\nMaçın adamı olarak gösterilen {$mvp}, performansıyla maça damgasını vurdu." : '')
-                  . "\n\nMaçın tüm ayrıntıları ve puan tablosu Nisoya Halı Saha Liginde güncellendi.";
+                  ."Karşılıklı ataklarla geçen mücadelede {$homeName}, sahadan {$homeScore}-{$awayScore} galibiyetle ayrılarak şehir ligindeki puanını artırdı."
+                  .($mvp ? "\n\nMaçın adamı olarak gösterilen {$mvp}, performansıyla maça damgasını vurdu." : '')
+                  ."\n\nMaçın tüm ayrıntıları ve puan tablosu Nisoya Halı Saha Liginde güncellendi.";
         } elseif ($awayScore > $homeScore) {
             $diff = $awayScore - $homeScore;
             if ($totalGoals >= 8) {
@@ -136,16 +136,16 @@ class FootballNewsService
             }
             $summary = "{$city}'de {$venue} sahasında oynanan karşılaşmada {$awayName}, {$homeName} takımını {$awayScore}-{$homeScore} mağlup etti.";
             $body = "{$city}'de {$date} tarihinde oynanan maçta {$awayName}, deplasmanda {$homeName} karşısında üstün bir oyun sergileyerek sahadan {$awayScore}-{$homeScore} galibiyetle ayrıldı.\n\n"
-                  . "Tempolu geçen müsabakada her iki takım da büyük bir mücadele örneği sergiledi."
-                  . ($mvp ? "\n\nKarşılaşmanın en değerli oyuncusu seçilen {$mvp}, galibiyette kritik rol oynadı." : '')
-                  . "\n\nDoğrulanan maç sonucuyla birlikte şehir lig sıralaması güncellendi.";
+                  .'Tempolu geçen müsabakada her iki takım da büyük bir mücadele örneği sergiledi.'
+                  .($mvp ? "\n\nKarşılaşmanın en değerli oyuncusu seçilen {$mvp}, galibiyette kritik rol oynadı." : '')
+                  ."\n\nDoğrulanan maç sonucuyla birlikte şehir lig sıralaması güncellendi.";
         } else {
             $title = "🤝 {$city}'de Puanlar Paylaşıldı: {$homeName} {$homeScore} - {$awayScore} {$awayName}";
             $summary = "{$homeName} ile {$awayName} arasındaki çekişmeli randevu {$homeScore}-{$awayScore} eşitlikle sonuçlandı.";
             $body = "{$city}'de {$venue} zemininde oynanan halı saha maçında {$homeName} ve {$awayName} sahadan {$homeScore}-{$awayScore} beraberlikle ayrıldı.\n\n"
-                  . "Son düdüğe kadar heyecanın eksik olmadığı maçta iki takım da 1'er puanı hanesine yazdırdı."
-                  . ($mvp ? "\n\nMaçın adamı seçilen {$mvp}, performansıyla takdir topladı." : '')
-                  . "\n\nŞehir puan durumundaki güncel sıralamayı Nisoya Halı Saha sayfasından inceleyebilirsiniz.";
+                  ."Son düdüğe kadar heyecanın eksik olmadığı maçta iki takım da 1'er puanı hanesine yazdırdı."
+                  .($mvp ? "\n\nMaçın adamı seçilen {$mvp}, performansıyla takdir topladı." : '')
+                  ."\n\nŞehir puan durumundaki güncel sıralamayı Nisoya Halı Saha sayfasından inceleyebilirsiniz.";
         }
 
         return [
@@ -169,9 +169,9 @@ class FootballNewsService
         $matchUrl = route('football.matches.show', ['city' => Str::slug($city), 'match' => $match->id]);
 
         return "⚽ {$city}'de Halı Saha Maç Sonucu!\n\n"
-             . "🏆 {$homeName} {$homeScore} — {$awayScore} {$awayName}\n"
-             . "📍 {$venue}\n\n"
-             . "📰 Maç haberi, goller ve lig durumu Nisoya'da:\n"
-             . "{$matchUrl}";
+             ."🏆 {$homeName} {$homeScore} — {$awayScore} {$awayName}\n"
+             ."📍 {$venue}\n\n"
+             ."📰 Maç haberi, goller ve lig durumu Nisoya'da:\n"
+             ."{$matchUrl}";
     }
 }

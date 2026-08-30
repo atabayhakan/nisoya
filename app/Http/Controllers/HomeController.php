@@ -163,7 +163,7 @@ class HomeController extends Controller
     /**
      * Halı saha / spor bölümünün anasayfa verisi.
      *
-     * @return array{aktif: bool, sehir: string, maclar: \Illuminate\Support\Collection<int, FootballMatch>, haftaninMaci: ?FootballMatch, istatistikler: array{takim: int, mac: int, saha: int, oyuncu: int}}|null
+     * @return array{aktif: bool, sehir: string, maclar: Collection<int, FootballMatch>, haftaninMaci: ?FootballMatch, istatistikler: array{takim: int, mac: int, saha: int, oyuncu: int}}|null
      */
     private function sporVerisi(Request $request): ?array
     {

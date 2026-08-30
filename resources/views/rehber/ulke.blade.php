@@ -74,10 +74,12 @@
             </div>
         @endif
 
-        {{-- Ülke Seçici --}}
-        <div class="mt-6">
-            <x-rehber.ulke-secici :aktif="$country" />
-        </div>
+        @if ($temsilcilikler->isNotEmpty())
+            {{-- Ülke Seçici --}}
+            <div class="mt-6">
+                <x-rehber.ulke-secici :aktif="$country" />
+            </div>
+        @endif
 
         {{-- Temsilcilikler Bölümü --}}
         <div class="mt-10">
@@ -98,10 +100,11 @@
                     <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-stone-200 text-2xl text-stone-600 dark:bg-stone-700 dark:text-stone-300">
                         🏛️
                     </span>
-                    <h3 class="mt-4 text-lg font-bold text-stone-800 dark:text-stone-100">Bu ülkenin rehberi henüz hazırlanıyor</h3>
+                    <h3 class="mt-4 text-lg font-bold text-stone-800 dark:text-stone-100">Bu ülkenin rehberi henüz hazırlanıyor.</h3>
                     <p class="mx-auto mt-2 max-w-md text-xs sm:text-sm text-stone-500 dark:text-stone-400">
                         Konsolosluk evrak listeleri doğrulanıp eklendiğinde burada listelenecektir.
                     </p>
+                    <x-rehber.ulke-secici :aktif="$country" baslik="Şu an hazır olan ülkeler:" class="mt-6 justify-center" />
                 </div>
             @else
                 <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

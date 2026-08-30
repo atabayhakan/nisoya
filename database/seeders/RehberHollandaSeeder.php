@@ -6,6 +6,7 @@ use App\Models\IslemTuru;
 use App\Models\Temsilcilik;
 use App\Models\TemsilcilikIslemi;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 
 /**
  * Ülke Rehberi — Hollanda'nın GERÇEK konsolosluk-hizmet noktalarını kurar
@@ -52,7 +53,7 @@ class RehberHollandaSeeder extends Seeder
 
     /**
      * @param  array<int, Temsilcilik>  $temsilcilikler
-     * @param  \Illuminate\Support\Collection<string, IslemTuru>  $turler
+     * @param  Collection<string, IslemTuru>  $turler
      */
     protected function islemIskeletiniKur(array $temsilcilikler, $turler): void
     {

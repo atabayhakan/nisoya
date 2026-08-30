@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Football;
 
 use App\Enums\FootballLevel;
 use App\Enums\FootballMemberStatus;
-use App\Enums\FootballPosition;
 use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Models\FootballMatch;
@@ -159,7 +158,7 @@ class FootballTeamController extends Controller
             'joined_at' => now(),
         ]);
 
-        return redirect()->route('football.teams.show', ['city' => Str::slug($team->city), 'team' => $team->slug])
+        return to_route('football.teams.show', ['city' => Str::slug($team->city), 'team' => $team->slug])
             ->with('status', 'Takımınız başarıyla kuruldu! Şimdi oyuncu davet edebilir veya maç planlayabilirsiniz.');
     }
 
@@ -209,7 +208,7 @@ class FootballTeamController extends Controller
             'description' => $validated['description'] ?? null,
         ]);
 
-        return redirect()->route('football.teams.show', ['city' => Str::slug($team->city), 'team' => $team->slug])
+        return to_route('football.teams.show', ['city' => Str::slug($team->city), 'team' => $team->slug])
             ->with('status', 'Takım bilgileri güncellendi.');
     }
 
@@ -294,7 +293,7 @@ class FootballTeamController extends Controller
 
         $user = $request->user();
         $isPlayer = (int) $user->id === (int) $member->user_id;
-        $isCaptain = (int) $user->id === (int) $member->team->user_id;
+        $isCaptain = (int) $user->id === (int) $member->team?->user_id;
 
         if (! $isPlayer && ! $isCaptain && ! ($user->role?->canAccessAdminPanel() ?? false)) {
             abort(403);

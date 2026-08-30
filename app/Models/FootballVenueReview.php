@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property ReviewStatus $status
+ * @property-read FootballVenue|null $venue
+ * @property-read User|null $user
  */
 class FootballVenueReview extends Model
 {
@@ -43,11 +45,13 @@ class FootballVenueReview extends Model
         });
     }
 
+    /** @return BelongsTo<FootballVenue, $this> */
     public function venue(): BelongsTo
     {
         return $this->belongsTo(FootballVenue::class, 'venue_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');

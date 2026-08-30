@@ -14,6 +14,13 @@ use Illuminate\Support\Carbon;
  * @property FootballMatchStatus $status
  * @property FootballResultStatus $result_status
  * @property Carbon $match_date
+ * @property-read FootballTeam|null $homeTeam
+ * @property-read FootballTeam|null $awayTeam
+ * @property-read FootballVenue|null $venue
+ * @property-read Country|null $country
+ * @property-read User|null $resultSubmittedBy
+ * @property-read User|null $resultVerifiedBy
+ * @property-read User|null $mvpPlayer
  */
 class FootballMatch extends Model
 {
@@ -60,41 +67,49 @@ class FootballMatch extends Model
         ];
     }
 
+    /** @return BelongsTo<FootballTeam, $this> */
     public function homeTeam(): BelongsTo
     {
         return $this->belongsTo(FootballTeam::class, 'home_team_id');
     }
 
+    /** @return BelongsTo<FootballTeam, $this> */
     public function awayTeam(): BelongsTo
     {
         return $this->belongsTo(FootballTeam::class, 'away_team_id');
     }
 
+    /** @return BelongsTo<FootballVenue, $this> */
     public function venue(): BelongsTo
     {
         return $this->belongsTo(FootballVenue::class, 'venue_id');
     }
 
+    /** @return BelongsTo<Country, $this> */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class, 'country_code', 'code');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function resultSubmittedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'result_submitted_by_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function resultVerifiedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'result_verified_by_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function mvpPlayer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'mvp_player_id');
     }
 
+    /** @return HasMany<FootballPlayerRequest, $this> */
     public function playerRequests(): HasMany
     {
         return $this->hasMany(FootballPlayerRequest::class, 'match_id');

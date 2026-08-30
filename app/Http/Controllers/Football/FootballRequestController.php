@@ -9,7 +9,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Models\FootballPlayerRequest;
 use App\Models\FootballPlayerRequestApplication;
-use App\Models\FootballTeam;
 use App\Notifications\FootballPlayerAppliedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -95,7 +94,7 @@ class FootballRequestController extends Controller
             'is_active' => true,
         ]);
 
-        return redirect()->route('football.requests.index', ['city' => Str::slug($playerRequest->city)])
+        return to_route('football.requests.index', ['city' => Str::slug($playerRequest->city)])
             ->with('status', 'İlanınız yayınlandı!');
     }
 
@@ -133,7 +132,7 @@ class FootballRequestController extends Controller
         $city = $playerRequest->city;
         $playerRequest->delete();
 
-        return redirect()->route('football.requests.index', ['city' => Str::slug($city)])
+        return to_route('football.requests.index', ['city' => Str::slug($city)])
             ->with('status', 'İlan kaldırıldı.');
     }
 }

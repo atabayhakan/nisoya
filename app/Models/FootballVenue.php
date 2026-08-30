@@ -88,26 +88,31 @@ class FootballVenue extends Model
         });
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_id');
     }
 
+    /** @return BelongsTo<Country, $this> */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class, 'country_code', 'code');
     }
 
+    /** @return HasMany<FootballVenueReview, $this> */
     public function reviews(): HasMany
     {
         return $this->hasMany(FootballVenueReview::class, 'venue_id');
     }
 
+    /** @return HasMany<FootballVenueReview, $this> */
     public function publishedReviews(): HasMany
     {
         return $this->hasMany(FootballVenueReview::class, 'venue_id')->where('status', 'yayinda');
     }
 
+    /** @return HasMany<FootballMatch, $this> */
     public function matches(): HasMany
     {
         return $this->hasMany(FootballMatch::class, 'venue_id');

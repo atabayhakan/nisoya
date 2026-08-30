@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Models\FootballMatch;
 use App\Models\FootballTeam;
 use App\Models\FootballVenue;
-use App\Models\User;
 use App\Notifications\FootballMatchInviteNotification;
 use App\Notifications\FootballMatchResultNotification;
 use App\Notifications\FootballMatchVerifiedNotification;
@@ -142,7 +141,7 @@ class FootballMatchController extends Controller
             }
         }
 
-        return redirect()->route('football.matches.show', ['city' => Str::slug($match->city), 'match' => $match->id])
+        return to_route('football.matches.show', ['city' => Str::slug($match->city), 'match' => $match->id])
             ->with('status', 'Maç başarıyla oluşturuldu.');
     }
 
@@ -232,7 +231,7 @@ class FootballMatchController extends Controller
             ));
         }
 
-        return redirect()->route('football.matches.show', ['city' => Str::slug($match->city), 'match' => $match->id])
+        return to_route('football.matches.show', ['city' => Str::slug($match->city), 'match' => $match->id])
             ->with('status', 'Maç skoru girildi. Rakip kaptanın onayı bekleniyor.');
     }
 
@@ -256,7 +255,7 @@ class FootballMatchController extends Controller
         $match->homeTeam?->captain?->notify(new FootballMatchVerifiedNotification($match, $matchUrl));
         $match->awayTeam?->captain?->notify(new FootballMatchVerifiedNotification($match, $matchUrl));
 
-        return redirect()->route('football.matches.show', ['city' => Str::slug($match->city), 'match' => $match->id])
+        return to_route('football.matches.show', ['city' => Str::slug($match->city), 'match' => $match->id])
             ->with('status', '🎉 Maç sonucu doğrulandı! Şehir lig tablosu ve istatistikler güncellendi.');
     }
 
@@ -273,7 +272,7 @@ class FootballMatchController extends Controller
             'dispute_reason' => $validated['dispute_reason'],
         ]);
 
-        return redirect()->route('football.matches.show', ['city' => Str::slug($match->city), 'match' => $match->id])
+        return to_route('football.matches.show', ['city' => Str::slug($match->city), 'match' => $match->id])
             ->with('status', 'Skora itiraz edildi. Yönetici incelemesine alındı.');
     }
 }

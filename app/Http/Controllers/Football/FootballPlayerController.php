@@ -7,7 +7,6 @@ use App\Enums\FootballPosition;
 use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Models\FootballPlayerProfile;
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -102,7 +101,7 @@ class FootballPlayerController extends Controller
             ]
         );
 
-        return redirect()->route('profiles.show', $user->username)
+        return to_route('profiles.show', $user->username)
             ->with('status', 'Futbol profiliniz başarıyla güncellendi.');
     }
 }

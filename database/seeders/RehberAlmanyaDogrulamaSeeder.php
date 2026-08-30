@@ -6,6 +6,7 @@ use App\Models\IslemTuru;
 use App\Models\Temsilcilik;
 use App\Models\TemsilcilikIslemi;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 
 /**
  * Ülke Rehberi doğrulama turu (2026-08-26, elle çalıştırılır, deploy zincirinde
@@ -50,7 +51,7 @@ class RehberAlmanyaDogrulamaSeeder extends Seeder
      * içerikle GÜNCELLER. Status TASLAK kalır — sahip panelden doğrulayıp
      * yayına alır.
      *
-     * @param  \Illuminate\Support\Collection<int, Temsilcilik>  $temsilcilikler
+     * @param  Collection<int, Temsilcilik>  $temsilcilikler
      */
     protected function mevcutKategorileriDuzelt($temsilcilikler): void
     {
@@ -161,7 +162,7 @@ class RehberAlmanyaDogrulamaSeeder extends Seeder
     /**
      * Gerçekten hiç taslağı olmayan 3 yeni kategoriyi ekler.
      *
-     * @param  \Illuminate\Support\Collection<int, Temsilcilik>  $temsilcilikler
+     * @param  Collection<int, Temsilcilik>  $temsilcilikler
      */
     protected function yeniKategorileriEkle($temsilcilikler): void
     {

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\FootballLevel;
 use App\Enums\FootballMemberStatus;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,10 @@ use Illuminate\Support\Str;
 
 /**
  * @property FootballLevel $level
+ * @property-read User|null $captain
+ * @property-read Country|null $country
+ * @property-read Collection<int, FootballTeamMember> $members
+ * @property-read Collection<int, FootballTeamMember> $activeMembers
  */
 class FootballTeam extends Model
 {
@@ -70,37 +75,44 @@ class FootballTeam extends Model
         });
     }
 
+    /** @return BelongsTo<User, $this> */
     public function captain(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /** @return BelongsTo<Country, $this> */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class, 'country_code', 'code');
     }
 
+    /** @return HasMany<FootballTeamMember, $this> */
     public function members(): HasMany
     {
         return $this->hasMany(FootballTeamMember::class, 'team_id');
     }
 
+    /** @return HasMany<FootballTeamMember, $this> */
     public function activeMembers(): HasMany
     {
         return $this->hasMany(FootballTeamMember::class, 'team_id')
             ->where('status', FootballMemberStatus::Aktif->value);
     }
 
+    /** @return HasMany<FootballMatch, $this> */
     public function homeMatches(): HasMany
     {
         return $this->hasMany(FootballMatch::class, 'home_team_id');
     }
 
+    /** @return HasMany<FootballMatch, $this> */
     public function awayMatches(): HasMany
     {
         return $this->hasMany(FootballMatch::class, 'away_team_id');
     }
 
+    /** @return HasMany<FootballPlayerRequest, $this> */
     public function playerRequests(): HasMany
     {
         return $this->hasMany(FootballPlayerRequest::class, 'team_id');

@@ -8,7 +8,7 @@
     kendini hiç render etmez; boş bir "başka ülke" satırı yalancı seçenek
     sunmuş olurdu.
 --}}
-@props(['aktif' => null, 'baslik' => 'Farklı Ülke Rehberi:'])
+@props(['aktif' => null, 'baslik' => 'Başka ülke:'])
 
 @php
     $hazirUlkeler = app(\App\Services\RehberYuzeyi::class)->hazirUlkeler();
@@ -17,10 +17,17 @@
         $hazirUlkeler = $hazirUlkeler->reject(fn ($c) => $c->code === $aktif->code);
     }
 
-    // Öncelikli diaspora ülkeleri
-    $oncelikliKodlar = ['DE', 'NL', 'GB', 'FR', 'AT', 'BE', 'CH', 'US', 'AZ', 'KZ', 'UZ', 'TM'];
-    $oncelikli = $hazirUlkeler->filter(fn ($c) => in_array($c->code, $oncelikliKodlar, true))->take(7);
-    $diger = $hazirUlkeler->reject(fn ($c) => $oncelikli->contains('code', $c->code));
+    if ($hazirUlkeler->count() <= 8) {
+        $oncelikli = $hazirUlkeler;
+        $diger = collect();
+    } else {
+        $oncelikliKodlar = ['DE', 'NL', 'GB', 'FR', 'AT', 'BE', 'CH', 'US', 'AZ', 'KZ', 'UZ', 'TM'];
+        $oncelikli = $hazirUlkeler->filter(fn ($c) => in_array($c->code, $oncelikliKodlar, true))->take(8);
+        if ($oncelikli->isEmpty()) {
+            $oncelikli = $hazirUlkeler->take(8);
+        }
+        $diger = $hazirUlkeler->reject(fn ($c) => $oncelikli->contains('code', $c->code));
+    }
 @endphp
 
 @if ($hazirUlkeler->isNotEmpty())
