@@ -17,17 +17,22 @@ class MapController extends Controller
             $points = JobListing::query()->active()
                 ->whereNotNull('latitude')
                 ->whereNotNull('longitude')
-                ->with('company')
+                ->with(['company', 'category'])
                 ->latest()
                 ->limit(500)
                 ->get()
                 ->map(fn (JobListing $j) => [
+                    'id' => $j->id,
                     'title' => $j->title,
                     'price' => $j->salaryLabel() ?? 'Görüşülür',
                     'type' => 'is',
                     'city' => $j->city,
-                    'lat' => $j->latitude,
-                    'lng' => $j->longitude,
+                    'country_code' => $j->country_code,
+                    'category' => $j->category?->name_tr ?? 'İş İlanı',
+                    'company' => $j->company?->name,
+                    'image' => $j->company?->logo_url,
+                    'lat' => (float) $j->latitude,
+                    'lng' => (float) $j->longitude,
                     'url' => route('jobs.show', [$j->id, $j->slug]),
                 ]);
 
@@ -41,21 +46,26 @@ class MapController extends Controller
         $query = Listing::query()->active()->gercek()
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
-            ->with(['category', 'country']);
+            ->with(['category', 'country', 'coverImage']);
 
         if (in_array($type, ['hizmet', 'urun'], true)) {
             $query->where('type', $type);
         }
 
         $points = $query->latest()->limit(500)->get()->map(fn (Listing $l) => [
+            'id' => $l->id,
             'title' => $l->title,
             'price' => $l->price !== null
-                ? number_format((float) $l->price, 0).' '.$l->currency
+                ? number_format((float) $l->price, 0, ',', '.').' '.$l->currency
                 : 'Görüşülür',
             'type' => $l->type->value,
             'city' => $l->city,
-            'lat' => $l->latitude,
-            'lng' => $l->longitude,
+            'country_code' => $l->country_code,
+            'country_name' => $l->country?->name_tr,
+            'category' => $l->category?->name,
+            'image' => $l->coverImage?->enIyiUrl('thumb'),
+            'lat' => (float) $l->latitude,
+            'lng' => (float) $l->longitude,
             'url' => route('listings.show', [$l->id, $l->slug]),
         ]);
 
