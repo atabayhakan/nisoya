@@ -9,7 +9,7 @@
     :title="$islemKaydi->islemTuru->ad.' — '.$temsilcilik->ad.' — '.setting('genel.site_adi')"
     :description="$temsilcilik->ad.' '.$islemKaydi->islemTuru->ad.' işlemi: gerekli evraklar, süre, ücret ve resmî kaynak.'"
 >
-    <div class="mx-auto max-w-3xl px-4 py-12">
+    <div class="mx-auto max-w-4xl px-4 py-8 sm:py-10">
         <nav class="text-sm text-stone-500 dark:text-stone-400" aria-label="breadcrumb">
             <a href="{{ route('home') }}" class="hover:underline">Ana sayfa</a>
             <span aria-hidden="true"> / </span>
