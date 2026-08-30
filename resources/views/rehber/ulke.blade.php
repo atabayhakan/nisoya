@@ -6,7 +6,7 @@
         {{-- Breadcrumbs --}}
         <nav class="flex items-center gap-2 text-xs font-semibold text-stone-500 dark:text-stone-400" aria-label="breadcrumb">
             <a href="{{ route('home') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Ana Sayfa</a>
-            <span class="text-stone-300 dark:text-stone-600">/</span>
+            <span class="text-stone-300 dark:text-stone-400">/</span>
             <span class="text-stone-800 dark:text-stone-200">{{ $country->name_tr }} Konsolosluk Rehberi</span>
         </nav>
 
@@ -126,7 +126,7 @@
                                 </h3>
 
                                 <p class="mt-1 flex items-center gap-1 text-xs font-semibold text-stone-500 dark:text-stone-400">
-                                    <x-heroicon-o-map-pin class="h-3.5 w-3.5 text-stone-400" />
+                                    <x-heroicon-o-map-pin class="h-3.5 w-3.5 text-stone-500" />
                                     {{ $t->sehir }}, {{ $country->name_tr }}
                                 </p>
 

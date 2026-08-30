@@ -26,7 +26,7 @@ class FootballVenueResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return '⚽ Halı Saha & Spor';
+        return 'Topluluk & İletişim';
     }
 
     protected static ?string $navigationLabel = 'Halı Sahalar';

@@ -54,7 +54,7 @@
                     <a href="{{ route('football.index') }}"
                        class="group rounded-2xl border border-emerald-300 bg-emerald-50/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md dark:border-emerald-800 dark:bg-emerald-950/40">
                         <div class="flex items-center justify-between">
-                            <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-600 text-lg text-white shadow-xs">
+                            <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-700 text-lg text-white shadow-xs">
                                 ⚽
                             </span>
                             <span class="rounded-md bg-emerald-700 px-1.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider dark:bg-emerald-500 dark:text-stone-950">Yeni</span>

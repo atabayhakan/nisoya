@@ -29,7 +29,7 @@ class FootballPlayerRequestResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return '⚽ Halı Saha & Spor';
+        return 'Topluluk & İletişim';
     }
 
     protected static ?string $navigationLabel = 'Oyuncu / Maç İlanları';

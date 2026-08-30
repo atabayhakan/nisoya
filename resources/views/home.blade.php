@@ -88,7 +88,7 @@
                     {{ \App\Support\Hero::baslik() }}<br>
                     <span class="{{ $heroMedya ? 'text-emerald-300' : 'text-emerald-700 dark:text-emerald-400' }}">{{ \App\Support\Hero::vurgu() }}</span> {{ setting('home.hero_satir2') }}
                 </h1>
-                <p class="mx-auto mt-4 max-w-2xl text-base sm:text-lg {{ $heroMedya ? 'text-white/85' : 'text-stone-600 dark:text-stone-300' }}">
+                <p class="mx-auto mt-4 max-w-2xl text-base sm:text-lg {{ $heroMedya ? 'text-white/80' : 'text-stone-600 dark:text-stone-300' }}">
                     {{ \App\Support\Hero::altBaslik() }}
                 </p>
 

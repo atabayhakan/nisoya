@@ -30,7 +30,7 @@ class FootballMatchResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return '⚽ Halı Saha & Spor';
+        return 'Topluluk & İletişim';
     }
 
     protected static ?string $navigationLabel = 'Maçlar';

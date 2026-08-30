@@ -259,7 +259,7 @@
             <div class="mt-8 border-t border-stone-100 pt-4 dark:border-stone-800">
                 <p class="text-center text-xs font-medium text-stone-500 dark:text-stone-400">
                     © {{ date('Y') }} {{ setting('footer.telif_metni') }}
-                    <span class="mx-2 text-stone-300 dark:text-stone-600" aria-hidden="true">·</span>
+                    <span class="mx-2 text-stone-300 dark:text-stone-400" aria-hidden="true">·</span>
                     Hizmet ücretsizdir. 💙
                 </p>
             </div>
