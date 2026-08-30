@@ -253,6 +253,25 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('job-apply', fn (Request $request) => Limit::perMinute(15)->by($request->user()?->id ?: $request->ip())
         );
 
+        // Halı Saha / Futbol modülü hız sınırları
+        RateLimiter::for('team-create', fn (Request $request) => Limit::perMinute(5)->by($request->user()?->id ?: $request->ip())
+        );
+
+        RateLimiter::for('match-create', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
+        );
+
+        RateLimiter::for('score-submit', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
+        );
+
+        RateLimiter::for('venue-review', fn (Request $request) => Limit::perMinute(5)->by($request->user()?->id ?: $request->ip())
+        );
+
+        RateLimiter::for('request-create', fn (Request $request) => Limit::perMinute(6)->by($request->user()?->id ?: $request->ip())
+        );
+
+        RateLimiter::for('request-apply', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
+        );
+
         RateLimiter::for('register', fn (Request $request) => Limit::perMinute(5)->by($request->ip())
         );
 

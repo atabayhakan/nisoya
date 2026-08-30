@@ -33,6 +33,7 @@ class HomeSections
         'kategoriler' => 'Kategoriler',
         'ulkeler' => 'Ülkeler',
         'rehber' => 'Ülke rehberi (konsolosluk işlemleri)',
+        'spor' => '⚽ Nisoya Spor (Halı Saha & Maçlar)',
         'yeni_ilanlar' => 'Yeni ilanlar',
         'nasil_calisir' => 'Nasıl çalışır',
         'cta' => 'Kayıt çağrısı (CTA)',
@@ -50,8 +51,8 @@ class HomeSections
         // 'rehber' varsayılanda 'ulkeler'den SONRA: çapalar sıra İNDEKSİNE
         // bağlı (klasik zone_orta=3, vitrin nabiz=1) — araya daha önden bir
         // bölüm sokmak çapalı blokları sayfada kaydırırdı.
-        'klasik' => ['canli_akis', 'deger_onerileri', 'kategoriler', 'ulkeler', 'rehber', 'yeni_ilanlar', 'nasil_calisir', 'cta'],
-        'vitrin' => ['kategoriler', 'yeni_ilanlar', 'deger_onerileri', 'ulkeler', 'rehber', 'nasil_calisir', 'cta'],
+        'klasik' => ['canli_akis', 'deger_onerileri', 'kategoriler', 'ulkeler', 'rehber', 'spor', 'yeni_ilanlar', 'nasil_calisir', 'cta'],
+        'vitrin' => ['kategoriler', 'yeni_ilanlar', 'deger_onerileri', 'ulkeler', 'rehber', 'spor', 'nasil_calisir', 'cta'],
     ];
 
     /**

@@ -30,8 +30,9 @@ class NavigationLinkSeeder extends Seeder
             ['label' => 'Emlak', 'url' => '/emlak', 'group_key' => NavigationLink::GROUP_KESFET, 'icon' => 'home', 'description' => 'Satılık ve kiralık ilanlar', 'sort_order' => 4],
             ['label' => 'Vasıta', 'url' => '/vasita', 'group_key' => NavigationLink::GROUP_KESFET, 'icon' => 'truck', 'description' => 'Satılık ve kiralık araç', 'sort_order' => 5],
             ['label' => 'Anılar & Davetiyeler', 'url' => '/mutlu-anlar', 'group_key' => NavigationLink::GROUP_KESFET, 'icon' => 'gift', 'description' => 'Etkinlik anılarını keşfet', 'sort_order' => 6],
-            ['label' => 'Harita', 'url' => '/harita', 'icon' => 'map', 'sort_order' => 7],
-            ['label' => 'Nasıl Çalışır?', 'url' => '/nasil-calisir', 'icon' => 'question-mark-circle', 'sort_order' => 8],
+            ['label' => 'Halı Saha & Spor', 'url' => '/spor', 'group_key' => NavigationLink::GROUP_KESFET, 'icon' => 'trophy', 'description' => 'Takımını kur, maç yap, ligde yarış', 'sort_order' => 7],
+            ['label' => 'Harita', 'url' => '/harita', 'icon' => 'map', 'sort_order' => 8],
+            ['label' => 'Nasıl Çalışır?', 'url' => '/nasil-calisir', 'icon' => 'question-mark-circle', 'sort_order' => 9],
         ];
 
         foreach ($links as $link) {

@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             // Temsilcilikler en azından ikisinde de var: onlarsız yerel
             // rehber içeriği aktarımı sessizce yarısını atlıyordu.
             RehberTemsilcilikleriSeeder::class,
+            FootballSeeder::class,
         ]);
     }
 }

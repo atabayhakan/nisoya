@@ -204,79 +204,80 @@
         <x-zone zone-key="footer_ust_serit" />
     </div>
 
-    {{-- Alt bilgi --}}
-    <footer class="mt-16 border-t border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
-        <div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 md:grid-cols-4">
-            <div>
-                <div class="flex items-center gap-2">
-                    @if ($logoPath)
-                        <img src="{{ Storage::disk('public')->url($logoPath) }}" alt="{{ setting('genel.site_adi') }}" class="h-8 w-8 rounded-lg object-cover">
-                    @else
-                        <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-700 text-white dark:bg-emerald-500 dark:text-stone-900">
-                            <x-logo-mark class="h-4 w-4" />
-                        </span>
-                    @endif
-                    <span class="text-lg font-bold text-stone-900 dark:text-stone-50">{{ setting('genel.site_adi') }}</span>
-                </div>
-                <p class="mt-3 text-sm text-stone-500 dark:text-stone-400">{{ setting('footer.aciklama') }}</p>
-                @if (setting('footer.sosyal_instagram') || setting('footer.sosyal_facebook') || setting('footer.sosyal_whatsapp'))
-                    <div class="mt-4 flex items-center gap-3 text-stone-600 dark:text-stone-400">
-                        @if (setting('footer.sosyal_instagram'))
-                            <a href="{{ setting('footer.sosyal_instagram') }}" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-700 dark:hover:text-emerald-400" aria-label="Instagram">📷</a>
+    {{-- Alt bilgi (Konteyner İçinde / Taşmasız Çerçeveli Düzen) --}}
+    <footer class="mx-auto max-w-6xl px-4 mt-16 mb-8 w-full">
+        <div class="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-10 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+            <div class="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        @if ($logoPath)
+                            <img src="{{ Storage::disk('public')->url($logoPath) }}" alt="{{ setting('genel.site_adi') }}" class="h-8 w-8 rounded-lg object-cover">
+                        @else
+                            <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-700 text-white dark:bg-emerald-500 dark:text-stone-900">
+                                <x-logo-mark class="h-4 w-4" />
+                            </span>
                         @endif
-                        @if (setting('footer.sosyal_facebook'))
-                            <a href="{{ setting('footer.sosyal_facebook') }}" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-700 dark:hover:text-emerald-400" aria-label="Facebook">📘</a>
-                        @endif
-                        @if (setting('footer.sosyal_whatsapp'))
-                            <a href="{{ setting('footer.sosyal_whatsapp') }}" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-700 dark:hover:text-emerald-400" aria-label="WhatsApp">💬</a>
-                        @endif
+                        <span class="text-lg font-bold text-stone-900 dark:text-stone-50">{{ setting('genel.site_adi') }}</span>
                     </div>
-                @endif
-            </div>
-            <div>
-                <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">Keşfet</h3>
-                <ul class="mt-3 space-y-2 text-sm text-stone-500 dark:text-stone-400">
-                    <li><a href="{{ url('/ilanlar') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Tüm İlanlar</a></li>
-                    @if (\App\Support\Modules::enabled('is_ilanlari'))
-                        <li><a href="{{ route('jobs.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İş İlanları</a></li>
-                        <li><a href="{{ route('candidates.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Yetenek Havuzu</a></li>
+                    <p class="mt-3 text-sm text-stone-500 dark:text-stone-400">{{ setting('footer.aciklama') }}</p>
+                    @if (setting('footer.sosyal_instagram') || setting('footer.sosyal_facebook') || setting('footer.sosyal_whatsapp'))
+                        <div class="mt-4 flex items-center gap-3 text-stone-600 dark:text-stone-400">
+                            @if (setting('footer.sosyal_instagram'))
+                                <a href="{{ setting('footer.sosyal_instagram') }}" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-700 dark:hover:text-emerald-400" aria-label="Instagram">📷</a>
+                            @endif
+                            @if (setting('footer.sosyal_facebook'))
+                                <a href="{{ setting('footer.sosyal_facebook') }}" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-700 dark:hover:text-emerald-400" aria-label="Facebook">📘</a>
+                            @endif
+                            @if (setting('footer.sosyal_whatsapp'))
+                                <a href="{{ setting('footer.sosyal_whatsapp') }}" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-700 dark:hover:text-emerald-400" aria-label="WhatsApp">💬</a>
+                            @endif
+                        </div>
                     @endif
-                    {{-- Rehber bağlantısı ancak yayında içerik varken belirir (F2) —
-                         boş rehbere götüren link, linkin yokluğundan kötüdür. Hedef
-                         ziyaretçinin kendi ülkesi (F3, girisNoktasiUlkeKodu) — sabit
-                         "ilk hazır ülke" artık yalnız o da hazır değilse devreye girer. --}}
-                    @if (\App\Support\Modules::enabled('rehber') && ($rehberFooterUlke = app(\App\Services\RehberYuzeyi::class)->girisNoktasiUlkeKodu(request()->user(), request())) !== null)
-                        <li><a href="{{ route('rehber.ulke', $rehberFooterUlke) }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Ülke Rehberi</a></li>
-                    @endif
-                    <li><a href="{{ url('/nasil-calisir') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a></li>
-                    <li><a href="{{ route('nabiz') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nisoya Nabzı</a></li>
-                </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">Keşfet</h3>
+                    <ul class="mt-3 space-y-2 text-sm text-stone-500 dark:text-stone-400">
+                        <li><a href="{{ url('/ilanlar') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Tüm İlanlar</a></li>
+                        @if (\App\Support\Modules::enabled('hali_saha'))
+                            <li><a href="{{ route('football.index') }}" class="inline-flex items-center gap-1.5 font-medium text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"><span>⚽</span><span>Halı Saha & Spor</span></a></li>
+                        @endif
+                        @if (\App\Support\Modules::enabled('is_ilanlari'))
+                            <li><a href="{{ route('jobs.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İş İlanları</a></li>
+                            <li><a href="{{ route('candidates.index') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Yetenek Havuzu</a></li>
+                        @endif
+                        @if (\App\Support\Modules::enabled('rehber') && ($rehberFooterUlke = app(\App\Services\RehberYuzeyi::class)->girisNoktasiUlkeKodu(request()->user(), request())) !== null)
+                            <li><a href="{{ route('rehber.ulke', $rehberFooterUlke) }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Ülke Rehberi</a></li>
+                        @endif
+                        <li><a href="{{ url('/nasil-calisir') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nasıl Çalışır?</a></li>
+                        <li><a href="{{ route('nabiz') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Nisoya Nabzı</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">Hesap</h3>
+                    <ul class="mt-3 space-y-2 text-sm text-stone-500 dark:text-stone-400">
+                        <li><a href="{{ url('/giris') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Giriş Yap</a></li>
+                        <li><a href="{{ url('/kayit') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Kayıt Ol</a></li>
+                        <li><a href="{{ url('/panel/ilan/yeni') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İlan Ver</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">Kurumsal</h3>
+                    <ul class="mt-3 space-y-2 text-sm text-stone-500 dark:text-stone-400">
+                        @foreach (\App\Models\Page::navPages() as $navPage)
+                            <li><a href="{{ url('/'.$navPage->slug) }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">{{ $navPage->title }}</a></li>
+                        @endforeach
+                        <li><a href="{{ route('pages.contact') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İletişim</a></li>
+                        <li><a href="/cerez-tercihleri" class="hover:text-emerald-700 dark:hover:text-emerald-400">Çerez Tercihleri</a></li>
+                    </ul>
+                </div>
             </div>
-            <div>
-                <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">Hesap</h3>
-                <ul class="mt-3 space-y-2 text-sm text-stone-500 dark:text-stone-400">
-                    <li><a href="{{ url('/giris') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Giriş Yap</a></li>
-                    <li><a href="{{ url('/kayit') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">Kayıt Ol</a></li>
-                    <li><a href="{{ url('/panel/ilan/yeni') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İlan Ver</a></li>
-                </ul>
+            <div class="mt-8 border-t border-stone-100 pt-6 dark:border-stone-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500 dark:text-stone-400">
+                <p>© {{ date('Y') }} {{ setting('footer.telif_metni') }} · Hizmet ücretsizdir. 💛</p>
+                <p class="inline-flex items-center gap-1.5">
+                    <span class="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Diaspora Türkleri İçin Özgür & Güvenli Topluluk</span>
+                </p>
             </div>
-            <div>
-                <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100">Kurumsal</h3>
-                <ul class="mt-3 space-y-2 text-sm text-stone-500 dark:text-stone-400">
-                    @foreach (\App\Models\Page::navPages() as $navPage)
-                        <li><a href="{{ url('/'.$navPage->slug) }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">{{ $navPage->title }}</a></li>
-                    @endforeach
-                    <li><a href="{{ route('pages.contact') }}" class="hover:text-emerald-700 dark:hover:text-emerald-400">İletişim</a></li>
-                    <li><a href="/cerez-tercihleri" class="hover:text-emerald-700 dark:hover:text-emerald-400">Çerez Tercihleri</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="border-t border-stone-100 py-4 dark:border-stone-800">
-            <p class="mx-auto max-w-6xl px-4 text-center text-xs text-stone-600 dark:text-stone-400">
-                © {{ date('Y') }} {{ setting('footer.telif_metni') }}
-                <span class="mx-2 text-stone-300 dark:text-stone-400" aria-hidden="true">·</span>
-                Hizmet ücretsizdir. 💛
-            </p>
         </div>
     </footer>
 

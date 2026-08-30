@@ -171,6 +171,71 @@
                     </section>
                 @endif
 
+                {{-- Futbolcu & Halı Saha Profili --}}
+                @if ($user->footballProfile || $user->footballTeams->isNotEmpty() || (auth()->check() && auth()->id() === $user->id))
+                    <section class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+                        <div class="flex items-center justify-between">
+                            <h2 class="font-semibold text-stone-800 dark:text-stone-100 flex items-center gap-1.5">
+                                <span>⚽</span> Futbol Profili
+                            </h2>
+                            @if (auth()->check() && auth()->id() === $user->id)
+                                <a href="{{ route('football.player.edit') }}" class="text-2xs font-bold text-emerald-700 hover:underline dark:text-emerald-400">
+                                    Düzenle →
+                                </a>
+                            @endif
+                        </div>
+
+                        @if ($user->footballProfile)
+                            <div class="mt-3 flex flex-wrap gap-1.5">
+                                <span class="rounded-lg bg-emerald-50 px-2 py-0.5 text-2xs font-bold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+                                    {{ $user->footballProfile->level->badgeEmoji() }} {{ $user->footballProfile->level->getLabel() }}
+                                </span>
+                                @foreach ($user->footballProfile->positionEnums() as $pos)
+                                    <span class="rounded-lg bg-stone-100 px-2 py-0.5 text-2xs font-semibold text-stone-700 dark:bg-stone-800 dark:text-stone-300">
+                                        {{ $pos->labelWithEmoji() }}
+                                    </span>
+                                @endforeach
+                            </div>
+
+                            @if ($user->footballProfile->bio)
+                                <p class="mt-2 text-xs text-stone-600 leading-relaxed dark:text-stone-400">
+                                    {{ $user->footballProfile->bio }}
+                                </p>
+                            @endif
+
+                            @if ($user->footballProfile->is_looking_for_team || $user->footballProfile->is_looking_for_match)
+                                <div class="mt-2 flex flex-wrap gap-1">
+                                    @if ($user->footballProfile->is_looking_for_team)
+                                        <span class="rounded-full bg-amber-50 px-2 py-0.5 text-3xs font-bold text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                                            ✨ Takım Arıyor
+                                        </span>
+                                    @endif
+                                    @if ($user->footballProfile->is_looking_for_match)
+                                        <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-3xs font-bold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+                                            ⚽ Maç Arıyor
+                                        </span>
+                                    @endif
+                                </div>
+                            @endif
+                        @endif
+
+                        @if ($user->footballTeams->isNotEmpty())
+                            <div class="mt-3 border-t border-stone-100 pt-3 dark:border-stone-800">
+                                <p class="text-3xs uppercase font-bold text-stone-400">Takımları</p>
+                                <div class="mt-1.5 space-y-1">
+                                    @foreach ($user->footballTeams as $team)
+                                        <a href="{{ route('football.teams.show', ['city' => \Illuminate\Support\Str::slug($team->city), 'team' => $team->slug]) }}"
+                                           class="flex items-center justify-between text-xs font-semibold text-stone-800 hover:text-emerald-700 dark:text-stone-200 dark:hover:text-emerald-400">
+                                            <span>🏆 {{ $team->name }} ({{ $team->city }})</span>
+                                            <span class="text-3xs text-stone-400">{{ $team->pivot->role === 'captain' ? '👑 Kaptan' : 'Oyuncu' }}</span>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </section>
+                @endif
+
                 @if ($user->portfolioItems->isNotEmpty())
                     <section class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
                         <h2 class="font-semibold text-stone-800 dark:text-stone-100">Portfolyo</h2>

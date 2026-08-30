@@ -83,6 +83,11 @@ class ProfanityFilterService
         return ! empty($this->findProfanities($text));
     }
 
+    public function hasProfanity(?string $text): bool
+    {
+        return $this->containsProfanity($text);
+    }
+
     /**
      * Metinde geçen küfürlü kelimeleri döndürür.
      *

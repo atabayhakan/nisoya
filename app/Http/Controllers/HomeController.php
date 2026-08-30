@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\FootballMatch;
+use App\Models\FootballPlayerProfile;
+use App\Models\FootballTeam;
+use App\Models\FootballVenue;
 use App\Models\HomeHighlight;
 use App\Models\IslemTuru;
 use App\Models\Listing;
@@ -152,7 +156,49 @@ class HomeController extends Controller
             'bigHighlights' => HomeHighlight::forSlot(HomeHighlight::SLOT_BIG),
             'smallHighlights' => HomeHighlight::forSlot(HomeHighlight::SLOT_SMALL),
             'rehber' => $rehber,
+            'spor' => $this->sporVerisi($request),
         ]);
+    }
+
+    /**
+     * Halı saha / spor bölümünün anasayfa verisi.
+     *
+     * @return array{aktif: bool, sehir: string, maclar: \Illuminate\Support\Collection<int, FootballMatch>, haftaninMaci: ?FootballMatch, istatistikler: array{takim: int, mac: int, saha: int, oyuncu: int}}|null
+     */
+    private function sporVerisi(Request $request): ?array
+    {
+        if (! Modules::enabled('hali_saha')) {
+            return null;
+        }
+
+        $sehir = $request->user()?->city ?: 'Berlin';
+
+        $maclar = FootballMatch::query()
+            ->verified()
+            ->with(['homeTeam', 'awayTeam', 'venue', 'mvpPlayer'])
+            ->latest('match_date')
+            ->take(4)
+            ->get();
+
+        $haftaninMaci = FootballMatch::query()
+            ->verified()
+            ->featured()
+            ->with(['homeTeam', 'awayTeam', 'venue', 'mvpPlayer'])
+            ->latest('match_date')
+            ->first() ?? $maclar->first();
+
+        return [
+            'aktif' => true,
+            'sehir' => $sehir,
+            'maclar' => $maclar,
+            'haftaninMaci' => $haftaninMaci,
+            'istatistikler' => [
+                'takim' => FootballTeam::query()->active()->count(),
+                'mac' => FootballMatch::query()->verified()->count(),
+                'saha' => FootballVenue::query()->active()->count(),
+                'oyuncu' => FootballPlayerProfile::query()->count(),
+            ],
+        ];
     }
 
     /**

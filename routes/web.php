@@ -14,6 +14,12 @@ use App\Http\Controllers\EventMediaController;
 use App\Http\Controllers\ExifMapController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FeatureController;
+use App\Http\Controllers\Football\FootballBrowseController;
+use App\Http\Controllers\Football\FootballMatchController;
+use App\Http\Controllers\Football\FootballPlayerController;
+use App\Http\Controllers\Football\FootballRequestController;
+use App\Http\Controllers\Football\FootballTeamController;
+use App\Http\Controllers\Football\FootballVenueController;
 use App\Http\Controllers\HappyMomentsController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
@@ -108,6 +114,61 @@ Route::middleware('module:is_ilanlari')->group(function () {
         ->name('jobs.show');
     Route::get('/sirket/{company}', [CompanyController::class, 'show'])->name('companies.show');
     Route::get('/adaylar', [CandidateController::class, 'index'])->name('candidates.index');
+});
+
+// Halı Saha / Futbol Topluluğu modülü rotaları
+Route::middleware('module:hali_saha')->prefix('spor')->name('football.')->group(function () {
+    // Herkese açık keşif
+    Route::get('/', [FootballBrowseController::class, 'index'])->name('index');
+
+    // Giriş gerektiren formlar & eylemler (Şehir parametreli rotalardan ÖNCE olmalı ki 'yeni' veya 'profilim' slug sanılmasın)
+    Route::middleware(['auth', 'verified'])->group(function () {
+        // Futbolcu Profili
+        Route::get('/profilim/duzenle', [FootballPlayerController::class, 'edit'])->name('player.edit');
+        Route::put('/profilim', [FootballPlayerController::class, 'update'])->name('player.update');
+
+        // Takım Kurma & Eylemler
+        Route::get('/takim/yeni', [FootballTeamController::class, 'create'])->name('teams.create');
+        Route::post('/takim', [FootballTeamController::class, 'store'])->middleware(['honeypot', 'throttle:team-create'])->name('teams.store');
+        Route::get('/takim/{team}/duzenle', [FootballTeamController::class, 'edit'])->name('teams.edit');
+        Route::put('/takim/{team}', [FootballTeamController::class, 'update'])->name('teams.update');
+        Route::post('/takim/{team}/davet', [FootballTeamController::class, 'invitePlayer'])->name('teams.invite');
+        Route::post('/takim/{team}/katil', [FootballTeamController::class, 'requestToJoin'])->name('teams.join');
+        Route::post('/takim/davet/{member}/yanitla', [FootballTeamController::class, 'respondInvite'])->name('teams.respond-invite');
+        Route::delete('/takim/{team}/ayril', [FootballTeamController::class, 'leaveTeam'])->name('teams.leave');
+
+        // Maç Oluşturma & Skor
+        Route::get('/mac/yeni', [FootballMatchController::class, 'create'])->name('matches.create');
+        Route::post('/mac', [FootballMatchController::class, 'store'])->middleware(['honeypot', 'throttle:match-create'])->name('matches.store');
+        Route::post('/mac/{match}/yanitla', [FootballMatchController::class, 'respondMatch'])->name('matches.respond');
+        Route::get('/mac/{match}/skor-gir', [FootballMatchController::class, 'enterScore'])->name('matches.score-form');
+        Route::post('/mac/{match}/skor', [FootballMatchController::class, 'submitScore'])->middleware('throttle:score-submit')->name('matches.score-submit');
+        Route::post('/mac/{match}/skor-onayla', [FootballMatchController::class, 'verifyScore'])->name('matches.score-verify');
+        Route::post('/mac/{match}/skor-itiraz', [FootballMatchController::class, 'disputeScore'])->name('matches.score-dispute');
+
+        // Halı Saha Ekleme & Puanlama
+        Route::get('/halisaha/yeni', [FootballVenueController::class, 'create'])->name('venues.create');
+        Route::post('/halisaha', [FootballVenueController::class, 'store'])->middleware('honeypot')->name('venues.store');
+        Route::post('/halisaha/{venue}/degerlendir', [FootballVenueController::class, 'storeReview'])->middleware(['honeypot', 'throttle:venue-review'])->name('venues.review');
+
+        // Oyuncu / Maç İlanı Açma & Başvuru
+        Route::get('/ilan/yeni', [FootballRequestController::class, 'create'])->name('requests.create');
+        Route::post('/ilan', [FootballRequestController::class, 'store'])->middleware(['honeypot', 'throttle:request-create'])->name('requests.store');
+        Route::post('/ilan/{playerRequest}/basvur', [FootballRequestController::class, 'apply'])->middleware('throttle:request-apply')->name('requests.apply');
+        Route::delete('/ilan/{playerRequest}', [FootballRequestController::class, 'destroy'])->name('requests.destroy');
+    });
+
+    // Şehir bazlı herkese açık sayfalar
+    Route::get('/{city}', [FootballBrowseController::class, 'city'])->name('city');
+    Route::get('/{city}/lig', [FootballBrowseController::class, 'league'])->name('league');
+    Route::get('/{city}/takimlar', [FootballTeamController::class, 'index'])->name('teams.index');
+    Route::get('/{city}/takim/{team:slug}', [FootballTeamController::class, 'show'])->name('teams.show');
+    Route::get('/{city}/halisahalar', [FootballVenueController::class, 'index'])->name('venues.index');
+    Route::get('/{city}/halisaha/{venue:slug}', [FootballVenueController::class, 'show'])->name('venues.show');
+    Route::get('/{city}/maclar', [FootballMatchController::class, 'index'])->name('matches.index');
+    Route::get('/{city}/mac/{match}', [FootballMatchController::class, 'show'])->name('matches.show');
+    Route::get('/{city}/oyuncular', [FootballPlayerController::class, 'index'])->name('players.index');
+    Route::get('/{city}/ilanlar', [FootballRequestController::class, 'index'])->name('requests.index');
 });
 
 // Hızlı arama (header komut paleti / Cmd+K, Faz H2) — herkese açık, salt-okunur JSON

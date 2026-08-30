@@ -29,16 +29,28 @@
          Ülke hapıyla AYNI dil kullanılıyor (yuvarlak çip, aynı kenar/gölge) —
          iki bölüm de aynı işi yapıyor: gezinme. Farklı görünmeleri için sebep
          yoktu. --}}
-    <section class="mx-auto max-w-6xl px-4 py-14" x-data x-reveal>
+    <section class="mx-auto max-w-6xl px-4 py-10 sm:py-14" x-data x-reveal>
         <div class="flex items-end justify-between">
-            <h2 class="text-3xl font-serif font-normal text-stone-900 md:text-4xl dark:text-stone-50">Kategoriler</h2>
-            <a href="{{ route('listings.index') }}" class="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">Tümünü gör →</a>
+            <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Keşfet & Bul</span>
+                <h2 class="mt-1 text-2xl font-bold text-stone-900 md:text-3xl dark:text-stone-50">Popüler Kategoriler</h2>
+            </div>
+            <a href="{{ route('listings.index') }}" class="text-sm font-semibold text-emerald-700 transition hover:text-emerald-800 hover:underline dark:text-emerald-400 dark:hover:text-emerald-300">Tümünü gör →</a>
         </div>
-        <div class="mt-5 flex flex-wrap gap-2">
+        <div class="mt-6 flex flex-wrap gap-2.5">
+            @if (\App\Support\Modules::enabled('hali_saha'))
+                <a href="{{ route('football.index') }}"
+                   class="group inline-flex items-center gap-2 rounded-2xl border border-emerald-300/80 bg-emerald-50/80 px-4 py-2.5 text-sm font-semibold text-emerald-900 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400 hover:bg-emerald-100 hover:shadow-md dark:border-emerald-800/80 dark:bg-emerald-950/40 dark:text-emerald-200 dark:hover:bg-emerald-900/60">
+                    <span class="text-base">⚽</span>
+                    <span>Halı Saha & Spor</span>
+                    <span class="rounded-md bg-emerald-600 px-1.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider dark:bg-emerald-500 dark:text-stone-950">Yeni</span>
+                </a>
+            @endif
+
             @foreach ($categories as $cat)
                 <a href="{{ route('listings.category', $cat->slug) }}"
-                   class="group inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:text-emerald-700 hover:shadow-brand dark:border-stone-800 dark:bg-stone-900 dark:text-stone-200 dark:shadow-none dark:hover:border-emerald-700 dark:hover:text-emerald-400">
-                    <x-dynamic-component :component="'heroicon-o-'.\App\Support\CategoryIcon::heroicon($cat->icon)" class="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                   class="group inline-flex items-center gap-2 rounded-2xl border border-stone-200/90 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-stone-50/50 hover:text-emerald-700 hover:shadow-md dark:border-stone-800 dark:bg-stone-900 dark:text-stone-200 dark:hover:border-emerald-700 dark:hover:bg-stone-800/60 dark:hover:text-emerald-400">
+                    <x-dynamic-component :component="'heroicon-o-'.\App\Support\CategoryIcon::heroicon($cat->icon)" class="h-4 w-4 text-stone-500 transition group-hover:text-emerald-700 dark:text-stone-400 dark:group-hover:text-emerald-400" />
                     <span>{{ $cat->name }}</span>
                 </a>
             @endforeach

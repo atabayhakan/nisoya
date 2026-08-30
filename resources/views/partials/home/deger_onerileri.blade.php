@@ -1,8 +1,7 @@
     @if (\App\Support\HomeSections::visible('deger_onerileri'))
-    {{-- Değer önerileri + istatistik şeridi (bento grid) --}}
-    <section class="border-y border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-950">
-        <div class="mx-auto max-w-6xl px-4 py-14">
-            <div class="grid gap-4 lg:grid-cols-4 lg:grid-rows-2">
+    {{-- Değer önerileri + istatistik şeridi (Konteyner İçinde Bento Grid) --}}
+    <section class="mx-auto max-w-6xl px-4 py-8 sm:py-12" x-data x-reveal>
+        <div class="grid gap-4 lg:grid-cols-4 lg:grid-rows-2">
                 {{-- Öne çıkan büyük kutu — otomatik dönen vurgu mesajları (bkz.
                      App\Models\HomeHighlight, admin: Site Yönetimi → Ana Sayfa —
                      Büyük Kart). activityTicker "Canlı Akış" şeridiyle aynı Alpine
@@ -198,7 +197,6 @@
                     <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Ülkeni seç, şehrindeki Türkçe konuşan kişiye ulaş.</p>
                 </div>
             </div>
-        </div>
     </section>
     @endif
 

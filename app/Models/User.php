@@ -760,4 +760,24 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
     {
         return $this->hasMany(User::class, 'referred_by');
     }
+
+    /** Halı saha / futbol oyuncu profili. */
+    public function footballProfile(): HasOne
+    {
+        return $this->hasOne(FootballPlayerProfile::class, 'user_id');
+    }
+
+    /** Kullanıcının üye olduğu futbol takımları. */
+    public function footballTeams(): BelongsToMany
+    {
+        return $this->belongsToMany(FootballTeam::class, 'football_team_members', 'user_id', 'team_id')
+            ->withPivot(['role', 'status', 'jersey_number', 'primary_position', 'joined_at'])
+            ->withTimestamps();
+    }
+
+    /** Kullanıcının kaptanı olduğu futbol takımları. */
+    public function captainTeams(): HasMany
+    {
+        return $this->hasMany(FootballTeam::class, 'user_id');
+    }
 }
