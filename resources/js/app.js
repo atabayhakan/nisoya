@@ -80,6 +80,19 @@ Alpine.data('commandPalette', (staticEntries) => ({
         clearTimeout(this.debounceTimer);
     },
 
+    setQuery(tag) {
+        this.query = tag;
+        this.onInput();
+        this.$nextTick(() => this.$refs.input?.focus());
+    },
+
+    clearQuery() {
+        this.query = '';
+        this.liveResults = [];
+        this.activeIndex = 0;
+        this.$nextTick(() => this.$refs.input?.focus());
+    },
+
     onInput() {
         this.activeIndex = 0;
         clearTimeout(this.debounceTimer);
@@ -88,7 +101,7 @@ Alpine.data('commandPalette', (staticEntries) => ({
             this.liveResults = [];
             return;
         }
-        this.debounceTimer = setTimeout(() => this.fetchResults(q), 300);
+        this.debounceTimer = setTimeout(() => this.fetchResults(q), 250);
     },
 
     async fetchResults(q) {
@@ -115,7 +128,12 @@ Alpine.data('commandPalette', (staticEntries) => ({
 
     choose(index = this.activeIndex) {
         const item = this.results[index];
-        if (!item) return;
+        if (!item) {
+            if (this.query.trim().length > 0) {
+                window.location.href = `/ilanlar?q=${encodeURIComponent(this.query.trim())}`;
+            }
+            return;
+        }
         this.closePalette();
         if (item.action === 'toggleTheme') {
             window.toggleTheme && window.toggleTheme();

@@ -9,7 +9,7 @@
                 <div class="relative z-10">
                     <div class="flex flex-wrap items-center gap-2">
                         <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-600/20 dark:bg-emerald-950/60 dark:text-emerald-300">
-                            🏛️ Resmî T.C. Konsolosluk Rehberi
+                            🏛️ Ülke Rehberi · Konsolosluk
                         </span>
                         <span class="text-xs font-medium text-stone-500 dark:text-stone-400">Güncel Harçlar, Belgeler ve Randevu Süreçleri</span>
                     </div>
