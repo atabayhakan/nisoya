@@ -30,12 +30,17 @@ class NavigationLinkSeeder extends Seeder
             ['label' => 'Emlak', 'url' => '/emlak', 'group_key' => NavigationLink::GROUP_KESFET, 'icon' => 'home', 'description' => 'Satılık ve kiralık ilanlar', 'sort_order' => 4],
             ['label' => 'Vasıta', 'url' => '/vasita', 'group_key' => NavigationLink::GROUP_KESFET, 'icon' => 'truck', 'description' => 'Satılık ve kiralık araç', 'sort_order' => 5],
             ['label' => 'Anılar & Davetiyeler', 'url' => '/mutlu-anlar', 'group_key' => NavigationLink::GROUP_KESFET, 'icon' => 'gift', 'description' => 'Etkinlik anılarını keşfet', 'sort_order' => 6],
-            ['label' => 'Harita', 'url' => '/harita', 'icon' => 'map', 'sort_order' => 7],
-            ['label' => 'Nasıl Çalışır?', 'url' => '/nasil-calisir', 'icon' => 'question-mark-circle', 'sort_order' => 8],
+            ['label' => 'Harita', 'url' => '/harita', 'group_key' => NavigationLink::GROUP_KESFET, 'icon' => 'map', 'description' => 'İlanları haritada keşfet', 'sort_order' => 7],
+            ['label' => 'Nasıl Çalışır?', 'url' => '/nasil-calisir', 'group_key' => NavigationLink::GROUP_KESFET, 'icon' => 'question-mark-circle', 'description' => 'Nisoya kullanım rehberi', 'sort_order' => 8],
         ];
 
         foreach ($links as $link) {
-            NavigationLink::query()->firstOrCreate(['label' => $link['label']], $link);
+            $existing = NavigationLink::query()->where('label', $link['label'])->first();
+            if ($existing) {
+                $existing->update($link);
+            } else {
+                NavigationLink::query()->create($link);
+            }
         }
     }
 }
