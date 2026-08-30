@@ -132,11 +132,11 @@
                                x-model="searchQuery"
                                @input="filterPoints()"
                                placeholder="Başlık, kategori veya şehir ara..."
-                               class="w-full rounded-xl border border-stone-200 bg-white py-2 pl-9 pr-8 text-xs text-stone-900 placeholder:text-stone-500 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-400">
+                               class="w-full rounded-xl border border-stone-200 bg-white py-2 pl-9 pr-8 text-xs text-stone-900 placeholder:text-stone-500 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500">
                         <button type="button"
                                 x-show="searchQuery"
                                 @click="searchQuery = ''; filterPoints()"
-                                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
                                 aria-label="Temizle">
                             <x-heroicon-o-x-mark class="h-3.5 w-3.5" />
                         </button>
@@ -178,7 +178,7 @@
 
                                 <div class="mt-2 flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
                                     <span class="flex items-center gap-1 truncate">
-                                        <x-heroicon-o-map-pin class="h-3 w-3 shrink-0 text-stone-400" />
+                                        <x-heroicon-o-map-pin class="h-3 w-3 shrink-0 text-stone-500 dark:text-stone-400" />
                                         <span x-text="p.city ? (p.city + (p.country_code ? ', ' + p.country_code : '')) : (p.country_name || 'Konum Belirtilmemiş')"></span>
                                     </span>
                                     <a :href="p.url"

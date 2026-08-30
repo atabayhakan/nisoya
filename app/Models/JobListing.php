@@ -23,6 +23,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $salary_min
  * @property string|null $salary_max
  * @property string|null $salary_currency
+ * @property-read Company|null $company
+ * @property-read JobCategory|null $category
+ * @property-read Country|null $country
  */
 class JobListing extends Model
 {
