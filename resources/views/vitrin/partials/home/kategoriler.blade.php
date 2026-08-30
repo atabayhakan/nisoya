@@ -87,7 +87,7 @@
                                 <span class="grid h-10 w-10 place-items-center rounded-xl {{ $kategoriRenkleri[$loop->index % 5][0] }} transition group-hover:scale-105">
                                     <x-dynamic-component :component="'heroicon-o-'.\App\Support\CategoryIcon::heroicon($category->icon)" class="h-5 w-5" />
                                 </span>
-                                <span class="grid h-6 w-6 place-items-center rounded-lg bg-white/80 text-stone-400 shadow-2xs transition group-hover:bg-emerald-50 group-hover:text-emerald-700 dark:bg-stone-900/80 dark:text-stone-400 dark:group-hover:bg-emerald-950/60 dark:group-hover:text-emerald-300">
+                                <span class="grid h-6 w-6 place-items-center rounded-lg bg-white/80 text-stone-600 shadow-2xs transition group-hover:bg-emerald-50 group-hover:text-emerald-700 dark:bg-stone-900/80 dark:text-stone-400 dark:group-hover:bg-emerald-950/60 dark:group-hover:text-emerald-300">
                                     <x-heroicon-o-arrow-right class="h-3 w-3 transition group-hover:translate-x-0.5" />
                                 </span>
                             </div>
