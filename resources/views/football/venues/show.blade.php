@@ -126,7 +126,7 @@
                     @auth
                         <form method="POST" action="{{ route('football.venues.review', $venue) }}" class="mt-4 space-y-4">
                             @csrf
-                            <x-honeypot />
+                            @include('partials.honeypot')
 
                             <div>
                                 <label class="block text-xs font-bold uppercase text-stone-700 dark:text-stone-300">Genel Puan *</label>

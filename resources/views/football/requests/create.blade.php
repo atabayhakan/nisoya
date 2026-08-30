@@ -13,7 +13,7 @@
 
             <form method="POST" action="{{ route('football.requests.store') }}" class="mt-6 space-y-5">
                 @csrf
-                <x-honeypot />
+                @include('partials.honeypot')
 
                 @if ($errors->any())
                     <div class="rounded-2xl bg-rose-50 p-4 text-xs text-rose-800 dark:bg-rose-950/40 dark:text-rose-300">

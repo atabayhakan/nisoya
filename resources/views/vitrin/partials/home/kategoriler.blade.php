@@ -50,16 +50,28 @@
             </div>
 
             <div class="hidden grid-cols-2 gap-3.5 sm:grid sm:grid-cols-3 lg:grid-cols-5">
-                @foreach ($categories->take(10) as $category)
+                @if (\App\Support\Modules::enabled('hali_saha'))
+                    <a href="{{ route('football.index') }}"
+                       class="group rounded-2xl border border-emerald-300 bg-emerald-50/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md dark:border-emerald-800 dark:bg-emerald-950/40">
+                        <div class="flex items-center justify-between">
+                            <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-600 text-lg text-white shadow-xs">
+                                ⚽
+                            </span>
+                            <span class="rounded-md bg-emerald-700 px-1.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider dark:bg-emerald-500 dark:text-stone-950">Yeni</span>
+                        </div>
+                        <div class="mt-3 text-base font-bold text-emerald-950 dark:text-emerald-200">Halı Saha & Spor</div>
+                    </a>
+                @endif
+                @foreach ($categories->take(9) as $category)
                     <a href="{{ route('listings.category', $category) }}"
                        class="group rounded-2xl border border-stone-200/60 bg-white p-4 shadow-brand transition hover:-translate-y-0.5 hover:border-emerald-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-emerald-700">
                         <div class="flex items-center justify-between">
                             <span class="grid h-10 w-10 place-items-center rounded-xl {{ $kategoriRenkleri[$loop->index % 5][0] }}">
                                 <x-dynamic-component :component="'heroicon-o-'.\App\Support\CategoryIcon::heroicon($category->icon)" class="h-5 w-5" />
                             </span>
-                            <x-heroicon-o-arrow-right class="h-4 w-4 text-stone-300 transition group-hover:translate-x-0.5 group-hover:text-emerald-600 dark:text-stone-400 dark:group-hover:text-emerald-400" />
+                            <x-heroicon-o-arrow-right class="h-4 w-4 text-stone-300 transition group-hover:translate-x-0.5 group-hover:text-emerald-700 dark:text-stone-400 dark:group-hover:text-emerald-400" />
                         </div>
-                        <div class="mt-3 text-base font-extrabold text-stone-800 dark:text-stone-100">{{ $category->name }}</div>
+                        <div class="mt-3 text-base font-bold text-stone-800 dark:text-stone-100">{{ $category->name }}</div>
                     </a>
                 @endforeach
             </div>

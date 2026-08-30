@@ -43,7 +43,8 @@
     $akisTaze = collect($activityFeed)->contains(fn ($i) => $i['taze'] ?? false);
 @endphp
 
-<section class="relative overflow-hidden {{ $koyu ? 'bg-stone-900' : '' }}">
+<div class="mx-auto max-w-6xl px-4 pt-3 sm:pt-5">
+<section class="relative overflow-hidden rounded-3xl border border-stone-200/80 shadow-xl dark:border-stone-800 {{ $koyu ? 'bg-stone-900' : 'bg-white dark:bg-stone-900' }}">
     @if ($medyaVar)
         {{-- Arka plan medyası (Hero Yöneticisi) --}}
         <div class="absolute inset-0" aria-hidden="true">
@@ -298,3 +299,4 @@
         @endunless
     </div>
 </section>
+</div>
