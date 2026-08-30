@@ -8,7 +8,7 @@
     kendini hiç render etmez; boş bir "başka ülke" satırı yalancı seçenek
     sunmuş olurdu.
 --}}
-@props(['aktif' => null, 'baslik' => 'Başka bir ülke:'])
+@props(['aktif' => null, 'baslik' => 'Başka ülke:'])
 
 @php
     $hazirUlkeler = app(\App\Services\RehberYuzeyi::class)->hazirUlkeler();
