@@ -37,7 +37,31 @@ class FootballLeagueService
 
         $cacheKey = 'football_standings_'.md5(mb_strtolower($city));
 
-        return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($city) {
+        try {
+            $cached = Cache::get($cacheKey);
+            if ($cached instanceof Collection) {
+                return $cached;
+            }
+            if ($cached !== null) {
+                Cache::forget($cacheKey);
+            }
+        } catch (\Throwable) {
+            Cache::forget($cacheKey);
+        }
+
+        $standingsResult = $this->calculateCityStandings($city);
+
+        try {
+            Cache::put($cacheKey, $standingsResult, now()->addMinutes(5));
+        } catch (\Throwable) {
+            // cache put error shouldn't crash page
+        }
+
+        return $standingsResult;
+    }
+
+    private function calculateCityStandings(string $city): Collection
+    {
             $teams = FootballTeam::query()
                 ->active()
                 ->city($city)
@@ -136,7 +160,6 @@ class FootballLeagueService
 
                 return $row;
             });
-        });
     }
 
     public function clearCityCache(string $city): void
