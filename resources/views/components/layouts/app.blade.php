@@ -102,14 +102,12 @@
                     <x-command-palette :nav-links="$navLinks" />
                 </div>
                 <x-ulke-secici :country="$visitorCountry" :countries="$emergencyCountries" />
-                <div class="{{ auth()->check() ? '' : 'hidden md:block' }}">
-                    <x-emergency-button
-                        :categories="$emergencyCategories"
-                        :countries="$emergencyCountries"
-                        :default-country="$emergencyDefaultCountry"
-                        :city="$emergencyCity"
-                    />
-                </div>
+                <x-emergency-button
+                    :categories="$emergencyCategories"
+                    :countries="$emergencyCountries"
+                    :default-country="$emergencyDefaultCountry"
+                    :city="$emergencyCity"
+                />
 
                 @unless (\App\Support\Tema::koyuKilit())
                     <button

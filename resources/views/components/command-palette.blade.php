@@ -73,13 +73,13 @@
     <button
         type="button"
         @click="openPalette()"
-        class="inline-flex h-9 w-full items-center justify-between gap-2.5 rounded-full border border-stone-200/90 bg-stone-50/80 px-3 text-xs font-medium text-stone-500 shadow-2xs transition hover:border-emerald-300 hover:bg-white hover:text-stone-800 dark:border-stone-800 dark:bg-stone-800/60 dark:text-stone-400 dark:hover:border-emerald-600 dark:hover:text-stone-200"
+        class="inline-flex h-9 w-9 md:w-full items-center justify-center md:justify-between md:gap-2.5 rounded-full border border-stone-200/90 bg-stone-50/80 p-0 md:px-3 text-xs font-medium text-stone-500 shadow-2xs transition hover:border-emerald-300 hover:bg-white hover:text-stone-800 shrink-0 dark:border-stone-800 dark:bg-stone-800/60 dark:text-stone-400 dark:hover:border-emerald-600 dark:hover:text-stone-200"
         aria-label="Ara (Cmd/Ctrl+K)"
         title="Ara (Cmd/Ctrl+K)"
     >
         <div class="flex items-center gap-2 min-w-0">
-            <x-heroicon-o-magnifying-glass class="h-3.5 w-3.5 shrink-0 text-stone-500 dark:text-stone-400" />
-            <span class="truncate text-stone-500 dark:text-stone-400">İlan, iş veya rehber ara...</span>
+            <x-heroicon-o-magnifying-glass class="h-4 w-4 shrink-0 text-stone-500 dark:text-stone-400" />
+            <span class="hidden md:inline truncate text-stone-500 dark:text-stone-400">İlan, iş veya rehber ara...</span>
         </div>
         <kbd class="hidden shrink-0 rounded-md border border-stone-200 bg-white px-1.5 py-0.5 text-[10px] font-bold text-stone-500 md:inline dark:border-stone-700 dark:bg-stone-800 dark:text-stone-400">⌘K</kbd>
     </button>
