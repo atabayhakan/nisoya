@@ -39,6 +39,22 @@ class FootballBrowseController extends Controller
         $city = trim(str_replace('-', ' ', $city));
         $cityName = mb_convert_case($city, MB_CASE_TITLE, 'UTF-8');
 
+        $currentCityModel = City::query()
+            ->where('is_active', true)
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($cityName, 'UTF-8')])
+            ->first();
+
+        $countryCode = $request->query('ulke')
+            ?? $request->session()->get('visitor_country_code')
+            ?? $request->user()?->country_code;
+
+        if (! $countryCode) {
+            $visitor = app(VisitorLocationService::class)->resolve($request);
+            $countryCode = $visitor->code ?? null;
+        }
+
+        $activeCountryCode = $currentCityModel->country_code ?? ($countryCode ? strtoupper(substr((string) $countryCode, 0, 2)) : 'DE');
+
         $metrics = $this->statsService->getCityMetrics($cityName);
         $standings = $this->leagueService->getCityStandings($cityName)->take(5);
 
@@ -67,7 +83,9 @@ class FootballBrowseController extends Controller
             ->get();
 
         $cities = City::query()
+            ->with('country')
             ->where('is_active', true)
+            ->orderByRaw('CASE WHEN country_code = ? THEN 0 ELSE 1 END', [$activeCountryCode])
             ->orderBy('sort_order')
             ->get();
 
@@ -110,15 +128,48 @@ class FootballBrowseController extends Controller
 
     protected function resolveCurrentCity(Request $request): string
     {
+        if ($request->filled('city')) {
+            $cityParam = trim(str_replace('-', ' ', (string) $request->input('city')));
+            $found = City::query()
+                ->where('is_active', true)
+                ->whereRaw('LOWER(name) = ?', [mb_strtolower($cityParam, 'UTF-8')])
+                ->first();
+            if ($found) {
+                return $found->name;
+            }
+        }
+
         if ($request->user() && filled($request->user()->city)) {
-            return $request->user()->city;
+            $userCity = City::query()
+                ->where('is_active', true)
+                ->whereRaw('LOWER(name) = ?', [mb_strtolower((string) $request->user()->city, 'UTF-8')])
+                ->value('name');
+
+            return $userCity ?? (string) $request->user()->city;
         }
 
-        $visitor = app(VisitorLocationService::class)->resolve($request);
-        if ($visitor && $visitor->code === 'DE') {
-            return 'Berlin';
+        $countryCode = $request->query('ulke')
+            ?? $request->session()->get('visitor_country_code')
+            ?? $request->user()?->country_code;
+
+        if (! $countryCode) {
+            $visitor = app(VisitorLocationService::class)->resolve($request);
+            $countryCode = $visitor->code ?? null;
         }
 
-        return 'Berlin';
+        if ($countryCode) {
+            $code = strtoupper(substr((string) $countryCode, 0, 2));
+            $cityInCountry = City::query()
+                ->whereHas('country', fn ($q) => $q->where('code', $code))
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->value('name');
+
+            if ($cityInCountry) {
+                return $cityInCountry;
+            }
+        }
+
+        return City::query()->where('is_active', true)->orderBy('sort_order')->value('name') ?? 'Berlin';
     }
 }
