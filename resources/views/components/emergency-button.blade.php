@@ -163,16 +163,25 @@
         type="button"
         x-ref="tetik"
         @click="ac()"
-        class="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-red-200/90 bg-red-50/90 px-3 text-xs font-bold text-red-700 shadow-2xs transition hover:-translate-y-0.5 hover:border-red-500 hover:bg-red-600 hover:text-white hover:shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-600 dark:hover:text-white"
+        class="group relative inline-flex h-9 shrink-0 items-center justify-center transition hover:-translate-y-0.5 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2"
         aria-label="Acil yardım — hızlı erişim"
         title="Acil yardım — hızlı erişim"
     >
-        <span class="relative flex h-2 w-2 shrink-0">
-            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-            <span class="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
+        <picture class="inline-flex items-center">
+            <source srcset="{{ asset('images/acil-minibus.webp') }}" type="image/webp">
+            <img
+                src="{{ asset('images/acil-minibus.png') }}"
+                alt="Acil Yardım"
+                width="606"
+                height="271"
+                class="h-8 w-auto max-w-none object-contain drop-shadow-xs transition duration-200 group-hover:drop-shadow-md select-none"
+            >
+        </picture>
+        {{-- Minibüsün tavanında yanıp sönen acil ikaz ışığı --}}
+        <span class="absolute -top-0.5 right-4 flex h-2 w-2 pointer-events-none">
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75"></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-red-600"></span>
         </span>
-        <x-heroicon-s-exclamation-triangle class="h-3.5 w-3.5 shrink-0" />
-        <span>Acil</span>
     </button>
 
     {{-- x-teleport: modal, header'ın backdrop-blur'unun (position:fixed
