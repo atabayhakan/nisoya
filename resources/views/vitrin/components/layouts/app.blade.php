@@ -51,8 +51,8 @@
         class="sticky top-0 z-30 border-b border-stone-200/80 bg-white/95 backdrop-blur-md transition-all duration-300 dark:border-stone-800/80 dark:bg-stone-900/95"
     >
         <div :class="scrolled ? 'py-2 shadow-sm' : 'py-3'" class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 transition-all duration-300 sm:gap-4">
-            {{-- Sol: Logo + Nav Menüleri --}}
-            <div class="flex items-center gap-5 sm:gap-6">
+            {{-- Sol: Logo + Keşfet Menüsü --}}
+            <div class="flex items-center gap-3 sm:gap-4 shrink-0">
                 <a href="{{ url('/') }}" class="group flex items-center gap-2.5 shrink-0">
                     <x-logo-ikon>
                         @if ($logoPath = setting('gorunum.logo_path'))
@@ -70,7 +70,7 @@
                     @endif
                 </a>
 
-                <nav class="hidden items-center gap-5 text-[13px] font-semibold text-stone-600 lg:flex dark:text-stone-300">
+                <nav class="hidden items-center gap-2 lg:flex">
                     <x-mega-menu :items="$navLinksMega" />
                     @foreach ($navLinksSingle as $navLink)
                         @php
@@ -80,14 +80,21 @@
                         @endphp
                         <a href="{{ $navLink->url }}" @if ($navLink->opens_new_tab) target="_blank" rel="noopener noreferrer" @endif
                            @if ($navLinkAktif) aria-current="page" @endif
-                           class="relative py-1 transition hover:text-emerald-700 dark:hover:text-emerald-400 {{ $navLinkAktif ? 'font-bold text-emerald-700 dark:text-emerald-400' : 'text-stone-600 dark:text-stone-300' }}">{{ $navLink->label }}</a>
+                           class="rounded-full px-3 py-1.5 text-xs font-semibold transition hover:bg-stone-100 hover:text-emerald-700 dark:hover:bg-stone-800 dark:hover:text-emerald-400 {{ $navLinkAktif ? 'font-bold text-emerald-700 dark:text-emerald-400' : 'text-stone-600 dark:text-stone-300' }}">{{ $navLink->label }}</a>
                     @endforeach
                 </nav>
             </div>
 
-            {{-- Sağ: Arama + Ülke + Acil + Tema + Kullanıcı & CTA --}}
-            <div class="flex items-center gap-1.5 sm:gap-2">
+            {{-- Orta: Hızlı Arama (Komut Paleti - Masaüstü) --}}
+            <div class="hidden md:flex flex-1 max-w-xs lg:max-w-sm mx-2 justify-center">
                 <x-command-palette :nav-links="$navLinks" />
+            </div>
+
+            {{-- Sağ: Mobil Arama + Ülke + Acil + Tema + Kullanıcı & CTA --}}
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <div class="md:hidden">
+                    <x-command-palette :nav-links="$navLinks" />
+                </div>
                 <x-ulke-secici :country="$visitorCountry" :countries="$emergencyCountries" />
                 <x-emergency-button
                     :categories="$emergencyCategories"
@@ -130,7 +137,7 @@
                         @endif
                     </a>
                     <a href="{{ route('panel.notifications.index') }}" class="relative hidden h-9 w-9 place-items-center rounded-full text-stone-600 transition hover:bg-stone-100 md:grid dark:text-stone-300 dark:hover:bg-stone-800" title="Bildirimler">
-                        <x-heroicon-o-bell class="h-4 w-4 {{ $unreadCount ? 'animate-[nisoya-bell-ring_0.6s_ease-in-out_1]' : '' }}" />
+                        <x-heroicon-o-bell class="h-5 w-5 {{ $unreadCount ? 'animate-[nisoya-bell-ring_0.6s_ease-in-out_1]' : '' }}" />
                         @if ($unreadCount)
                             <span class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white dark:ring-stone-900">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
                         @endif
@@ -157,8 +164,8 @@
                     </form>
                 @else
                     <span class="hidden h-5 w-px bg-stone-200 md:block dark:bg-stone-800"></span>
-                    <a href="{{ route('login') }}" class="hidden h-9 items-center rounded-full px-3 text-xs font-bold text-stone-700 transition hover:bg-stone-100 md:inline-flex dark:text-stone-200 dark:hover:bg-stone-800">Giriş</a>
-                    <a href="{{ route('register') }}" class="hidden h-9 items-center rounded-full px-3 text-xs font-bold text-stone-700 transition hover:bg-stone-100 md:inline-flex dark:text-stone-200 dark:hover:bg-stone-800">Kayıt</a>
+                    <a href="{{ route('login') }}" class="hidden h-9 items-center rounded-full px-3.5 text-xs font-bold text-stone-700 transition hover:bg-stone-100 hover:text-emerald-700 md:inline-flex dark:text-stone-200 dark:hover:bg-stone-800 dark:hover:text-emerald-400">Giriş</a>
+                    <a href="{{ route('register') }}" class="hidden h-9 items-center rounded-full border border-stone-200/90 bg-stone-50/80 px-3.5 text-xs font-bold text-stone-700 shadow-2xs transition hover:border-emerald-300 hover:bg-white hover:text-emerald-700 md:inline-flex dark:border-stone-800 dark:bg-stone-800/60 dark:text-stone-200 dark:hover:border-emerald-600 dark:hover:text-emerald-300">Kayıt</a>
                     <a href="{{ route('panel.listings.create') }}" class="hidden h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-emerald-700 px-3.5 text-xs font-bold text-white shadow-brand transition hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-md md:inline-flex dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">
                         <x-heroicon-o-plus class="h-4 w-4 stroke-2" />
                         <span>İlan Ver</span>

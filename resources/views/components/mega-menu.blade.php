@@ -9,16 +9,14 @@
         <button
             type="button"
             @click="open = !open"
-            class="relative flex items-center gap-1 rounded-lg px-1 py-1 after:absolute after:-bottom-0.5 after:left-1 after:h-0.5 after:w-0 after:bg-emerald-600 after:transition-all after:duration-300 hover:text-emerald-700 hover:after:w-[calc(100%-0.5rem)] dark:after:bg-emerald-400 dark:hover:text-emerald-400"
+            class="inline-flex h-9 items-center gap-1.5 rounded-full border border-stone-200/90 bg-stone-50/80 px-3 text-xs font-semibold text-stone-700 shadow-2xs transition hover:border-emerald-300 hover:bg-white hover:text-emerald-700 dark:border-stone-800 dark:bg-stone-800/60 dark:text-stone-200 dark:hover:border-emerald-600 dark:hover:text-emerald-300"
             :aria-expanded="open ? 'true' : 'false'"
             aria-haspopup="true"
         >
-            Keşfet
-            {{-- Blade, x-bileşen etiketlerinde ":class" i PHP olarak yorumlar
-                 (Alpine binding'i değil) — bu yüzden dinamik class düz bir
-                 <span>'e uygulanır, ikon bileşeni statik kalır. --}}
-            <span :class="open && 'rotate-180'" class="transition-transform">
-                <x-heroicon-o-chevron-down class="h-4 w-4" />
+            <x-heroicon-o-squares-2x2 class="h-3.5 w-3.5 text-stone-500 dark:text-stone-400" />
+            <span>Keşfet</span>
+            <span :class="open && 'rotate-180'" class="transition-transform duration-200">
+                <x-heroicon-o-chevron-down class="h-3 w-3 text-stone-500 dark:text-stone-400" />
             </span>
         </button>
 
