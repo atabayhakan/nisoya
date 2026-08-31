@@ -1,75 +1,65 @@
 <x-layouts.guest title="Giriş Yap — Nisoya">
-    <h1 class="text-xl font-bold text-stone-900 dark:text-stone-50">Tekrar hoş geldin 👋</h1>
-    <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Hesabına giriş yap.</p>
+    <div class="mb-6">
+        <h1 class="text-2xl font-extrabold tracking-tight text-stone-900 dark:text-stone-50">Tekrar hoş geldiniz 👋</h1>
+        <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Nisoya hesabınıza güvenle giriş yapın.</p>
+    </div>
 
     @if (session('status'))
-        <div class="mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
-            {{ session('status') }}
+        <div class="mb-5 flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/90 p-3.5 text-sm text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+            <x-heroicon-s-check-circle class="h-5 w-5 shrink-0 text-emerald-700 dark:text-emerald-400" />
+            <span>{{ session('status') }}</span>
         </div>
     @endif
 
-    <form method="POST" action="{{ route('login') }}" class="mt-6 space-y-4">
+    <form method="POST" action="{{ route('login') }}" class="space-y-4">
         @csrf
 
-        <div>
-            <label for="email" class="block text-sm font-medium text-stone-700 dark:text-stone-300">E-posta</label>
-            <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus autocomplete="username"
-                   class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
-            @error('email') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-        </div>
-
-        <div>
-            <div class="flex items-center justify-between">
-                <label for="password" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Şifre</label>
-                <a href="{{ route('password.request') }}" class="text-sm text-emerald-700 hover:underline dark:text-emerald-400">Şifreni mi unuttun?</a>
+        <div class="space-y-1.5">
+            <label for="email" class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">E-posta</label>
+            <div class="relative">
+                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-stone-500 dark:text-stone-400">
+                    <x-heroicon-o-envelope class="h-5 w-5" />
+                </span>
+                <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus autocomplete="username"
+                       placeholder="ornek@nisoya.com"
+                       class="w-full rounded-xl border border-stone-200/90 bg-stone-50/60 pl-11 pr-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-500 shadow-2xs transition focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-3 focus:ring-emerald-500/15 dark:border-stone-700 dark:bg-stone-800/60 dark:text-stone-100 dark:placeholder:text-stone-300 dark:focus:border-emerald-400 dark:focus:bg-stone-900">
             </div>
-            <x-password-input id="password" name="password" required autocomplete="current-password"
-                   class="mt-1 w-full rounded-lg border-stone-300 px-3 py-2 pr-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100" />
-            @error('password') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            @error('email') <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
         </div>
 
-        <label class="flex items-center gap-2 text-sm text-stone-600 dark:text-stone-400">
-            <input type="checkbox" name="remember" class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-500 dark:border-stone-700 dark:text-emerald-400">
-            Beni hatırla
-        </label>
+        <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+                <label for="password" class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">Şifre</label>
+                <a href="{{ route('password.request') }}" class="text-xs font-semibold text-emerald-700 hover:text-emerald-800 hover:underline dark:text-emerald-400 dark:hover:text-emerald-300">Şifreni mi unuttun?</a>
+            </div>
+            <div class="relative">
+                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-stone-500 dark:text-stone-400">
+                    <x-heroicon-o-lock-closed class="h-5 w-5" />
+                </span>
+                <x-password-input id="password" name="password" required autocomplete="current-password"
+                       placeholder="••••••••"
+                       class="w-full rounded-xl border border-stone-200/90 bg-stone-50/60 pl-11 pr-10 py-2.5 text-sm text-stone-900 placeholder:text-stone-500 shadow-2xs transition focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-3 focus:ring-emerald-500/15 dark:border-stone-700 dark:bg-stone-800/60 dark:text-stone-100 dark:placeholder:text-stone-300 dark:focus:border-emerald-400 dark:focus:bg-stone-900" />
+            </div>
+            @error('password') <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+        </div>
 
-        <button type="submit" class="w-full rounded-lg bg-emerald-700 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:text-stone-900">
+        <div class="flex items-center justify-between pt-1">
+            <label class="inline-flex cursor-pointer items-center gap-2 text-sm text-stone-600 dark:text-stone-300">
+                <input type="checkbox" name="remember" class="h-4 w-4 rounded-md border-stone-300 text-emerald-700 transition focus:ring-2 focus:ring-emerald-500/20 dark:border-stone-700 dark:bg-stone-800 dark:text-emerald-500">
+                <span class="text-xs font-medium">Beni hatırla</span>
+            </label>
+        </div>
+
+        <button type="submit" class="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 px-4 py-3 text-sm font-bold text-white shadow-brand transition duration-150 hover:from-emerald-700 hover:to-emerald-800 active:scale-[0.99] focus:outline-none focus:ring-4 focus:ring-emerald-500/20 dark:from-emerald-600 dark:to-emerald-700">
             Giriş Yap
         </button>
     </form>
 
-    {{-- Passkey ile giriş (Faz M2; laravel/passkeys'e geçiş 2026-08-02) —
-         WebAuthn desteklenmiyorsa hiç görünmez. Kayıtlar keşfedilebilir
-         (resident) olduğu için cihaz kendi hesap seçicisini gösterir;
-         e-posta alanına bağımlılık kalktı. Uçlar paketin varsayılanları
-         (/passkeys/login/options + /passkeys/login), JS: app.js → passkeyLogin(). --}}
-    <div
-        x-data="passkeyLogin()"
-        x-show="supported"
-        x-cloak
-    >
-        <div class="my-4 flex items-center gap-3 text-xs text-stone-600 dark:text-stone-400">
-            <span class="h-px flex-1 bg-stone-200 dark:bg-stone-700"></span>
-            veya
-            <span class="h-px flex-1 bg-stone-200 dark:bg-stone-700"></span>
-        </div>
-
-        <button
-            type="button"
-            @click="login()"
-            :disabled="busy"
-            class="flex w-full items-center justify-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2.5 font-semibold text-stone-700 transition hover:bg-stone-50 disabled:opacity-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
-        >
-            <x-heroicon-o-finger-print class="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
-            <span x-text="busy ? 'Doğrulanıyor...' : 'Parmak izi / Yüz tanıma ile gir'"></span>
-        </button>
-        <p x-show="error" x-text="error" class="mt-2 text-sm text-red-600 dark:text-red-400" x-cloak></p>
-    </div>
-
     <x-google-giris-butonu etiket="Google ile giriş yap" />
 
-    <p class="mt-6 text-center text-sm text-stone-500 dark:text-stone-400">
-        Hesabın yok mu?
-        <a href="{{ route('register') }}" class="font-medium text-emerald-700 hover:underline dark:text-emerald-400">Kayıt ol</a>
-    </p>
+    <div class="mt-6 border-t border-stone-100 pt-5 text-center text-xs text-stone-500 dark:border-stone-800 dark:text-stone-400">
+        Hesabınız yok mu?
+        <a href="{{ route('register') }}" class="font-bold text-emerald-700 hover:underline dark:text-emerald-400">Hemen Ücretsiz Kayıt Ol →</a>
+    </div>
 </x-layouts.guest>
+

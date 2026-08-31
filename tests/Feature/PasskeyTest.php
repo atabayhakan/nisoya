@@ -96,12 +96,4 @@ class PasskeyTest extends TestCase
             ->assertSee('Test Cihazı')
             ->assertSee('Passkey');
     }
-
-    public function test_giris_sayfasinda_passkey_dugmesi_var(): void
-    {
-        $this->get('/giris')
-            ->assertOk()
-            ->assertSee('passkeyLogin', false)
-            ->assertSee('Parmak izi / Yüz tanıma ile gir');
-    }
 }
