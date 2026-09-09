@@ -34,6 +34,13 @@ Schedule::command('paylasim-kartlari:temizle')->weeklyOn(1, '03:45')->withoutOve
 // (bkz. Admin → Sistem → Yedekleme). Saat config/backup.php'den ayarlanabilir.
 Schedule::command('backup:run')->dailyAt(config('backup.daily_time', '04:00'))->withoutOverlapping();
 
+// 2+ gündür görselsiz kalan aktif ilanlara otomatik temsilî kapak görseli
+// üretir (ahlaki ön-elemeden geçenlere). 05:00 — 04:00'teki yedekten SONRA
+// (üretilen görsel yedeğe girsin) ve 07:30'daki günlük rapordan ÖNCE.
+Schedule::command('listings:generate-representative-images')
+    ->dailyAt('05:00')
+    ->withoutOverlapping();
+
 // Zamanı gelen ileri tarihli sayfaların footer menü önbelleğini tazele
 // (sayfanın kendisi zaten otomatik görünür — bkz. Faz 4 zamanlanmış yayın).
 Schedule::command('content:publish-due')->everyFifteenMinutes()->withoutOverlapping();

@@ -21,6 +21,10 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
+ * @property ListingStatus $status casts() enum'a çeviriyor; docblock'suz
+ *                                 kalınca statik analiz kolonu düz `string`
+ *                                 sanıp doğrudan enum ataması yapan koda
+ *                                 (ör. TemsiliGorselOtomatikUret) hata basar.
  * @property ListingType $type
  * @property PriceUnit|null $price_unit casts() enum'a çeviriyor; docblock'suz
  *                                      kalınca statik analiz kolonu düz `string` sanıyor ve enum
@@ -40,6 +44,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon|null $fraud_checked_at
  * @property Carbon|null $tips_notified_at ipucu bildirimi damgası; `$fillable`
  *                                         DIŞINDA (yalnız komut yazar).
+ * @property Carbon|null $temsili_gorsel_denendi_at otomatik temsilî görsel
+ *                                                   üretiminin BİR KEZ
+ *                                                   denendiği damgası;
+ *                                                   `$fillable` DIŞINDA
+ *                                                   (yalnız komut yazar).
  * @property-read User|null $user
  */
 class Listing extends Model
@@ -92,6 +101,7 @@ class Listing extends Model
             'images_failed' => 'boolean',
             'fraud_checked_at' => 'datetime',
             'tips_notified_at' => 'datetime',
+            'temsili_gorsel_denendi_at' => 'datetime',
         ];
     }
 

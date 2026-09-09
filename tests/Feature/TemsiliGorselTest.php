@@ -19,22 +19,24 @@ use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
- * Hizmet ilanlarına temsilî kapak görseli.
+ * Tüm ilan tiplerine (hizmet/ürün/emlak/vasıta) temsilî kapak görseli.
  *
  * ---------------------------------------------------------------------------
  * NE KORUYOR
  *
- * 1. ÜRÜNE ASLA. Ürün ilanında fotoğraf "satılan şey budur" iddiasıdır;
- *    üretilmiş görsel oraya konursa alıcıya olmayan bir nesne gösterilir.
- *    Kapı bayrakla değil tip kontrolüyle — bayrak kapatılabilir, tip
- *    kontrolü kapatılamaz.
+ * 1. HER TİPTE ÜRETİLEBİLİR (2026-09-09'dan beri — bilinçli sahip kararı,
+ *    bkz. TemsiliGorselUretici docblock'undaki "önceki sınır" notu). Eski
+ *    tip-kapısı KALKTI; bunun yerine istem her tipte "belirli bir nesneyi
+ *    ANIMSATMA" kısıtı taşıyor — bu test dosyası artık ürün/emlak/vasıtanın
+ *    da üretebildiğini VE istemin hâlâ "bu gerçek ürün değil" dediğini sınar.
  * 2. ETİKET HER YÜZEYDE. Klasik kart, vitrin kartı, klasik detay, vitrin
  *    detayı. Vitrin dosyaları klasik görünümleri geçersiz kılıyor; birini
  *    güncelleyip diğerini unutmak, ETİKETSİZ bir yerde AI görselinin gerçek
  *    fotoğraf gibi durması demek. Bu depoda tam bu tuzağa beş kez düşüldü,
  *    beşi de ancak ölçümle yakalandı — o yüzden dört yüzey de ayrı ayrı
  *    render edilip sınanıyor.
- * 3. GERÇEK FOTOĞRAFIN ÜSTÜNE YAZILMAZ. Görseli olan ilana önerilmez.
+ * 3. GERÇEK FOTOĞRAFIN ÜSTÜNE YAZILMAZ. Görseli olan ilana önerilmez —
+ *    tipten bağımsız, tek koşul bu artık.
  */
 class TemsiliGorselTest extends TestCase
 {
@@ -111,27 +113,31 @@ class TemsiliGorselTest extends TestCase
         config(['ai.features.service_image' => true]);
     }
 
-    public function test_urun_ilanina_temsili_gorsel_onerilmez(): void
+    public function test_urun_emlak_vasita_ilanlarina_da_temsili_gorsel_uretilir(): void
     {
         /*
-         * EN ÖNEMLİ TEST. Ürün fotoğrafı bir iddiadır — üretilmiş görsel
-         * oraya konarsa alıcı olmayan bir nesneyi görür.
+         * EN ÖNEMLİ TEST (kapsam genişletildikten sonra). Tip kapısı kalktı;
+         * her tip için uygunMu true dönmeli ve gerçek görsel doğmalı —
+         * "Temsilî" işaretiyle birlikte, çünkü mitigasyon HÂLÂ koşulsuz.
          */
         $this->sahteUretici();
 
         foreach (['urun', 'emlak', 'vasita'] as $tip) {
             $ilan = $this->ilan($tip);
 
-            $this->assertFalse(app(TemsiliGorselUretici::class)->uygunMu($ilan),
-                "[$tip] ilanına temsilî görsel önerilmiş — ürün fotoğrafı bir iddiadır.");
-            $this->assertNull(app(TemsiliGorselUretici::class)->uret($ilan));
-            $this->assertSame(0, $ilan->images()->count());
+            $this->assertTrue(app(TemsiliGorselUretici::class)->uygunMu($ilan),
+                "[$tip] ilanına temsilî görsel önerilmemiş — kapsam tüm tipleri kapsamalı.");
+
+            $gorsel = app(TemsiliGorselUretici::class)->uret($ilan);
+
+            $this->assertNotNull($gorsel, "[$tip] için görsel üretilemedi.");
+            $this->assertTrue($gorsel->is_representative,
+                "[$tip] için işaret konmamış — görsel gerçek fotoğraftan ayırt edilemez hâle gelir.");
         }
     }
 
-    public function test_urun_ilaninda_ucu_dogrudan_cagrilsa_bile_uretmez(): void
+    public function test_urun_ilaninda_uc_dogrudan_cagrilinca_uretir(): void
     {
-        // Düğmeyi gizlemek yetmez; uç noktanın kendisi de kapalı olmalı.
         $this->sahteUretici();
         $ilan = $this->ilan('urun');
 
@@ -139,7 +145,8 @@ class TemsiliGorselTest extends TestCase
             ->post(route('panel.listings.representative-image', $ilan))
             ->assertRedirect(route('panel.listings.edit', $ilan));
 
-        $this->assertSame(0, $ilan->images()->count());
+        $this->assertSame(1, $ilan->images()->count());
+        $this->assertTrue($ilan->images()->first()->is_representative);
     }
 
     public function test_gorseli_olan_hizmet_ilanina_onerilmez(): void
@@ -224,19 +231,37 @@ class TemsiliGorselTest extends TestCase
         $this->assertStringContainsString('Ev temizliği hizmeti', $istem, 'İlanın kendi bilgisi isteme girmemiş.');
     }
 
-    public function test_duzenleme_sayfasinda_dugme_yalniz_uygun_ilanda(): void
+    public function test_urun_istemi_gercek_urunu_gostermeyi_acikca_yasakliyor(): void
+    {
+        /*
+         * Kapsam genişledi ama risk kaybolmadı: ürün ilanında görsel
+         * "satılan şey budur" diye okunabilir. İstem bunu açıkça reddetmeli.
+         */
+        $this->sahteUretici();
+        $istem = app(TemsiliGorselUretici::class)->istem($this->ilan('urun'));
+
+        $this->assertStringContainsString('Ürün kategorisi', $istem);
+        $this->assertStringContainsString('KENDİSİ DEĞİL', $istem);
+        $this->assertStringContainsString('SATILAN GERÇEK ÜRÜNÜ GÖSTERMEZ', $istem);
+        $this->assertStringContainsString('İNSAN veya YÜZ OLMASIN', $istem);
+    }
+
+    public function test_duzenleme_sayfasinda_dugme_yalniz_gorselsiz_ilanda(): void
     {
         $this->sahteUretici();
 
-        $hizmet = $this->ilan();
-        $this->actingAs($hizmet->user)
-            ->get(route('panel.listings.edit', $hizmet))
-            ->assertOk()
-            ->assertSee('Temsilî görsel oluştur');
-
+        // Görselsiz — tip fark etmiyor artık, ürün ilanında da düğme çıkmalı.
         $urun = $this->ilan('urun');
         $this->actingAs($urun->user)
             ->get(route('panel.listings.edit', $urun))
+            ->assertOk()
+            ->assertSee('Temsilî görsel oluştur');
+
+        // Görseli olan ilanda düğme çıkmamalı — tek koşul bu artık.
+        $gorselli = $this->ilan();
+        $gorselli->images()->create(['path_thumb' => 'a.webp', 'path_medium' => 'b.webp', 'path_large' => 'c.webp']);
+        $this->actingAs($gorselli->user)
+            ->get(route('panel.listings.edit', $gorselli))
             ->assertOk()
             ->assertDontSee('Temsilî görsel oluştur');
     }

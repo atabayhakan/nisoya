@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\ListingType;
 use App\Models\Listing;
 use App\Models\ListingImage;
 use App\Services\Ai\FotografUretici;
@@ -10,20 +11,22 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
- * Hizmet ilanları için TEMSİLÎ görsel üretir.
+ * İlanlar için TEMSİLÎ görsel üretir — 2026-09-09 itibarıyla TÜM tiplerde
+ * (hizmet/ürün/emlak/vasıta).
  *
  * ---------------------------------------------------------------------------
- * NEDEN YALNIZ HİZMET — BU SINIFIN VAR OLUŞ SEBEBİ
+ * ÖNCEKİ SINIR VE NEDEN KALDIRILDI (bilinçli sahip kararı — panelde tartışıldı)
  *
- * Ürün ilanında fotoğraf bir İDDİADIR: "satılan şey budur". Oraya üretilmiş
- * bir görsel koymak, alıcıya olmayan bir nesneyi göstermektir; en hafif
- * tabirle yanıltıcı, ağırı dolandırıcılık. Bu yüzden ürün/emlak/vasıta
- * ilanlarında bu özellik AÇILAMAZ — bayrakla değil, koddaki tip kapısıyla.
- *
- * Hizmette ortada gösterilecek tekil bir nesne yoktur. "Ev temizliği"nin
- * fotoğrafı diye bir şey yok; oradaki görsel dekordur, iddia değil. Yine de
- * dekor olduğu YAZILMAK zorunda — bkz. is_representative sütunu ve göründüğü
- * her yerdeki "Temsilî" rozeti.
+ * Bu sınıf başlangıçta YALNIZ hizmet ilanlarında çalışıyordu: "ürün ilanında
+ * fotoğraf bir İDDİADIR — satılan şey budur; oraya üretilmiş bir görsel
+ * koymak yanıltıcıdır" gerekçesiyle. Bu gerekçe hâlâ GEÇERLİ ve hâlâ gerçek
+ * bir risk — kaldırılmadı, sahip bunu görüp BİLEREK göz göre göre kapsamı
+ * genişletmeyi seçti (görselsiz ilanların siteyi kötü göstermesi karşı
+ * tartısı ağır bastı). Bu yüzden mitigasyon KOŞULSUZ: `is_representative`
+ * damgası ve göründüğü her yerdeki "Temsilî" rozeti hiçbir tipte
+ * kaldırılamaz/kapatılamaz — ürün/emlak/vasıtada bu rozet, hizmettekinden
+ * daha çok değil, EN AZ o kadar zorunlu. Bkz. istem() — ürün tipi için ekstra
+ * "belirli bir nesneyi ANIMSATMA" kısıtı bu yüzden var.
  *
  * ---------------------------------------------------------------------------
  * ÜRETİLEN GÖRSELDE OLMAYACAKLAR (istemde ve testte)
@@ -50,18 +53,15 @@ class TemsiliGorselUretici
     /**
      * Bu ilana temsilî görsel önerilebilir mi?
      *
-     * Üç koşul da zorunlu ve üçü de ayrı bir şeyi koruyor:
-     *   tip=hizmet  → yukarıdaki iddia/dekor ayrımı
+     * İki koşul da zorunlu:
      *   görseli yok → gerçek fotoğrafı olanın yanına üretilmiş görsel konmaz
-     *   özellik açık → anahtar yoksa düğme hiç görünmesin
+     *   özellik açık → anahtar yoksa düğme hiç görünmesin, komut hiç üretmesin
+     *
+     * Tip kapısı YOK — bkz. sınıf docblock'undaki "önceki sınır" notu.
      */
     public function uygunMu(Listing $listing): bool
     {
         if (! $this->isEnabled()) {
-            return false;
-        }
-
-        if ($listing->type->value !== 'hizmet') {
             return false;
         }
 
@@ -145,7 +145,7 @@ class TemsiliGorselUretici
     /**
      * İstemi ilanın KENDİ alanlarından kurar; uydurma bilgi eklemez.
      *
-     * Modele verilen tek bağlam kategori ve başlık. "Şu mahallede, şu
+     * Modele verilen tek bağlam tip, kategori ve başlık. "Şu mahallede, şu
      * yıldan beri" gibi şeyler bilinmiyor ve sorulmuyor — sorulsaydı model
      * uydurur, uydurduğu da görsele girerdi.
      */
@@ -160,24 +160,73 @@ class TemsiliGorselUretici
          * hem de gerçeği yansıtır.
          */
         $kategoriAdi = $listing->category()->value('name');
-        $kategori = is_string($kategoriAdi) && $kategoriAdi !== '' ? $kategoriAdi : 'genel hizmet';
+        $kategori = is_string($kategoriAdi) && $kategoriAdi !== '' ? $kategoriAdi : $this->genelKategoriAdi($listing->type);
         $baslik = Str::limit((string) $listing->title, 120, '');
 
         return implode("\n", [
-            'Bir hizmet ilanı için TEMSİLÎ (jenerik) bir kapak görseli üret.',
+            $this->tipAcilisi($listing->type),
             '',
-            'Hizmet türü: '.$kategori,
+            $this->tipEtiketi($listing->type).': '.$kategori,
             'İlan başlığı: '.$baslik,
             '',
             'ZORUNLU KURALLAR:',
             '- Görselde İNSAN veya YÜZ OLMASIN.',
             '- Görselde HİÇBİR YAZI, harf, rakam veya filigran OLMASIN.',
             '- Görselde HİÇBİR LOGO veya marka işareti OLMASIN.',
-            '- Belirli bir işletmeyi, dükkânı ya da tabelayı gösterme; jenerik bir sahne olsun.',
+            '- Belirli bir işletmeyi, dükkânı, tabelayı ya da BELİRLİ BİR NESNEYİ',
+            '  göstermeye ÇALIŞMA; jenerik, soyutlaşmış bir sahne/doku olsun —',
+            '  hiç kimse bu görseli "satılan/kiralanan gerçek şey budur" diye',
+            '  okumamalı.',
             '- Fotoğrafımsı, sade, iyi ışıklı, yatay (16:9) bir sahne.',
             '',
-            'Bu görsel gerçek bir ürünün fotoğrafı değildir; hizmeti çağrıştıran',
-            'nötr bir arka plandır.',
+            $this->tipKapanisi($listing->type),
         ]);
+    }
+
+    private function tipEtiketi(ListingType $tip): string
+    {
+        return match ($tip) {
+            ListingType::Hizmet => 'Hizmet türü',
+            ListingType::Urun => 'Ürün kategorisi',
+            ListingType::Emlak => 'Emlak türü',
+            ListingType::Vasita => 'Araç türü',
+        };
+    }
+
+    private function genelKategoriAdi(ListingType $tip): string
+    {
+        return match ($tip) {
+            ListingType::Hizmet => 'genel hizmet',
+            ListingType::Urun => 'genel ürün',
+            ListingType::Emlak => 'genel emlak',
+            ListingType::Vasita => 'genel araç',
+        };
+    }
+
+    private function tipAcilisi(ListingType $tip): string
+    {
+        return match ($tip) {
+            ListingType::Hizmet => 'Bir hizmet ilanı için TEMSİLÎ (jenerik) bir kapak görseli üret.',
+            ListingType::Urun => 'Bir ürün ilanı için TEMSİLÎ (jenerik, SOYUT) bir kapak görseli üret. '
+                .'Bu görsel ürünün KENDİSİ DEĞİL — ilan sahibi henüz gerçek fotoğraf eklemedi, '
+                .'sen yalnız kategoriyi çağrıştıran nötr bir doku/arka plan üretiyorsun.',
+            ListingType::Emlak => 'Bir emlak ilanı için TEMSİLÎ (jenerik) bir kapak görseli üret. '
+                .'Belirli bir bina/mekân DEĞİL, emlak türünü çağrıştıran soyut/jenerik bir sahne.',
+            ListingType::Vasita => 'Bir vasıta ilanı için TEMSİLÎ (jenerik) bir kapak görseli üret. '
+                .'Belirli bir marka/model DEĞİL, araç türünü çağrıştıran soyut/jenerik bir sahne.',
+        };
+    }
+
+    private function tipKapanisi(ListingType $tip): string
+    {
+        $ortak = 'Bu görsel gerçek bir fotoğraf değildir; ';
+
+        return $ortak.match ($tip) {
+            ListingType::Hizmet => 'hizmeti çağrıştıran nötr bir arka plandır.',
+            ListingType::Urun => 'SATILAN GERÇEK ÜRÜNÜ GÖSTERMEZ — yalnız kategoriyi çağrıştıran soyut bir doku/renk paletidir. '
+                .'Belirli bir ürün şekli/silueti çizmeye çalışma.',
+            ListingType::Emlak => 'ilan konusu gerçek mülkü göstermez, emlak türünü çağrıştıran nötr bir sahnedir.',
+            ListingType::Vasita => 'ilan konusu gerçek aracı göstermez, araç türünü çağrıştıran nötr bir sahnedir.',
+        };
     }
 }

@@ -36,10 +36,23 @@ return [
         // koddan gelir; model yalnız o cümleyi yazar ve HİÇBİR ŞEY GÖNDERMEZ.
         // Bkz. App\Services\Growth\ErisimMesajiYazari.
         'outreach_draft' => (bool) env('AI_OUTREACH_DRAFT', true),
-        // Hizmet ilanlarına temsilî kapak görseli. YALNIZ hizmet — ürün
-        // ilanında fotoğraf bir iddiadır, üretilmiş görsel oraya konamaz.
-        // Bkz. App\Services\TemsiliGorselUretici.
+        // İlana temsilî kapak görseli üretme YETENEĞİ (tüm ilan tipleri —
+        // hizmet/ürün/emlak/vasıta). Kapalıysa ne panel düğmesi ne otomatik
+        // komut çalışır. Bkz. App\Services\TemsiliGorselUretici.
         'service_image' => (bool) env('AI_SERVICE_IMAGE', true),
+        // Yukarıdakinin OTOMATİK tetiklenmesi: 2+ gündür görselsiz aktif
+        // ilanlara komut kendiliğinden görsel üretir. Yeteneğin kendisinden
+        // (service_image) ayrı bayrak — sahip düğmeyi açık tutup otomatik
+        // taramayı kapatabilsin (ya da tersi) diye.
+        // Bkz. App\Console\Commands\TemsiliGorselOtomatikUret.
+        'auto_representative_image' => (bool) env('AI_AUTO_REPRESENTATIVE_IMAGE', true),
+        // Otomatik görsel üretiminden ÖNCE ilan metnini ahlaki/uygunluk
+        // açısından ön-eler — dolandırıcılık deseninden (text_moderation)
+        // FARKLI bir soru: "bu ilana kamuya açık bir görsel üretmek uygun mu"
+        // (yetişkin içerik, yasa dışı mal/hizmet, nefret söylemi vb.).
+        // Uygun değilse görsel üretilmez, ilan Beklemede'ye alınır.
+        // Bkz. App\Services\AhlakDenetimi.
+        'content_ethics_check' => (bool) env('AI_CONTENT_ETHICS_CHECK', true),
         // İlanı bulunduğu ülkenin diline çevirme (yerel arama trafiği).
         // Bkz. App\Services\IlanCevirmeni.
         'listing_translation' => (bool) env('AI_LISTING_TRANSLATION', true),
