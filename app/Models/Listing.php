@@ -45,10 +45,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon|null $tips_notified_at ipucu bildirimi damgası; `$fillable`
  *                                         DIŞINDA (yalnız komut yazar).
  * @property Carbon|null $temsili_gorsel_denendi_at otomatik temsilî görsel
- *                                                   üretiminin BİR KEZ
- *                                                   denendiği damgası;
- *                                                   `$fillable` DIŞINDA
- *                                                   (yalnız komut yazar).
+ *                                                  üretiminin BİR KEZ
+ *                                                  denendiği damgası;
+ *                                                  `$fillable` DIŞINDA
+ *                                                  (yalnız komut yazar).
  * @property-read User|null $user
  */
 class Listing extends Model
