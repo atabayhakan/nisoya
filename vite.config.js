@@ -41,8 +41,13 @@ export default defineConfig({
                 // yüklenmediği için tarayıcı 600'ü yatay şişirerek SAHTE
                 // kalın üretiyordu — harf kenarları bulanık, aralıklar
                 // bozuk. Ana sayfanın H1'i dahil. Tek satır, 155 yer.
+                //
+                // 800/900: 2026-09 auth (giris/kayit) ve panel yeniden
+                // tasarımı font-extrabold/font-black kullanmaya başladı
+                // (YaziTipiTest bunu makineyle yakaladı) — aynı sahte-kalın
+                // sentezleme riski, sadece bir ağırlık daha yukarıda.
                 bunny('Instrument Sans', {
-                    weights: [400, 500, 600, 700],
+                    weights: [400, 500, 600, 700, 800, 900],
                     preload: [{ weight: 400 }, { weight: 700 }],
                 }),
                 // Tek bir dekoratif başlıkta kullanılıyor ("Nisoya'nın Nabzı")

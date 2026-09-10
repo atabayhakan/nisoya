@@ -80,7 +80,7 @@ class TasarimDenetimiUyarilariTest extends TestCase
         // MASAÜSTÜ MENÜ kapsayıcısını (kendine özgü sınıfıyla) bulup arama
         // alanını ona daraltıyoruz — aksi hâlde <head>'deki canonical
         // etiketiyle yanlış eşleşir.
-        $menuBaslangici = strpos($html, '<nav class="hidden items-center gap-6');
+        $menuBaslangici = strpos($html, '<nav class="hidden items-center gap-2 lg:flex');
         $this->assertNotFalse($menuBaslangici, 'Masaüstü menü kapsayıcısı bulunamadı.');
         $menu = substr($html, $menuBaslangici, 2000);
 
@@ -91,7 +91,10 @@ class TasarimDenetimiUyarilariTest extends TestCase
         $this->assertNotFalse($aktifKonum, 'Aktif bağlantı menüde bulunamadı.');
         $aktifEtiket = substr($menu, $aktifKonum, 300);
         $this->assertStringContainsString('aria-current="page"', $aktifEtiket);
-        $this->assertStringContainsString('after:w-full', $aktifEtiket);
+        // GÜNCELLEME (üst menü yeniden düzeni): aktif göstergesi eskiden bir
+        // alt çizgi kayma animasyonuydu (after:w-full); artık renk+kalınlık
+        // ile işaretleniyor — bkz. vitrin/components/layouts/app.blade.php.
+        $this->assertStringContainsString('font-bold text-emerald-700', $aktifEtiket);
 
         $pasifKonum = strpos($menu, 'href="/is-ilanlari"');
         $this->assertNotFalse($pasifKonum, 'Pasif bağlantı menüde bulunamadı.');

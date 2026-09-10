@@ -71,7 +71,7 @@ class VitrinVeriBloklariTest extends TestCase
         ]);
 
         $this->get(route('listings.show', [$ilan, $ilan->slug]))->assertOk()
-            ->assertSee('Benzer ilanlar', false)
+            ->assertSee('Benzer İlanlar', false)
             ->assertSee($benzer->title, false)
             ->assertDontSee($alakasiz->title, false);
     }
@@ -83,7 +83,7 @@ class VitrinVeriBloklariTest extends TestCase
         $ilan = Listing::factory()->create(['status' => 'aktif']);
 
         $this->get(route('listings.show', [$ilan, $ilan->slug]))->assertOk()
-            ->assertDontSee('Benzer ilanlar', false);
+            ->assertDontSee('Benzer İlanlar', false);
     }
 
     public function test_satici_yorumlari_detayda_gorunur(): void
@@ -120,7 +120,7 @@ class VitrinVeriBloklariTest extends TestCase
         $this->yorumEkle($ilan->user, 'Klasikte gorunmemeli');
 
         $this->get(route('listings.show', [$ilan, $ilan->slug]))->assertOk()
-            ->assertDontSee('Benzer ilanlar', false)
+            ->assertDontSee('Benzer İlanlar', false)
             ->assertDontSee('Klasikte gorunmemeli', false);
     }
 

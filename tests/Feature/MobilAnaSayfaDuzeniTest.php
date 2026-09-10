@@ -45,12 +45,22 @@ class MobilAnaSayfaDuzeniTest extends TestCase
 
     public function test_arama_eylemi_mobilde_tam_genislik_masaustunde_degil(): void
     {
-        // Mobilde başparmakla ulaşılan birincil eylem; masaüstünde satır içi
-        // kalmalı. Aynı düğme, iki farklı etiket.
+        /*
+         * Mobilde başparmakla ulaşılan birincil eylem; masaüstünde satır içi
+         * kalmalı. GÜNCELLEME (2026-09): hero'nun cam efektli konsol
+         * yenilemesi iki farklı etiketi ("Hemen bul" mobil / "Ara" masaüstü)
+         * tek bir "Ara" etiketine indirdi — davranış (mobilde tam genişlik,
+         * masaüstünde satır içi) aynı kaldı, artık sınıflardan doğrudan
+         * okunuyor: `w-full` + `sm:w-auto` aynı düğmede.
+         */
         $icerik = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('Hemen bul', $icerik);
-        $this->assertStringContainsString('>Ara', $icerik);
+        $this->assertStringContainsString('>Ara<', $icerik);
+        $this->assertMatchesRegularExpression(
+            '/class="[^"]*\bw-full\b[^"]*\bsm:w-auto\b[^"]*"[^>]*>\s*<span>Ara<\/span>/su',
+            $icerik,
+            'Ara düğmesi mobilde tam genişlik / masaüstünde satır içi sınıflarını taşımıyor.'
+        );
     }
 
     public function test_ziyaretcinin_ulkesi_arama_kutusunda_hazir_gelir(): void

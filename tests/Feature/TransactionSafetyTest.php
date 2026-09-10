@@ -122,7 +122,7 @@ class TransactionSafetyTest extends TestCase
 
         $this->get('/uye/odeme-guvenlik')
             ->assertOk()
-            ->assertSee('Güvenli ödeme ipuçları')
+            ->assertSee('Güvenli Alışveriş & Ödeme İpuçları', false)
             ->assertSee('Mal ve Hizmetler');
     }
 
@@ -132,7 +132,7 @@ class TransactionSafetyTest extends TestCase
 
         $this->get('/uye/linksiz')
             ->assertOk()
-            ->assertDontSee('Güvenli ödeme ipuçları');
+            ->assertDontSee('Güvenli Alışveriş & Ödeme İpuçları', false);
     }
 
     public function test_new_seller_gets_stronger_prepayment_warning(): void
@@ -159,7 +159,7 @@ class TransactionSafetyTest extends TestCase
 
         $this->get('/uye/koklu-satici')
             ->assertOk()
-            ->assertSee('Güvenli ödeme ipuçları')
+            ->assertSee('Güvenli Alışveriş & Ödeme İpuçları', false)
             ->assertDontSee('ekstra dikkatli');
     }
 

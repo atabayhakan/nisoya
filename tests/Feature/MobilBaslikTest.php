@@ -121,15 +121,23 @@ class MobilBaslikTest extends TestCase
         $icerik = $this->actingAs($user)->get('/')->assertOk()->getContent();
 
         $this->assertGreaterThanOrEqual(
-            3,
+            2,
             substr_count($icerik, 'aria-label="Kapat"'),
-            "[$tema] Alt sayfaların kapatma düğmesi eksik (Keşfet · ülke seçici · hesap)."
+            "[$tema] Alt sayfaların kapatma düğmesi eksik (Keşfet · hesap)."
         );
 
-        // Üçü de ortak davranışı kullanmalı: biri elle yazılmış duruma dönerse
-        // kaydırma kilidi o sayfada sessizce kaybolur.
+        /*
+         * GÜNCELLEME (2026-08-21, mobil-hesap.blade.php'nin kendi yorumunda
+         * belgeli): üçüncü altSayfa örneği ("misafir yelpaze") kaldırıldı —
+         * "Giriş"/"Kayıt" içeren o alt sayfa artık ayrı bir bileşen değil,
+         * alt sekme çubuğundaki "İlan Ver" FAB'ının aksiyon sayfası (bkz.
+         * x-mobile-tab-bar, aynı x-data="altSayfa" kapsayıcısını paylaşır).
+         * Giriş yapmış kullanıcı için kalan ikisi: Keşfet (mobile-tab-bar) +
+         * Hesap (mobil-hesap). İkisi de ortak davranışı kullanmalı: biri elle
+         * yazılmış duruma dönerse kaydırma kilidi o sayfada sessizce kaybolur.
+         */
         $this->assertGreaterThanOrEqual(
-            3,
+            2,
             substr_count($icerik, 'x-data="altSayfa"'),
             "[$tema] Bir alt sayfa ortak kilit davranışını kullanmıyor."
         );

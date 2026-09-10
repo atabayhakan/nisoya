@@ -136,7 +136,19 @@ class GuvenIlkIzlenimTest extends TestCase
         $icerik = $this->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('Üye ol', $icerik, "[$tema] Mobil başlıkta kayıt düğmesi yok.");
-        $this->assertMatchesRegularExpression('/md:hidden(?:(?!<\/div>).)*Üye ol/su', $icerik, "[$tema] Kayıt düğmesi mobile özel blokta değil.");
+
+        /*
+         * GÜNCELLEME (2026-08-21): "Üye ol" artık düz bir `md:hidden` div'de
+         * değil — alt sekme çubuğunun (mobile-tab-bar.blade.php) "İlan Ver"
+         * FAB'ından açılan aksiyon sayfasının içinde. Bütün çubuk `<nav ...
+         * md:hidden ...>` içinde olduğundan mobil-özel olma şartı hâlâ
+         * geçerli; kapsam artık tek bir div değil, o nav'ın kendisi.
+         */
+        $this->assertMatchesRegularExpression(
+            '/<nav[^>]*\bmd:hidden\b[^>]*>(?:(?!<\/nav>).)*Üye ol/su',
+            $icerik,
+            "[$tema] Kayıt düğmesi mobile özel gezinme çubuğunun içinde değil."
+        );
     }
 
     #[DataProvider('temalar')]
