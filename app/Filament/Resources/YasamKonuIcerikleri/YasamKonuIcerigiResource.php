@@ -10,10 +10,13 @@ use App\Models\Country;
 use App\Models\YasamKonuIcerigi;
 use App\Models\YasamKonusu;
 use BackedEnum;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -187,6 +190,53 @@ class YasamKonuIcerigiResource extends Resource
                 SelectFilter::make('country_code')
                     ->label('Ülke')
                     ->options(fn () => Country::query()->orderBy('sort_order')->pluck('name_tr', 'code')),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    /*
+                     * Sahip tek tek her taslağı açıp durumu+doğrulama
+                     * tarihini elle değiştirmek zorunda kalmasın diye
+                     * (bu ekranda hiç bulk action yoktu — 2026-09-11'de
+                     * sahibin kendisi fark etti). Aynı K7 kapısı burada da
+                     * geçerli: kaynak_url BOŞ olan bir taslak, ne kadar
+                     * seçilirse seçilsin atlanır — "doğrulanmamış" içerik
+                     * bu düğmeden asla yayına çıkamaz.
+                     */
+                    BulkAction::make('yayina_al')
+                        ->label('Yayına Al')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Seçili içerikleri yayına al')
+                        ->modalDescription('Yalnız kaynak adresi dolu olan taslaklar yayına alınır ve doğrulama tarihi bugüne çekilir; kaynaksız olanlar dokunulmadan atlanır.')
+                        ->action(function ($records) {
+                            $alinan = 0;
+                            $atlanan = 0;
+
+                            foreach ($records as $record) {
+                                if ($record->status !== YasamKonuIcerigi::STATUS_TASLAK) {
+                                    continue;
+                                }
+
+                                if (blank($record->kaynak_url)) {
+                                    $atlanan++;
+
+                                    continue;
+                                }
+
+                                $record->update([
+                                    'status' => YasamKonuIcerigi::STATUS_YAYIN,
+                                    'dogrulanma_tarihi' => now(),
+                                ]);
+                                $alinan++;
+                            }
+
+                            Notification::make()
+                                ->title("{$alinan} içerik yayına alındı".($atlanan > 0 ? ", {$atlanan} kaynaksız içerik atlandı" : ''))
+                                ->success()
+                                ->send();
+                        }),
+                ]),
             ])
             ->defaultSort('id', 'desc');
     }
