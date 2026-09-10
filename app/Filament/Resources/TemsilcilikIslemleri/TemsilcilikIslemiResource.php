@@ -10,11 +10,14 @@ use App\Models\IslemTuru;
 use App\Models\Temsilcilik;
 use App\Models\TemsilcilikIslemi;
 use BackedEnum;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -47,6 +50,14 @@ class TemsilcilikIslemiResource extends Resource
     protected static ?string $navigationLabel = 'İşlem İçerikleri';
 
     protected static ?int $navigationSort = 3;
+
+    /**
+     * Evrensel/iskelet seeder'ların bıraktığı jenerik varsayılan adres —
+     * yol içermeyen çıplak domain. "Yayına Al" toplu işlemi bunu asla
+     * doğrulanmış kaynak saymaz; yalnız bundan FARKLI, dolu bir adres
+     * geçer (bkz. bu projede daha önce elle yapılan aynı ayrım).
+     */
+    private const JENERIK_KAYNAK_URL = 'https://www.konsolosluk.gov.tr';
 
     public static function getModelLabel(): string
     {
@@ -173,6 +184,55 @@ class TemsilcilikIslemiResource extends Resource
                 SelectFilter::make('temsilcilik_id')
                     ->label('Temsilcilik')
                     ->options(fn () => Temsilcilik::query()->orderBy('sort_order')->pluck('ad', 'id')),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    /*
+                     * 1656 kayıtlık bir listede teker teker açıp durum +
+                     * doğrulama tarihini elle değiştirmek gerçekçi değil
+                     * (sahip 2026-09-11'de bunu fark etti — Yaşam Konu
+                     * İçerikleri'nde de aynı eksik vardı, bkz. o resource).
+                     * K7 kapısı burada da UI seviyesinde: jenerik/boş
+                     * resmi_kaynak_url taşıyan bir taslak, seçilse bile
+                     * atlanır — bu düğme "gerçekten araştırılmış" ile
+                     * "iskelet doğduğu gibi kalmış" arasındaki farkı
+                     * otomatik gözetir.
+                     */
+                    BulkAction::make('yayina_al')
+                        ->label('Yayına Al')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Seçili işlem içeriklerini yayına al')
+                        ->modalDescription('Yalnız gerçek (jenerik olmayan) bir kaynak adresi olan taslaklar yayına alınır ve doğrulama tarihi bugüne çekilir; kaynaksız/jenerik olanlar dokunulmadan atlanır.')
+                        ->action(function ($records) {
+                            $alinan = 0;
+                            $atlanan = 0;
+
+                            foreach ($records as $record) {
+                                if ($record->status !== TemsilcilikIslemi::STATUS_TASLAK) {
+                                    continue;
+                                }
+
+                                if (blank($record->resmi_kaynak_url) || $record->resmi_kaynak_url === self::JENERIK_KAYNAK_URL) {
+                                    $atlanan++;
+
+                                    continue;
+                                }
+
+                                $record->update([
+                                    'status' => TemsilcilikIslemi::STATUS_YAYIN,
+                                    'dogrulanma_tarihi' => now(),
+                                ]);
+                                $alinan++;
+                            }
+
+                            Notification::make()
+                                ->title("{$alinan} işlem içeriği yayına alındı".($atlanan > 0 ? ", {$atlanan} kaynaksız/jenerik içerik atlandı" : ''))
+                                ->success()
+                                ->send();
+                        }),
+                ]),
             ])
             ->defaultSort('id', 'desc');
     }
