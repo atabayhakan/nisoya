@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\KahyaHarcamasi;
 use App\Services\Kahya\Dis\IsletmeKesfi;
+use App\Services\Kahya\Dis\TelegramDinleyici;
 use App\Services\Kahya\Dis\WebAramasi;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -68,6 +69,7 @@ class KahyaHarcamalari extends Page
     {
         $arama = app(WebAramasi::class);
         $kesif = app(IsletmeKesfi::class);
+        $telegram = app(TelegramDinleyici::class);
 
         $sonlar = fn (string $kaynak): Collection => KahyaHarcamasi::query()
             ->where('kaynak', $kaynak)
@@ -87,6 +89,12 @@ class KahyaHarcamalari extends Page
                 'kullanim' => $kesif->buAykiKullanim(),
                 'limit' => $kesif->aylikLimit(),
                 'sonlar' => $sonlar(IsletmeKesfi::KAYNAK),
+            ],
+            [
+                'etiket' => 'Telegram sohbeti (kahya-telegram)',
+                'kullanim' => $telegram->buAykiKullanim(),
+                'limit' => $telegram->aylikLimit(),
+                'sonlar' => $sonlar(TelegramDinleyici::KAYNAK),
             ],
         ];
     }

@@ -33,6 +33,7 @@ use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\JobSavedSearchController;
 use App\Http\Controllers\Kahya\CikisController;
 use App\Http\Controllers\Kahya\SesGeriBildirimController;
+use App\Http\Controllers\Kahya\TelegramWebhookController;
 use App\Http\Controllers\ListingAvailabilityController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ManifestController;
@@ -212,6 +213,9 @@ Route::post('/e-posta/cikis/{jeton}', [CikisController::class, 'cik'])
 Route::post('/webhook/ses-geri-bildirim', SesGeriBildirimController::class)
     ->middleware('throttle:ses-geri-bildirim')
     ->name('kahya.ses.geri-bildirim');
+Route::post('/webhook/telegram', TelegramWebhookController::class)
+    ->middleware('throttle:kahya-telegram')
+    ->name('kahya.telegram.webhook');
 
 // Çerez tercihleri (kodda sabit; gizlilik sayfası Faz B'de CMS'e taşındı — bkz. StaticPagesSeeder)
 Route::view('/cerez-tercihleri', 'pages.cerez-tercihleri')->name('pages.cookie-preferences');

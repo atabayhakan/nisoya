@@ -330,7 +330,8 @@ class SirlarOnbellegeYazilmazTest extends TestCase
         $sirlar = [
             'SENTINEL-MAIL-PAROLA', 'SENTINEL-AI-ANAHTAR',
             'SENTINEL-PLACES-ANAHTAR', 'SENTINEL-SES-PAROLA',
-            'SENTINEL-GOOGLE-SECRET',
+            'SENTINEL-GOOGLE-SECRET', 'SENTINEL-TELEGRAM-TOKEN',
+            'SENTINEL-TELEGRAM-SIR',
         ];
 
         Settings::setMany([
@@ -346,6 +347,14 @@ class SirlarOnbellegeYazilmazTest extends TestCase
             // yoluna açık.
             'giris.google_client_id' => 'sizinti-testi.apps.googleusercontent.com',
             'giris.google_client_secret' => 'SENTINEL-GOOGLE-SECRET',
+            // Kâhya Telegram: bu ikisi mergeRuntimeConfig'in HİÇBİR merge*
+            // metodundan geçmiyor (TelegramDinleyici Settings::get()'i
+            // DOĞRUDAN okuyor, WebAramasi::arama_anahtari ile aynı desen) —
+            // yine de bekçi listesine girmeleri gerekiyordu (SIRLI_ANAHTARLAR),
+            // bu yüzden buraya da eklendiler: yarın biri "kolaylık olsun" diye
+            // bir mergeKahyaConfig satırı eklerse bu test onu yakalar.
+            'kahya.telegram.bot_token' => 'SENTINEL-TELEGRAM-TOKEN',
+            'kahya.telegram.webhook_sirri' => 'SENTINEL-TELEGRAM-SIR',
         ]);
 
         $this->argvKur(['artisan', 'config:cache']);
@@ -358,6 +367,28 @@ class SirlarOnbellegeYazilmazTest extends TestCase
             $this->assertStringNotContainsString($sir, $yazilacak,
                 "Sır config ağacında kalmış: {$sir} — config:cache bunu diske düz metin yazardı.");
         }
+    }
+
+    /**
+     * kahya.telegram.bot_token/webhook_sirri diğer dördünden FARKLI: hiçbir
+     * mergeRuntimeConfig metodu bunları Config::set() etmiyor —
+     * App\Services\Kahya\Dis\TelegramDinleyici, WebAramasi::arama_anahtari
+     * ile aynı desenle, Settings::get()'i HER ÇAĞRIDA doğrudan okuyor. Yani
+     * config:cache argv-kapısına bağımlı değiller — hiçbir zaman (config:cache
+     * sırasında da, normal çalışırken de) config ağacına girmemeliler.
+     */
+    public function test_telegram_sirlari_config_agacina_hic_girmez(): void
+    {
+        Settings::setMany([
+            'kahya.telegram.bot_token' => 'SENTINEL-TELEGRAM-TOKEN',
+            'kahya.telegram.webhook_sirri' => 'SENTINEL-TELEGRAM-SIR',
+        ]);
+
+        $this->argvKur(['artisan', 'queue:work']);
+        $this->cagir('mergeRuntimeConfig');
+
+        $this->assertNull(config('kahya.telegram.bot_token'));
+        $this->assertNull(config('kahya.telegram.webhook_sirri'));
     }
 
     public function test_sirli_anahtarlarin_tamami_bu_testte_kapsanmis(): void
@@ -374,6 +405,8 @@ class SirlarOnbellegeYazilmazTest extends TestCase
                 'growth.google_places_api_key',
                 'kahya.gonderim_parola',
                 'giris.google_client_secret',
+                'kahya.telegram.bot_token',
+                'kahya.telegram.webhook_sirri',
             ],
             Settings::SIRLI_ANAHTARLAR,
             'Sır listesi değişti — SirlarOnbellegeYazilmazTest\'e yeni sır için kapak testi ekle.'

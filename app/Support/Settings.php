@@ -37,6 +37,8 @@ class Settings
         'growth.google_places_api_key',
         'kahya.gonderim_parola',
         'giris.google_client_secret',
+        'kahya.telegram.bot_token',
+        'kahya.telegram.webhook_sirri',
     ];
 
     /** Tüm ayarları (key => value) cache'den döndürür. */

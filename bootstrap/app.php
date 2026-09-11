@@ -58,6 +58,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'e-posta/cikis/*',
             'webhook/ses-geri-bildirim',
+            'webhook/telegram',
         ]);
 
         $middleware->alias([
@@ -160,6 +161,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // hesaplıyor. SNS gerçek yükte dakikada bu kadarına yaklaşmaz; tavan
         // sahte isteklerin doğrulama maliyetini sömürmesini engellemek için.
         RateLimiter::for('ses-geri-bildirim', fn (Request $request) => Limit::perMinute(60)->by($request->ip())
+        );
+
+        // Telegram webhook'u: tüm grup mesajları (çoğu sessizce elenir) buraya
+        // düşer. Gönderen her zaman Telegram'ın kendi sunucusu — IP başına
+        // cömert bir tavan, sahte/bozuk istek fırtınasına karşı yeterli.
+        RateLimiter::for('kahya-telegram', fn (Request $request) => Limit::perMinute(120)->by($request->ip())
         );
 
         // İlanı yayından kaldır / geri yayınla — bir tıklık, ucuz bir UPDATE.

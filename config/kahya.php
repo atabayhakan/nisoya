@@ -43,4 +43,17 @@ return [
     */
     'log_penceresi_saat' => env('KAHYA_LOG_PENCERESI', 24),
 
+    /*
+    | Kâhya Telegram — grup içi otomatik cevaplama (F6, 2026-09-11).
+    | Tüm değerler panelden (Kâhya Telegram) değiştirilebilir; buradakiler
+    | yalnız ilk kurulum varsayılanı. bot_token/webhook_sirri gerçek sır
+    | olduğu için Settings::SIRLI_ANAHTARLAR'da şifreli tutulur.
+    */
+    'telegram' => [
+        'bot_token' => env('KAHYA_TELEGRAM_TOKEN'),
+        'webhook_sirri' => env('KAHYA_TELEGRAM_WEBHOOK_SIRRI'),
+        'ulke_kodu' => env('KAHYA_TELEGRAM_ULKE', 'RU'),
+        'aylik_mesaj_limiti' => env('KAHYA_TELEGRAM_LIMIT', 600),
+    ],
+
 ];
