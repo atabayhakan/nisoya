@@ -75,6 +75,11 @@ Schedule::command('kahya:ilan-ipuclari')
     ->dailyAt('10:00')
     ->withoutOverlapping();
 
+// Nisoya Nabzı hedefi (otomatik moddaysa) geçmiş 3 ayın gerçek ortalamasına
+// göre güncellenir — ayın 1'i, gece yarısından hemen sonra (yeni ay
+// başlarken hedef de tazelensin).
+Schedule::command('nabiz:hedef-guncelle')->monthlyOn(1, '00:30')->withoutOverlapping();
+
 // Büyüme Ajanı keşif işlerini (RunDiscoveryJob, 'database' kuyruğu) her dakika
 // işle. Ayrı bir queue worker/supervisor gerektirmez — scheduler kuyruğu
 // boşaltır. --stop-when-empty: iş yoksa hemen çıkar; --max-time: dakikayı aşma;

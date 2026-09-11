@@ -62,6 +62,27 @@ class NabizTest extends TestCase
         $this->assertSame(100, $progress['yuzde']);
     }
 
+    public function test_suggest_next_target_averages_last_three_real_months(): void
+    {
+        Settings::setMany(['nabiz.hedef_metrik' => 'yeni_uye']);
+
+        // Son 3 tamamlanmış ay: 8, 12, 10 üye — ortalama 10, %20 pay ile 12,
+        // 5'e yuvarlanınca 10. Bu ayın (henüz bitmemiş) kayıtları SAYILMAMALI.
+        User::factory()->count(8)->create(['created_at' => now()->subMonths(1)->startOfMonth()->addDays(3)]);
+        User::factory()->count(12)->create(['created_at' => now()->subMonths(2)->startOfMonth()->addDays(3)]);
+        User::factory()->count(10)->create(['created_at' => now()->subMonths(3)->startOfMonth()->addDays(3)]);
+        User::factory()->count(99)->create(['created_at' => now()]); // bu ay — hariç tutulmalı
+
+        $this->assertSame(10, app(NabizService::class)->suggestNextTarget());
+    }
+
+    public function test_suggest_next_target_has_floor_when_no_history(): void
+    {
+        // Geçmiş 3 ay tamamen boş (yeni site) — "hedef: 1" gibi gülünç
+        // küçük bir sayı yerine anlamlı bir taban dönmeli.
+        $this->assertSame(10, app(NabizService::class)->suggestNextTarget('yeni_uye'));
+    }
+
     public function test_city_ambassadors_ranks_top_inviter_per_city(): void
     {
         $ayse = User::factory()->create(['name' => 'Ayşe', 'city' => 'Berlin']);

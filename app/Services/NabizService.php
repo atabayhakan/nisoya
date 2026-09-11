@@ -58,6 +58,38 @@ class NabizService
     }
 
     /**
+     * Önümüzdeki hedef sayısı için öneri — son 3 TAMAMLANMIŞ ayın gerçek
+     * ortalamasına dayanır (bkz. tasarım kararı 2026-09-11: hedef panelde
+     * elle yazılan sabit bir sayıydı, unutulunca ya gerçekçilikten uzaklaşıp
+     * halka açık ana sayfada "site neredeyse ölü" izlenimi veriyordu ya da
+     * tam tersi tatsız kolay kalıyordu). YALNIZ `nabiz.hedef_otomatik` panelden
+     * açıkken çağrılır (bkz. App\Console\Commands\NabizHedefiGuncelle);
+     * manuel moddaki sayıya bu metot hiç dokunmaz.
+     *
+     * Ortalamaya %20 pay eklenir (hafif hırslı ama gerçekçi) ve 5'e
+     * yuvarlanır. Geçmiş veri yoksa (yeni site ya da ilk üç ay 0) alt sınır
+     * 10 — "hedef: 1" gibi gülünç küçük bir sayı göstermez.
+     */
+    public function suggestNextTarget(?string $metric = null): int
+    {
+        $metric = $metric ?? Settings::get('nabiz.hedef_metrik', 'yeni_uye');
+
+        $ortalama = collect(range(1, 3))
+            ->map(function (int $ayOnce) use ($metric): int {
+                $baslangic = now()->subMonths($ayOnce)->startOfMonth();
+                $bitis = now()->subMonths($ayOnce)->endOfMonth();
+
+                return match ($metric) {
+                    'yeni_ilan' => Listing::query()->gercek()->whereBetween('created_at', [$baslangic, $bitis])->count(),
+                    default => User::query()->gercek()->whereBetween('created_at', [$baslangic, $bitis])->count(),
+                };
+            })
+            ->avg() ?? 0;
+
+        return max(10, (int) (round(($ortalama * 1.2) / 5) * 5));
+    }
+
+    /**
      * Bu ay en çok üye getiren kişiler, şehir başına en iyi performans
      * gösteren kişiyle temsil edilir ("şehir elçisi").
      *

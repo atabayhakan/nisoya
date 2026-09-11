@@ -228,7 +228,8 @@ return [
         'seo.robots_index' => ['group' => 'seo', 'label' => 'Arama motorlarında görünür', 'type' => 'select', 'options' => ['1' => 'Görünür', '0' => 'Gizli (noindex)'], 'default' => '1'],
 
         // --- Nisoya Nabzı: topluluk hedefi + şehir elçileri ---
-        'nabiz.hedef_sayi' => ['group' => 'nabiz', 'label' => 'Hedef sayı (0 = özelliği tamamen gizle)', 'type' => 'text', 'default' => '0'],
+        'nabiz.hedef_otomatik' => ['group' => 'nabiz', 'label' => 'Hedef sayısı nasıl belirlensin?', 'type' => 'select', 'options' => ['0' => 'Elle gir (aşağıdaki sayı)', '1' => 'Otomatik (ayın 1\'inde son 3 ayın gerçek ortalamasına göre güncellenir)'], 'default' => '0'],
+        'nabiz.hedef_sayi' => ['group' => 'nabiz', 'label' => 'Hedef sayı (0 = özelliği tamamen gizle; otomatik moddaysa her ay üzerine yazılır)', 'type' => 'text', 'default' => '0'],
         'nabiz.hedef_metrik' => ['group' => 'nabiz', 'label' => 'Hedef neyi sayar?', 'type' => 'select', 'options' => ['yeni_uye' => 'Bu ay yeni üye', 'yeni_ilan' => 'Bu ay yeni ilan'], 'default' => 'yeni_uye'],
         'nabiz.hedef_baslik' => ['group' => 'nabiz', 'label' => 'Hedef başlığı', 'type' => 'text', 'default' => 'Bu ay hedefimiz'],
         'nabiz.odul_mesaji' => ['group' => 'nabiz', 'label' => 'Ödül/motivasyon mesajı (ops.)', 'type' => 'text', 'default' => ''],
