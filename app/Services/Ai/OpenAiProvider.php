@@ -89,8 +89,15 @@ class OpenAiProvider implements AiProvider
 
         $metin = '';
         foreach ($messages as $m) {
-            if (is_string($m['content'] ?? null)) {
-                $metin .= $m['content'];
+            $content = $m['content'] ?? null;
+            if (is_string($content)) {
+                $metin .= $content.' ';
+            } elseif (is_array($content)) {
+                foreach ($content as $part) {
+                    if (is_array($part) && isset($part['text']) && is_string($part['text'])) {
+                        $metin .= $part['text'].' ';
+                    }
+                }
             }
         }
 
@@ -148,6 +155,13 @@ class OpenAiProvider implements AiProvider
             return null;
         }
 
+        // Model belirteç sınırına ulaştıysa (max_tokens kesildi)
+        if (($choice['finish_reason'] ?? null) === 'length') {
+            $this->lastError = 'Model yanıtı belirteç sınırına ulaştı (max_tokens kesildi).';
+
+            return null;
+        }
+
         // Model, görseli/isteği reddedip content yerine "refusal" alanı
         // döndürebilir (ör. güvenlik sınıflandırıcısı görselden rahatsız
         // oldu). Bu durumu "JSON döndürmedi" ile karıştırmamak için ayrı
@@ -160,10 +174,17 @@ class OpenAiProvider implements AiProvider
             return null;
         }
 
-        $content = $choice['message']['content'] ?? null;
+        $content = $choice['message']['content'] ?? $choice['text'] ?? null;
+        if ($content === null || trim((string) $content) === '') {
+            $this->lastError = 'Model boş yanıt döndürdü.';
+
+            return null;
+        }
+
         $decoded = AiJson::decode($content);
         if ($decoded === null) {
-            $this->lastError = 'Yanıt geçerli JSON değil (model JSON döndürmedi).';
+            $preview = mb_substr(trim((string) $content), 0, 100);
+            $this->lastError = "Yanıt geçerli JSON değil (model JSON döndürmedi): \"{$preview}\"";
             Log::warning('AI: '.$this->name().' yanıtı geçerli JSON değil', [
                 'finish_reason' => $choice['finish_reason'] ?? null,
                 'content_preview' => mb_substr((string) $content, 0, 200),

@@ -463,15 +463,26 @@ class YapayZekaAyarlari extends Page
 
         $startTime = microtime(true);
 
+        $testPrompt = 'Bu bir sistem bağlantı testidir. Sadece şu JSON nesnesini döndür (başka hiçbir metin veya açıklama ekleme): {"ok": true}';
+        $testSchema = [
+            'type' => 'object',
+            'properties' => [
+                'ok' => ['type' => 'boolean'],
+            ],
+            'required' => ['ok'],
+        ];
+
         if ($isVision) {
             $result = $provider->analyzeImage(
                 $this->testImageBase64(),
                 'image/jpeg',
-                'Bu bir bağlantı testidir. Sadece şu JSON nesnesini döndür: {"ok": true}',
+                $testPrompt,
+                $testSchema,
             );
         } else {
             $result = $provider->analyzeText(
-                'Bu bir bağlantı testidir. Sadece şu JSON nesnesini döndür: {"ok": true}',
+                $testPrompt,
+                $testSchema,
             );
         }
 
