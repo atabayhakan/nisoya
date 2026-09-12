@@ -674,6 +674,20 @@ class NisoyaYonetimMcpTest extends TestCase
 
         $icerik->refresh();
         $this->assertEquals(TemsilcilikIslemi::STATUS_YAYIN, $icerik->status);
+
+        // 3. İşlem Türlerini Listele (turler)
+        $resTurler = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 25,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_konsolosluk_rehber_yonet',
+                'arguments' => ['islem' => 'turler'],
+            ],
+        ]);
+
+        $resTurler->assertStatus(200);
+        $this->assertGreaterThanOrEqual(1, $resTurler->json('result.structuredContent.toplam_tur'));
     }
 
     public function test_yasam_rehberi_yonet_araci_konulari_ve_icerikleri_yonetir(): void

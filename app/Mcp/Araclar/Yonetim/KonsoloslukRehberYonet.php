@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Araclar\Yonetim;
 
+use App\Models\IslemTuru;
 use App\Models\RehberGeriBildirimi;
 use App\Models\TemsilcilikIslemi;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -14,13 +15,14 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Title;
 
 #[Name('nisoya_konsolosluk_rehber_yonet')]
-#[Title('Konsolosluk Rehber Yönetimi — İşlem içeriklerini ve kullanıcı bildirimlerini yönet')]
+#[Title('Konsolosluk Rehber Yönetimi — İşlem içeriklerini, türlerini ve kullanıcı bildirimlerini yönet')]
 #[Description(
-    'Konsolosluk işlem içeriklerini (TemsilcilikIslemi) ve kullanıcı geri bildirimlerini yönetir. '.
+    'Konsolosluk işlem içeriklerini (TemsilcilikIslemi), işlem türü kategorilerini (IslemTuru) ve kullanıcı geri bildirimlerini yönetir. '.
     'islem="listele" (rehber içeriklerini taslak/yayın durumuna göre listeler), '.
     'islem="detay" (belirli bir işlem içeriğinin evrak, süre, harç ve notlarını getirir), '.
     'islem="durum_guncelle" (içeriği yayına alır veya taslağa çeker), '.
-    'islem="bildirimler" (kullanıcılardan gelen "Bu bilgi güncel mi?" geri bildirimlerini listeler).'
+    'islem="bildirimler" (kullanıcılardan gelen "Bu bilgi güncel mi?" geri bildirimlerini listeler), '.
+    'islem="turler" (tanımlı standart işlem türü şablonlarını listeler).'
 )]
 class KonsoloslukRehberYonet extends YonetimAraci
 {
@@ -29,7 +31,7 @@ class KonsoloslukRehberYonet extends YonetimAraci
     {
         return [
             'islem' => $schema->string()
-                ->description('İşlem türü: "listele", "detay", "durum_guncelle", "bildirimler".')
+                ->description('İşlem türü: "listele", "detay", "durum_guncelle", "bildirimler", "turler".')
                 ->required(),
             'icerik_id' => $schema->integer()
                 ->description('İncelenecek veya güncellenecek TemsilcilikIslemi ID numarası.'),
@@ -53,6 +55,7 @@ class KonsoloslukRehberYonet extends YonetimAraci
             'detay' => $this->detay($request),
             'durum_guncelle' => $this->durumGuncelle($request),
             'bildirimler' => $this->bildirimler($request),
+            'turler' => $this->turler(),
             default => $this->listele($request),
         };
     }
@@ -180,6 +183,24 @@ class KonsoloslukRehberYonet extends YonetimAraci
                 'mesaj' => $b->metin,
                 'incelendi' => (bool) $b->incelendi,
                 'tarih' => $b->created_at ? $b->created_at->toIso8601String() : null,
+            ])->all(),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function turler(): array
+    {
+        $turler = IslemTuru::withCount('islemler')->orderBy('sort_order')->get();
+
+        return [
+            'toplam_tur' => $turler->count(),
+            'turler' => $turler->map(fn (IslemTuru $t) => [
+                'id' => $t->id,
+                'ad' => $t->ad,
+                'slug' => $t->slug,
+                'aciklama' => $t->aciklama,
+                'kapsanan_temsilcilik' => $t->islemler_count,
+                'is_active' => (bool) $t->is_active,
             ])->all(),
         ];
     }

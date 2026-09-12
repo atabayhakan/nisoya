@@ -131,4 +131,15 @@ class CountryGuideAiAssistantTest extends TestCase
         $this->assertStringContainsString('Kritik Eksikler', $eksikRapor['durum']);
         $this->assertCount(4, $eksikRapor['eksikler']);
     }
+
+    public function test_suggest_procedure_description_returns_appropriate_text(): void
+    {
+        $assistant = $this->assistantOlustur();
+
+        $pasaportAciklama = $assistant->suggestProcedureDescription('Pasaport Başvuru');
+        $this->assertStringContainsString('pasaport', mb_strtolower($pasaportAciklama, 'UTF-8'));
+
+        $vekaletAciklama = $assistant->suggestProcedureDescription('Vekaletname ve Noterlik');
+        $this->assertStringContainsString('vekalet', mb_strtolower($vekaletAciklama, 'UTF-8'));
+    }
 }

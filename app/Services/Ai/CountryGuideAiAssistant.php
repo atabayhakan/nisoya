@@ -588,4 +588,60 @@ PROMPT;
             'oneriler' => $oneriler,
         ];
     }
+
+    /**
+     * Konsolosluk işlem türü için kısa ve açıklayıcı özet metin önerir.
+     */
+    public function suggestProcedureDescription(string $procedureName): string
+    {
+        if ($this->isConfigured()) {
+            $prompt = <<<PROMPT
+Sen Türkiye Cumhuriyeti Dışişleri Bakanlığı konsolosluk rehberi editörüsün.
+Platform: Nisoya Ülke Rehberi (nisoya.com).
+
+İşlem Türü: "{$procedureName}"
+
+Görev: Bu konsolosluk işlemi için temsilcilik sayfasında işlemin altında görünecek, tek cümlelik (maksimum 120 karakter) açık, kurumsal ve bilgilendirici bir açıklama metni yaz.
+Örnek: "Umuma mahsus, hususi ve hizmet pasaportu başvuru, yenileme ve kayıp işlemleri."
+
+İstenen JSON formatı:
+{
+  "aciklama": "Önerilen tek cümlelik özet metin"
+}
+Yanıtını SADECE geçerli bir JSON nesnesi olarak ver.
+PROMPT;
+
+            $schema = [
+                'type' => 'object',
+                'properties' => [
+                    'aciklama' => ['type' => 'string'],
+                ],
+                'required' => ['aciklama'],
+            ];
+
+            try {
+                $res = $this->ai->analyzeText($prompt, $schema, 15);
+                if (is_array($res) && filled($res['aciklama'] ?? null)) {
+                    return trim(strip_tags((string) $res['aciklama']));
+                }
+            } catch (\Throwable $e) {
+                Log::warning('CountryGuideAiAssistant suggestProcedureDescription hatası: '.$e->getMessage());
+            }
+        }
+
+        $low = mb_strtolower($procedureName, 'UTF-8');
+
+        return match (true) {
+            str_contains($low, 'pasaport') => 'Umuma mahsus, hususi ve hizmet pasaportu başvuru, temdit ve kayıp işlemleri.',
+            str_contains($low, 'vekalet') || str_contains($low, 'noter') => 'Genel ve özel vekaletnameler, imza sirküleri, onay ve noterlik işlemleri.',
+            str_contains($low, 'kimlik') || str_contains($low, 'nüfus cüzdanı') => 'T.C. Kimlik Kartı ilk başvuru, yenileme, değiştirme ve kayıp bildirimleri.',
+            str_contains($low, 'doğum') => 'Yurtdışında doğan çocukların nüfus kütüğüne tescili ve kimlik belgesi düzenlenmesi.',
+            str_contains($low, 'evlen') || str_contains($low, 'nikah') => 'Yabancı yerel makamlar önünde yapılan evliliklerin tescili ve aile cüzdanı işlemleri.',
+            str_contains($low, 'vefat') || str_contains($low, 'cenaze') || str_contains($low, 'ölüm') => 'Ölüm tescili, cenaze nakil belgesi ve tereke işlemlerine dair resmi usuller.',
+            str_contains($low, 'askerlik') => 'Dövizle askerlik, askerlik erteleme (tecil) ve muafiyet başvuruları.',
+            str_contains($low, 'adli sicil') || str_contains($low, 'sabıka') => 'Adli sicil kaydı belgesi (sabıka kaydı) temini ve tercüme tasdiki.',
+            str_contains($low, 'tercüme') || str_contains($low, 'apostil') || str_contains($low, 'tasdik') => 'İmza ve mühür tasdiki, yeminli tercüme şerhi ve apostil işlemleri.',
+            default => "{$procedureName} ile ilgili gerekli evraklar, harç tarifesi, süre ve randevu rehberi.",
+        };
+    }
 }
