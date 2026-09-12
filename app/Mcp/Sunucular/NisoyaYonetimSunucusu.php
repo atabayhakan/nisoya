@@ -15,11 +15,14 @@ use App\Mcp\Araclar\Yonetim\IlanArama;
 use App\Mcp\Araclar\Yonetim\IlanDetay;
 use App\Mcp\Araclar\Yonetim\IlanDurumuGuncelle;
 use App\Mcp\Araclar\Yonetim\KategoriYonet;
+use App\Mcp\Araclar\Yonetim\KesifHavuzuYonet;
 use App\Mcp\Araclar\Yonetim\KonsoloslukRehberYonet;
 use App\Mcp\Araclar\Yonetim\OneCikarmaYonet;
 use App\Mcp\Araclar\Yonetim\OzetMetrikler;
+use App\Mcp\Araclar\Yonetim\ReklamVeAlanYonet;
 use App\Mcp\Araclar\Yonetim\SahipsizIsletmeler;
 use App\Mcp\Araclar\Yonetim\SayfaYonet;
+use App\Mcp\Araclar\Yonetim\SeoVeGeoYonet;
 use App\Mcp\Araclar\Yonetim\SistemSaglikVeHatalar;
 use App\Mcp\Araclar\Yonetim\SistemYapilandirmaYonet;
 use App\Mcp\Araclar\Yonetim\SssYonet;
@@ -37,14 +40,14 @@ use Laravel\Mcp\Server\Tool;
  *
  * Yapay zekâ asistanlarının (Claude, ChatGPT, Antigravity, Cursor vb.) Nisoya
  * platformu üzerinde güvenli ilan yönetimi, esnaf keşfi, moderasyon, analitik,
- * CMS, pazaryeri, ülke rehberi ve sistem operasyonlarını gerçekleştirmesini sağlar.
+ * CMS, pazaryeri, ülke rehberi, SEO/GEO ve sistem operasyonlarını gerçekleştirmesini sağlar.
  */
 #[Name('nisoya-yonetim')]
-#[Version('1.4.0')]
+#[Version('1.5.0')]
 #[Instructions(<<<'MARKDOWN'
 Nisoya (nisoya.com) — Yurtdışındaki Türkler ve diaspora toplulukları için geliştirilmiş ücretsiz Türkçe ilan ve pazaryeri platformudur.
 
-Bu MCP sunucusu, Nisoya'nın resmi yönetim, büyüme, CMS, pazaryeri ticaret ve ülke rehberi arayüzüdür.
+Bu MCP sunucusu, Nisoya'nın resmi yönetim, büyüme, CMS, pazaryeri ticaret, ülke rehberi ve SEO/GEO arayüzüdür.
 
 ## Kullanabileceğiniz Temel Yetenekler:
 1. **İlan Arama & İnceleme (`nisoya_ilan_ara`, `nisoya_ilan_detay`):**
@@ -75,6 +78,10 @@ Bu MCP sunucusu, Nisoya'nın resmi yönetim, büyüme, CMS, pazaryeri ticaret ve
    - Platform sağlık durumunu, kurtarma dayanıklılık skorunu ve hata loglarını denetleyin; yapay zekâ ile hata teşhisi yapın (`nisoya_sistem_saglik_ve_hatalar`).
    - E-posta bildirim metinlerini listeleyin, yer-tutucuları koruyarak AI ile optimize edin veya güncelleyin (`nisoya_eposta_ve_sablon_yonet`).
    - Dikey modülleri (emlak/vasıta/davetiye/iş) açıp kapatın, ülkeleri ve para birimlerini yönetin (`nisoya_sistem_yapilandirma_yonet`).
+10. **Pazarlama, SEO & Büyüme (`nisoya_seo_ve_geo_yonet`, `nisoya_kesif_havuzu_yonet`, `nisoya_reklam_ve_alan_yonet`):**
+    - SEO ve 2026 Generative Engine Optimization (GEO) sağlığını denetleyin, /llms.txt standardı oluşturun (`nisoya_seo_ve_geo_yonet`).
+    - Keşif havuzundaki adayları inceleyin, kültürel analiz yapın, vitrin açın ve davet linki hazırlayın (`nisoya_kesif_havuzu_yonet`).
+    - Reklam ve banner alanlarını yönetin, yüksek dönüşümlü AI kampanya blokları ekleyin (`nisoya_reklam_ve_alan_yonet`).
 
 ## Güvenlik Kuralları:
 - İlan, kategori veya anlaşma durumunu değiştirmeden önce kullanıcıya yapacağınız eylemi açıkça bildirin.
@@ -86,7 +93,7 @@ class NisoyaYonetimSunucusu extends Server
     public int $defaultPaginationLength = 50;
 
     /**
-     * Kayıtlı yönetim araçları listesi (22 Hazır Yönetim Aracı).
+     * Kayıtlı yönetim araçları listesi (25 Hazır Yönetim Aracı - v1.5.0).
      *
      * @var array<int, class-string<Tool>>
      */
@@ -113,5 +120,8 @@ class NisoyaYonetimSunucusu extends Server
         SistemSaglikVeHatalar::class,
         EpostaVeSablonYonet::class,
         SistemYapilandirmaYonet::class,
+        SeoVeGeoYonet::class,
+        KesifHavuzuYonet::class,
+        ReklamVeAlanYonet::class,
     ];
 }

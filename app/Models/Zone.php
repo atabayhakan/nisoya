@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -12,6 +13,15 @@ use Illuminate\Support\Facades\Cache;
  * kodda `<x-zone zone-key="...">` çağrısına karşılık gelir; yeni bir noktaya ilk
  * kez alan eklemek kod değişikliği gerektirir, ama var olan noktalarda içerik/
  * açma-kapama tamamen admin panelinden yönetilir. Bkz. ZoneSeeder.
+ *
+ * @property int $id
+ * @property string $key
+ * @property string $name
+ * @property ?string $location_note
+ * @property ?array $blocks
+ * @property bool $is_active
+ * @property ?Carbon $starts_at
+ * @property ?Carbon $ends_at
  */
 class Zone extends Model
 {

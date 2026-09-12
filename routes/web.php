@@ -37,6 +37,7 @@ use App\Http\Controllers\Kahya\SesGeriBildirimController;
 use App\Http\Controllers\Kahya\TelegramWebhookController;
 use App\Http\Controllers\ListingAvailabilityController;
 use App\Http\Controllers\ListingController;
+use App\Http\Controllers\LlmsTxtController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\MessageController;
@@ -532,6 +533,10 @@ Route::middleware('module:rehber')->group(function () {
         ->where(['ulke' => '[a-z]{2}', 'temsilcilik' => '[a-z0-9\-]+', 'islem' => '[a-z0-9\-]+'])
         ->name('rehber.islem');
 });
+
+// Eylül 2026 Generative Engine Optimization (GEO) standardı — LLM indeksleme
+Route::get('/llms.txt', [LlmsTxtController::class, 'show'])->name('llms.txt');
+Route::get('/llms-full.txt', [LlmsTxtController::class, 'full'])->name('llms.full');
 
 // Yönetilebilir içerik sayfaları (catch-all — DİĞER TÜM ROTALARDAN SONRA olmalı)
 Route::get('/{slug}', [PageController::class, 'show'])

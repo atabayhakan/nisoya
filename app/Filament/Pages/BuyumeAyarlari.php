@@ -9,6 +9,7 @@ use App\Services\Growth\DiscoveryRunner;
 use App\Support\Growth\GrowthCatalog;
 use App\Support\Settings;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -36,6 +37,42 @@ class BuyumeAyarlari extends Page
     protected static ?string $navigationLabel = 'Büyüme Ajanı';
 
     protected static ?int $navigationSort = 3;
+
+    public static function getNavigationBadge(): ?string
+    {
+        $source = Settings::get('growth.source') ?: config('growth.source', 'auto');
+
+        return match ($source) {
+            'overpass' => 'OSM Overpass',
+            'google' => 'Google Places',
+            'fixture' => 'Demo',
+            default => 'Hibrit',
+        };
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'info';
+    }
+
+    /**
+     * @return array<int, Action>
+     */
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('aiStratejiRaporu')
+                ->label('AI Büyüme Strateji Raporu')
+                ->icon(Heroicon::OutlinedSparkles)
+                ->color('primary')
+                ->modalHeading('Eylül 2026 AI Büyüme & Tersine Katılım Stratejisi')
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Kapat')
+                ->modalContent(fn () => view('filament.growth.strateji-modal', [
+                    'metrikler' => $this->getMetriklerProperty(),
+                ])),
+        ];
+    }
 
     protected string $view = 'filament.pages.buyume-ayarlari';
 

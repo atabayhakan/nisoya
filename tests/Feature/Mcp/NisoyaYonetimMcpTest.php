@@ -14,12 +14,14 @@ use App\Models\Deal;
 use App\Models\FeatureRequest;
 use App\Models\IslemTuru;
 use App\Models\Listing;
+use App\Models\OutreachTarget;
 use App\Models\Temsilcilik;
 use App\Models\TemsilcilikIslemi;
 use App\Models\User;
 use App\Models\YasamKategorisi;
 use App\Models\YasamKonuIcerigi;
 use App\Models\YasamKonusu;
+use App\Models\Zone;
 use App\Support\Modules;
 use App\Support\Settings;
 use Database\Seeders\CategorySeeder;
@@ -51,7 +53,7 @@ class NisoyaYonetimMcpTest extends TestCase
     public function test_tum_araclar_yonetim_araci_tabanindan_turer(): void
     {
         $araclar = $this->sunucuAraclari();
-        $this->assertCount(22, $araclar, 'Nisoya Yönetim Sunucusu tam olarak 22 araç barındırmalı.');
+        $this->assertCount(25, $araclar, 'Nisoya Yönetim Sunucusu tam olarak 25 araç barındırmalı.');
 
         foreach ($araclar as $sinif) {
             $this->assertTrue(
@@ -92,7 +94,7 @@ class NisoyaYonetimMcpTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonPath('result.tools.0.name', 'nisoya_ilan_ara');
-        $this->assertCount(22, $response->json('result.tools'));
+        $this->assertCount(25, $response->json('result.tools'));
     }
 
     public function test_ozet_metrikler_araci_dogru_verileri_doner(): void
@@ -863,5 +865,211 @@ class NisoyaYonetimMcpTest extends TestCase
 
         $resDemo->assertStatus(200);
         $this->assertEquals('basarili', $resDemo->json('result.structuredContent.durum'));
+    }
+
+    public function test_seo_ve_geo_yonet_araci_denetler_ve_ayarlari_gunceller(): void
+    {
+        // 1. Denetle
+        $resDenetle = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 39,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_seo_ve_geo_yonet',
+                'arguments' => ['islem' => 'denetle'],
+            ],
+        ]);
+
+        $resDenetle->assertStatus(200);
+        $data = $resDenetle->json('result.structuredContent');
+        $this->assertEquals('basarili', $data['durum']);
+        $this->assertArrayHasKey('skor', $data);
+        $this->assertArrayHasKey('geo_hazirligi', $data);
+
+        // 2. llms_txt_uret
+        $resLlms = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 40,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_seo_ve_geo_yonet',
+                'arguments' => ['islem' => 'llms_txt_uret'],
+            ],
+        ]);
+
+        $resLlms->assertStatus(200);
+        $this->assertEquals('basarili', $resLlms->json('result.structuredContent.durum'));
+        $this->assertGreaterThan(0, $resLlms->json('result.structuredContent.karakter_sayisi'));
+
+        // 3. Ayar güncelle
+        $resUpdate = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 41,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_seo_ve_geo_yonet',
+                'arguments' => [
+                    'islem' => 'ayar_guncelle',
+                    'varsayilan_baslik' => 'Nisoya 2026 Avrupa Türk Pazaryeri',
+                    'robots_index' => true,
+                ],
+            ],
+        ]);
+
+        $resUpdate->assertStatus(200);
+        $this->assertEquals('basarili', $resUpdate->json('result.structuredContent.durum'));
+        $this->assertEquals('Nisoya 2026 Avrupa Türk Pazaryeri', Settings::get('seo.default_title'));
+    }
+
+    public function test_kesif_havuzu_yonet_araci_listeler_analiz_eder_ve_vitrin_acar(): void
+    {
+        $target = OutreachTarget::create([
+            'source' => 'overpass',
+            'external_id' => 'node/123456789',
+            'name' => 'Gaziantep Sofrası & Baklava',
+            'city' => 'Köln',
+            'country' => 'DE',
+            'sector' => 'Lokanta & Kebap',
+            'detection_band' => 'ambiguous',
+            'detection_confidence' => 55,
+            'needs_review' => true,
+            'status' => 'beklemede',
+        ]);
+
+        // 1. Listele
+        $resList = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 42,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_kesif_havuzu_yonet',
+                'arguments' => ['islem' => 'adaylari_listele', 'sadece_inceleme_bekleyen' => true],
+            ],
+        ]);
+
+        $resList->assertStatus(200);
+        $this->assertGreaterThanOrEqual(1, $resList->json('result.structuredContent.listelenen_adet'));
+
+        // 2. Kültürel Analiz
+        $resAnaliz = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 43,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_kesif_havuzu_yonet',
+                'arguments' => [
+                    'islem' => 'kulturel_analiz',
+                    'aday_id' => $target->id,
+                ],
+            ],
+        ]);
+
+        $resAnaliz->assertStatus(200);
+        $this->assertEquals('basarili', $resAnaliz->json('result.structuredContent.durum'));
+        $this->assertTrue($resAnaliz->json('result.structuredContent.turk_mu'));
+
+        // 3. Karar Ver
+        $resKarar = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 44,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_kesif_havuzu_yonet',
+                'arguments' => [
+                    'islem' => 'karar_ver',
+                    'aday_id' => $target->id,
+                    'karar' => 'onayla',
+                ],
+            ],
+        ]);
+
+        $resKarar->assertStatus(200);
+        $this->assertEquals('onayli', $resKarar->json('result.structuredContent.yeni_durum'));
+
+        // 4. Vitrin Üret
+        $resVitrin = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 45,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_kesif_havuzu_yonet',
+                'arguments' => [
+                    'islem' => 'vitrin_uret',
+                    'aday_id' => $target->id,
+                ],
+            ],
+        ]);
+
+        $resVitrin->assertStatus(200);
+        $this->assertEquals('basarili', $resVitrin->json('result.structuredContent.durum'));
+        $this->assertNotEmpty($resVitrin->json('result.structuredContent.claim_url'));
+    }
+
+    public function test_reklam_ve_alan_yonet_araci_listeler_ve_reklam_ekler(): void
+    {
+        $zone = Zone::create([
+            'key' => 'mcp_test_alani',
+            'name' => 'MCP Test Reklam Alanı',
+            'location_note' => 'Anasayfa ortasında banner',
+            'is_active' => true,
+            'blocks' => [],
+        ]);
+
+        // 1. Listele
+        $resList = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 46,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_reklam_ve_alan_yonet',
+                'arguments' => ['islem' => 'alanlari_listele'],
+            ],
+        ]);
+
+        $resList->assertStatus(200);
+        $this->assertGreaterThanOrEqual(1, $resList->json('result.structuredContent.toplam_alan'));
+
+        // 2. AI Reklam Üret
+        $resAi = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 47,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_reklam_ve_alan_yonet',
+                'arguments' => [
+                    'islem' => 'ai_reklam_uret',
+                    'alan_anahtari' => 'mcp_test_alani',
+                    'kampanya_hedefi' => 'Esnaf Vitrin Sahiplendirme',
+                ],
+            ],
+        ]);
+
+        $resAi->assertStatus(200);
+        $this->assertEquals('basarili', $resAi->json('result.structuredContent.durum'));
+        $this->assertNotEmpty($resAi->json('result.structuredContent.baslik'));
+
+        // 3. Blok Ekle
+        $resBlok = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 48,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_reklam_ve_alan_yonet',
+                'arguments' => [
+                    'islem' => 'blok_ekle',
+                    'alan_anahtari' => 'mcp_test_alani',
+                    'baslik' => 'Avrupa Türk Esnafı Buluşuyor',
+                    'buton_metni' => 'Hemen Katıl',
+                    'buton_url' => '/sahiplen',
+                ],
+            ],
+        ]);
+
+        $resBlok->assertStatus(200);
+        $this->assertEquals('basarili', $resBlok->json('result.structuredContent.durum'));
+        $this->assertEquals(1, $resBlok->json('result.structuredContent.yeni_blok_sayisi'));
+
+        $zone->refresh();
+        $this->assertCount(1, $zone->blocks);
     }
 }

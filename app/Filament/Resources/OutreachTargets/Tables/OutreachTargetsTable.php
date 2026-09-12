@@ -5,6 +5,7 @@ namespace App\Filament\Resources\OutreachTargets\Tables;
 use App\Filament\Resources\BekleyenHamleler\BekleyenHamlelerResource;
 use App\Models\BekleyenHamle;
 use App\Models\OutreachTarget;
+use App\Services\Ai\GrowthMarketingAiAssistant;
 use App\Services\Growth\ClaimableListingCreator;
 use App\Services\Growth\ErisimMesajiYazari;
 use App\Services\Growth\WhatsAppDavetServisi;
@@ -131,6 +132,56 @@ class OutreachTargetsTable
                     ->color('gray')
                     ->url(fn (OutreachTarget $r): string => 'https://www.google.com/maps/search/?api=1&query='.rawurlencode(trim($r->name.' '.$r->city)))
                     ->openUrlInNewTab(),
+                Action::make('aiKulturelAnaliz')
+                    ->label('AI Kültürel Analiz')
+                    ->icon(Heroicon::OutlinedSparkles)
+                    ->color('primary')
+                    ->modalHeading(fn (OutreachTarget $r): string => "AI Kültürel Analiz: {$r->name}")
+                    ->modalSubmitActionLabel('Önerilen Sonucu Uygula')
+                    ->modalContent(function (OutreachTarget $r) {
+                        $assistant = app(GrowthMarketingAiAssistant::class);
+                        $analiz = $assistant->classifyTargetCulture([
+                            'name' => (string) $r->name,
+                            'city' => (string) $r->city,
+                            'country' => (string) $r->country,
+                            'sector' => (string) $r->sector,
+                            'signals' => (array) ($r->detection_signals ?? []),
+                        ]);
+
+                        return view('filament.outreach.ai-kulturel-analiz-modal', [
+                            'aday' => $r,
+                            'analiz' => $analiz,
+                        ]);
+                    })
+                    ->action(function (OutreachTarget $r): void {
+                        $assistant = app(GrowthMarketingAiAssistant::class);
+                        $analiz = $assistant->classifyTargetCulture([
+                            'name' => (string) $r->name,
+                            'city' => (string) $r->city,
+                            'country' => (string) $r->country,
+                            'sector' => (string) $r->sector,
+                            'signals' => (array) ($r->detection_signals ?? []),
+                        ]);
+
+                        if ($analiz['recommendation'] === 'onayla') {
+                            $r->update([
+                                'needs_review' => false,
+                                'status' => 'onayli',
+                                'detection_band' => 'turkish',
+                                'detection_confidence' => $analiz['confidence'],
+                            ]);
+                            Notification::make()->title("{$r->name} Onaylandı ✓")->success()->send();
+                        } elseif ($analiz['recommendation'] === 'reddet') {
+                            $r->update([
+                                'needs_review' => false,
+                                'status' => 'reddedildi',
+                                'detection_band' => 'not_turkish',
+                            ]);
+                            Notification::make()->title("{$r->name} Reddedildi")->warning()->send();
+                        } else {
+                            Notification::make()->title('İnceleme Gerekli: Durum Değiştirilmedi')->info()->send();
+                        }
+                    }),
                 Action::make('onayla')
                     ->label('Onayla')
                     ->icon(Heroicon::OutlinedCheck)
@@ -235,6 +286,39 @@ class OutreachTargetsTable
                     ->visible(fn (OutreachTarget $r): bool => filled($r->listing?->claim_phone) || filled($r->detection_signals['phone'] ?? null))
                     ->url(fn (OutreachTarget $r): string => app(WhatsAppDavetServisi::class)->adayIcinUrl($r))
                     ->openUrlInNewTab(),
+                Action::make('aiKisiselDavet')
+                    ->label('AI Kişisel Davet')
+                    ->icon(Heroicon::OutlinedSparkles)
+                    ->color('primary')
+                    ->modalHeading(fn (OutreachTarget $r): string => "AI Kişiselleştirilmiş Davet: {$r->name}")
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Kapat')
+                    ->modalContent(function (OutreachTarget $r) {
+                        $assistant = app(GrowthMarketingAiAssistant::class);
+                        $claimUrl = $r->listing && $r->listing->isClaimable()
+                            ? url('/sahiplen/'.$r->listing->claim_token)
+                            : url('/sahiplen');
+
+                        $davet = $assistant->draftPersonalizedOutreach([
+                            'name' => (string) $r->name,
+                            'city' => (string) $r->city,
+                            'country' => (string) $r->country,
+                            'sector' => (string) $r->sector,
+                        ], $claimUrl);
+
+                        $phone = $r->listing?->claim_phone ?: ($r->detection_signals['phone'] ?? null);
+                        $cleanPhone = $phone ? preg_replace('/[^\d+]/', '', (string) $phone) : '';
+                        $waLink = $cleanPhone
+                            ? 'https://wa.me/'.ltrim((string) $cleanPhone, '+').'?text='.rawurlencode($davet['whatsapp_message'])
+                            : 'https://wa.me/?text='.rawurlencode($davet['whatsapp_message']);
+
+                        return view('filament.outreach.ai-davet-modal', [
+                            'aday' => $r,
+                            'davet' => $davet,
+                            'waLink' => $waLink,
+                            'claimUrl' => $claimUrl,
+                        ]);
+                    }),
                 Action::make('qr-ve-kart')
                     ->label('QR & Kart')
                     ->icon(Heroicon::OutlinedQrCode)
