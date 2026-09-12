@@ -38,8 +38,8 @@ class EksikAlanTarayici
         'genel.site_adi' => 'Site adı — her sayfa başlığında geçer',
         'seo.default_title' => 'Varsayılan SEO başlığı — arama sonuçlarında görünür',
         'seo.default_description' => 'Varsayılan SEO açıklaması — arama sonuçlarında görünür',
-        'seo.og_image' => 'Paylaşım görseli — link paylaşıldığında görünen resim',
-        'gorunum.logo' => 'Logo — üst menüde marka kimliği',
+        'seo.og_image' => 'Özel paylaşım görseli (boşsa varsayılan og.png kullanılır)',
+        'gorunum.logo' => 'Özel logo görseli (boşsa varsayılan marka ikonu kullanılır)',
         'iletisim.eposta' => 'İletişim e-postası — form bildirimleri buraya gider',
     ];
 
