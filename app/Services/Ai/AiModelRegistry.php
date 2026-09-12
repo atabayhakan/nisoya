@@ -169,6 +169,9 @@ class AiModelRegistry
     /**
      * NVIDIA NIM modellerini çeker veya bilinen kararlı modelleri döner.
      *
+     * NOT: NVIDIA /v1/models endpoint'i herkese açıktır (auth gerekmez).
+     * Chat/Vision dışı modeller (embedding, guard, reward, translate vb.) filtrelenir.
+     *
      * @return array<string, string>
      */
     private function fetchNvidiaModels(): array
@@ -177,32 +180,117 @@ class AiModelRegistry
             return $this->curatedNvidiaModels();
         }
 
-        $key = config('ai.providers.nvidia.api_key');
-        if (filled($key)) {
-            try {
-                $response = Http::withToken($key)
-                    ->timeout(10)
-                    ->get('https://integrate.api.nvidia.com/v1/models');
+        try {
+            // NVIDIA /v1/models endpoint'i PUBLIC — API anahtarı gerekmez
+            $response = Http::timeout(10)
+                ->get('https://integrate.api.nvidia.com/v1/models');
 
-                if ($response->successful()) {
-                    $list = [];
-                    foreach ($response->json('data') ?? [] as $m) {
-                        $id = (string) ($m['id'] ?? '');
-                        if ($id !== '') {
-                            $isVision = str_contains($id, 'vision');
-                            $list[$id] = $id.($isVision ? ' [Vision]' : '');
+            if ($response->successful()) {
+                $data = $response->json('data') ?? [];
+
+                // Chat/completion dışı modelleri filtrele
+                $excludePatterns = [
+                    'embed', 'clip', 'reward', 'starcoder', 'ranking', 'parse',
+                    'detector', 'calibration', 'guard', 'safety', 'translate',
+                    'rerank', 'nemo-retriever', 'parakeet', 'canary', 'fastpitch',
+                    'riva', 'audio', 'whisper', 'speech', 'tts',
+                ];
+
+                $vision = [];
+                $text = [];
+
+                foreach ($data as $m) {
+                    $id = (string) ($m['id'] ?? '');
+                    if ($id === '') {
+                        continue;
+                    }
+
+                    // Filtrelenecek model türlerini atla
+                    $skip = false;
+                    foreach ($excludePatterns as $pattern) {
+                        if (stripos($id, $pattern) !== false) {
+                            $skip = true;
+
+                            break;
                         }
                     }
-                    if ($list !== []) {
-                        return $list;
+                    if ($skip) {
+                        continue;
+                    }
+
+                    $label = $this->nvidiaModelLabel($id);
+                    $isVision = stripos($id, 'vision') !== false
+                        || stripos($id, '-vl') !== false
+                        || stripos($id, 'pixtral') !== false;
+
+                    if ($isVision) {
+                        $vision[$id] = $label.' [Vision]';
+                    } else {
+                        $text[$id] = $label;
                     }
                 }
-            } catch (Throwable $e) {
-                Log::warning('AiModelRegistry: NVIDIA modelleri API ile çekilemedi', ['error' => $e->getMessage()]);
+
+                // Vision modelleri önce, ardından metin modelleri
+                $result = array_merge($vision, $text);
+
+                if ($result !== []) {
+                    return $result;
+                }
             }
+        } catch (Throwable $e) {
+            Log::warning('AiModelRegistry: NVIDIA modelleri API ile çekilemedi', ['error' => $e->getMessage()]);
         }
 
         return $this->curatedNvidiaModels();
+    }
+
+    /**
+     * NVIDIA model ID'sinden okunabilir Türkçe etiket üretir.
+     */
+    private function nvidiaModelLabel(string $id): string
+    {
+        // vendor/model-name → güzel etiket
+        $parts = explode('/', $id);
+        $vendor = $parts[0] ?? '';
+        $modelName = $parts[1] ?? $id;
+
+        // Vendor eşlemesi
+        $vendorMap = [
+            'meta' => 'Meta',
+            'nvidia' => 'NVIDIA',
+            'mistralai' => 'Mistral',
+            'google' => 'Google',
+            'deepseek-ai' => 'DeepSeek',
+            'qwen' => 'Qwen',
+            'microsoft' => 'Microsoft',
+            'ibm' => 'IBM',
+            'writer' => 'Writer',
+            'abacusai' => 'Abacus AI',
+            'nv-mistralai' => 'NVIDIA Mistral',
+            'rakuten' => 'Rakuten',
+            'upstage' => 'Upstage',
+            'snowflake' => 'Snowflake',
+            'baichuan-inc' => 'Baichuan',
+            'thudm' => 'Tsinghua',
+            'aisingapore' => 'AI Singapore',
+            'yentinglin' => 'Taiwan LLM',
+            'mediatek' => 'MediaTek',
+            'tokyotech-llm' => 'Tokyo Tech',
+            'institute-of-science-tokyo' => 'IST Tokyo',
+            'databricks' => 'Databricks',
+        ];
+
+        $vendorLabel = $vendorMap[$vendor] ?? ucfirst($vendor);
+
+        // Model adını okunabilir hale getir
+        $readable = str_replace(['-', '_'], ' ', $modelName);
+        $readable = ucwords($readable);
+
+        // Önerilen modelleri işaretle
+        $onerilen = str_contains($id, 'nemotron') || str_contains($id, 'llama-3.2-11b-vision');
+        $suffix = $onerilen ? ' [Önerilen]' : '';
+
+        return "{$vendorLabel}: {$readable}{$suffix}";
     }
 
     /**
@@ -248,12 +336,28 @@ class AiModelRegistry
     private function curatedNvidiaModels(): array
     {
         return [
-            'meta/llama-3.2-11b-vision-instruct' => 'Meta Llama 3.2 11B Vision Instruct [Vision, Önerilen]',
-            'meta/llama-3.2-90b-vision-instruct' => 'Meta Llama 3.2 90B Vision Instruct [Vision]',
-            'meta/llama-3.1-70b-instruct' => 'Meta Llama 3.1 70B Instruct',
-            'meta/llama-3.1-8b-instruct' => 'Meta Llama 3.1 8B Instruct (Hızlı)',
-            'nvidia/nemotron-4-340b-instruct' => 'NVIDIA Nemotron 4 340B Instruct',
-            'mistralai/mistral-large-2-instruct' => 'Mistral Large 2 Instruct',
+            // Vision modelleri (fotoğraflı ilan analizi için)
+            'meta/llama-3.2-11b-vision-instruct' => 'Meta: Llama 3.2 11B Vision Instruct [Vision, Önerilen]',
+            'meta/llama-3.2-90b-vision-instruct' => 'Meta: Llama 3.2 90B Vision Instruct [Vision]',
+            'google/gemma-3-27b-it' => 'Google: Gemma 3 27B IT',
+            'mistralai/mistral-large-2-instruct' => 'Mistral: Mistral Large 2 Instruct',
+
+            // Nemotron serisi (NVIDIA'nın kendi modelleri)
+            'nvidia/llama-3.1-nemotron-70b-instruct' => 'NVIDIA: Llama 3.1 Nemotron 70B Instruct [Önerilen]',
+            'nvidia/nemotron-4-340b-instruct' => 'NVIDIA: Nemotron 4 340B Instruct',
+            'nvidia/llama-3.3-nemotron-super-49b-v1' => 'NVIDIA: Llama 3.3 Nemotron Super 49B',
+
+            // Açık kaynak güçlü modeller
+            'deepseek-ai/deepseek-r1' => 'DeepSeek: R1 (Derin Akıl Yürütme)',
+            'qwen/qwen2.5-72b-instruct' => 'Qwen: Qwen 2.5 72B Instruct',
+            'meta/llama-3.3-70b-instruct' => 'Meta: Llama 3.3 70B Instruct',
+            'meta/llama-3.1-405b-instruct' => 'Meta: Llama 3.1 405B Instruct (En Büyük)',
+
+            // Hızlı / hafif modeller
+            'microsoft/phi-4' => 'Microsoft: Phi 4 (Kompakt, Hızlı)',
+            'mistralai/mistral-small-24b-instruct-2501' => 'Mistral: Mistral Small 24B Instruct',
+            'ibm/granite-3.1-8b-instruct' => 'IBM: Granite 3.1 8B Instruct (Kompakt)',
+            'writer/palmyra-fin-70b-32k' => 'Writer: Palmyra Fin 70B (Finans)',
         ];
     }
 
