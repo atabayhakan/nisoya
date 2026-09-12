@@ -219,6 +219,10 @@ class YasamKonuIcerigiResource extends Resource
                 SelectFilter::make('country_code')
                     ->label('Ülke')
                     ->options(fn () => Country::query()->orderBy('sort_order')->pluck('name_tr', 'code')),
+                SelectFilter::make('yasam_konusu_id')
+                    ->label('Yaşam Konusu')
+                    ->options(fn () => YasamKonusu::query()->orderBy('sort_order')->pluck('baslik', 'id'))
+                    ->searchable(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
