@@ -42,7 +42,7 @@ class ElKitabi extends Page
 
     protected static ?string $navigationLabel = 'El Kitabı';
 
-    protected static ?int $navigationSort = 0;
+    protected static ?int $navigationSort = 3;
 
     protected string $view = 'filament.pages.el-kitabi';
 

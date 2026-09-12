@@ -8,11 +8,14 @@ use App\Filament\Concerns\RehberYardimi;
 use App\Filament\Concerns\RestrictsToAdmins;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
+use App\Services\Ai\SystemToolsAiAssistant;
+use App\Support\Settings;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\View\View;
 use UnitEnum;
 
 /**
@@ -38,7 +41,34 @@ class KurtarmaKiti extends Page
      */
     protected function getHeaderActions(): array
     {
-        return array_values(array_filter([static::rehberYardimAksiyonu()]));
+        $aiAction = Action::make('aiGuvenlikDenetimi')
+            ->label('AI Güvenlik & Kurtarma Denetimi')
+            ->icon(Heroicon::OutlinedShieldCheck)
+            ->color('primary')
+            ->modalHeading('Sistem Felaket Kurtarma & Güvenlik Denetimi')
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Kapat')
+            ->modalContent(function (): View {
+                $admins = $this->adminCount();
+                $twoFa = $this->ikiFaktorluAdminCount();
+                $remaining = $this->remainingCodes();
+                $smtp = ! empty(Settings::get('mail.host') ?: config('mail.mailers.smtp.host'));
+                $assistant = app(SystemToolsAiAssistant::class);
+                $audit = $assistant->generateRecoveryAudit($admins, $twoFa, $remaining, $smtp);
+
+                return view('filament.pages.partials.kurtarma-denetim-modal', [
+                    'audit' => $audit,
+                    'admins' => $admins,
+                    'twoFa' => $twoFa,
+                    'remaining' => $remaining,
+                    'smtp' => $smtp,
+                ]);
+            });
+
+        return array_values(array_filter([
+            static::rehberYardimAksiyonu(),
+            $aiAction,
+        ]));
     }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedLifebuoy;
@@ -47,7 +77,23 @@ class KurtarmaKiti extends Page
 
     protected static ?string $navigationLabel = 'Kurtarma Kiti';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 9;
+
+    public static function getNavigationBadge(): ?string
+    {
+        $admins = User::query()->where('role', UserRole::Admin)->where('status', UserStatus::Aktif)->count();
+        $twoFa = User::query()->where('role', UserRole::Admin)->where('status', UserStatus::Aktif)->whereNotNull('two_factor_confirmed_at')->count();
+
+        return ($admins < 2 || $twoFa < $admins) ? 'Risk' : 'Güvenli';
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $admins = User::query()->where('role', UserRole::Admin)->where('status', UserStatus::Aktif)->count();
+        $twoFa = User::query()->where('role', UserRole::Admin)->where('status', UserStatus::Aktif)->whereNotNull('two_factor_confirmed_at')->count();
+
+        return ($admins < 2 || $twoFa < $admins) ? 'warning' : 'success';
+    }
 
     protected string $view = 'filament.pages.kurtarma-kiti';
 

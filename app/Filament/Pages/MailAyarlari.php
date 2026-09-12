@@ -31,7 +31,21 @@ class MailAyarlari extends Page
 
     protected static ?string $navigationLabel = 'E-posta (SMTP)';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
+
+    public static function getNavigationBadge(): ?string
+    {
+        $hasHost = ! empty(Settings::get('mail.host') ?: config('mail.mailers.smtp.host'));
+
+        return $hasHost ? 'Aktif' : 'Eksik';
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $hasHost = ! empty(Settings::get('mail.host') ?: config('mail.mailers.smtp.host'));
+
+        return $hasHost ? 'success' : 'warning';
+    }
 
     protected string $view = 'filament.pages.mail-ayarlari';
 

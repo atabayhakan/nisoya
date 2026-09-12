@@ -6,6 +6,7 @@ use App\Filament\Concerns\RestrictsToAdmins;
 use App\Support\Modules;
 use App\Support\Settings;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -32,11 +33,63 @@ class Moduller extends Page
 
     protected static ?string $navigationLabel = 'Modüller';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 7;
+
+    public static function getNavigationBadge(): ?string
+    {
+        $active = count(array_filter(Modules::KEYS, fn (string $k): bool => Modules::enabled($k)));
+        $total = count(Modules::KEYS);
+
+        return "{$active}/{$total}";
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $active = count(array_filter(Modules::KEYS, fn (string $k): bool => Modules::enabled($k)));
+
+        return $active === count(Modules::KEYS) ? 'success' : 'warning';
+    }
 
     protected string $view = 'filament.pages.moduller';
 
     public ?array $data = [];
+
+    /**
+     * @return array<int, Action>
+     */
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('tumunuAc')
+                ->label('Tüm Modülleri Aç')
+                ->icon(Heroicon::OutlinedCheckCircle)
+                ->color('success')
+                ->requiresConfirmation()
+                ->modalHeading('Tüm dikey modüller açılsın mı?')
+                ->modalDescription('Emlak, vasıta, davetiye ve iş ilanları modüllerinin tümü aktif hale getirilecek.')
+                ->action(function (): void {
+                    $values = [];
+                    foreach (Modules::KEYS as $key) {
+                        $values["modul.{$key}"] = '1';
+                    }
+                    Settings::setMany($values);
+                    $this->mount();
+                    Notification::make()
+                        ->title('Tüm modüller aktif edildi')
+                        ->success()
+                        ->send();
+                }),
+
+            Action::make('aiTavsiye')
+                ->label('AI Modül Stratejisi')
+                ->icon(Heroicon::OutlinedSparkles)
+                ->color('primary')
+                ->modalHeading('Pazaryeri Dikey Modül Stratejisi')
+                ->modalDescription('Diaspora pazarında başlangıçta genel ikinci el ve iş ilanları en yüksek kullanıcı etkileşimini sağlar. Emlak ve vasıta modülleri ise yerel esnaf ve galeriler keşfedildikçe devreye alınmalıdır. Kapalı modüller sitenizde temiz bir vitrin sunar, veri kaybına yol açmaz.')
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Tamam'),
+        ];
+    }
 
     public function getTitle(): string
     {

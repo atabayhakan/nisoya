@@ -23,7 +23,17 @@ class CurrencyResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 12;
+
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) Currency::query()->where('is_active', true)->count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'success';
+    }
 
     public static function getNavigationGroup(): ?string
     {

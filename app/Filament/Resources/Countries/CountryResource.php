@@ -23,7 +23,17 @@ class CountryResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGlobeAlt;
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 11;
+
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) Country::query()->where('is_active', true)->count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'success';
+    }
 
     public static function getNavigationGroup(): ?string
     {

@@ -7,6 +7,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class CurrenciesTable
@@ -36,7 +37,10 @@ class CurrenciesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                TernaryFilter::make('is_active')
+                    ->label('Aktiflik Durumu')
+                    ->trueLabel('Sadece Aktif Para Birimleri')
+                    ->falseLabel('Pasif Para Birimleri'),
             ])
             ->recordActions([
                 EditAction::make(),

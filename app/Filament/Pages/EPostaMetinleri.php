@@ -3,9 +3,11 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\RestrictsToAdmins;
+use App\Services\Ai\SystemToolsAiAssistant;
 use App\Support\MailTemplates;
 use App\Support\Settings;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -31,11 +33,28 @@ class EPostaMetinleri extends Page
 
     protected static ?string $navigationLabel = 'E-posta Metinleri';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 6;
 
     protected string $view = 'filament.pages.e-posta-metinleri';
 
     public ?array $data = [];
+
+    /**
+     * @return array<int, Action>
+     */
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('aiSablonIpuclari')
+                ->label('AI Şablon İpuçları')
+                ->icon(Heroicon::OutlinedSparkles)
+                ->color('primary')
+                ->modalHeading('E-posta Şablonları & Yer-Tutucular')
+                ->modalDescription('Yurtdışındaki Türk topluluğuna gönderilen bildirimlerde güven ve açık dil esastır. Metinleri düzenlerken süslü parantez içindeki {ad}, {gonderen}, {arama} gibi yer-tutucuları korumayı unutmayın. İlgili satırların yanındaki "AI İyileştir" butonuna tıklayarak akıllı öneriler alabilirsiniz.')
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Anladım'),
+        ];
+    }
 
     public function getTitle(): string
     {
@@ -65,7 +84,36 @@ class EPostaMetinleri extends Page
                     ->label($partLabel)
                     ->placeholder($tpl['parts'][$part]) // boşsa bu varsayılan kullanılır
                     ->maxLength(500)
-                    ->columnSpanFull();
+                    ->columnSpanFull()
+                    ->hintActions([
+                        Action::make('aiOptimize_'.$key.'_'.$part)
+                            ->label('AI İyileştir')
+                            ->icon(Heroicon::OutlinedSparkles)
+                            ->tooltip('Yapay zekâ ile diasporaya uygun profesyonel dille optimize et')
+                            ->action(function (callable $get, callable $set) use ($key, $part, $tpl): void {
+                                $current = (string) ($get($key.'__'.$part) ?: $tpl['parts'][$part]);
+                                $assistant = app(SystemToolsAiAssistant::class);
+                                $res = $assistant->optimizeEmailTemplate($key, $part, $current);
+                                $set($key.'__'.$part, $res['optimized_text']);
+                                Notification::make()
+                                    ->title('AI Metni Optimize Etti')
+                                    ->body($res['explanation'])
+                                    ->success()
+                                    ->send();
+                            }),
+                        Action::make('reset_'.$key.'_'.$part)
+                            ->label('Varsayılan')
+                            ->icon(Heroicon::OutlinedArrowPath)
+                            ->color('gray')
+                            ->tooltip('Varsayılan orijinal metne geri döndür')
+                            ->action(function (callable $set) use ($key, $part): void {
+                                $set($key.'__'.$part, '');
+                                Notification::make()
+                                    ->title('Varsayılana sıfırlandı')
+                                    ->info()
+                                    ->send();
+                            }),
+                    ]);
             }
 
             $placeholderHint = collect($tpl['placeholders'])

@@ -8,6 +8,7 @@ use App\Mcp\Araclar\Yonetim\AnlasmaYonet;
 use App\Mcp\Araclar\Yonetim\BekleyenIlanlar;
 use App\Mcp\Araclar\Yonetim\CmsOzeti;
 use App\Mcp\Araclar\Yonetim\DuyuruYonet;
+use App\Mcp\Araclar\Yonetim\EpostaVeSablonYonet;
 use App\Mcp\Araclar\Yonetim\HeroYonet;
 use App\Mcp\Araclar\Yonetim\HizliKesif;
 use App\Mcp\Araclar\Yonetim\IlanArama;
@@ -19,6 +20,8 @@ use App\Mcp\Araclar\Yonetim\OneCikarmaYonet;
 use App\Mcp\Araclar\Yonetim\OzetMetrikler;
 use App\Mcp\Araclar\Yonetim\SahipsizIsletmeler;
 use App\Mcp\Araclar\Yonetim\SayfaYonet;
+use App\Mcp\Araclar\Yonetim\SistemSaglikVeHatalar;
+use App\Mcp\Araclar\Yonetim\SistemYapilandirmaYonet;
 use App\Mcp\Araclar\Yonetim\SssYonet;
 use App\Mcp\Araclar\Yonetim\TemsilcilikYonet;
 use App\Mcp\Araclar\Yonetim\WhatsAppDavet;
@@ -34,10 +37,10 @@ use Laravel\Mcp\Server\Tool;
  *
  * Yapay zekâ asistanlarının (Claude, ChatGPT, Antigravity, Cursor vb.) Nisoya
  * platformu üzerinde güvenli ilan yönetimi, esnaf keşfi, moderasyon, analitik,
- * CMS, pazaryeri ve ülke rehberi operasyonlarını gerçekleştirmesini sağlar.
+ * CMS, pazaryeri, ülke rehberi ve sistem operasyonlarını gerçekleştirmesini sağlar.
  */
 #[Name('nisoya-yonetim')]
-#[Version('1.3.0')]
+#[Version('1.4.0')]
 #[Instructions(<<<'MARKDOWN'
 Nisoya (nisoya.com) — Yurtdışındaki Türkler ve diaspora toplulukları için geliştirilmiş ücretsiz Türkçe ilan ve pazaryeri platformudur.
 
@@ -68,6 +71,10 @@ Bu MCP sunucusu, Nisoya'nın resmi yönetim, büyüme, CMS, pazaryeri ticaret ve
    - Dış temsilcilikleri (başkonsolosluk/büyükelçilik) listele, adres/iletişim bilgilerini güncelle (`nisoya_temsilcilik_yonet`).
    - Konsolosluk işlem rehberlerini (evrak, harç, süre, notlar) incele, yayına al, kullanıcı geri bildirimlerini listele (`nisoya_konsolosluk_rehber_yonet`).
    - Yaşam rehberi kategori/konu ağacını ve ülke içeriklerini listele/güncelle, topluluk önerilerini karara bağla (`nisoya_yasam_rehberi_yonet`).
+9. **Sistem Sağlığı, E-posta & Yapılandırma (`nisoya_sistem_saglik_ve_hatalar`, `nisoya_eposta_ve_sablon_yonet`, `nisoya_sistem_yapilandirma_yonet`):**
+   - Platform sağlık durumunu, kurtarma dayanıklılık skorunu ve hata loglarını denetleyin; yapay zekâ ile hata teşhisi yapın (`nisoya_sistem_saglik_ve_hatalar`).
+   - E-posta bildirim metinlerini listeleyin, yer-tutucuları koruyarak AI ile optimize edin veya güncelleyin (`nisoya_eposta_ve_sablon_yonet`).
+   - Dikey modülleri (emlak/vasıta/davetiye/iş) açıp kapatın, ülkeleri ve para birimlerini yönetin (`nisoya_sistem_yapilandirma_yonet`).
 
 ## Güvenlik Kuralları:
 - İlan, kategori veya anlaşma durumunu değiştirmeden önce kullanıcıya yapacağınız eylemi açıkça bildirin.
@@ -79,7 +86,7 @@ class NisoyaYonetimSunucusu extends Server
     public int $defaultPaginationLength = 50;
 
     /**
-     * Kayıtlı yönetim araçları listesi (19 Hazır Yönetim Aracı).
+     * Kayıtlı yönetim araçları listesi (22 Hazır Yönetim Aracı).
      *
      * @var array<int, class-string<Tool>>
      */
@@ -103,5 +110,8 @@ class NisoyaYonetimSunucusu extends Server
         TemsilcilikYonet::class,
         KonsoloslukRehberYonet::class,
         YasamRehberiYonet::class,
+        SistemSaglikVeHatalar::class,
+        EpostaVeSablonYonet::class,
+        SistemYapilandirmaYonet::class,
     ];
 }

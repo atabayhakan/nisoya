@@ -36,7 +36,19 @@ class OrnekVeri extends Page
 
     protected static ?string $navigationLabel = 'Örnek Veri';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 10;
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = count(app(DemoDefteri::class)->partiler());
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'gray';
+    }
 
     protected string $view = 'filament.pages.ornek-veri';
 

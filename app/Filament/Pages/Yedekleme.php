@@ -44,7 +44,19 @@ class Yedekleme extends Page
 
     protected static ?string $navigationLabel = 'Yedekleme';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 8;
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = count(app(BackupService::class)->list());
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'gray';
+    }
 
     protected string $view = 'filament.pages.yedekleme';
 

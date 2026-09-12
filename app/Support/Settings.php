@@ -124,6 +124,12 @@ class Settings
         }
     }
 
+    /** Tek bir ayarı kaydeder (upsert) ve cache'i temizler. */
+    public static function set(string $key, ?string $value): void
+    {
+        self::setMany([$key => $value]);
+    }
+
     /** Ayarları toplu kaydeder (upsert) ve cache'i temizler. */
     public static function setMany(array $values): void
     {

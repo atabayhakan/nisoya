@@ -50,7 +50,7 @@ class NisoyaYonetimMcpTest extends TestCase
     public function test_tum_araclar_yonetim_araci_tabanindan_turer(): void
     {
         $araclar = $this->sunucuAraclari();
-        $this->assertCount(19, $araclar, 'Nisoya Yönetim Sunucusu tam olarak 19 araç barındırmalı.');
+        $this->assertCount(22, $araclar, 'Nisoya Yönetim Sunucusu tam olarak 22 araç barındırmalı.');
 
         foreach ($araclar as $sinif) {
             $this->assertTrue(
@@ -91,7 +91,7 @@ class NisoyaYonetimMcpTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonPath('result.tools.0.name', 'nisoya_ilan_ara');
-        $this->assertCount(19, $response->json('result.tools'));
+        $this->assertCount(22, $response->json('result.tools'));
     }
 
     public function test_ozet_metrikler_araci_dogru_verileri_doner(): void
@@ -710,5 +710,157 @@ class NisoyaYonetimMcpTest extends TestCase
 
         $icerik->refresh();
         $this->assertEquals(YasamKonuIcerigi::STATUS_YAYIN, $icerik->status);
+    }
+
+    public function test_sistem_saglik_ve_hatalar_araci_calisir(): void
+    {
+        // 1. Sağlık özeti
+        $resOzet = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 30,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_sistem_saglik_ve_hatalar',
+                'arguments' => ['islem' => 'saglik_ozeti'],
+            ],
+        ]);
+
+        $resOzet->assertStatus(200);
+        $data = $resOzet->json('result.structuredContent');
+        $this->assertEquals('basarili', $data['durum']);
+        $this->assertArrayHasKey('sistem_sagligi', $data);
+        $this->assertArrayHasKey('yonetici_ve_guvenlik', $data);
+        $this->assertArrayHasKey('yedekleme', $data);
+
+        // 2. Hataları listele
+        $resHatalar = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 31,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_sistem_saglik_ve_hatalar',
+                'arguments' => [
+                    'islem' => 'hatalari_listele',
+                    'limit' => 5,
+                ],
+            ],
+        ]);
+
+        $resHatalar->assertStatus(200);
+        $this->assertEquals('basarili', $resHatalar->json('result.structuredContent.durum'));
+
+        // 3. AI Hata Teşhisi
+        $resTeshis = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 32,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_sistem_saglik_ve_hatalar',
+                'arguments' => [
+                    'islem' => 'ai_hata_teshis',
+                    'hata_mesaji' => 'Connection refused on port 3306',
+                    'hata_sinifi' => 'PDOException',
+                ],
+            ],
+        ]);
+
+        $resTeshis->assertStatus(200);
+        $teshisData = $resTeshis->json('result.structuredContent.ai_teshisi');
+        $this->assertEquals('kritik', $teshisData['severity']);
+    }
+
+    public function test_eposta_ve_sablon_yonet_araci_calisir(): void
+    {
+        // 1. Şablonları listele
+        $resList = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 33,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_eposta_ve_sablon_yonet',
+                'arguments' => ['islem' => 'sablonlari_listele'],
+            ],
+        ]);
+
+        $resList->assertStatus(200);
+        $this->assertEquals(4, $resList->json('result.structuredContent.toplam_sablon'));
+
+        // 2. AI Şablon İyileştir
+        $resAi = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 34,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_eposta_ve_sablon_yonet',
+                'arguments' => [
+                    'islem' => 'ai_sablon_iyilestir',
+                    'sablon_anahtari' => 'yeni_mesaj',
+                    'parca' => 'greeting',
+                    'ton' => 'profesyonel',
+                ],
+            ],
+        ]);
+
+        $resAi->assertStatus(200);
+        $this->assertTrue($resAi->json('result.structuredContent.yer_tutucular_korundu'));
+
+        // 3. SMTP durumu
+        $resSmtp = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 35,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_eposta_ve_sablon_yonet',
+                'arguments' => ['islem' => 'smtp_durumu'],
+            ],
+        ]);
+
+        $resSmtp->assertStatus(200);
+        $this->assertEquals('basarili', $resSmtp->json('result.structuredContent.durum'));
+    }
+
+    public function test_sistem_yapilandirma_yonet_araci_calisir(): void
+    {
+        // 1. Modülleri listele
+        $resModul = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 36,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_sistem_yapilandirma_yonet',
+                'arguments' => ['islem' => 'moduller_listele'],
+            ],
+        ]);
+
+        $resModul->assertStatus(200);
+        $this->assertEquals(count(\App\Support\Modules::KEYS), $resModul->json('result.structuredContent.toplam_modul'));
+
+        // 2. Ülkeleri listele
+        $resUlke = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 37,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_sistem_yapilandirma_yonet',
+                'arguments' => ['islem' => 'ulkeleri_listele'],
+            ],
+        ]);
+
+        $resUlke->assertStatus(200);
+        $this->assertEquals('basarili', $resUlke->json('result.structuredContent.durum'));
+
+        // 3. Demo kapısı durumu
+        $resDemo = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 38,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_sistem_yapilandirma_yonet',
+                'arguments' => ['islem' => 'demo_kapisi_durumu'],
+            ],
+        ]);
+
+        $resDemo->assertStatus(200);
+        $this->assertEquals('basarili', $resDemo->json('result.structuredContent.durum'));
     }
 }
