@@ -18,10 +18,11 @@ use Laravel\Mcp\Server\Attributes\Title;
 #[Title('Konsolosluk Rehber Yönetimi — İşlem içeriklerini, türlerini ve kullanıcı bildirimlerini yönet')]
 #[Description(
     'Konsolosluk işlem içeriklerini (TemsilcilikIslemi), işlem türü kategorilerini (IslemTuru) ve kullanıcı geri bildirimlerini yönetir. '.
-    'islem="listele" (rehber içeriklerini taslak/yayın durumuna göre listeler), '.
+    'islem="listele" (rehber içeriklerini taslak/yayin durumuna göre listeler), '.
     'islem="detay" (belirli bir işlem içeriğinin evrak, süre, harç ve notlarını getirir), '.
     'islem="durum_guncelle" (içeriği yayına alır veya taslağa çeker), '.
     'islem="bildirimler" (kullanıcılardan gelen "Bu bilgi güncel mi?" geri bildirimlerini listeler), '.
+    'islem="bildirim_incele" (belirli bir geri bildirimi incelendi olarak işaretler), '.
     'islem="turler" (tanımlı standart işlem türü şablonlarını listeler).'
 )]
 class KonsoloslukRehberYonet extends YonetimAraci
@@ -31,10 +32,12 @@ class KonsoloslukRehberYonet extends YonetimAraci
     {
         return [
             'islem' => $schema->string()
-                ->description('İşlem türü: "listele", "detay", "durum_guncelle", "bildirimler", "turler".')
+                ->description('İşlem türü: "listele", "detay", "durum_guncelle", "bildirimler", "bildirim_incele", "turler".')
                 ->required(),
             'icerik_id' => $schema->integer()
                 ->description('İncelenecek veya güncellenecek TemsilcilikIslemi ID numarası.'),
+            'bildirim_id' => $schema->integer()
+                ->description('İncelendi olarak işaretlenecek RehberGeriBildirimi ID numarası.'),
             'durum' => $schema->string()
                 ->description('Listeleme durum filtresi: "taslak", "yayin".'),
             'yeni_durum' => $schema->string()
@@ -55,6 +58,7 @@ class KonsoloslukRehberYonet extends YonetimAraci
             'detay' => $this->detay($request),
             'durum_guncelle' => $this->durumGuncelle($request),
             'bildirimler' => $this->bildirimler($request),
+            'bildirim_incele' => $this->bildirimIncele($request),
             'turler' => $this->turler(),
             default => $this->listele($request),
         };
@@ -177,6 +181,8 @@ class KonsoloslukRehberYonet extends YonetimAraci
                 'id' => $b->id,
                 'islem_id' => $b->temsilcilik_islemi_id,
                 'temsilcilik' => $b->islem && $b->islem->temsilcilik ? $b->islem->temsilcilik->ad : 'Bilinmiyor',
+                'ulke' => $b->islem && $b->islem->temsilcilik ? $b->islem->temsilcilik->country_code : null,
+                'sehir' => $b->islem && $b->islem->temsilcilik ? $b->islem->temsilcilik->sehir : null,
                 'islem_turu' => $b->islem && $b->islem->islemTuru ? $b->islem->islemTuru->ad : 'Bilinmiyor',
                 'tur' => $b->tur,
                 'tur_etiketi' => $b->turEtiketi(),
@@ -184,6 +190,29 @@ class KonsoloslukRehberYonet extends YonetimAraci
                 'incelendi' => (bool) $b->incelendi,
                 'tarih' => $b->created_at ? $b->created_at->toIso8601String() : null,
             ])->all(),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function bildirimIncele(Request $request): array
+    {
+        $id = (int) $request->get('bildirim_id');
+        $b = RehberGeriBildirimi::find($id);
+
+        if (! $b) {
+            return [
+                'basarili' => false,
+                'mesaj' => "ID'si {$id} olan geri bildirim bulunamadı.",
+            ];
+        }
+
+        $b->incelendi = true;
+        $b->save();
+
+        return [
+            'basarili' => true,
+            'mesaj' => "Geri bildirim (#{$id}) incelendi olarak işaretlendi.",
+            'bildirim_id' => $id,
         ];
     }
 
