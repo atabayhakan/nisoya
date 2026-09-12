@@ -18,12 +18,13 @@ use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
 /**
- * Yapay zeka sağlayıcı ayarları (kamera-önce hızlı ilan görüntü analizi).
- * Sağlayıcı + API anahtarı + model buradan girilir; DB'ye yazılır ve
- * AppServiceProvider::mergeRuntimeConfig() ile config('ai.*') runtime'da
- * override edilir — DEĞİŞİKLİK ANINDA GEÇERLİ olur, config:cache/SSH gerekmez.
+ * Yapay zekâ yönetim ve kontrol merkezi.
  *
- * Sağlayıcı katmanı için bkz. App\Contracts\AiProvider + config/ai.php.
+ * Sitedeki tüm yapay zekâ servislerini (fotoğrafla ilan, moderasyon, Kâhya asistanı,
+ * doğal dil arama, çeviri ve dolandırıcılık tespiti) tek merkezden yönetir.
+ *
+ * Canlı model kayıt defteri ile entegre çalışır; anlık model taraması ve
+ * günlük otomatik sağlık denetimi (`ai:modelleri-denetle`) sağlar.
  */
 class YapayZekaAyarlari extends Page
 {
@@ -39,8 +40,6 @@ class YapayZekaAyarlari extends Page
 
     public ?array $data = [];
 
-    /** AI sağlayıcı API anahtarı burada görünür/düzenlenir — yalnızca Admin.
-     *  Moderatör bu sayfaya (menüde ve doğrudan URL ile) erişemez. */
     public static function canAccess(): bool
     {
         return auth()->user()?->isAdmin() ?? false;
@@ -48,19 +47,28 @@ class YapayZekaAyarlari extends Page
 
     public function getTitle(): string
     {
-        return 'Yapay Zeka Ayarları';
+        return 'Yapay Zekâ Kontrol Merkezi';
     }
 
     public function mount(): void
     {
+        $savedModel = Settings::get('ai.model') ?: '';
+        $isCustom = (Settings::get('ai.ozel_model_aktif') ?? '0') === '1';
+
         $this->form->fill([
             'yapay_zeka_aktif' => (Settings::get('ai.aktif') ?? '1') === '1',
             'saglayici' => Settings::get('ai.saglayici') ?: config('ai.default', 'openrouter'),
             'api_anahtari' => Settings::get('ai.api_anahtari') ?: '',
-            'model' => Settings::get('ai.model') ?: '',
+            'model' => $savedModel,
+            'ozel_model_aktif' => $isCustom,
+            'ozel_model' => $isCustom ? $savedModel : (Settings::get('ai.ozel_model') ?: ''),
             'hizli_ilan_aktif' => (Settings::get('ai.hizli_ilan_aktif') ?? '1') === '1',
             'moderasyon_aktif' => (Settings::get('ai.moderasyon_aktif') ?? '1') === '1',
+            'temsili_gorsel_aktif' => (Settings::get('ai.temsili_gorsel_aktif') ?? '1') === '1',
             'nisoya_ai_arama_aktif' => (Settings::get('ai.nisoya_ai_arama_aktif') ?? '1') === '1',
+            'dogal_dil_arama_aktif' => (Settings::get('ai.dogal_dil_arama_aktif') ?? '1') === '1',
+            'metin_moderasyon_aktif' => (Settings::get('ai.metin_moderasyon_aktif') ?? '1') === '1',
+            'ilan_cevirisi_aktif' => (Settings::get('ai.ilan_cevirisi_aktif') ?? '1') === '1',
         ]);
     }
 
@@ -68,81 +76,115 @@ class YapayZekaAyarlari extends Page
     {
         return $schema
             ->components([
-                Section::make('Ana anahtar')
-                    ->description('Yapay zekayı tamamen kapatmak için tek düğme. Kapatırsan — sağlayıcı/anahtar girili ve aşağıdaki özellikler açık olsa bile — hem fotoğrafla hızlı ilan hem görsel moderasyonu devre dışı kalır. Sağlayıcı çökerse veya maliyeti durdurmak istersen bunu kullan.')
+                Section::make('Acil Durum Şalteri (Master Killswitch)')
+                    ->description('Tüm site genelindeki yapay zekâ motorunu tek tıkla durdurma gücü. Kapatıldığında tüm AI özellikleri gizlenir, harici API çağrıları sıfırlanır; site standart geleneksel ilan yapısıyla hatasız çalışmaya devam eder.')
                     ->schema([
                         Toggle::make('yapay_zeka_aktif')
-                            ->label('Yapay zeka açık')
-                            ->helperText('Kapalıyken site tamamen çalışır; yalnızca AI destekli özellikler gizlenir (ilanlar elle doldurulur, moderasyon insana kalır).'),
+                            ->label('Yapay Zekâ Motoru Aktif')
+                            ->helperText('Açık: Tüm AI servisleri aşağıdaki yetenek matrisine göre çalışır. Kapalı: Tüm harici AI istekleri anında kesilir.'),
                     ]),
 
-                Section::make('Sağlayıcı ve Anahtar')
-                    ->description('Sitedeki tüm yapay zekâ özellikleri (Fotoğrafla Hızlı İlan, Görsel Moderasyonu, Nisoya AI Arama ve Kâhya Asistanı) için temel sağlayıcı ve varsayılan model.')
+                Section::make('Sağlayıcı ve Akıllı Model Mimarisi')
+                    ->description('Sitedeki tüm yapay zekâ işlemlerini besleyen temel model altyapısı ve API kimlik doğrulaması.')
                     ->columns(2)
                     ->schema([
                         Select::make('saglayici')
-                            ->label('Sağlayıcı')
+                            ->label('Yapay Zekâ Sağlayıcısı')
                             ->options([
-                                'openrouter' => 'OpenRouter (tek uçtan yüzlerce model — önerilen)',
-                                'nvidia' => 'NVIDIA NIM (Llama 3.2 Vision, Nemotron vb.)',
-                                'groq' => 'Groq (Ultra Hızlı Çıkarım — Llama 3.2 Vision vb.)',
-                                'deepseek' => 'DeepSeek (V3 / R1)',
-                                'mistral' => 'Mistral AI (Pixtral Vision, Mistral Large)',
-                                'openai' => 'OpenAI',
-                                'anthropic' => 'Anthropic (Claude)',
-                                'gemini' => 'Google Gemini',
+                                'openrouter' => '🌐 OpenRouter (Tek uçtan yüzlerce model — önerilen)',
+                                'nvidia' => '🟢 NVIDIA NIM (Llama 3.2 Vision, Nemotron vb.)',
+                                'groq' => '⚡ Groq (Ultra Yüksek Hız — Llama 3.2 Vision vb.)',
+                                'deepseek' => '🐋 DeepSeek (DeepSeek-V3 / R1 Muhakeme)',
+                                'mistral' => '🌪️ Mistral AI (Pixtral Vision, Mistral Large)',
+                                'openai' => '🤖 OpenAI (GPT-4o, GPT-4o Mini)',
+                                'anthropic' => '🧠 Anthropic (Claude 3.5 Sonnet / Haiku)',
+                                'gemini' => '🔷 Google Gemini (Gemini 2.0 Flash)',
                             ])
                             ->required()
                             ->live()
                             ->native(false)
-                            ->helperText('OpenRouter tek anahtarla yüzlerce model sunar; NVIDIA, Groq ve DeepSeek ise kurumsal hız ve açık modeller sunar.'),
-
-                        TextInput::make('model')
-                            ->label('Varsayılan Model')
-                            ->placeholder(fn (Get $get): string => match ($get('saglayici') ?? 'openrouter') {
-                                'nvidia' => 'meta/llama-3.2-11b-vision-instruct',
-                                'groq' => 'llama-3.2-11b-vision-preview',
-                                'deepseek' => 'deepseek-chat',
-                                'mistral' => 'pixtral-12b-2409',
-                                'openai' => 'gpt-4o-mini',
-                                'anthropic' => 'claude-haiku-4-5',
-                                'gemini' => 'gemini-2.0-flash',
-                                default => 'openai/gpt-4o-mini',
-                            })
-                            ->datalist(function (Get $get): array {
-                                $provider = (string) ($get('saglayici') ?: 'openrouter');
-
-                                return array_keys(app(AiModelRegistry::class)->getAvailableModels($provider));
-                            })
-                            ->helperText(function (Get $get): string {
-                                $provider = (string) ($get('saglayici') ?: 'openrouter');
-                                $count = count(app(AiModelRegistry::class)->getAvailableModels($provider));
-
-                                return "Fotoğrafla ilan ve genel AI işlemleri için kullanılır ({$count} model kayıtlı). Modelin görüntü (vision) desteklemesi gerekir. Boş bırakılırsa varsayılan model kullanılır.";
+                            ->helperText(fn (Get $get): string => match ($get('saglayici')) {
+                                'openrouter' => 'OpenRouter tek API anahtarıyla OpenAI, Claude, Llama ve Gemini dahil yüzlerce modele erişim sağlar.',
+                                'nvidia' => 'NVIDIA NIM kurumsal API ucu. Llama 3.2 Vision modelleri için optimize edilmiştir.',
+                                'groq' => 'Groq LPU mimarisi. Saniyede 500+ token ultra hızlı çıkarım sağlar.',
+                                'deepseek' => 'DeepSeek API ucu. Yüksek akıl yürütme ve ekonomik maliyet sunar.',
+                                'mistral' => 'Mistral AI ucu. Pixtral vision ve Mistral Large modelleri.',
+                                default => 'Resmî sağlayıcı API anahtarınız ile doğrudan bağlantı.',
                             }),
 
                         TextInput::make('api_anahtari')
-                            ->label('API anahtarı')
+                            ->label('Gizli API Anahtarı')
                             ->password()
                             ->revealable()
                             ->autocomplete('new-password')
-                            ->helperText('Sağlayıcının panelinden aldığın gizli anahtar. Sunucuda güvenle saklanır; kimseye gösterilmez.')
-                            ->columnSpanFull(),
+                            ->helperText('Sağlayıcının konsolundan aldığınız gizli anahtar. Veritabanında güvenle saklanır, kimseyle paylaşılmaz.'),
 
+                        Select::make('model')
+                            ->label('Varsayılan Yapay Zekâ Modeli')
+                            ->searchable()
+                            ->preload()
+                            ->live()
+                            ->native(false)
+                            ->hidden(fn (Get $get): bool => (bool) $get('ozel_model_aktif'))
+                            ->options(function (Get $get): array {
+                                $provider = (string) ($get('saglayici') ?: 'openrouter');
+                                $current = (string) ($get('model') ?: '');
+
+                                return app(AiModelRegistry::class)->getGroupedModels($provider, $current ?: null);
+                            })
+                            ->placeholder('Model arayın veya listeden seçin...')
+                            ->helperText('Fotoğrafla hızlı ilan ve görsel moderasyonu için [Vision] etiketli modeller önerilir.'),
+
+                        TextInput::make('ozel_model')
+                            ->label('Özel Model Kimliği (ID)')
+                            ->visible(fn (Get $get): bool => (bool) $get('ozel_model_aktif'))
+                            ->placeholder('ör. meta-llama/llama-3.2-11b-vision-instruct')
+                            ->helperText('Sağlayıcınızın konsolundaki tam model kodunu eksiksiz yazın.')
+                            ->required(fn (Get $get): bool => (bool) $get('ozel_model_aktif')),
+
+                        Toggle::make('ozel_model_aktif')
+                            ->label('Listede olmayan özel bir model kimliği yazmak istiyorum')
+                            ->live()
+                            ->columnSpanFull()
+                            ->helperText('Açıldığında serbest model kodu girebileceğiniz metin kutusu aktif olur.'),
+                    ]),
+
+                Section::make('📸 Görsel & İlan Zekâsı')
+                    ->description('İlan fotoğraflarının taranması, otomatik taslak üretimi ve görsel güvenlik denetimleri.')
+                    ->columns(3)
+                    ->schema([
                         Toggle::make('hizli_ilan_aktif')
-                            ->label('Fotoğrafla hızlı ilan özelliği açık')
-                            ->helperText('Kapatırsan anahtar girili olsa bile özellik gizlenir.')
-                            ->columnSpanFull(),
+                            ->label('Fotoğrafla Hızlı İlan')
+                            ->helperText('Kullanıcı ürün/araç fotoğrafı yüklediğinde başlık, kategori, fiyat ve özellikleri anında doldurur.'),
 
                         Toggle::make('moderasyon_aktif')
-                            ->label('Görsel moderasyonu açık (uygunsuz içerik ön-elemesi)')
-                            ->helperText('İlan görselleri ve sohbet fotoğrafları aynı AI ile otomatik taranır. Uygunsuz bulunan ilan görselleri SİLİNMEZ — ilan incelemeye alınır (Onay bekliyor); sohbette uygunsuz fotoğraf gönderilemez. Nihai karar her zaman admin panelinden (Görseller) verilir.')
-                            ->columnSpanFull(),
+                            ->label('Görsel Moderasyonu')
+                            ->helperText('İlan ve sohbet görsellerinde müstehcenlik, şiddet ve dolandırıcılık tespiti yapar.'),
 
+                        Toggle::make('temsili_gorsel_aktif')
+                            ->label('Temsilî Görsel Üretimi')
+                            ->helperText('2+ gündür fotoğrafsız kalan aktif ilanlara AI ile temsilî kapak görseli üretir.'),
+                    ]),
+
+                Section::make('🔍 Arama, Keşif & Dil Zekâsı')
+                    ->description('Ziyaretçilerin arama deneyimini zenginleştiren ve güvenliği sağlayan yapay zekâ katmanları.')
+                    ->columns(2)
+                    ->schema([
                         Toggle::make('nisoya_ai_arama_aktif')
-                            ->label('Anasayfa "Nisoya AI ile ara" çubuğu açık')
-                            ->helperText('Anasayfadaki arama kutusunun üstünde çıkan yapay zeka destekli soru çubuğu. Sitenin en görünür AI yüzeyi — maliyet sıçrarsa deploy beklemeden buradan kapat.')
-                            ->columnSpanFull(),
+                            ->label('Anasayfa "Nisoya AI ile ara" Çubuğu')
+                            ->helperText('Arama kutusu üzerinde çıkan, doğal dil sorularını ilgili ilan ve rehberlere yönlendiren soru çubuğu.'),
+
+                        Toggle::make('dogal_dil_arama_aktif')
+                            ->label('Doğal Dil Arama Filtreleme')
+                            ->helperText('Aramaya yazılan serbest ifadeleri ("berlin uygun kira", "temiz golf") kategori ve şehir filtrelerine çevirir.'),
+
+                        Toggle::make('metin_moderasyon_aktif')
+                            ->label('İlan Metni Dolandırıcılık Tespiti')
+                            ->helperText('İlan başlık ve açıklamalarındaki şüpheli IBAN, kapora ve dolandırıcılık desenlerini ön-eler.'),
+
+                        Toggle::make('ilan_cevirisi_aktif')
+                            ->label('Çok Dilli İlan Yerelleştirme')
+                            ->helperText('İlanları yerel ülke dillerine çevirerek Google arama motoru trafiğini artırır.'),
                     ]),
             ])
             ->statePath('data');
@@ -151,82 +193,32 @@ class YapayZekaAyarlari extends Page
     public function save(): void
     {
         $state = $this->form->getState();
+        $isCustom = ! empty($state['ozel_model_aktif']);
+        $model = $isCustom && filled($state['ozel_model'] ?? null)
+            ? trim((string) $state['ozel_model'])
+            : trim((string) ($state['model'] ?? ''));
 
         Settings::setMany([
             'ai.aktif' => ! empty($state['yapay_zeka_aktif']) ? '1' : '0',
             'ai.saglayici' => $state['saglayici'] ?? '',
             'ai.api_anahtari' => $state['api_anahtari'] ?? '',
-            'ai.model' => $state['model'] ?? '',
+            'ai.model' => $model,
+            'ai.ozel_model_aktif' => $isCustom ? '1' : '0',
+            'ai.ozel_model' => $state['ozel_model'] ?? '',
             'ai.hizli_ilan_aktif' => ! empty($state['hizli_ilan_aktif']) ? '1' : '0',
             'ai.moderasyon_aktif' => ! empty($state['moderasyon_aktif']) ? '1' : '0',
+            'ai.temsili_gorsel_aktif' => ! empty($state['temsili_gorsel_aktif']) ? '1' : '0',
             'ai.nisoya_ai_arama_aktif' => ! empty($state['nisoya_ai_arama_aktif']) ? '1' : '0',
+            'ai.dogal_dil_arama_aktif' => ! empty($state['dogal_dil_arama_aktif']) ? '1' : '0',
+            'ai.metin_moderasyon_aktif' => ! empty($state['metin_moderasyon_aktif']) ? '1' : '0',
+            'ai.ilan_cevirisi_aktif' => ! empty($state['ilan_cevirisi_aktif']) ? '1' : '0',
         ]);
 
         Notification::make()
-            ->title('Yapay zeka ayarları kaydedildi')
-            ->body('Değişiklik canlı sitede anında geçerli — fotoğrafla hızlı ilan özelliği güncellendi.')
+            ->title('Yapay zekâ ayarları kaydedildi ✓')
+            ->body('Değişiklikler canlı sitede anında geçerlidir. Sunucu yeniden başlatma veya önbellek temizleme gerekmez.')
             ->success()
             ->send();
-    }
-
-    /** Anahtarın gerçekten çalıştığını doğrulamak için sağlayıcıya minik bir çağrı yapar. */
-    public function testEt(): void
-    {
-        // Formdaki (henüz kaydedilmemiş olabilir) değerlerle sağlayıcıyı kur —
-        // temel config'in üzerine form değerlerini yaz.
-        $state = $this->form->getState();
-        $name = $state['saglayici'] ?: config('ai.default', 'openrouter');
-        $config = array_merge(config("ai.providers.{$name}", []), array_filter([
-            'api_key' => $state['api_anahtari'] ?? null,
-            'model' => ($state['model'] ?? '') ?: null,
-        ]));
-
-        $provider = app(AiManager::class)->make($name, $config);
-
-        if (! $provider->isConfigured()) {
-            Notification::make()
-                ->title('Anahtar girilmemiş')
-                ->body('Önce API anahtarını girip kaydet.')
-                ->warning()
-                ->send();
-
-            return;
-        }
-
-        // Gerçek (küçük ama geçerli) bir görselle test — 1×1 gibi minik
-        // görselleri vision modelleri "desteklenmeyen görsel" diye reddediyor.
-        $result = $provider->analyzeImage(
-            $this->testImageBase64(),
-            'image/jpeg',
-            'Bu bir bağlantı testidir. Sadece şu JSON nesnesini döndür: {"ok": true}',
-        );
-
-        if ($result !== null) {
-            Notification::make()
-                ->title('Bağlantı başarılı ✓')
-                ->body($provider->name().' yanıt verdi. Ayarlar çalışıyor.')
-                ->success()
-                ->send();
-        } else {
-            $error = $provider->lastError() ?? 'Sağlayıcı yanıt vermedi.';
-            $lower = mb_strtolower($error);
-            $hint = '';
-
-            if (str_contains($lower, 'training violation') || str_contains($lower, 'data policy') || str_contains($lower, 'guardrail')) {
-                $hint = "\n\n💡 İpucu: OpenRouter gizlilik ayarlarınız (https://openrouter.ai/settings/privacy) bu modelin sağlayıcısını kısıtlıyor veya model vision desteklemiyor. Varsayılan Model kutusunu boş bırakın (openai/gpt-4o-mini kullanılır) ya da 'google/gemini-2.0-flash-001' seçin.";
-            } elseif (str_contains($lower, 'not a valid model id')) {
-                $hint = "\n\n💡 İpucu: Girilen model adı geçersiz. Kutuyu boş bırakın veya açılır listedeki modellerden birini (ör. openai/gpt-4o-mini) seçin.";
-            } elseif (str_contains($lower, 'image') || str_contains($lower, 'vision')) {
-                $hint = ' → Bu model görüntü (vision) desteklemiyor. Görüntü destekleyen bir model seç (ör. openai/gpt-4o-mini, google/gemini-2.0-flash-001).';
-            }
-
-            Notification::make()
-                ->title('Bağlantı kurulamadı')
-                ->body($error.$hint)
-                ->danger()
-                ->persistent()
-                ->send();
-        }
     }
 
     /** Sağlayıcıdan en güncel modelleri anında yeniden çeker ve listeyi tazeler. */
@@ -240,18 +232,99 @@ class YapayZekaAyarlari extends Page
         $count = count($models);
 
         Notification::make()
-            ->title('Model listesi güncellendi')
-            ->body("[{$provider}] için {$count} adet çalışan güncel model çekildi ve listeye eklendi.")
+            ->title('Model Kataloğu Güncellendi ✓')
+            ->body("[{$provider}] için {$count} adet çalışan güncel model başarıyla çekildi ve arama listesine eklendi.")
             ->success()
             ->send();
     }
 
-    /** Test için küçük ama geçerli bir JPEG üretir (vision modelleri minik görseli reddeder). */
+    /** Sağlayıcı ve model bağlantısını canlı olarak test eder. */
+    public function testEt(): void
+    {
+        $state = $this->form->getState();
+        $name = $state['saglayici'] ?: config('ai.default', 'openrouter');
+
+        $isCustom = ! empty($state['ozel_model_aktif']);
+        $model = $isCustom && filled($state['ozel_model'] ?? null)
+            ? trim((string) $state['ozel_model'])
+            : trim((string) ($state['model'] ?? ''));
+
+        $config = array_merge(config("ai.providers.{$name}", []), array_filter([
+            'api_key' => $state['api_anahtari'] ?? null,
+            'model' => $model ?: null,
+        ]));
+
+        $provider = app(AiManager::class)->make($name, $config);
+
+        if (! $provider->isConfigured()) {
+            Notification::make()
+                ->title('API Anahtarı Eksik')
+                ->body('Bağlantıyı test etmeden önce lütfen API anahtarınızı girin.')
+                ->warning()
+                ->send();
+
+            return;
+        }
+
+        $activeModel = $config['model'] ?? '';
+        $isVision = str_contains(mb_strtolower($activeModel), 'vision')
+            || str_contains(mb_strtolower($activeModel), '4o')
+            || str_contains(mb_strtolower($activeModel), 'gemini')
+            || str_contains(mb_strtolower($activeModel), 'pixtral')
+            || str_contains(mb_strtolower($activeModel), 'claude');
+
+        $startTime = microtime(true);
+
+        if ($isVision) {
+            $result = $provider->analyzeImage(
+                $this->testImageBase64(),
+                'image/jpeg',
+                'Bu bir bağlantı testidir. Sadece şu JSON nesnesini döndür: {"ok": true}',
+            );
+        } else {
+            $result = $provider->analyzeText(
+                'Bu bir bağlantı testidir. Sadece şu JSON nesnesini döndür: {"ok": true}',
+            );
+        }
+
+        $latencyMs = (int) round((microtime(true) - $startTime) * 1000);
+
+        if ($result !== null) {
+            $modality = $isVision ? 'Görüntü + Metin (Vision Destekli)' : 'Salt Metin (Vision Yok)';
+
+            Notification::make()
+                ->title('Bağlantı Başarılı ✓')
+                ->body("{$provider->name()} ({$activeModel}) başarıyla yanıt verdi.\n• Yanıt Süresi: {$latencyMs}ms\n• Yetenek: {$modality}")
+                ->success()
+                ->send();
+        } else {
+            $error = $provider->lastError() ?? 'Sağlayıcı yanıt vermedi.';
+            $lower = mb_strtolower($error);
+            $hint = '';
+
+            if (str_contains($lower, 'training violation') || str_contains($lower, 'data policy') || str_contains($lower, 'guardrail')) {
+                $hint = "\n\n💡 İpucu: OpenRouter gizlilik filtreleriniz (openrouter.ai/settings/privacy) bu modelin sağlayıcısını kısıtlıyor. Listeden 'openai/gpt-4o-mini' veya 'google/gemini-2.0-flash-001' seçebilirsiniz.";
+            } elseif (str_contains($lower, 'not a valid model id')) {
+                $hint = "\n\n💡 İpucu: Model kimliği geçersiz. Lütfen açılır listedeki modellerden birini seçin.";
+            } elseif (str_contains($lower, 'image') || str_contains($lower, 'vision')) {
+                $hint = "\n\n💡 İpucu: Bu model görüntü (vision) desteklemiyor. Fotoğrafla ilan için [Vision] etiketli bir model seçin.";
+            }
+
+            Notification::make()
+                ->title('Bağlantı Kurulamadı')
+                ->body($error.$hint)
+                ->danger()
+                ->persistent()
+                ->send();
+        }
+    }
+
+    /** Test için küçük ama geçerli bir JPEG üretir. */
     private function testImageBase64(): string
     {
         $im = imagecreatetruecolor(256, 256);
-        imagefilledrectangle($im, 0, 0, 255, 255, imagecolorallocate($im, 51, 102, 204));
-        imagefilledrectangle($im, 60, 60, 196, 196, imagecolorallocate($im, 240, 200, 40));
+        imagefilledrectangle($im, 0, 0, 255, 255, (int) imagecolorallocate($im, 51, 102, 204));
+        imagefilledrectangle($im, 60, 60, 196, 196, (int) imagecolorallocate($im, 240, 200, 40));
 
         ob_start();
         imagejpeg($im, null, 80);
@@ -259,5 +332,27 @@ class YapayZekaAyarlari extends Page
         imagedestroy($im);
 
         return base64_encode($data);
+    }
+
+    /** Sayfa başlığında canlı durum bilgilerini gösterir. */
+    public function getAktifDurumProperty(): array
+    {
+        $provider = trim((string) Settings::get('ai.saglayici')) ?: (string) config('ai.default', 'openrouter');
+        $model = trim((string) Settings::get('ai.model')) ?: (string) config("ai.providers.{$provider}.model", 'openai/gpt-4o-mini');
+        $isVision = str_contains(mb_strtolower($model), 'vision')
+            || str_contains(mb_strtolower($model), '4o')
+            || str_contains(mb_strtolower($model), 'gemini')
+            || str_contains(mb_strtolower($model), 'pixtral')
+            || str_contains(mb_strtolower($model), 'claude');
+        $isConfigured = filled(Settings::get('ai.api_anahtari') ?: config("ai.providers.{$provider}.api_key"));
+        $isActive = (Settings::get('ai.aktif') ?? '1') === '1';
+
+        return [
+            'provider' => $provider,
+            'model' => $model,
+            'is_vision' => $isVision,
+            'is_configured' => $isConfigured,
+            'is_active' => $isActive,
+        ];
     }
 }

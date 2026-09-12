@@ -538,6 +538,26 @@ class AppServiceProvider extends ServiceProvider
             Config::set('ai.features.nisoya_ai_arama', $nisoyaAiArama === '1');
         }
 
+        $dogalDilArama = Settings::get('ai.dogal_dil_arama_aktif');
+        if ($dogalDilArama !== null && $dogalDilArama !== '') {
+            Config::set('ai.features.natural_search', $dogalDilArama === '1');
+        }
+
+        $metinModerasyon = Settings::get('ai.metin_moderasyon_aktif');
+        if ($metinModerasyon !== null && $metinModerasyon !== '') {
+            Config::set('ai.features.text_moderation', $metinModerasyon === '1');
+        }
+
+        $ilanCevirisi = Settings::get('ai.ilan_cevirisi_aktif');
+        if ($ilanCevirisi !== null && $ilanCevirisi !== '') {
+            Config::set('ai.features.listing_translation', $ilanCevirisi === '1');
+        }
+
+        $temsiliGorsel = Settings::get('ai.temsili_gorsel_aktif');
+        if ($temsiliGorsel !== null && $temsiliGorsel !== '') {
+            Config::set('ai.features.service_image', $temsiliGorsel === '1');
+        }
+
         // Ana anahtar (Faz 1): '0' ise sağlayıcı/anahtar girili ve alt özellikler
         // açık olsa bile TÜM yapay zekayı kapat. Sağlayıcı çökerse ya da maliyeti
         // durdurmak için sahibin tek düğmesi. En sonda ezer ki üstteki bireysel
@@ -546,6 +566,10 @@ class AppServiceProvider extends ServiceProvider
             Config::set('ai.features.quick_listing', false);
             Config::set('ai.features.image_moderation', false);
             Config::set('ai.features.nisoya_ai_arama', false);
+            Config::set('ai.features.natural_search', false);
+            Config::set('ai.features.text_moderation', false);
+            Config::set('ai.features.listing_translation', false);
+            Config::set('ai.features.service_image', false);
         }
     }
 }

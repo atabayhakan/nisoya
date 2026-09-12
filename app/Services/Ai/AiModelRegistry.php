@@ -41,6 +41,44 @@ class AiModelRegistry
     }
 
     /**
+     * Sağlayıcı için modelleri kategorize edilmiş (optgroup uyumlu) dizi olarak döndürür.
+     *
+     * @return array<string, array<string, string>>
+     */
+    public function getGroupedModels(string $provider, ?string $currentModel = null): array
+    {
+        $all = $this->getAvailableModels($provider);
+        $groups = [];
+
+        $vision = [];
+        $textOnly = [];
+
+        foreach ($all as $id => $label) {
+            if (str_contains($label, '[Vision]')) {
+                $vision[$id] = $label;
+            } else {
+                $textOnly[$id] = $label;
+            }
+        }
+
+        if ($vision !== []) {
+            $groups['⭐ Vision Destekli Modeller (Görüntü + Metin — Fotoğraflı İlan İçin Önerilen)'] = $vision;
+        }
+
+        if ($textOnly !== []) {
+            $groups['⚡ Metin & Hızlı Muhakeme Modelleri (Vision Yok)'] = $textOnly;
+        }
+
+        if (filled($currentModel) && ! isset($all[$currentModel])) {
+            $groups['🛠️ Özel / Mevcut Model'] = [
+                $currentModel => "{$currentModel} (Özel / Mevcut Seçim)",
+            ];
+        }
+
+        return $groups;
+    }
+
+    /**
      * Sağlayıcının canlı API'sinden veya güncel kataloğundan modelleri çeker.
      *
      * @return array<string, string>
