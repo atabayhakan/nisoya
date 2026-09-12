@@ -6,14 +6,18 @@ use App\Filament\Concerns\RestrictsToAdmins;
 use App\Filament\Resources\YasamKonuIcerikleri\Pages\CreateYasamKonuIcerigi;
 use App\Filament\Resources\YasamKonuIcerikleri\Pages\EditYasamKonuIcerigi;
 use App\Filament\Resources\YasamKonuIcerikleri\Pages\ListYasamKonuIcerikleri;
+use App\Filament\Resources\YasamKonulari\YasamKonusuResource;
 use App\Models\Country;
+use App\Models\YasamKategorisi;
 use App\Models\YasamKonuIcerigi;
 use App\Models\YasamKonusu;
 use App\Services\Ai\CountryGuideAiAssistant;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -24,6 +28,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
@@ -55,7 +60,7 @@ class YasamKonuIcerigiResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return 'yaşam konu içeriği';
+        return 'Yaşam Konu İçeriği';
     }
 
     public static function getPluralModelLabel(): string
@@ -66,7 +71,9 @@ class YasamKonuIcerigiResource extends Resource
     /** Taslak bekleyen içerik sayısı — doldurulacak işin görünür ölçüsü. */
     public static function getNavigationBadge(): ?string
     {
-        return (string) (YasamKonuIcerigi::query()->where('status', YasamKonuIcerigi::STATUS_TASLAK)->count() ?: '');
+        $count = YasamKonuIcerigi::query()->where('status', YasamKonuIcerigi::STATUS_TASLAK)->count();
+
+        return $count > 0 ? (string) $count : null;
     }
 
     public static function getNavigationBadgeColor(): ?string
@@ -83,14 +90,16 @@ class YasamKonuIcerigiResource extends Resource
                     Select::make('yasam_konusu_id')
                         ->label('Konu')
                         ->options(fn () => YasamKonusu::query()->with('kategori')->orderBy('sort_order')
-                            ->get()->mapWithKeys(fn (YasamKonusu $k) => [$k->id => $k->kategori->ad.' — '.$k->baslik]))
+                            ->get()->mapWithKeys(fn (YasamKonusu $k) => [$k->id => ($k->kategori ? $k->kategori->ad.' — ' : '').$k->baslik]))
                         ->required()
                         ->native(false)
                         ->searchable()
                         ->disabledOn('edit'),
                     Select::make('country_code')
                         ->label('Ülke')
-                        ->options(fn () => Country::query()->orderBy('sort_order')->pluck('name_tr', 'code'))
+                        ->options(fn () => Country::query()->orderBy('name_tr')->get()->mapWithKeys(fn (Country $c) => [
+                            $c->code => ($c->emoji ? $c->emoji.' ' : '').$c->name_tr.' ('.$c->code.')',
+                        ]))
                         ->required()
                         ->native(false)
                         ->searchable()
@@ -193,21 +202,83 @@ class YasamKonuIcerigiResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with(['konu.kategori', 'country']))
             ->columns([
-                TextColumn::make('konu.baslik')->label('Konu')->searchable()->sortable(),
-                TextColumn::make('country_code')->label('Ülke')->badge(),
+                TextColumn::make('konu.baslik')
+                    ->label('Konu & Kategori')
+                    ->icon(Heroicon::OutlinedDocumentText)
+                    ->description(fn (YasamKonuIcerigi $r): ?string => $r->konu?->kategori ? ($r->konu->kategori->ikon ? $r->konu->kategori->ikon.' ' : '').$r->konu->kategori->ad : null)
+                    ->wrap()
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('country_code')
+                    ->label('Ülke')
+                    ->badge()
+                    ->icon(Heroicon::OutlinedGlobeEuropeAfrica)
+                    ->formatStateUsing(fn (YasamKonuIcerigi $r): string => ($r->country?->emoji ? $r->country->emoji.' ' : '').$r->country_code)
+                    ->description(fn (YasamKonuIcerigi $r): ?string => $r->country?->name_tr)
+                    ->sortable(),
+
                 TextColumn::make('status')
                     ->label('Durum')
                     ->badge()
-                    ->color(fn (string $state): string => $state === YasamKonuIcerigi::STATUS_YAYIN ? 'success' : 'gray')
+                    ->icon(fn (string $state): string => $state === YasamKonuIcerigi::STATUS_YAYIN ? 'heroicon-o-check-circle' : 'heroicon-o-clock')
+                    ->color(fn (string $state): string => $state === YasamKonuIcerigi::STATUS_YAYIN ? 'success' : 'warning')
                     ->formatStateUsing(fn (string $state): string => $state === YasamKonuIcerigi::STATUS_YAYIN ? 'Yayında' : 'Taslak'),
+
                 TextColumn::make('dogrulanma_tarihi')
-                    ->label('Son doğrulama')
+                    ->label('Son Doğrulama')
                     ->date('d.m.Y')
+                    ->description(function (YasamKonuIcerigi $r): string {
+                        if ($r->status !== YasamKonuIcerigi::STATUS_YAYIN) {
+                            return 'Taslak (onay bekliyor)';
+                        }
+                        if (! $r->dogrulanma_tarihi) {
+                            return '⚠️ Hiç doğrulanmadı';
+                        }
+                        $bayat = $r->dogrulanma_tarihi->lt(now()->subDays(YasamKonuIcerigi::BAYATLIK_GUN));
+
+                        return $bayat ? '⚠️ Bayat içerik (>90 gün)' : '✓ Güncel';
+                    })
                     ->placeholder('hiç')
                     ->sortable(),
-                TextColumn::make('yazan_tur')->label('Kim yazdı')->badge(),
-                TextColumn::make('oneriler_count')->label('Öneri')->counts('oneriler'),
+
+                TextColumn::make('kaynak_url')
+                    ->label('Resmî Kaynak')
+                    ->badge()
+                    ->color(fn (YasamKonuIcerigi $r): string => filled($r->kaynak_url) ? 'gray' : 'danger')
+                    ->icon(Heroicon::OutlinedGlobeAlt)
+                    ->formatStateUsing(fn (YasamKonuIcerigi $r): string => filled($r->kaynak_url) ? (parse_url((string) $r->kaynak_url, PHP_URL_HOST) ?: 'Kaynak ↗') : 'Kaynaksız')
+                    ->url(fn (YasamKonuIcerigi $r): ?string => $r->kaynak_url)
+                    ->openUrlInNewTab()
+                    ->tooltip(fn (YasamKonuIcerigi $r): string => $r->kaynak_url ?: 'Bu içerikte henüz resmî kaynak bağlantısı bulunmuyor'),
+
+                TextColumn::make('yazan_tur')
+                    ->label('Kaynak Türü')
+                    ->badge()
+                    ->icon(fn (string $state): string => match ($state) {
+                        YasamKonuIcerigi::YAZAN_AI => 'heroicon-o-sparkles',
+                        YasamKonuIcerigi::YAZAN_TOPLULUK => 'heroicon-o-users',
+                        default => 'heroicon-o-shield-check',
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        YasamKonuIcerigi::YAZAN_AI => 'info',
+                        YasamKonuIcerigi::YAZAN_TOPLULUK => 'primary',
+                        default => 'success',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        YasamKonuIcerigi::YAZAN_AI => 'AI Asistan',
+                        YasamKonuIcerigi::YAZAN_TOPLULUK => 'Topluluk',
+                        default => 'Yönetici',
+                    }),
+
+                TextColumn::make('oneriler_count')
+                    ->label('Öneri')
+                    ->counts('oneriler')
+                    ->badge()
+                    ->icon('heroicon-o-chat-bubble-left-ellipsis')
+                    ->color(fn (int $state): string => $state > 0 ? 'warning' : 'gray'),
             ])
             ->filters([
                 SelectFilter::make('status')
@@ -216,25 +287,50 @@ class YasamKonuIcerigiResource extends Resource
                         YasamKonuIcerigi::STATUS_TASLAK => 'Taslak',
                         YasamKonuIcerigi::STATUS_YAYIN => 'Yayında',
                     ]),
+
                 SelectFilter::make('country_code')
                     ->label('Ülke')
-                    ->options(fn () => Country::query()->orderBy('sort_order')->pluck('name_tr', 'code')),
+                    ->options(fn () => Country::query()->orderBy('name_tr')->get()->mapWithKeys(fn (Country $c) => [
+                        $c->code => ($c->emoji ? $c->emoji.' ' : '').$c->name_tr.' ('.$c->code.')',
+                    ]))
+                    ->searchable(),
+
                 SelectFilter::make('yasam_konusu_id')
                     ->label('Yaşam Konusu')
                     ->options(fn () => YasamKonusu::query()->orderBy('sort_order')->pluck('baslik', 'id'))
                     ->searchable(),
+
+                SelectFilter::make('kategori_id')
+                    ->label('Kategori')
+                    ->options(fn () => YasamKategorisi::query()->orderBy('sort_order')->get()->mapWithKeys(fn (YasamKategorisi $k) => [
+                        $k->id => ($k->ikon ? $k->ikon.' ' : '').$k->ad,
+                    ]))
+                    ->query(fn ($query, array $data) => filled($data['value'] ?? null)
+                        ? $query->whereHas('konu', fn ($q) => $q->where('kategori_id', $data['value']))
+                        : $query
+                    )
+                    ->searchable(),
+
+                Filter::make('bayat_icerikler')
+                    ->label('⚠️ Bayat İçerikler (>90 gün)')
+                    ->query(fn ($query) => $query->bayat()),
+
+                Filter::make('kaynaksiz_icerikler')
+                    ->label('Kaynaksız İçerikler')
+                    ->query(fn ($query) => $query->where(function ($q) {
+                        $q->whereNull('kaynak_url')->orWhere('kaynak_url', '');
+                    })),
+
+                SelectFilter::make('yazan_tur')
+                    ->label('Kaynak Türü')
+                    ->options([
+                        YasamKonuIcerigi::YAZAN_AI => 'AI Asistan',
+                        YasamKonuIcerigi::YAZAN_TOPLULUK => 'Topluluk',
+                        YasamKonuIcerigi::YAZAN_SAHIP => 'Yönetici',
+                    ]),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    /*
-                     * Sahip tek tek her taslağı açıp durumu+doğrulama
-                     * tarihini elle değiştirmek zorunda kalmasın diye
-                     * (bu ekranda hiç bulk action yoktu — 2026-09-11'de
-                     * sahibin kendisi fark etti). Aynı K7 kapısı burada da
-                     * geçerli: kaynak_url BOŞ olan bir taslak, ne kadar
-                     * seçilirse seçilsin atlanır — "doğrulanmamış" içerik
-                     * bu düğmeden asla yayına çıkamaz.
-                     */
                     BulkAction::make('yayina_al')
                         ->label('Yayına Al')
                         ->icon('heroicon-o-check-circle')
@@ -269,14 +365,47 @@ class YasamKonuIcerigiResource extends Resource
                                 ->success()
                                 ->send();
                         }),
+
+                    BulkAction::make('taslaga_al')
+                        ->label('Taslağa Al')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('Seçili içerikleri taslağa çek')
+                        ->modalDescription('Seçilen içerikler yayından kaldırılır ve taslak durumuna getirilir.')
+                        ->action(function ($records) {
+                            $records->each->update(['status' => YasamKonuIcerigi::STATUS_TASLAK]);
+                            Notification::make()->title('Seçili içerikler taslağa alındı')->warning()->send();
+                        }),
+
+                    BulkAction::make('tarihi_guncelle')
+                        ->label('Doğrulama Tarihini Bugün Yap')
+                        ->icon('heroicon-o-calendar-days')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Son doğrulama tarihini güncelle')
+                        ->modalDescription('Seçili içeriklerin son doğrulama tarihi bugünün tarihi olarak güncellenir.')
+                        ->action(function ($records) {
+                            $records->each->update(['dogrulanma_tarihi' => now()]);
+                            Notification::make()->title('Doğrulama tarihleri güncellendi')->success()->send();
+                        }),
                 ]),
             ])
             ->recordActions([
+                Action::make('canliSayfa')
+                    ->label('Canlı Sayfa')
+                    ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
+                    ->color('gray')
+                    ->tooltip('Canlı rehber sayfasını yeni sekmede aç')
+                    ->visible(fn (YasamKonuIcerigi $record): bool => $record->status === YasamKonuIcerigi::STATUS_YAYIN && $record->konu !== null && $record->konu->kategori !== null)
+                    ->url(fn (YasamKonuIcerigi $record): string => url('/'.strtolower($record->country_code).'/yasam/'.$record->konu->kategori->slug.'/'.$record->konu->slug))
+                    ->openUrlInNewTab(),
+
                 Action::make('aiHizliIncele')
                     ->label('AI İncele & Doğrula')
                     ->icon(Heroicon::OutlinedSparkles)
-                    ->color('info')
-                    ->modalHeading(fn (YasamKonuIcerigi $record): string => ($record->country_code ?? 'Ülke').' — '.($record->konu ? $record->konu->baslik : 'Konu'))
+                    ->color('primary')
+                    ->modalHeading(fn (YasamKonuIcerigi $record): string => ($record->country ? $record->country->name_tr : $record->country_code).' — '.($record->konu ? $record->konu->baslik : 'Konu'))
                     ->modalDescription(function (YasamKonuIcerigi $record): HtmlString {
                         $blokSayisi = is_array($record->icerik) ? count($record->icerik) : 0;
                         $kaynak = $record->kaynak_url ?: 'Belirtilmedi';
@@ -288,8 +417,8 @@ class YasamKonuIcerigiResource extends Resource
                             ."<div><strong>Durum:</strong> <span class='font-semibold'>{$durum}</span></div>"
                             ."<div><strong>Gövde Blok Sayısı:</strong> {$blokSayisi} blok</div>"
                             ."<div><strong>Kaynak Açıklaması:</strong> {$aciklama}</div>"
-                            ."<div><strong>Kaynak Bağlantısı:</strong> <span class='text-xs text-primary-600 break-all'>{$kaynak}</span></div>"
-                            ."<div class='text-xs text-gray-500 pt-1 border-t'>Son Doğrulama: ".($record->dogrulanma_tarihi ? $record->dogrulanma_tarihi->format('d.m.Y') : 'Hiç').'</div>'
+                            ."<div><strong>Kaynak Bağlantısı:</strong> <span class='text-xs text-primary-700 dark:text-primary-400 break-all'>{$kaynak}</span></div>"
+                            ."<div class='text-xs text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-200 dark:border-gray-700'>Son Doğrulama: ".($record->dogrulanma_tarihi ? $record->dogrulanma_tarihi->format('d.m.Y') : 'Hiç').'</div>'
                             .'</div>'
                         );
                     })
@@ -304,10 +433,41 @@ class YasamKonuIcerigiResource extends Resource
                             Notification::make()->title('İçerik incelendi')->info()->send();
                         }
                     }),
+
                 Action::make('duzenle')
                     ->label('Düzenle')
                     ->icon(Heroicon::OutlinedPencilSquare)
+                    ->color('primary')
                     ->url(fn (YasamKonuIcerigi $record): string => static::getUrl('edit', ['record' => $record])),
+
+                ActionGroup::make([
+                    Action::make('resmiKaynak')
+                        ->label('Resmî Kaynağa Git')
+                        ->icon(Heroicon::OutlinedGlobeAlt)
+                        ->color('gray')
+                        ->visible(fn (YasamKonuIcerigi $record): bool => filled($record->kaynak_url))
+                        ->url(fn (YasamKonuIcerigi $record): string => (string) $record->kaynak_url)
+                        ->openUrlInNewTab(),
+
+                    Action::make('konuGit')
+                        ->label('Konuyu Düzenle')
+                        ->icon(Heroicon::OutlinedQuestionMarkCircle)
+                        ->color('gray')
+                        ->visible(fn (YasamKonuIcerigi $record): bool => $record->yasam_konusu_id !== null)
+                        ->url(fn (YasamKonuIcerigi $record): string => YasamKonusuResource::getUrl('edit', ['record' => $record->yasam_konusu_id])),
+
+                    DeleteAction::make(),
+                ]),
+            ])
+            ->emptyStateHeading('Henüz Yaşam Konu İçeriği Bulunmuyor')
+            ->emptyStateDescription('Tanımlanan yaşam konuları için farklı ülkelerin yerel mevzuatına uygun rehber dökümanları oluşturarak başlayabilirsiniz.')
+            ->emptyStateIcon(Heroicon::OutlinedDocumentText)
+            ->emptyStateActions([
+                Action::make('icerikEkle')
+                    ->label('İlk Yaşam Konu İçeriğini Ekle')
+                    ->icon(Heroicon::OutlinedPlus)
+                    ->color('primary')
+                    ->url(static::getUrl('create')),
             ])
             ->defaultSort('id', 'desc');
     }
