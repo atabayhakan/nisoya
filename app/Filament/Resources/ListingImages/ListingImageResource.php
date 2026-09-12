@@ -37,7 +37,7 @@ class ListingImageResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Pazaryeri & Ticaret';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 6;
 
     public static function getNavigationLabel(): string
     {

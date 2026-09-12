@@ -7,13 +7,17 @@ use App\Enums\ListingType;
 use App\Enums\PriceUnit;
 use App\Models\Country;
 use App\Models\Currency;
+use App\Services\Ai\MarketplaceAiAssistant;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Str;
 
 class ListingForm
@@ -35,7 +39,31 @@ class ListingForm
                             ->label('Kategori')
                             ->relationship('category', 'name')
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->hintAction(
+                                Action::make('aiKategoriOner')
+                                    ->label('AI Kategori Öner')
+                                    ->icon(Heroicon::OutlinedSparkles)
+                                    ->action(function (callable $get, callable $set, MarketplaceAiAssistant $assistant): void {
+                                        $title = (string) $get('title');
+                                        $desc = (string) $get('description');
+                                        if (blank($title)) {
+                                            Notification::make()->title('Önce ilan başlığı giriniz')->warning()->send();
+
+                                            return;
+                                        }
+                                        $oneri = $assistant->suggestCategoryAndTags($title, $desc);
+                                        if ($oneri['category_id']) {
+                                            $set('category_id', $oneri['category_id']);
+                                            Notification::make()
+                                                ->title("Kategori önerildi: {$oneri['category_name']}")
+                                                ->success()
+                                                ->send();
+                                        } else {
+                                            Notification::make()->title('Uygun kategori eşleştirilemedi')->info()->send();
+                                        }
+                                    })
+                            ),
                         Select::make('type')
                             ->label('Tür')
                             ->options(ListingType::class)
@@ -46,7 +74,26 @@ class ListingForm
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn (string $state, callable $set) => $set('slug', Str::slug($state))),
+                            ->afterStateUpdated(fn (string $state, callable $set) => $set('slug', Str::slug($state)))
+                            ->hintAction(
+                                Action::make('aiBaslikGelistir')
+                                    ->label('AI Başlık')
+                                    ->icon(Heroicon::OutlinedSparkles)
+                                    ->action(function (callable $get, callable $set, MarketplaceAiAssistant $assistant): void {
+                                        $title = (string) $get('title');
+                                        if (blank($title)) {
+                                            Notification::make()->title('Önce bir taslak başlık yazınız')->warning()->send();
+
+                                            return;
+                                        }
+                                        $desc = (string) $get('description');
+                                        $city = (string) $get('city');
+                                        $sonuc = $assistant->improveListing($title, $desc, null, $city);
+                                        $set('title', $sonuc['title']);
+                                        $set('slug', Str::slug($sonuc['title']));
+                                        Notification::make()->title('İlan başlığı güçlendirildi')->success()->send();
+                                    })
+                            ),
                         TextInput::make('slug')
                             ->label('Kısa ad (URL)')
                             ->required()
@@ -55,7 +102,25 @@ class ListingForm
                             ->label('Açıklama')
                             ->required()
                             ->rows(5)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->hintAction(
+                                Action::make('aiAciklamaZenginlestir')
+                                    ->label('AI Açıklama')
+                                    ->icon(Heroicon::OutlinedSparkles)
+                                    ->action(function (callable $get, callable $set, MarketplaceAiAssistant $assistant): void {
+                                        $desc = (string) $get('description');
+                                        $title = (string) $get('title');
+                                        if (blank($title) && blank($desc)) {
+                                            Notification::make()->title('Önce başlık veya kısa açıklama yazınız')->warning()->send();
+
+                                            return;
+                                        }
+                                        $city = (string) $get('city');
+                                        $sonuc = $assistant->improveListing($title, $desc, null, $city);
+                                        $set('description', $sonuc['description']);
+                                        Notification::make()->title('İlan açıklaması zenginleştirildi')->success()->send();
+                                    })
+                            ),
                     ]),
 
                 Section::make('Fiyat & Konum')

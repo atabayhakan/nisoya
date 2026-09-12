@@ -24,7 +24,7 @@ class ExifMapPage extends Page
 
     protected static ?string $navigationLabel = 'EXIF Haritası';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 7;
 
     protected string $view = 'filament.pages.exif-map';
 

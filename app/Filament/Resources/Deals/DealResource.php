@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Deals;
 
+use App\Enums\DealStatus;
 use App\Filament\Concerns\RestrictsToAdmins;
 use App\Filament\Resources\Deals\Pages\ListDeals;
 use App\Filament\Resources\Deals\Tables\DealsTable;
@@ -25,6 +26,8 @@ class DealResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHandRaised;
 
+    protected static ?int $navigationSort = 4;
+
     public static function getNavigationGroup(): ?string
     {
         return 'Pazaryeri & Ticaret';
@@ -35,6 +38,18 @@ class DealResource extends Resource
     protected static ?string $modelLabel = 'anlaşma';
 
     protected static ?string $pluralModelLabel = 'Anlaşmalar';
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Deal::query()->where('status', DealStatus::Sorunlu)->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'danger';
+    }
 
     public static function form(Schema $schema): Schema
     {

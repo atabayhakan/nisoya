@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Listings;
 
+use App\Enums\ListingStatus;
 use App\Filament\Resources\Listings\Pages\CreateListing;
 use App\Filament\Resources\Listings\Pages\EditListing;
 use App\Filament\Resources\Listings\Pages\ListListings;
@@ -40,6 +41,18 @@ class ListingResource extends Resource
     public static function getPluralModelLabel(): string
     {
         return 'İlanlar';
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Listing::query()->where('status', ListingStatus::Beklemede)->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
     }
 
     public static function form(Schema $schema): Schema

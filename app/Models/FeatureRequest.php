@@ -5,7 +5,20 @@ namespace App\Models;
 use App\Enums\FeatureRequestStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $listing_id
+ * @property int $user_id
+ * @property int $days
+ * @property FeatureRequestStatus $status
+ * @property Carbon|null $processed_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Listing|null $listing
+ * @property-read User|null $user
+ */
 class FeatureRequest extends Model
 {
     protected $fillable = [
@@ -31,6 +44,7 @@ class FeatureRequest extends Model
         return $this->belongsTo(Listing::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

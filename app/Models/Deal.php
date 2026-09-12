@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\DealStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * İki üye arasındaki bir ANLAŞMA kaydı (sohbet içinden başlar). Nisoya para
@@ -12,6 +13,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * niyetini paylaşan bir defterdir. Tamamlanmış anlaşma, değerlendirmeye
  * "Doğrulanmış işlem" rozeti kazandırır ve sahte değerlendirme halkasını
  * zorlaştırır (bkz. [[nisoya-islem-guvenligi]] K-C).
+ *
+ * @property int $id
+ * @property int $conversation_id
+ * @property int|null $listing_id
+ * @property int $seller_id
+ * @property int $buyer_id
+ * @property int $proposed_by
+ * @property string|null $amount
+ * @property string|null $currency
+ * @property DealStatus $status
+ * @property string|null $dispute_note
+ * @property Carbon|null $accepted_at
+ * @property Carbon|null $completed_at
+ * @property Carbon|null $cancelled_at
+ * @property Carbon|null $disputed_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read User|null $buyer
+ * @property-read User|null $seller
+ * @property-read Listing|null $listing
+ * @property-read Conversation|null $conversation
  */
 class Deal extends Model
 {

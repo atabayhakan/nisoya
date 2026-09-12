@@ -3,10 +3,14 @@
 namespace App\Filament\Resources\Categories\Schemas;
 
 use App\Enums\CategoryType;
+use App\Services\Ai\MarketplaceAiAssistant;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Str;
 
 class CategoryForm
@@ -35,7 +39,23 @@ class CategoryForm
                 TextInput::make('icon')
                     ->label('İkon (emoji)')
                     ->maxLength(8)
-                    ->placeholder('📚'),
+                    ->placeholder('📚')
+                    ->hintAction(
+                        Action::make('aiEmojiOner')
+                            ->label('AI Emoji')
+                            ->icon(Heroicon::OutlinedSparkles)
+                            ->action(function (callable $get, callable $set, MarketplaceAiAssistant $assistant): void {
+                                $name = (string) $get('name');
+                                if (blank($name)) {
+                                    Notification::make()->title('Önce kategori adı giriniz')->warning()->send();
+
+                                    return;
+                                }
+                                $emoji = $assistant->suggestCategoryEmoji($name);
+                                $set('icon', $emoji);
+                                Notification::make()->title("Emoji belirlendi: {$emoji}")->success()->send();
+                            })
+                    ),
                 Select::make('type')
                     ->label('Tür')
                     ->options(CategoryType::class)

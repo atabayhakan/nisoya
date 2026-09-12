@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
+use App\Enums\DealStatus;
+use App\Enums\FeatureRequestStatus;
 use App\Enums\ListingStatus;
 use App\Mcp\Araclar\Yonetim\YonetimAraci;
 use App\Mcp\Sunucular\NisoyaYonetimSunucusu;
+use App\Models\Conversation;
+use App\Models\Deal;
+use App\Models\FeatureRequest;
 use App\Models\Listing;
 use App\Models\User;
 use App\Support\Settings;
@@ -39,7 +44,7 @@ class NisoyaYonetimMcpTest extends TestCase
     public function test_tum_araclar_yonetim_araci_tabanindan_turer(): void
     {
         $araclar = $this->sunucuAraclari();
-        $this->assertCount(13, $araclar, 'Nisoya Yönetim Sunucusu tam olarak 13 araç barındırmalı.');
+        $this->assertCount(16, $araclar, 'Nisoya Yönetim Sunucusu tam olarak 16 araç barındırmalı.');
 
         foreach ($araclar as $sinif) {
             $this->assertTrue(
@@ -80,7 +85,7 @@ class NisoyaYonetimMcpTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonPath('result.tools.0.name', 'nisoya_ilan_ara');
-        $this->assertCount(13, $response->json('result.tools'));
+        $this->assertCount(16, $response->json('result.tools'));
     }
 
     public function test_ozet_metrikler_araci_dogru_verileri_doner(): void
@@ -381,5 +386,151 @@ class NisoyaYonetimMcpTest extends TestCase
         $resDetay->assertStatus(200);
         $this->assertTrue($resDetay->json('result.structuredContent.basarili'));
         $this->assertEquals('Topluluk Kuralları', $resDetay->json('result.structuredContent.sayfa.title'));
+    }
+
+    public function test_kategori_yonet_araci_listeler_ve_ekler(): void
+    {
+        // 1. Ekle
+        $resEkle = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 15,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_kategori_yonet',
+                'arguments' => [
+                    'islem' => 'ekle',
+                    'name' => 'Güzellik & Kuaför',
+                    'icon' => '✂️',
+                    'sort_order' => 5,
+                    'is_active' => true,
+                ],
+            ],
+        ]);
+
+        $resEkle->assertStatus(200);
+        $this->assertTrue($resEkle->json('result.structuredContent.basarili'));
+
+        // 2. Listele
+        $resListele = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 16,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_kategori_yonet',
+                'arguments' => ['islem' => 'listele'],
+            ],
+        ]);
+
+        $resListele->assertStatus(200);
+        $this->assertGreaterThanOrEqual(1, $resListele->json('result.structuredContent.toplam_kategori'));
+    }
+
+    public function test_anlasma_yonet_araci_listeler_ve_cozer(): void
+    {
+        $seller = User::factory()->create();
+        $buyer = User::factory()->create();
+        $listing = Listing::factory()->create(['user_id' => $seller->id]);
+        $conversation = Conversation::create([
+            'listing_id' => $listing->id,
+            'user_one_id' => $seller->id,
+            'user_two_id' => $buyer->id,
+        ]);
+
+        $deal = Deal::create([
+            'conversation_id' => $conversation->id,
+            'listing_id' => $listing->id,
+            'seller_id' => $seller->id,
+            'buyer_id' => $buyer->id,
+            'proposed_by' => $buyer->id,
+            'amount' => 150.00,
+            'currency' => 'EUR',
+            'status' => DealStatus::Sorunlu,
+            'dispute_note' => 'Kargo elime ulaşmadı.',
+            'disputed_at' => now(),
+        ]);
+
+        // 1. Listele
+        $resListele = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 17,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_anlasma_yonet',
+                'arguments' => ['islem' => 'listele', 'sadece_sorunlular' => true],
+            ],
+        ]);
+
+        $resListele->assertStatus(200);
+        $this->assertEquals(1, $resListele->json('result.structuredContent.listelenen_adet'));
+
+        // 2. Çöz / Durum Güncelle
+        $resCoz = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 18,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_anlasma_yonet',
+                'arguments' => [
+                    'islem' => 'durum_guncelle',
+                    'anlasma_id' => $deal->id,
+                    'yeni_durum' => 'tamamlandi',
+                ],
+            ],
+        ]);
+
+        $resCoz->assertStatus(200);
+        $this->assertTrue($resCoz->json('result.structuredContent.basarili'));
+
+        $deal->refresh();
+        $this->assertEquals(DealStatus::Tamamlandi, $deal->status);
+    }
+
+    public function test_one_cikarma_yonet_araci_listeler_ve_onaylar(): void
+    {
+        $user = User::factory()->create();
+        $listing = Listing::factory()->create(['user_id' => $user->id, 'is_featured' => false]);
+        $request = FeatureRequest::create([
+            'listing_id' => $listing->id,
+            'user_id' => $user->id,
+            'days' => 14,
+            'status' => FeatureRequestStatus::Beklemede,
+        ]);
+
+        // 1. Listele
+        $resListele = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 19,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_one_cikarma_yonet',
+                'arguments' => ['islem' => 'listele', 'sadece_bekleyenler' => true],
+            ],
+        ]);
+
+        $resListele->assertStatus(200);
+        $this->assertEquals(1, $resListele->json('result.structuredContent.toplam_bekleyen'));
+
+        // 2. Onayla (karar_ver)
+        $resOnayla = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 20,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_one_cikarma_yonet',
+                'arguments' => [
+                    'islem' => 'karar_ver',
+                    'talep_id' => $request->id,
+                    'karar' => 'onayla',
+                ],
+            ],
+        ]);
+
+        $resOnayla->assertStatus(200);
+        $this->assertTrue($resOnayla->json('result.structuredContent.basarili'));
+
+        $request->refresh();
+        $this->assertEquals(FeatureRequestStatus::Onaylandi, $request->status);
+        $listing->refresh();
+        $this->assertTrue($listing->is_featured);
     }
 }

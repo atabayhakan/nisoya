@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Sunucular;
 
+use App\Mcp\Araclar\Yonetim\AnlasmaYonet;
 use App\Mcp\Araclar\Yonetim\BekleyenIlanlar;
 use App\Mcp\Araclar\Yonetim\CmsOzeti;
 use App\Mcp\Araclar\Yonetim\DuyuruYonet;
@@ -12,6 +13,8 @@ use App\Mcp\Araclar\Yonetim\HizliKesif;
 use App\Mcp\Araclar\Yonetim\IlanArama;
 use App\Mcp\Araclar\Yonetim\IlanDetay;
 use App\Mcp\Araclar\Yonetim\IlanDurumuGuncelle;
+use App\Mcp\Araclar\Yonetim\KategoriYonet;
+use App\Mcp\Araclar\Yonetim\OneCikarmaYonet;
 use App\Mcp\Araclar\Yonetim\OzetMetrikler;
 use App\Mcp\Araclar\Yonetim\SahipsizIsletmeler;
 use App\Mcp\Araclar\Yonetim\SayfaYonet;
@@ -27,15 +30,15 @@ use Laravel\Mcp\Server\Tool;
  * Nisoya Yönetim MCP Sunucusu (Nisoya Management Server).
  *
  * Yapay zekâ asistanlarının (Claude, ChatGPT, Antigravity, Cursor vb.) Nisoya
- * platformu üzerinde güvenli ilan yönetimi, esnaf keşfi, moderasyon, analitik
- * ve CMS (içerik, vitrin, duyuru, SSS, sayfa) yönetimini gerçekleştirmesini sağlar.
+ * platformu üzerinde güvenli ilan yönetimi, esnaf keşfi, moderasyon, analitik,
+ * CMS ve pazaryeri/ticaret operasyonlarını gerçekleştirmesini sağlar.
  */
 #[Name('nisoya-yonetim')]
-#[Version('1.1.0')]
+#[Version('1.2.0')]
 #[Instructions(<<<'MARKDOWN'
 Nisoya (nisoya.com) — Yurtdışındaki Türkler ve diaspora toplulukları için geliştirilmiş ücretsiz Türkçe ilan ve pazaryeri platformudur.
 
-Bu MCP sunucusu, Nisoya'nın resmi yönetim, büyüme ve CMS arayüzüdür.
+Bu MCP sunucusu, Nisoya'nın resmi yönetim, büyüme, CMS ve pazaryeri ticaret arayüzüdür.
 
 ## Kullanabileceğiniz Temel Yetenekler:
 1. **İlan Arama & İnceleme (`nisoya_ilan_ara`, `nisoya_ilan_detay`):**
@@ -54,16 +57,22 @@ Bu MCP sunucusu, Nisoya'nın resmi yönetim, büyüme ve CMS arayüzüdür.
    - Vitrin ana başlık, rozet, vurgu ve butonlarını güncelleyin (`nisoya_hero_yonet`).
    - Sıkça sorulan soruları (SSS) listeleyin, ekleyin veya güncelleyin (`nisoya_sss_yonet`).
    - Kurumsal sayfaları inceleyin veya yeni sayfalar oluşturun (`nisoya_sayfa_yonet`).
+7. **Pazaryeri, Kategori & Ticaret Yönetimi (`nisoya_kategori_yonet`, `nisoya_anlasma_yonet`, `nisoya_one_cikarma_yonet`):**
+   - Kategorileri listeleyin, yeni kategori ekleyin veya güncelleyin (`nisoya_kategori_yonet`).
+   - Alıcı-satıcı anlaşmalarını inceleyin ve ihtilaf/sorunlu durumları çözüme kavuşturun (`nisoya_anlasma_yonet`).
+   - İlan öne çıkarma (featured) taleplerini listeleyin, onaylayın veya reddedin (`nisoya_one_cikarma_yonet`).
 
 ## Güvenlik Kuralları:
-- İlan veya CMS içeriğini değiştirmeden önce kullanıcıya yapacağınız eylemi açıkça bildirin.
-- Reddedilen ilanlarda net bir gerekçe belirtin.
+- İlan, kategori veya anlaşma durumunu değiştirmeden önce kullanıcıya yapacağınız eylemi açıkça bildirin.
+- Reddedilen ilanlarda veya öne çıkarma taleplerinde net bir gerekçe belirtin.
 - Hassas sistem ve veritabanı sırları bu arayüzden dışarı verilmez.
 MARKDOWN)]
 class NisoyaYonetimSunucusu extends Server
 {
+    public int $defaultPaginationLength = 50;
+
     /**
-     * Kayıtlı yönetim araçları listesi (13 Hazır Yönetim Aracı).
+     * Kayıtlı yönetim araçları listesi (16 Hazır Yönetim Aracı).
      *
      * @var array<int, class-string<Tool>>
      */
@@ -81,5 +90,8 @@ class NisoyaYonetimSunucusu extends Server
         HeroYonet::class,
         SssYonet::class,
         SayfaYonet::class,
+        KategoriYonet::class,
+        AnlasmaYonet::class,
+        OneCikarmaYonet::class,
     ];
 }
