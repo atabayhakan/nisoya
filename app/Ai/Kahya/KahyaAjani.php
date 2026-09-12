@@ -2,6 +2,7 @@
 
 namespace App\Ai\Kahya;
 
+use App\Ai\Kahya\Araclar\BuyumeRaporu;
 use App\Ai\Kahya\Araclar\EylemAraci;
 use App\Ai\Kahya\Araclar\IsletmeKesfet;
 use App\Ai\Kahya\Araclar\PanelYonlendir;
@@ -206,6 +207,7 @@ class KahyaAjani implements Agent, Conversational, HasTools
             app(WebAra::class),
             app(IsletmeKesfet::class),
             app(VitrinHazirla::class),
+            app(BuyumeRaporu::class),
         ];
 
         foreach ($this->katalog->hepsi() as $eylem) {

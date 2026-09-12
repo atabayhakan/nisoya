@@ -9,6 +9,7 @@ use App\Services\Growth\ClaimableListingCreator;
 use App\Services\Growth\ErisimMesajiYazari;
 use App\Services\Growth\WhatsAppDavetServisi;
 use App\Support\Growth\GrowthCatalog;
+use App\Support\QrKodu;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -234,6 +235,28 @@ class OutreachTargetsTable
                     ->visible(fn (OutreachTarget $r): bool => filled($r->listing?->claim_phone) || filled($r->detection_signals['phone'] ?? null))
                     ->url(fn (OutreachTarget $r): string => app(WhatsAppDavetServisi::class)->adayIcinUrl($r))
                     ->openUrlInNewTab(),
+                Action::make('qr-ve-kart')
+                    ->label('QR & Kart')
+                    ->icon(Heroicon::OutlinedQrCode)
+                    ->color('gray')
+                    ->visible(fn (OutreachTarget $r): bool => $r->listing !== null)
+                    ->modalHeading('İşletme QR Kodu & Tanıtım Kiti')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Kapat')
+                    ->modalContent(function (OutreachTarget $r) {
+                        $listing = $r->listing;
+                        $listingUrl = $listing ? route('listings.show', [$listing->id, $listing->slug]) : url('/ilanlar');
+                        $claimUrl = ($listing && $listing->isClaimable()) ? url('/sahiplen/'.$listing->claim_token) : null;
+                        $qrSvg = QrKodu::svg($listingUrl, 240);
+
+                        return view('filament.outreach.qr-ve-kart', [
+                            'aday' => $r,
+                            'listing' => $listing,
+                            'listingUrl' => $listingUrl,
+                            'claimUrl' => $claimUrl,
+                            'qrSvg' => $qrSvg,
+                        ]);
+                    }),
                 EditAction::make(),
             ])
             ->toolbarActions([

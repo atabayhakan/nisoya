@@ -69,6 +69,39 @@
                         <div class="text-[11px] font-medium text-stone-600 dark:text-stone-400">Hızlı Kurulum</div>
                     </div>
                 </div>
+
+                {{-- Dükkan Vitrini QR Kodu & Tanıtım Kiti --}}
+                <div class="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+                    <div class="flex items-center gap-2">
+                        <x-heroicon-o-qr-code class="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+                        <h3 class="text-sm font-bold text-stone-900 dark:text-stone-100">
+                            Dükkanınızın Dijital QR Kodu ve Tanıtım Kiti
+                        </h3>
+                    </div>
+                    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                        Bu QR kodu telefonunuzla tarayarak vitrininizi anında görebilir, dükkan camınıza veya masalarınıza basabilirsiniz.
+                    </p>
+
+                    <div class="mt-4 flex flex-col sm:flex-row items-center gap-4">
+                        <div class="flex h-36 w-36 shrink-0 items-center justify-center rounded-2xl border border-stone-200 bg-white p-2 shadow-inner dark:border-stone-700 dark:bg-white [&>svg]:h-full [&>svg]:w-full">
+                            {!! $qrSvg !!}
+                        </div>
+                        <div class="flex-1 space-y-2 w-full text-center sm:text-left">
+                            <div class="text-xs font-semibold text-stone-700 dark:text-stone-300">
+                                Vitrin Bağlantınız:
+                            </div>
+                            <div class="truncate rounded-xl bg-stone-100 px-3 py-1.5 font-mono text-[11px] text-stone-600 dark:bg-stone-800 dark:text-stone-300">
+                                {{ $listingUrl }}
+                            </div>
+                            <div class="flex flex-wrap gap-2 pt-1">
+                                <a href="{{ route('listings.card', $listing) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-xl border border-stone-200/80 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-700 transition hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700">
+                                    <x-heroicon-o-arrow-down-tray class="h-3.5 w-3.5 text-stone-500 dark:text-stone-400" />
+                                    <span>WhatsApp Durum Kartı (1080x1920)</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {{-- Sağ Kolon: Sahiplenme Formu --}}

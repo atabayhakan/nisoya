@@ -278,12 +278,13 @@ class KahyaSohbetTest extends TestCase
         $this->assertContains('vitrin-hazirla', $adlar);
         $this->assertContains('panel-yonlendir', $adlar);
         $this->assertContains('rehber-oku', $adlar);
+        $this->assertContains('buyume-raporu', $adlar);
         // 15 eylem (10 + F1 hatirla/unut + F2 gorev-ac/gorev-guncelle/hamle-oner)
         // + okuma halkası: tablo-sorgula + F3 web-ara + isletme-kesfet
-        // + büyüme donanımı: vitrin-hazirla
+        // + büyüme donanımı: vitrin-hazirla + buyume-raporu
         // + yol gösterme: panel-yonlendir
         // + El Kitabı: rehber-oku (M0 — "nasıl yaparım" sorularının kaynağı).
-        $this->assertCount(21, $adlar);
+        $this->assertCount(22, $adlar);
     }
 
     /**

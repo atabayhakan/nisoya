@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\OutreachTargets\Pages;
 
 use App\Filament\Resources\OutreachTargets\OutreachTargetResource;
+use App\Filament\Resources\OutreachTargets\Widgets\BuyumeHunisiWidget;
 use App\Filament\Widgets\KesifIlerlemeWidget;
 use App\Jobs\EnrichTargetJob;
 use App\Jobs\RunDiscoveryJob;
@@ -26,6 +27,7 @@ class ListOutreachTargets extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
+            BuyumeHunisiWidget::class,
             KesifIlerlemeWidget::class,
         ];
     }

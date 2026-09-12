@@ -3,6 +3,7 @@
 namespace App\Services\Kahya;
 
 use App\Enums\ListingStatus;
+use App\Models\BekleyenHamle;
 use App\Models\ContactMessage;
 use App\Models\FeatureRequest;
 use App\Models\JobFeatureRequest;
@@ -111,6 +112,13 @@ class BekleyenIsler
                 'adet' => JobFeatureRequest::query()->where('status', 'beklemede')->count(),
                 'aciliyet' => 'orta',
                 'aciklama' => 'Ücretli talep',
+            ],
+            [
+                'anahtar' => 'hamle_beklemede',
+                'etiket' => 'Onay bekleyen davet mektubu',
+                'adet' => BekleyenHamle::query()->beklemede()->count(),
+                'aciliyet' => 'orta',
+                'aciklama' => 'Kâhya\'nın hazırladığı erişim hamlesi onay bekliyor',
             ],
         ];
 

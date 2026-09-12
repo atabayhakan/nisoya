@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\ListingStatus;
 use App\Models\Listing;
 use App\Models\User;
+use App\Support\QrKodu;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,12 +23,17 @@ class ClaimListingController extends Controller
         $listing = Listing::query()
             ->where('claim_token', $token)
             ->where('is_claimed', false)
-            ->with(['category', 'country'])
+            ->with(['category', 'country', 'coverImage', 'images'])
             ->firstOrFail();
+
+        $listingUrl = route('listings.show', [$listing->id, $listing->slug]);
+        $qrSvg = QrKodu::svg($listingUrl, 220);
 
         return view('claim.show', [
             'listing' => $listing,
             'token' => $token,
+            'listingUrl' => $listingUrl,
+            'qrSvg' => $qrSvg,
         ]);
     }
 
