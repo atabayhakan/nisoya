@@ -40,4 +40,25 @@ class YasamKonuOnerisi extends Model
     {
         $query->where('durum', self::DURUM_BEKLIYOR);
     }
+
+    /** @param Builder<YasamKonuOnerisi> $query */
+    public function scopeOnaylanan(Builder $query): void
+    {
+        $query->where('durum', self::DURUM_ONAYLANDI);
+    }
+
+    /** @param Builder<YasamKonuOnerisi> $query */
+    public function scopeReddedilen(Builder $query): void
+    {
+        $query->where('durum', self::DURUM_REDDEDILDI);
+    }
+
+    public function durumEtiketi(): string
+    {
+        return match ($this->durum) {
+            self::DURUM_ONAYLANDI => 'Onaylandı',
+            self::DURUM_REDDEDILDI => 'Reddedildi',
+            default => 'Bekliyor',
+        };
+    }
 }
