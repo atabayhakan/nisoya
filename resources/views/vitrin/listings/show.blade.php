@@ -129,6 +129,26 @@
             </div>
         @endif
 
+        {{-- Sahiplenilebilir Vitrin Banner (Reverse Onboarding) --}}
+        @if ($listing->isClaimable())
+            <div class="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-emerald-300 bg-emerald-50/90 p-4 dark:border-emerald-700/60 dark:bg-emerald-950/40">
+                <div class="flex items-start gap-3">
+                    <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-sm dark:bg-emerald-600">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-semibold text-stone-900 dark:text-stone-100">Bu işletmenin sahibi veya yetkilisi misiniz?</h2>
+                        <p class="mt-0.5 text-sm text-stone-600 dark:text-stone-300">Bu vitrin Nisoya Keşif Sistemi tarafından ön hazırlık olarak oluşturuldu. 15 saniyede ücretsiz sahiplenip bilgilerinizi güncelleyebilir ve müşterilerinizle doğrudan iletişime geçebilirsiniz.</p>
+                    </div>
+                </div>
+                <a href="{{ route('claim.show', $listing->claim_token) }}" class="inline-flex shrink-0 items-center justify-center rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 transition-colors">
+                    İşletmeyi Sahiplen →
+                </a>
+            </div>
+        @endif
+
         <div class="mt-4 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
             {{-- Sol kolon --}}
             <div class="grid gap-6">

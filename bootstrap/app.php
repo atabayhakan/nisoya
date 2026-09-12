@@ -282,6 +282,9 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('register', fn (Request $request) => Limit::perMinute(5)->by($request->ip())
         );
 
+        RateLimiter::for('claim-listing', fn (Request $request) => Limit::perMinute(5)->by($request->ip())
+        );
+
         RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by($request->input('email').$request->ip())
         );
 

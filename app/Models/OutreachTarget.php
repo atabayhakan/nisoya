@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Services\Growth\DetectionResult;
 use App\Support\Growth\RegionPolicy;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Büyüme Ajanı'nın keşfettiği bir aday işletme. Keşif katmanı doldurur, tespit
@@ -21,8 +22,14 @@ class OutreachTarget extends Model
         'name', 'category', 'owner_name', 'country', 'city', 'sector', 'website',
         'contact_email', 'source', 'external_id', 'detection_band',
         'detection_confidence', 'detection_method', 'detection_signals',
-        'detection_reasoning', 'needs_review', 'marketing_status', 'status',
+        'detection_reasoning', 'needs_review', 'marketing_status', 'status', 'listing_id',
     ];
+
+    /** @return BelongsTo<Listing, $this> */
+    public function listing(): BelongsTo
+    {
+        return $this->belongsTo(Listing::class);
+    }
 
     protected $casts = [
         'detection_signals' => 'array',

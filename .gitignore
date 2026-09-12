@@ -43,3 +43,5 @@ Thumbs.db
 # ve silinmez.
 /tests/Feature/Zz*Test.php
 /tests/Unit/Zz*Test.php
+graphify-out/
+

@@ -7,6 +7,7 @@ use App\Ai\Kahya\Araclar\IsletmeKesfet;
 use App\Ai\Kahya\Araclar\PanelYonlendir;
 use App\Ai\Kahya\Araclar\RehberOku;
 use App\Ai\Kahya\Araclar\TabloSorgula;
+use App\Ai\Kahya\Araclar\VitrinHazirla;
 use App\Ai\Kahya\Araclar\WebAra;
 use App\Models\BekleyenHamle;
 use App\Models\Category;
@@ -160,6 +161,9 @@ class KahyaAjani implements Agent, Conversational, HasTools
            isletme-kesfet ile bulunmuş; ASLA uydurma/tahmin). Sahip kartı onaylarsa mesaj
            Kâhya'nın gönderim kimliğiyle OTOMATİK gönderilir — taslağı gönderilmeye hazır
            yaz. Engel listesindeki (kahya_gonderim_engelleri) adrese hamle önerme.
+        12. Yeni üye kazanımı veya işletme keşfinde, esnaf için `vitrin-hazirla` ile ön vitrin
+           ve sahiplenme linki (/sahiplen/{token}) oluşturabilirsin. Ardından `hamle-oner`
+           ile işletmeye bu bağlantıyı içeren kişiselleştirilmiş davet mektubu taslağı hazırla.
         METIN;
     }
 
@@ -201,6 +205,7 @@ class KahyaAjani implements Agent, Conversational, HasTools
             // "şurayı yapılandır" tarifini ancak aracı görürse verebilir.
             app(WebAra::class),
             app(IsletmeKesfet::class),
+            app(VitrinHazirla::class),
         ];
 
         foreach ($this->katalog->hepsi() as $eylem) {

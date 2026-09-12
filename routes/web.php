@@ -3,6 +3,7 @@
 use App\Http\Controllers\BackupDownloadController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\CandidateController;
+use App\Http\Controllers\ClaimListingController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyGalleryController;
 use App\Http\Controllers\CompanyReviewController;
@@ -85,6 +86,12 @@ Route::get('/mutlu-anlar', [HappyMomentsController::class, 'index'])->name('happ
 // ve kart isteği ilan sayfasına 301'lenirdi.
 Route::get('/ilan/{listing}/kart.png', PaylasimKartiController::class)->name('listings.card');
 Route::get('/ilan/{listing}/{slug?}', [ListingController::class, 'show'])->name('listings.show');
+
+// Sahiplenilebilir Vitrin (Reverse Onboarding — Dışarıdan eklenen işletmeyi sahiplenme)
+Route::get('/sahiplen/{token}', [ClaimListingController::class, 'show'])->name('claim.show');
+Route::post('/sahiplen/{token}', [ClaimListingController::class, 'claim'])
+    ->middleware(['throttle:claim-listing'])
+    ->name('claim.process');
 
 // Davetiye (herkese açık — misafirler hesap açmadan LCV verir).
 // Modül kapalıysa tüm davetiye yüzeyi 404 (bkz. App\Support\Modules · G4).

@@ -77,6 +77,12 @@ class Listing extends Model
         'status',
         'unpublished_at',
         'is_demo',
+        'is_claimed',
+        'claim_token',
+        'claim_email',
+        'claim_phone',
+        'claimed_at',
+        'source_external_id',
         'is_featured',
         'featured_until',
         'views_count',
@@ -89,6 +95,8 @@ class Listing extends Model
             'price_unit' => PriceUnit::class,
             'status' => ListingStatus::class,
             'is_demo' => 'boolean',
+            'is_claimed' => 'boolean',
+            'claimed_at' => 'datetime',
             'price' => 'decimal:2',
             'latitude' => 'float',
             'longitude' => 'float',
@@ -433,6 +441,24 @@ class Listing extends Model
             '(is_featured = 1 and (featured_until is null or featured_until > ?)) desc',
             [now()]
         );
+    }
+
+    /** İlan dışarıdan keşfedilmiş ve henüz sahibi tarafından sahiplenilmemiş mi? */
+    public function isClaimable(): bool
+    {
+        return ! $this->is_claimed && filled($this->claim_token);
+    }
+
+    /** Henüz sahiplenilmemiş (dışarıdan eklenen taslak/vitrin) ilanlar. */
+    public function scopeUnclaimed($query)
+    {
+        return $query->where('is_claimed', false)->whereNotNull('claim_token');
+    }
+
+    /** Sahibi tarafından sahiplenilmiş ya da bizzat açılmış gerçek ilanlar. */
+    public function scopeClaimed($query)
+    {
+        return $query->where('is_claimed', true);
     }
 
     /** Activity log: status + featured değişikliklerini logla. */
