@@ -50,15 +50,26 @@ class AiModelRegistry
         $all = $this->getAvailableModels($provider);
         $groups = [];
 
+        $free = [];
         $vision = [];
         $textOnly = [];
 
         foreach ($all as $id => $label) {
-            if (str_contains($label, '[Vision]')) {
+            $isFree = str_contains($id, ':free')
+                || str_contains($label, 'Ücretsiz')
+                || str_contains($label, 'Free');
+
+            if ($isFree) {
+                $free[$id] = $label;
+            } elseif (str_contains($label, '[Vision]')) {
                 $vision[$id] = $label;
             } else {
                 $textOnly[$id] = $label;
             }
+        }
+
+        if ($free !== []) {
+            $groups['🎁 Ücretsiz Modeller (Free Tier — $0 Maliyet)'] = $free;
         }
 
         if ($vision !== []) {
@@ -339,6 +350,14 @@ class AiModelRegistry
     private function curatedOpenRouterModels(): array
     {
         return [
+            // Ücretsiz Modeller (Free Tier — $0 Maliyet)
+            'meta-llama/llama-3.2-11b-vision-instruct:free' => 'Meta Llama 3.2 11B Vision [Ücretsiz / Free, Vision]',
+            'google/gemini-2.0-flash-exp:free' => 'Google Gemini 2.0 Flash Exp [Ücretsiz / Free, Vision]',
+            'deepseek/deepseek-r1:free' => 'DeepSeek R1 [Ücretsiz / Free, Muhakeme]',
+            'qwen/qwen-2.5-vl-72b-instruct:free' => 'Qwen 2.5 VL 72B [Ücretsiz / Free, Vision]',
+            'inclusionai/ling-3.0-flash-vl:free' => 'inclusionAI: Ling 3.0 Flash VL [Ücretsiz / Free, Vision]',
+
+            // Standart & Önerilen Modeller
             'openai/gpt-4o-mini' => 'OpenAI: GPT-4o Mini [Vision, Önerilen]',
             'google/gemini-2.0-flash-001' => 'Google: Gemini 2.0 Flash [Vision, Çok Hızlı]',
             'anthropic/claude-3-5-haiku' => 'Anthropic: Claude 3.5 Haiku [Vision]',

@@ -13,8 +13,10 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\HtmlString;
 use UnitEnum;
 
 /**
@@ -23,11 +25,79 @@ use UnitEnum;
  * Sitedeki tüm yapay zekâ servislerini (fotoğrafla ilan, moderasyon, Kâhya asistanı,
  * doğal dil arama, çeviri ve dolandırıcılık tespiti) tek merkezden yönetir.
  *
- * Canlı model kayıt defteri ile entegre çalışır; anlık model taraması ve
- * günlük otomatik sağlık denetimi (`ai:modelleri-denetle`) sağlar.
+ * Her sağlayıcı (OpenRouter, NVIDIA, Groq, DeepSeek, Mistral, OpenAI, Anthropic, Gemini)
+ * için bağımsız API anahtarı ve model hafızası tutulur; sağlayıcı değiştirildiğinde
+ * diğer sağlayıcıların anahtarları silinmez.
  */
 class YapayZekaAyarlari extends Page
 {
+    public const PROVIDERS = [
+        'openrouter' => [
+            'name' => 'OpenRouter',
+            'label' => '🌐 OpenRouter (Tek uçtan yüzlerce model — önerilen)',
+            'short_desc' => 'Tek API ile yüzlerce model',
+            'console_url' => 'https://openrouter.ai/keys',
+            'default_model' => 'openai/gpt-4o-mini',
+            'helper_text' => 'OpenRouter tek API anahtarıyla OpenAI, Claude, Llama ve Gemini dahil yüzlerce modele erişim sağlar.',
+        ],
+        'nvidia' => [
+            'name' => 'NVIDIA NIM',
+            'label' => '🟢 NVIDIA NIM (Llama 3.2 Vision, Nemotron vb.)',
+            'short_desc' => 'NVIDIA kurumsal GPU çıkarımı',
+            'console_url' => 'https://build.nvidia.com',
+            'default_model' => 'meta/llama-3.2-11b-vision-instruct',
+            'helper_text' => 'NVIDIA NIM kurumsal API ucu. Llama 3.2 Vision ve Nemotron modelleri için optimize edilmiştir.',
+        ],
+        'groq' => [
+            'name' => 'Groq',
+            'label' => '⚡ Groq (Ultra Yüksek Hız — Llama 3.2 Vision vb.)',
+            'short_desc' => 'Ultra yüksek hızlı LPU mimarisi',
+            'console_url' => 'https://console.groq.com/keys',
+            'default_model' => 'llama-3.2-11b-vision-preview',
+            'helper_text' => 'Groq LPU mimarisi. Saniyede 500+ token ultra hızlı çıkarım sağlar.',
+        ],
+        'deepseek' => [
+            'name' => 'DeepSeek',
+            'label' => '🐋 DeepSeek (DeepSeek-V3 / R1 Muhakeme)',
+            'short_desc' => 'Ekonomik & yüksek akıl yürütme',
+            'console_url' => 'https://platform.deepseek.com/api_keys',
+            'default_model' => 'deepseek-chat',
+            'helper_text' => 'DeepSeek API ucu. Yüksek akıl yürütme ve ekonomik maliyet sunar.',
+        ],
+        'mistral' => [
+            'name' => 'Mistral AI',
+            'label' => '🌪️ Mistral AI (Pixtral Vision, Mistral Large)',
+            'short_desc' => 'Avrupa merkezli açık ağırlıklı AI',
+            'console_url' => 'https://console.mistral.ai/api-keys',
+            'default_model' => 'pixtral-12b-2409',
+            'helper_text' => 'Mistral AI ucu. Pixtral vision ve Mistral Large modelleri.',
+        ],
+        'openai' => [
+            'name' => 'OpenAI',
+            'label' => '🤖 OpenAI (GPT-4o, GPT-4o Mini)',
+            'short_desc' => 'Endüstri standardı multimodal AI',
+            'console_url' => 'https://platform.openai.com/api-keys',
+            'default_model' => 'gpt-4o-mini',
+            'helper_text' => 'Resmî OpenAI API ucu. GPT-4o ve GPT-4o Mini multimodal modelleri.',
+        ],
+        'anthropic' => [
+            'name' => 'Anthropic',
+            'label' => '🧠 Anthropic (Claude 3.5 Sonnet / Haiku)',
+            'short_desc' => 'İleri mantık & vision',
+            'console_url' => 'https://console.anthropic.com/settings/keys',
+            'default_model' => 'claude-3-5-haiku-latest',
+            'helper_text' => 'Anthropic Claude API ucu. İleri seviye mantık, vizyon ve muhakeme.',
+        ],
+        'gemini' => [
+            'name' => 'Google Gemini',
+            'label' => '🔷 Google Gemini (Gemini 2.0 Flash)',
+            'short_desc' => '1M+ context & multimodal zekâ',
+            'console_url' => 'https://aistudio.google.com/apikey',
+            'default_model' => 'gemini-2.0-flash',
+            'helper_text' => 'Google AI Studio / Gemini API ucu. 1M+ bağlam penceresi ve yüksek hız.',
+        ],
+    ];
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSparkles;
 
     protected static string|UnitEnum|null $navigationGroup = 'Kâhya & Yapay Zekâ';
@@ -39,6 +109,20 @@ class YapayZekaAyarlari extends Page
     protected string $view = 'filament.pages.yapay-zeka-ayarlari';
 
     public ?array $data = [];
+
+    /**
+     * Her sağlayıcı için bağımsız in-memory API anahtarları.
+     *
+     * @var array<string, string>
+     */
+    public array $api_anahtarlari = [];
+
+    /**
+     * Her sağlayıcı için bağımsız in-memory model seçimleri.
+     *
+     * @var array<string, string>
+     */
+    public array $modeller = [];
 
     public static function canAccess(): bool
     {
@@ -52,16 +136,41 @@ class YapayZekaAyarlari extends Page
 
     public function mount(): void
     {
-        $savedModel = Settings::get('ai.model') ?: '';
+        // Tüm sağlayıcıların kayıtlı anahtar ve modellerini hafızaya yükle
+        foreach (self::PROVIDERS as $providerKey => $meta) {
+            $key = (string) (Settings::get("ai.keys.{$providerKey}") ?? '');
+            if ($key === '' && $providerKey === 'openrouter') {
+                $key = (string) (Settings::get('ai.api_anahtari') ?: config('ai.providers.openrouter.api_key', ''));
+            } elseif ($key === '') {
+                $key = (string) config("ai.providers.{$providerKey}.api_key", '');
+            }
+            $this->api_anahtarlari[$providerKey] = $key;
+
+            $model = (string) (Settings::get("ai.models.{$providerKey}") ?? '');
+            if ($model === '' && $providerKey === 'openrouter') {
+                $model = (string) (Settings::get('ai.model') ?: config('ai.providers.openrouter.model', $meta['default_model']));
+            } elseif ($model === '') {
+                $model = (string) config("ai.providers.{$providerKey}.model", $meta['default_model']);
+            }
+            $this->modeller[$providerKey] = $model;
+        }
+
+        $activeProvider = (string) (Settings::get('ai.saglayici') ?: config('ai.default', 'openrouter'));
+        if (! isset(self::PROVIDERS[$activeProvider])) {
+            $activeProvider = 'openrouter';
+        }
+
+        $activeKey = $this->api_anahtarlari[$activeProvider] ?? '';
+        $activeModel = $this->modeller[$activeProvider] ?? self::PROVIDERS[$activeProvider]['default_model'];
         $isCustom = (Settings::get('ai.ozel_model_aktif') ?? '0') === '1';
 
         $this->form->fill([
             'yapay_zeka_aktif' => (Settings::get('ai.aktif') ?? '1') === '1',
-            'saglayici' => Settings::get('ai.saglayici') ?: config('ai.default', 'openrouter'),
-            'api_anahtari' => Settings::get('ai.api_anahtari') ?: '',
-            'model' => $savedModel,
+            'saglayici' => $activeProvider,
+            'api_anahtari' => $activeKey,
+            'model' => $activeModel,
             'ozel_model_aktif' => $isCustom,
-            'ozel_model' => $isCustom ? $savedModel : (Settings::get('ai.ozel_model') ?: ''),
+            'ozel_model' => $isCustom ? $activeModel : (Settings::get('ai.ozel_model') ?: ''),
             'hizli_ilan_aktif' => (Settings::get('ai.hizli_ilan_aktif') ?? '1') === '1',
             'moderasyon_aktif' => (Settings::get('ai.moderasyon_aktif') ?? '1') === '1',
             'temsili_gorsel_aktif' => (Settings::get('ai.temsili_gorsel_aktif') ?? '1') === '1',
@@ -85,39 +194,69 @@ class YapayZekaAyarlari extends Page
                     ]),
 
                 Section::make('Sağlayıcı ve Akıllı Model Mimarisi')
-                    ->description('Sitedeki tüm yapay zekâ işlemlerini besleyen temel model altyapısı ve API kimlik doğrulaması.')
+                    ->description('Sitedeki tüm yapay zekâ işlemlerini besleyen temel model altyapısı ve API kimlik doğrulaması. Her sağlayıcının anahtarı bağımsız saklanır.')
                     ->columns(2)
                     ->schema([
                         Select::make('saglayici')
                             ->label('Yapay Zekâ Sağlayıcısı')
-                            ->options([
-                                'openrouter' => '🌐 OpenRouter (Tek uçtan yüzlerce model — önerilen)',
-                                'nvidia' => '🟢 NVIDIA NIM (Llama 3.2 Vision, Nemotron vb.)',
-                                'groq' => '⚡ Groq (Ultra Yüksek Hız — Llama 3.2 Vision vb.)',
-                                'deepseek' => '🐋 DeepSeek (DeepSeek-V3 / R1 Muhakeme)',
-                                'mistral' => '🌪️ Mistral AI (Pixtral Vision, Mistral Large)',
-                                'openai' => '🤖 OpenAI (GPT-4o, GPT-4o Mini)',
-                                'anthropic' => '🧠 Anthropic (Claude 3.5 Sonnet / Haiku)',
-                                'gemini' => '🔷 Google Gemini (Gemini 2.0 Flash)',
-                            ])
+                            ->options(collect(self::PROVIDERS)->mapWithKeys(fn ($v, $k) => [$k => $v['label']])->all())
                             ->required()
                             ->live()
                             ->native(false)
-                            ->helperText(fn (Get $get): string => match ($get('saglayici')) {
-                                'openrouter' => 'OpenRouter tek API anahtarıyla OpenAI, Claude, Llama ve Gemini dahil yüzlerce modele erişim sağlar.',
-                                'nvidia' => 'NVIDIA NIM kurumsal API ucu. Llama 3.2 Vision modelleri için optimize edilmiştir.',
-                                'groq' => 'Groq LPU mimarisi. Saniyede 500+ token ultra hızlı çıkarım sağlar.',
-                                'deepseek' => 'DeepSeek API ucu. Yüksek akıl yürütme ve ekonomik maliyet sunar.',
-                                'mistral' => 'Mistral AI ucu. Pixtral vision ve Mistral Large modelleri.',
-                                default => 'Resmî sağlayıcı API anahtarınız ile doğrudan bağlantı.',
-                            }),
+                            ->afterStateUpdated(function ($state, $old, Set $set, Get $get): void {
+                                // 1. Önceki sağlayıcının formdaki değerlerini hafızaya al
+                                if ($old && is_string($old) && isset(self::PROVIDERS[$old])) {
+                                    $this->api_anahtarlari[$old] = (string) $get('api_anahtari');
+                                    $this->modeller[$old] = (string) $get('model');
+                                }
+
+                                $newProvider = (string) ($state ?: 'openrouter');
+                                if (! isset(self::PROVIDERS[$newProvider])) {
+                                    $newProvider = 'openrouter';
+                                }
+
+                                // 2. Yeni seçilen sağlayıcının bağımsız anahtar ve modelini getir
+                                $targetKey = $this->api_anahtarlari[$newProvider]
+                                    ?? (string) (Settings::get("ai.keys.{$newProvider}") ?: '');
+                                $targetModel = $this->modeller[$newProvider]
+                                    ?? (string) (Settings::get("ai.models.{$newProvider}") ?: self::PROVIDERS[$newProvider]['default_model']);
+
+                                // 3. Form alanlarını yeni sağlayıcıya göre güncelle
+                                $set('api_anahtari', $targetKey);
+                                $set('model', $targetModel);
+                                $set('ozel_model_aktif', false);
+                                $set('ozel_model', '');
+                            })
+                            ->helperText(fn (Get $get): string => self::PROVIDERS[$get('saglayici')]['helper_text'] ?? 'Resmî sağlayıcı API anahtarınız ile doğrudan bağlantı.'),
 
                         TextInput::make('api_anahtari')
-                            ->label('Gizli API Anahtarı')
+                            ->label(fn (Get $get): string => (self::PROVIDERS[$get('saglayici')]['name'] ?? 'Sağlayıcı').' API Anahtarı')
                             ->password()
                             ->revealable()
                             ->autocomplete('new-password')
-                            ->helperText('Sağlayıcının konsolundan aldığınız gizli anahtar. Veritabanında güvenle saklanır, kimseyle paylaşılmaz.'),
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state, Get $get): void {
+                                $p = (string) ($get('saglayici') ?: 'openrouter');
+                                $this->api_anahtarlari[$p] = (string) $state;
+                            })
+                            ->placeholder(fn (Get $get): string => match ($get('saglayici')) {
+                                'openrouter' => 'sk-or-v1-...',
+                                'nvidia' => 'nvapi-...',
+                                'groq' => 'gsk_...',
+                                'deepseek' => 'sk-...',
+                                'mistral' => '...',
+                                'openai' => 'sk-proj-...',
+                                'anthropic' => 'sk-ant-...',
+                                'gemini' => 'AIzaSy...',
+                                default => 'API Anahtarınızı yapıştırın...',
+                            })
+                            ->helperText(function (Get $get): HtmlString {
+                                $p = (string) ($get('saglayici') ?: 'openrouter');
+                                $url = self::PROVIDERS[$p]['console_url'] ?? 'https://openrouter.ai/keys';
+                                $name = self::PROVIDERS[$p]['name'] ?? 'Sağlayıcı';
+
+                                return new HtmlString("Sağlayıcı konsolundan anahtar alın: <a href=\"{$url}\" target=\"_blank\" rel=\"noopener\" class=\"font-medium text-primary-600 dark:text-primary-400 hover:underline inline-flex items-center gap-1\">{$name} Konsolu ↗</a> (Diğer sağlayıcıların anahtarları silinmez, her sağlayıcı için ayrı saklanır).");
+                            }),
 
                         Select::make('model')
                             ->label('Varsayılan Yapay Zekâ Modeli')
@@ -125,6 +264,10 @@ class YapayZekaAyarlari extends Page
                             ->preload()
                             ->live()
                             ->native(false)
+                            ->afterStateUpdated(function ($state, Get $get): void {
+                                $p = (string) ($get('saglayici') ?: 'openrouter');
+                                $this->modeller[$p] = (string) $state;
+                            })
                             ->hidden(fn (Get $get): bool => (bool) $get('ozel_model_aktif'))
                             ->options(function (Get $get): array {
                                 $provider = (string) ($get('saglayici') ?: 'openrouter');
@@ -133,7 +276,7 @@ class YapayZekaAyarlari extends Page
                                 return app(AiModelRegistry::class)->getGroupedModels($provider, $current ?: null);
                             })
                             ->placeholder('Model arayın veya listeden seçin...')
-                            ->helperText('Fotoğrafla hızlı ilan ve görsel moderasyonu için [Vision] etiketli modeller önerilir.'),
+                            ->helperText('Fotoğraflı ilan ve görsel moderasyonu için [Vision] etiketli modeller önerilir. Ücretsiz modeller listenin en başında yer alır.'),
 
                         TextInput::make('ozel_model')
                             ->label('Özel Model Kimliği (ID)')
@@ -193,15 +336,25 @@ class YapayZekaAyarlari extends Page
     public function save(): void
     {
         $state = $this->form->getState();
+        $currentProvider = (string) ($state['saglayici'] ?? 'openrouter');
+        if (! isset(self::PROVIDERS[$currentProvider])) {
+            $currentProvider = 'openrouter';
+        }
+
         $isCustom = ! empty($state['ozel_model_aktif']);
         $model = $isCustom && filled($state['ozel_model'] ?? null)
             ? trim((string) $state['ozel_model'])
             : trim((string) ($state['model'] ?? ''));
 
-        Settings::setMany([
+        // Aktif sağlayıcının formdaki değerlerini hafızaya yaz
+        $currentKey = (string) ($state['api_anahtari'] ?? '');
+        $this->api_anahtarlari[$currentProvider] = $currentKey;
+        $this->modeller[$currentProvider] = $model;
+
+        $settingsToSave = [
             'ai.aktif' => ! empty($state['yapay_zeka_aktif']) ? '1' : '0',
-            'ai.saglayici' => $state['saglayici'] ?? '',
-            'ai.api_anahtari' => $state['api_anahtari'] ?? '',
+            'ai.saglayici' => $currentProvider,
+            'ai.api_anahtari' => $currentKey,
             'ai.model' => $model,
             'ai.ozel_model_aktif' => $isCustom ? '1' : '0',
             'ai.ozel_model' => $state['ozel_model'] ?? '',
@@ -212,11 +365,37 @@ class YapayZekaAyarlari extends Page
             'ai.dogal_dil_arama_aktif' => ! empty($state['dogal_dil_arama_aktif']) ? '1' : '0',
             'ai.metin_moderasyon_aktif' => ! empty($state['metin_moderasyon_aktif']) ? '1' : '0',
             'ai.ilan_cevirisi_aktif' => ! empty($state['ilan_cevirisi_aktif']) ? '1' : '0',
-        ]);
+        ];
+
+        // Her sağlayıcının anahtarını ve modelini bağımsız kaydet
+        foreach (self::PROVIDERS as $p => $info) {
+            if (array_key_exists($p, $this->api_anahtarlari)) {
+                $settingsToSave["ai.keys.{$p}"] = $this->api_anahtarlari[$p];
+            }
+            if (array_key_exists($p, $this->modeller)) {
+                $settingsToSave["ai.models.{$p}"] = $this->modeller[$p];
+            }
+        }
+
+        Settings::setMany($settingsToSave);
+
+        // Çalışma zamanı yapılandırmasını anında güncelle
+        config(['ai.default' => $currentProvider]);
+        foreach (self::PROVIDERS as $p => $info) {
+            if (! empty($this->api_anahtarlari[$p])) {
+                config(["ai.providers.{$p}.api_key" => $this->api_anahtarlari[$p]]);
+                config(["ai.providers.{$p}.key" => $this->api_anahtarlari[$p]]);
+            }
+            if (! empty($this->modeller[$p])) {
+                config(["ai.providers.{$p}.model" => $this->modeller[$p]]);
+            }
+        }
+
+        $providerName = self::PROVIDERS[$currentProvider]['name'];
 
         Notification::make()
             ->title('Yapay zekâ ayarları kaydedildi ✓')
-            ->body('Değişiklikler canlı sitede anında geçerlidir. Sunucu yeniden başlatma veya önbellek temizleme gerekmez.')
+            ->body("Aktif sağlayıcı: {$providerName}. Tüm sağlayıcı anahtarları bağımsız olarak veritabanında güvenle saklandı.")
             ->success()
             ->send();
     }
@@ -242,15 +421,17 @@ class YapayZekaAyarlari extends Page
     public function testEt(): void
     {
         $state = $this->form->getState();
-        $name = $state['saglayici'] ?: config('ai.default', 'openrouter');
+        $name = (string) ($state['saglayici'] ?: config('ai.default', 'openrouter'));
 
         $isCustom = ! empty($state['ozel_model_aktif']);
         $model = $isCustom && filled($state['ozel_model'] ?? null)
             ? trim((string) $state['ozel_model'])
             : trim((string) ($state['model'] ?? ''));
 
+        $key = (string) ($state['api_anahtari'] ?? ($this->api_anahtarlari[$name] ?? ''));
+
         $config = array_merge(config("ai.providers.{$name}", []), array_filter([
-            'api_key' => $state['api_anahtari'] ?? null,
+            'api_key' => $key ?: null,
             'model' => $model ?: null,
         ]));
 
@@ -338,21 +519,51 @@ class YapayZekaAyarlari extends Page
     public function getAktifDurumProperty(): array
     {
         $provider = trim((string) Settings::get('ai.saglayici')) ?: (string) config('ai.default', 'openrouter');
-        $model = trim((string) Settings::get('ai.model')) ?: (string) config("ai.providers.{$provider}.model", 'openai/gpt-4o-mini');
+        if (! isset(self::PROVIDERS[$provider])) {
+            $provider = 'openrouter';
+        }
+
+        $model = trim((string) Settings::get('ai.model'))
+            ?: (string) (Settings::get("ai.models.{$provider}")
+            ?: config("ai.providers.{$provider}.model", self::PROVIDERS[$provider]['default_model']));
+
         $isVision = str_contains(mb_strtolower($model), 'vision')
             || str_contains(mb_strtolower($model), '4o')
             || str_contains(mb_strtolower($model), 'gemini')
             || str_contains(mb_strtolower($model), 'pixtral')
             || str_contains(mb_strtolower($model), 'claude');
-        $isConfigured = filled(Settings::get('ai.api_anahtari') ?: config("ai.providers.{$provider}.api_key"));
+
+        $activeKey = Settings::get("ai.keys.{$provider}")
+            ?: ($provider === 'openrouter' ? Settings::get('ai.api_anahtari') : null)
+            ?: config("ai.providers.{$provider}.api_key");
+
+        $isConfigured = filled($activeKey);
         $isActive = (Settings::get('ai.aktif') ?? '1') === '1';
+
+        $configuredCount = 0;
+        $providerStatuses = [];
+        foreach (self::PROVIDERS as $key => $info) {
+            $hasKey = filled(Settings::get("ai.keys.{$key}") ?: ($key === 'openrouter' ? Settings::get('ai.api_anahtari') : config("ai.providers.{$key}.api_key")));
+            if ($hasKey) {
+                $configuredCount++;
+            }
+            $providerStatuses[$key] = [
+                'name' => $info['name'],
+                'has_key' => $hasKey,
+                'is_active' => $key === $provider,
+            ];
+        }
 
         return [
             'provider' => $provider,
+            'provider_name' => self::PROVIDERS[$provider]['name'],
             'model' => $model,
             'is_vision' => $isVision,
             'is_configured' => $isConfigured,
             'is_active' => $isActive,
+            'configured_count' => $configuredCount,
+            'total_providers' => count(self::PROVIDERS),
+            'provider_statuses' => $providerStatuses,
         ];
     }
 }

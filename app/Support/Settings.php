@@ -66,7 +66,8 @@ class Settings
     /** Bu anahtar sır mı? */
     public static function sirliMi(string $key): bool
     {
-        return in_array($key, self::SIRLI_ANAHTARLAR, true);
+        return in_array($key, self::SIRLI_ANAHTARLAR, true)
+            || str_starts_with($key, 'ai.keys.');
     }
 
     /**

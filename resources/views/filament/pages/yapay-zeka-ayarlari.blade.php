@@ -4,7 +4,7 @@
     @endphp
 
     {{-- Canlı Telemetri & Sistem Sağlığı Kartı --}}
-    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 space-y-4">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="space-y-1">
                 <div class="flex items-center gap-2">
@@ -29,7 +29,7 @@
                 {{-- Sağlayıcı Rozeti --}}
                 <span class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
                     <x-filament::icon icon="heroicon-m-cpu-chip" class="h-3.5 w-3.5 text-primary-500" />
-                    {{ strtoupper($durum['provider']) }}
+                    {{ strtoupper($durum['provider_name'] ?? $durum['provider']) }}
                 </span>
 
                 {{-- Model Rozeti --}}
@@ -66,7 +66,37 @@
             </div>
         </div>
 
-        <div class="mt-3 flex items-center justify-between border-t border-gray-100 pt-3 text-xs text-gray-400 dark:border-gray-800 dark:text-gray-500">
+        {{-- Çoklu Sağlayıcı Durum Çubuğu (Bağımsız Anahtar Görünürlüğü) --}}
+        <div class="border-t border-gray-100 pt-3 dark:border-gray-800">
+            <div class="mb-2 flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                    Sağlayıcı Anahtar Durumları (Bağımsız Hafıza)
+                </span>
+                <span class="text-xs font-medium text-primary-600 dark:text-primary-400">
+                    {{ $durum['configured_count'] ?? 0 }} / {{ $durum['total_providers'] ?? 8 }} Sağlayıcı Yapılandırıldı
+                </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
+                @foreach(($durum['provider_statuses'] ?? []) as $pKey => $pInfo)
+                    <div class="flex items-center justify-between rounded-lg border p-2 text-xs transition-colors {{ $pInfo['is_active'] ? 'border-primary-500 bg-primary-50/50 dark:border-primary-500 dark:bg-primary-950/30' : 'border-gray-100 bg-gray-50/50 dark:border-gray-800 dark:bg-gray-900/50' }}">
+                        <div class="flex items-center gap-1.5 truncate">
+                            <span class="h-2 w-2 shrink-0 rounded-full {{ $pInfo['has_key'] ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+                            <span class="truncate font-medium {{ $pInfo['is_active'] ? 'text-primary-700 dark:text-primary-300' : 'text-gray-700 dark:text-gray-300' }}">
+                                {{ $pInfo['name'] }}
+                            </span>
+                        </div>
+                        @if($pInfo['is_active'])
+                            <span class="shrink-0 rounded bg-primary-600 px-1 py-0.5 text-[9px] font-bold text-white uppercase">
+                                Aktif
+                            </span>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between border-t border-gray-100 pt-2 text-xs text-gray-400 dark:border-gray-800 dark:text-gray-500">
             <span>Zamanlanmış Denetim: <strong>Her gün 04:30</strong> (Aktif model yanıt süresi ve sağlık testi otomatik icra edilir)</span>
             <span class="hidden sm:inline">Nisoya AI Gateway v2.6</span>
         </div>
@@ -110,3 +140,4 @@
         </div>
     </form>
 </x-filament-panels::page>
+

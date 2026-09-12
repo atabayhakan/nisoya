@@ -491,26 +491,44 @@ class AppServiceProvider extends ServiceProvider
 
     protected function mergeAiConfig(): void
     {
+        $allProviders = ['openrouter', 'nvidia', 'groq', 'deepseek', 'mistral', 'openai', 'anthropic', 'gemini'];
+
+        // Her sağlayıcının bağımsız API anahtarı ve modelini config'e yükle
+        foreach ($allProviders as $p) {
+            $k = Settings::get("ai.keys.{$p}");
+            if (filled($k)) {
+                Config::set("ai.providers.{$p}.api_key", $k);
+                Config::set("ai.providers.{$p}.key", $k);
+            }
+
+            $m = Settings::get("ai.models.{$p}");
+            if (filled($m)) {
+                Config::set("ai.providers.{$p}.model", $m);
+            }
+        }
+
         $provider = Settings::get('ai.saglayici');
         if ($provider) {
             Config::set('ai.default', $provider);
         }
 
-        // Seçili sağlayıcının anahtar/modelini yalnızca DB'de değer varsa ez
-        // (boşsa env/config varsayılanı korunur).
         $active = config('ai.default');
 
-        $apiKey = Settings::get('ai.api_anahtari');
-        if ($apiKey) {
-            Config::set("ai.providers.{$active}.api_key", $apiKey);
-            // laravel/ai (Kâhya ajan çekirdeği) aynı sağlayıcıyı `key` adıyla
-            // okur — çift şema notu için bkz. config/ai.php üst yorumu.
-            Config::set("ai.providers.{$active}.key", $apiKey);
+        // Geriye dönük uyumluluk: Eğer aktif sağlayıcı için ai.keys.{active} henüz yoksa,
+        // eski merkezi ai.api_anahtari'nı kullan.
+        if (! filled(Settings::get("ai.keys.{$active}"))) {
+            $apiKey = Settings::get('ai.api_anahtari');
+            if ($apiKey) {
+                Config::set("ai.providers.{$active}.api_key", $apiKey);
+                Config::set("ai.providers.{$active}.key", $apiKey);
+            }
         }
 
-        $model = Settings::get('ai.model');
-        if ($model) {
-            Config::set("ai.providers.{$active}.model", $model);
+        if (! filled(Settings::get("ai.models.{$active}"))) {
+            $model = Settings::get('ai.model');
+            if ($model) {
+                Config::set("ai.providers.{$active}.model", $model);
+            }
         }
 
         // Fotoğraf üretim modeli (demo görselleri) — panelsiz override:
