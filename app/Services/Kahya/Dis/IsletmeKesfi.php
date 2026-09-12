@@ -44,7 +44,7 @@ class IsletmeKesfi
     /**
      * Metin aramasıyla işletme keşfi. Ör: "Turkish barber Rotterdam".
      *
-     * @return list<array{ad: string, adres: string, puan: ?float, site: ?string, place_id: string}>
+     * @return list<array{ad: string, adres: string, puan: ?float, yorum_sayisi: ?int, site: ?string, telefon: ?string, place_id: string, foto_referansi: ?string}>
      *
      * @throws \RuntimeException sağlayıcı hatasında
      */
@@ -55,11 +55,8 @@ class IsletmeKesfi
         $yanit = Http::timeout(20)
             ->withHeaders([
                 'X-Goog-Api-Key' => $this->anahtar(),
-                // FieldMask maliyetin kendisidir: yalnız istenen alan ödenir.
-                // websiteUri iletişim zenginleştirmenin kapısı olduğu için
-                // listede; telefon/e-posta İSTENMEZ (Places e-posta vermez,
-                // telefonu da bu aşamada toplamıyoruz).
-                'X-Goog-FieldMask' => 'places.id,places.displayName,places.formattedAddress,places.rating,places.websiteUri',
+                // FieldMask: işletme adı, adres, puan, değerlendirme sayısı, web sitesi, telefon ve fotoğraflar.
+                'X-Goog-FieldMask' => 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.websiteUri,places.internationalPhoneNumber,places.photos',
             ])
             ->post('https://places.googleapis.com/v1/places:searchText', [
                 'textQuery' => $sorgu,
@@ -84,11 +81,45 @@ class IsletmeKesfi
                 'ad' => (string) (($p['displayName']['text'] ?? null) ?? ''),
                 'adres' => (string) ($p['formattedAddress'] ?? ''),
                 'puan' => isset($p['rating']) ? (float) $p['rating'] : null,
+                'yorum_sayisi' => isset($p['userRatingCount']) ? (int) $p['userRatingCount'] : null,
                 'site' => isset($p['websiteUri']) ? (string) $p['websiteUri'] : null,
+                'telefon' => isset($p['internationalPhoneNumber']) ? (string) $p['internationalPhoneNumber'] : null,
                 'place_id' => (string) ($p['id'] ?? ''),
+                'foto_referansi' => isset($p['photos'][0]['name']) ? (string) $p['photos'][0]['name'] : null,
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * Google Places New Photos endpoint'inden fotoğrafın ikili (binary) içeriğini çeker.
+     *
+     * @param  string  $photoResourceName  'places/{place_id}/photos/{photo_reference}'
+     */
+    public function fotoIndir(string $photoResourceName, int $maxGenislik = 1200, int $maxYukseklik = 800): ?string
+    {
+        $key = $this->anahtar();
+
+        if ($key === '') {
+            return null;
+        }
+
+        try {
+            $yanit = Http::timeout(15)
+                ->get("https://places.googleapis.com/v1/{$photoResourceName}/media", [
+                    'maxWidthPx' => $maxGenislik,
+                    'maxHeightPx' => $maxYukseklik,
+                    'key' => $key,
+                ]);
+
+            if ($yanit->successful()) {
+                return $yanit->body();
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Google Places fotoğrafı indirilemedi: '.$e->getMessage());
+        }
+
+        return null;
     }
 
     private function anahtar(): string

@@ -7,8 +7,13 @@ use App\Enums\ListingType;
 use App\Enums\UserRole;
 use App\Models\Category;
 use App\Models\Listing;
+use App\Models\ListingImage;
 use App\Models\OutreachTarget;
 use App\Models\User;
+use App\Services\ImageService;
+use App\Services\Kahya\Dis\IsletmeKesfi;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -38,6 +43,10 @@ class ClaimableListingCreator
      *     email?: ?string,
      *     website?: ?string,
      *     description?: ?string,
+     *     rating?: ?float,
+     *     review_count?: ?int,
+     *     photo_reference?: ?string,
+     *     photo_bytes?: ?string,
      *     source_external_id?: ?string,
      * } $data
      * @return array{listing: Listing, claim_url: string, claim_token: string}
@@ -58,7 +67,9 @@ class ClaimableListingCreator
             countryCode: $countryCode,
             address: $data['address'] ?? null,
             phone: $data['phone'] ?? null,
-            website: $data['website'] ?? null
+            website: $data['website'] ?? null,
+            rating: isset($data['rating']) ? (float) $data['rating'] : null,
+            reviewCount: isset($data['review_count']) ? (int) $data['review_count'] : null,
         );
 
         $slug = $this->generateUniqueSlug($name, $city);
@@ -79,6 +90,12 @@ class ClaimableListingCreator
             'claim_phone' => $data['phone'] ?? null,
             'source_external_id' => $data['source_external_id'] ?? null,
         ]);
+
+        if (! empty($data['photo_bytes'])) {
+            $this->attachPhotoBytes($listing, (string) $data['photo_bytes']);
+        } elseif (! empty($data['photo_reference'])) {
+            $this->attachPhotoFromPlaces($listing, (string) $data['photo_reference']);
+        }
 
         if ($target !== null) {
             $target->update(['listing_id' => $listing->id]);
@@ -117,9 +134,84 @@ class ClaimableListingCreator
             'city' => $target->city ?? '',
             'category_name' => $target->category ?? $target->sector,
             'email' => $target->contact_email,
+            'phone' => $target->detection_signals['phone'] ?? null,
             'website' => $target->website,
+            'rating' => isset($target->detection_signals['rating']) ? (float) $target->detection_signals['rating'] : null,
+            'review_count' => isset($target->detection_signals['review_count']) ? (int) $target->detection_signals['review_count'] : null,
+            'photo_reference' => isset($target->detection_signals['photo_reference']) ? (string) $target->detection_signals['photo_reference'] : null,
             'source_external_id' => $target->external_id,
         ], $target);
+    }
+
+    /**
+     * İşletme görselini optimize ederek (WebP) vitrin ilanı kapak görseli olarak iliştirir.
+     */
+    public function attachPhotoBytes(Listing $listing, string $binaryData): ?ListingImage
+    {
+        if (empty($binaryData)) {
+            return null;
+        }
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'places_photo_');
+        if (! $tempFile) {
+            return null;
+        }
+
+        file_put_contents($tempFile, $binaryData);
+
+        try {
+            $imageService = app(ImageService::class);
+            $result = $imageService->storeOptimizedFromPath($tempFile, 'listings');
+
+            $sizeBytes = 0;
+            try {
+                $sizeBytes = Storage::disk('public')->size($result['large']);
+            } catch (\Throwable) {
+                // ignore
+            }
+
+            return $listing->images()->create([
+                'path_thumb' => $result['thumb'],
+                'path_medium' => $result['medium'],
+                'path_large' => $result['large'],
+                'width' => $result['original_dimensions']['width'],
+                'height' => $result['original_dimensions']['height'],
+                'size_bytes' => $sizeBytes,
+                'exif_metadata' => $result['exif_metadata'] ?? [],
+                'had_gps' => $result['had_gps'] ?? false,
+                'has_sensitive_exif' => $result['has_sensitive_exif'] ?? false,
+                'gps_lat' => $result['gps_lat'] ?? null,
+                'gps_lng' => $result['gps_lng'] ?? null,
+                'sort_order' => 0,
+                'is_cover' => true,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Vitrin görseli oluşturulamadı: '.$e->getMessage());
+
+            return null;
+        } finally {
+            if (file_exists($tempFile)) {
+                @unlink($tempFile);
+            }
+        }
+    }
+
+    /**
+     * Google Places New Photos endpoint'inden fotoğrafı çekip vitrine kapak görseli olarak kaydeder.
+     */
+    public function attachPhotoFromPlaces(Listing $listing, string $photoReference): ?ListingImage
+    {
+        try {
+            $kesif = app(IsletmeKesfi::class);
+            $bytes = $kesif->fotoIndir($photoReference);
+            if ($bytes !== null) {
+                return $this->attachPhotoBytes($listing, $bytes);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Google Places fotoğrafı indirilemedi: '.$e->getMessage());
+        }
+
+        return null;
     }
 
     private function resolveSystemUser(): User
@@ -160,13 +252,24 @@ class ClaimableListingCreator
         string $countryCode,
         ?string $address,
         ?string $phone,
-        ?string $website
+        ?string $website,
+        ?float $rating = null,
+        ?int $reviewCount = null,
     ): string {
         $lines = [
             "{$name}, {$city} ({$countryCode}) bölgesinde hizmet veren Türkçe konuşan işletmedir.",
-            '',
-            'İletişim & Konum Bilgileri:',
         ];
+
+        if ($rating !== null && $rating > 0) {
+            $ratingText = '⭐ Google Puanı: '.number_format($rating, 1, '.', '');
+            if ($reviewCount !== null && $reviewCount > 0) {
+                $ratingText .= " ({$reviewCount} değerlendirme)";
+            }
+            $lines[] = $ratingText;
+        }
+
+        $lines[] = '';
+        $lines[] = 'İletişim & Konum Bilgileri:';
 
         if (filled($address)) {
             $lines[] = "• Adres: {$address}";

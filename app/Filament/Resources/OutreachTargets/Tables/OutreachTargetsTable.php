@@ -7,6 +7,7 @@ use App\Models\BekleyenHamle;
 use App\Models\OutreachTarget;
 use App\Services\Growth\ClaimableListingCreator;
 use App\Services\Growth\ErisimMesajiYazari;
+use App\Services\Growth\WhatsAppDavetServisi;
 use App\Support\Growth\GrowthCatalog;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -226,6 +227,13 @@ class OutreachTargetsTable
                             ->success()
                             ->send();
                     }),
+                Action::make('whatsapp-davet')
+                    ->label('WhatsApp Davet')
+                    ->icon(Heroicon::OutlinedChatBubbleLeftRight)
+                    ->color('success')
+                    ->visible(fn (OutreachTarget $r): bool => filled($r->listing?->claim_phone) || filled($r->detection_signals['phone'] ?? null))
+                    ->url(fn (OutreachTarget $r): string => app(WhatsAppDavetServisi::class)->adayIcinUrl($r))
+                    ->openUrlInNewTab(),
                 EditAction::make(),
             ])
             ->toolbarActions([

@@ -66,7 +66,10 @@ class IsletmeKesfet implements Tool
         return collect($sonuclar)
             ->map(fn (array $s): string => "- {$s['ad']} · {$s['adres']}"
                 .($s['puan'] !== null ? " · ⭐{$s['puan']}" : '')
-                .($s['site'] !== null ? "\n  site: {$s['site']}" : ''))
+                .($s['yorum_sayisi'] !== null ? " ({$s['yorum_sayisi']} yorum)" : '')
+                .($s['telefon'] !== null ? "\n  tel: {$s['telefon']}" : '')
+                .($s['site'] !== null ? "\n  site: {$s['site']}" : '')
+                .($s['foto_referansi'] !== null ? "\n  foto_ref: {$s['foto_referansi']}" : ''))
             ->implode("\n");
     }
 

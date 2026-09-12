@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * motoru bandını/güvenini işler, RegionPolicy gönderim durumunu belirler. Sonraki
  * fazda (taslak+onay+gönderim) bu kayıtlar erişim kampanyalarının kaynağıdır.
  *
+ * @property ?int $listing_id
+ * @property-read ?Listing $listing
  * @property string $detection_band
  * @property string $marketing_status
  * @property bool $needs_review

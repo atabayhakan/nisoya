@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\BekleyenHamleler\Tables;
 
 use App\Models\BekleyenHamle;
+use App\Services\Growth\WhatsAppDavetServisi;
 use App\Services\Kahya\Dis\HamleGonderici;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
@@ -137,6 +138,14 @@ class BekleyenHamlelerTable
                             ->success()
                             ->send();
                     }),
+
+                Action::make('whatsapp')
+                    ->label('WhatsApp')
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->color('success')
+                    ->visible(fn (BekleyenHamle $record): bool => filled($record->listing?->claim_phone))
+                    ->url(fn (BekleyenHamle $record): string => app(WhatsAppDavetServisi::class)->listingIcinUrl($record->listing))
+                    ->openUrlInNewTab(),
 
                 Action::make('reddet')
                     ->label('Reddet')
