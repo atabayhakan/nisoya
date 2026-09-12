@@ -105,6 +105,10 @@ class AiModelRegistry
      */
     private function fetchOpenRouterModels(): array
     {
+        if (app()->runningUnitTests()) {
+            return $this->curatedOpenRouterModels();
+        }
+
         try {
             $response = Http::timeout(10)->get('https://openrouter.ai/api/v1/models');
 
@@ -158,6 +162,10 @@ class AiModelRegistry
      */
     private function fetchNvidiaModels(): array
     {
+        if (app()->runningUnitTests()) {
+            return $this->curatedNvidiaModels();
+        }
+
         $key = config('ai.providers.nvidia.api_key');
         if (filled($key)) {
             try {
@@ -183,14 +191,7 @@ class AiModelRegistry
             }
         }
 
-        return [
-            'meta/llama-3.2-11b-vision-instruct' => 'Meta Llama 3.2 11B Vision Instruct [Vision, Önerilen]',
-            'meta/llama-3.2-90b-vision-instruct' => 'Meta Llama 3.2 90B Vision Instruct [Vision]',
-            'meta/llama-3.1-70b-instruct' => 'Meta Llama 3.1 70B Instruct',
-            'meta/llama-3.1-8b-instruct' => 'Meta Llama 3.1 8B Instruct (Hızlı)',
-            'nvidia/nemotron-4-340b-instruct' => 'NVIDIA Nemotron 4 340B Instruct',
-            'mistralai/mistral-large-2-instruct' => 'Mistral Large 2 Instruct',
-        ];
+        return $this->curatedNvidiaModels();
     }
 
     /**
@@ -200,6 +201,10 @@ class AiModelRegistry
      */
     private function fetchGroqModels(): array
     {
+        if (app()->runningUnitTests()) {
+            return $this->curatedGroqModels();
+        }
+
         $key = config('ai.providers.groq.api_key');
         if (filled($key)) {
             try {
@@ -225,6 +230,25 @@ class AiModelRegistry
             }
         }
 
+        return $this->curatedGroqModels();
+    }
+
+    /** @return array<string, string> */
+    private function curatedNvidiaModels(): array
+    {
+        return [
+            'meta/llama-3.2-11b-vision-instruct' => 'Meta Llama 3.2 11B Vision Instruct [Vision, Önerilen]',
+            'meta/llama-3.2-90b-vision-instruct' => 'Meta Llama 3.2 90B Vision Instruct [Vision]',
+            'meta/llama-3.1-70b-instruct' => 'Meta Llama 3.1 70B Instruct',
+            'meta/llama-3.1-8b-instruct' => 'Meta Llama 3.1 8B Instruct (Hızlı)',
+            'nvidia/nemotron-4-340b-instruct' => 'NVIDIA Nemotron 4 340B Instruct',
+            'mistralai/mistral-large-2-instruct' => 'Mistral Large 2 Instruct',
+        ];
+    }
+
+    /** @return array<string, string> */
+    private function curatedGroqModels(): array
+    {
         return [
             'llama-3.2-11b-vision-preview' => 'Llama 3.2 11B Vision Preview [Vision, Ultra Hızlı, Önerilen]',
             'llama-3.2-90b-vision-preview' => 'Llama 3.2 90B Vision Preview [Vision, Ultra Hızlı]',
