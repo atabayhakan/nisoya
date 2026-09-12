@@ -21,6 +21,10 @@ class AiManager
         'openai' => OpenAiProvider::class,
         'openrouter' => OpenRouterProvider::class,
         'gemini' => GeminiProvider::class,
+        'nvidia' => NvidiaProvider::class,
+        'groq' => GroqProvider::class,
+        'deepseek' => DeepSeekProvider::class,
+        'mistral' => MistralProvider::class,
     ];
 
     /** @var array<string, AiProvider> Çözülmüş sağlayıcı önbelleği */

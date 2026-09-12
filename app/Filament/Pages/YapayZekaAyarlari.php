@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Services\Ai\AiManager;
+use App\Services\Ai\AiModelRegistry;
 use App\Support\Settings;
 use BackedEnum;
 use Filament\Forms\Components\Select;
@@ -83,6 +84,10 @@ class YapayZekaAyarlari extends Page
                             ->label('Sağlayıcı')
                             ->options([
                                 'openrouter' => 'OpenRouter (tek uçtan yüzlerce model — önerilen)',
+                                'nvidia' => 'NVIDIA NIM (Llama 3.2 Vision, Nemotron vb.)',
+                                'groq' => 'Groq (Ultra Hızlı Çıkarım — Llama 3.2 Vision vb.)',
+                                'deepseek' => 'DeepSeek (V3 / R1)',
+                                'mistral' => 'Mistral AI (Pixtral Vision, Mistral Large)',
                                 'openai' => 'OpenAI',
                                 'anthropic' => 'Anthropic (Claude)',
                                 'gemini' => 'Google Gemini',
@@ -90,35 +95,31 @@ class YapayZekaAyarlari extends Page
                             ->required()
                             ->live()
                             ->native(false)
-                            ->helperText('OpenRouter tek API anahtarıyla yüzlerce modele erişim sağlar.'),
+                            ->helperText('OpenRouter tek anahtarla yüzlerce model sunar; NVIDIA, Groq ve DeepSeek ise kurumsal hız ve açık modeller sunar.'),
 
                         TextInput::make('model')
                             ->label('Varsayılan Model')
-                            ->placeholder('openai/gpt-4o-mini')
-                            ->datalist(fn (Get $get): array => match ($get('saglayici') ?? 'openrouter') {
-                                'openrouter' => [
-                                    'openai/gpt-4o-mini',
-                                    'google/gemini-2.0-flash-001',
-                                    'anthropic/claude-3-5-haiku',
-                                    'openai/gpt-4o',
-                                    'meta-llama/llama-3.2-11b-vision-instruct',
-                                ],
-                                'openai' => [
-                                    'gpt-4o-mini',
-                                    'gpt-4o',
-                                ],
-                                'anthropic' => [
-                                    'claude-haiku-4-5',
-                                    'claude-3-5-haiku-20241022',
-                                    'claude-3-5-sonnet-20241022',
-                                ],
-                                'gemini' => [
-                                    'gemini-2.0-flash',
-                                    'gemini-1.5-flash',
-                                ],
-                                default => [],
+                            ->placeholder(fn (Get $get): string => match ($get('saglayici') ?? 'openrouter') {
+                                'nvidia' => 'meta/llama-3.2-11b-vision-instruct',
+                                'groq' => 'llama-3.2-11b-vision-preview',
+                                'deepseek' => 'deepseek-chat',
+                                'mistral' => 'pixtral-12b-2409',
+                                'openai' => 'gpt-4o-mini',
+                                'anthropic' => 'claude-haiku-4-5',
+                                'gemini' => 'gemini-2.0-flash',
+                                default => 'openai/gpt-4o-mini',
                             })
-                            ->helperText('Fotoğrafla ilan ve genel AI işlemleri için kullanılır. Kâhya Sohbeti\'nde ayrı bir model tanımlanmamışsa Kâhya da doğrudan bu modeli kullanır. Modelin görüntü (vision) desteklemesi gerekir. Boş bırakılırsa varsayılan (openai/gpt-4o-mini) kullanılır.'),
+                            ->datalist(function (Get $get): array {
+                                $provider = (string) ($get('saglayici') ?: 'openrouter');
+
+                                return array_keys(app(AiModelRegistry::class)->getAvailableModels($provider));
+                            })
+                            ->helperText(function (Get $get): string {
+                                $provider = (string) ($get('saglayici') ?: 'openrouter');
+                                $count = count(app(AiModelRegistry::class)->getAvailableModels($provider));
+
+                                return "Fotoğrafla ilan ve genel AI işlemleri için kullanılır ({$count} model kayıtlı). Modelin görüntü (vision) desteklemesi gerekir. Boş bırakılırsa varsayılan model kullanılır.";
+                            }),
 
                         TextInput::make('api_anahtari')
                             ->label('API anahtarı')
@@ -226,6 +227,23 @@ class YapayZekaAyarlari extends Page
                 ->persistent()
                 ->send();
         }
+    }
+
+    /** Sağlayıcıdan en güncel modelleri anında yeniden çeker ve listeyi tazeler. */
+    public function modelleriGuncelle(): void
+    {
+        $state = $this->form->getState();
+        $provider = (string) ($state['saglayici'] ?? config('ai.default', 'openrouter'));
+
+        $registry = app(AiModelRegistry::class);
+        $models = $registry->getAvailableModels($provider, forceRefresh: true);
+        $count = count($models);
+
+        Notification::make()
+            ->title('Model listesi güncellendi')
+            ->body("[{$provider}] için {$count} adet çalışan güncel model çekildi ve listeye eklendi.")
+            ->success()
+            ->send();
     }
 
     /** Test için küçük ama geçerli bir JPEG üretir (vision modelleri minik görseli reddeder). */

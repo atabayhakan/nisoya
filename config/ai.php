@@ -129,6 +129,50 @@ return [
             'url' => env('GEMINI_URL', 'https://generativelanguage.googleapis.com/v1beta/'),
         ],
 
+        // NVIDIA NIM — OpenAI-uyumlu kurumsal uç (Llama 3.2 Vision, Nemotron vb.).
+        'nvidia' => [
+            'api_key' => env('NVIDIA_API_KEY'),
+            'model' => env('NVIDIA_MODEL', 'meta/llama-3.2-11b-vision-instruct'),
+            'base_url' => env('NVIDIA_BASE_URL', 'https://integrate.api.nvidia.com/v1'),
+            // laravel/ai anahtarları:
+            'driver' => 'openai',
+            'key' => env('NVIDIA_API_KEY'),
+            'url' => env('NVIDIA_BASE_URL', 'https://integrate.api.nvidia.com/v1'),
+        ],
+
+        // Groq — OpenAI-uyumlu ultra-hızlı LPU çıkarımı (Llama 3.2 Vision vb.).
+        'groq' => [
+            'api_key' => env('GROQ_API_KEY'),
+            'model' => env('GROQ_MODEL', 'llama-3.2-11b-vision-preview'),
+            'base_url' => env('GROQ_BASE_URL', 'https://api.groq.com/openai/v1'),
+            // laravel/ai anahtarları:
+            'driver' => 'openai',
+            'key' => env('GROQ_API_KEY'),
+            'url' => env('GROQ_BASE_URL', 'https://api.groq.com/openai/v1'),
+        ],
+
+        // DeepSeek — OpenAI-uyumlu DeepSeek-V3 ve DeepSeek-R1 uçları.
+        'deepseek' => [
+            'api_key' => env('DEEPSEEK_API_KEY'),
+            'model' => env('DEEPSEEK_MODEL', 'deepseek-chat'),
+            'base_url' => env('DEEPSEEK_BASE_URL', 'https://api.deepseek.com/v1'),
+            // laravel/ai anahtarları:
+            'driver' => 'openai',
+            'key' => env('DEEPSEEK_API_KEY'),
+            'url' => env('DEEPSEEK_BASE_URL', 'https://api.deepseek.com/v1'),
+        ],
+
+        // Mistral AI — OpenAI-uyumlu Pixtral (vision) ve Mistral Large modelleri.
+        'mistral' => [
+            'api_key' => env('MISTRAL_API_KEY'),
+            'model' => env('MISTRAL_MODEL', 'pixtral-12b-2409'),
+            'base_url' => env('MISTRAL_BASE_URL', 'https://api.mistral.ai/v1'),
+            // laravel/ai anahtarları:
+            'driver' => 'openai',
+            'key' => env('MISTRAL_API_KEY'),
+            'url' => env('MISTRAL_BASE_URL', 'https://api.mistral.ai/v1'),
+        ],
+
     ],
 
 ];

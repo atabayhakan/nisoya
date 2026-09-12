@@ -34,6 +34,10 @@ Schedule::command('paylasim-kartlari:temizle')->weeklyOn(1, '03:45')->withoutOve
 // (bkz. Admin → Sistem → Yedekleme). Saat config/backup.php'den ayarlanabilir.
 Schedule::command('backup:run')->dailyAt(config('backup.daily_time', '04:00'))->withoutOverlapping();
 
+// Günlük yapay zekâ model kataloğu güncellemesi ve aktif model sağlık denetimi.
+// 04:30 — 04:00'teki yedekten sonra ve 05:00'teki görsel üretiminden önce.
+Schedule::command('ai:modelleri-denetle')->dailyAt('04:30')->withoutOverlapping();
+
 // 2+ gündür görselsiz kalan aktif ilanlara otomatik temsilî kapak görseli
 // üretir (ahlaki ön-elemeden geçenlere). 05:00 — 04:00'teki yedekten SONRA
 // (üretilen görsel yedeğe girsin) ve 07:30'daki günlük rapordan ÖNCE.
