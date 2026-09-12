@@ -19,6 +19,7 @@ use Laravel\Mcp\Server\Attributes\Title;
 #[Title('Yaşam Rehberi Yönetimi — Konuları, ülke içeriklerini ve önerileri yönet')]
 #[Description(
     'Nisoya Yaşam Rehberi konularını, ülke içeriklerini ve topluluk önerilerini yönetir. '.
+    'islem="kategoriler" (tüm yaşam kategorilerini ve konu sayılarını listeler), '.
     'islem="konular" (tüm kategori ve yaşam konularını listeler), '.
     'islem="icerikler" (ülke bazlı yaşam rehberi içeriklerini listeler), '.
     'islem="durum_guncelle" (içerik_id ve yeni_durum="taslak"|"yayinda" ile yayın durumunu günceller), '.
@@ -32,7 +33,7 @@ class YasamRehberiYonet extends YonetimAraci
     {
         return [
             'islem' => $schema->string()
-                ->description('İşlem türü: "konular", "icerikler", "durum_guncelle", "oneriler", "oneri_karar".')
+                ->description('İşlem türü: "kategoriler", "konular", "icerikler", "durum_guncelle", "oneriler", "oneri_karar".')
                 ->required(),
             'icerik_id' => $schema->integer()
                 ->description('İncelenecek veya güncellenecek YasamKonuIcerigi ID numarası.'),
@@ -55,6 +56,7 @@ class YasamRehberiYonet extends YonetimAraci
         $islem = strtolower((string) $request->get('islem', 'konular'));
 
         return match ($islem) {
+            'kategoriler' => $this->kategoriler(),
             'icerikler' => $this->icerikler($request),
             'durum_guncelle' => $this->durumGuncelle($request),
             'oneriler' => $this->oneriler($request),
@@ -213,6 +215,26 @@ class YasamRehberiYonet extends YonetimAraci
         return [
             'basarili' => false,
             'mesaj' => "Geçersiz karar '{$karar}'. 'onayla' veya 'reddet' girilmelidir.",
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function kategoriler(): array
+    {
+        $kategoriler = YasamKategorisi::withCount('konular')->orderBy('sort_order')->get();
+
+        return [
+            'toplam_kategori' => $kategoriler->count(),
+            'aktif_kategori' => $kategoriler->where('is_active', true)->count(),
+            'kategoriler' => $kategoriler->map(fn (YasamKategorisi $k) => [
+                'id' => $k->id,
+                'ad' => $k->ad,
+                'slug' => $k->slug,
+                'ikon' => $k->ikon ?: '📘',
+                'konu_sayisi' => $k->konular_count,
+                'is_active' => (bool) $k->is_active,
+                'sort_order' => $k->sort_order,
+            ])->all(),
         ];
     }
 }
