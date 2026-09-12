@@ -4,15 +4,19 @@ namespace App\Filament\Support;
 
 use App\Filament\Concerns\RestrictsToAdmins;
 use App\Models\HomeHighlight;
+use App\Services\Ai\CmsAiAssistant;
 use App\Support\HighlightIcon;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Builder as MediaBuilder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -57,7 +61,24 @@ abstract class HomeHighlightResourceBase extends Resource
             TextInput::make('text')
                 ->label('Metin')
                 ->nullable()
-                ->maxLength(160),
+                ->maxLength(160)
+                ->hintAction(
+                    Action::make('aiKartMetniUret')
+                        ->label('AI ile Metin Üret')
+                        ->icon(Heroicon::OutlinedSparkles)
+                        ->action(function (callable $get, callable $set, CmsAiAssistant $assistant): void {
+                            $baslik = (string) ($get('title') ?: 'Gurbetçiler İçin Güvenilir Alışveriş ve İlan');
+                            $kart = $assistant->generateHighlight($baslik);
+                            if (blank($get('title'))) {
+                                $set('title', $kart['title']);
+                            }
+                            $set('text', $kart['text']);
+                            Notification::make()
+                                ->title('Vurgu kartı metni oluşturuldu')
+                                ->success()
+                                ->send();
+                        })
+                ),
             Select::make('icon')
                 ->label('İkon')
                 ->options(HighlightIcon::OPTIONS)

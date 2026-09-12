@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Pages\Schemas;
 use App\Enums\PageStatus;
 use App\Filament\Support\ContentBlocks;
 use App\Models\Page;
+use App\Services\Ai\CmsAiAssistant;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
@@ -12,8 +14,10 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -84,7 +88,29 @@ class PageForm
                         ->label('SEO açıklaması (meta)')
                         ->maxLength(255)
                         ->rows(2)
-                        ->columnSpanFull(),
+                        ->columnSpanFull()
+                        ->hintAction(
+                            Action::make('aiSeoUret')
+                                ->label('AI ile SEO Yaz')
+                                ->icon(Heroicon::OutlinedSparkles)
+                                ->action(function (callable $get, callable $set, CmsAiAssistant $assistant): void {
+                                    $title = (string) $get('title');
+                                    if (blank($title)) {
+                                        Notification::make()
+                                            ->title('Önce sayfa başlığı giriniz')
+                                            ->warning()
+                                            ->send();
+
+                                        return;
+                                    }
+                                    $seoDesc = $assistant->generatePageSeo($title);
+                                    $set('meta_description', $seoDesc);
+                                    Notification::make()
+                                        ->title('SEO açıklaması oluşturuldu')
+                                        ->success()
+                                        ->send();
+                                })
+                        ),
                 ]),
 
             Section::make('İçerik blokları')

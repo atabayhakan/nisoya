@@ -391,6 +391,18 @@ class SirlarOnbellegeYazilmazTest extends TestCase
         $this->assertNull(config('kahya.telegram.webhook_sirri'));
     }
 
+    public function test_mcp_api_key_sirri_config_agacina_hic_girmez(): void
+    {
+        Settings::setMany([
+            'mcp.api_key' => 'SENTINEL-MCP-KEY-12345',
+        ]);
+
+        $this->argvKur(['artisan', 'queue:work']);
+        $this->cagir('mergeRuntimeConfig');
+
+        $this->assertNull(config('mcp.api_key'));
+    }
+
     public function test_sirli_anahtarlarin_tamami_bu_testte_kapsanmis(): void
     {
         /*
@@ -407,6 +419,7 @@ class SirlarOnbellegeYazilmazTest extends TestCase
                 'giris.google_client_secret',
                 'kahya.telegram.bot_token',
                 'kahya.telegram.webhook_sirri',
+                'mcp.api_key',
             ],
             Settings::SIRLI_ANAHTARLAR,
             'Sır listesi değişti — SirlarOnbellegeYazilmazTest\'e yeni sır için kapak testi ekle.'

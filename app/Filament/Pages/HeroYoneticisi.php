@@ -3,11 +3,13 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\RestrictsToAdmins;
+use App\Services\Ai\CmsAiAssistant;
 use App\Services\Medya\HeroMedyaBaglayici;
 use App\Support\Hero;
 use App\Support\Settings;
 use App\Support\Tema;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
@@ -43,7 +45,7 @@ class HeroYoneticisi extends Page
 
     protected static ?string $navigationLabel = 'Hero Yöneticisi';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     protected string $view = 'filament.pages.hero-yoneticisi';
 
@@ -52,6 +54,43 @@ class HeroYoneticisi extends Page
     public function getTitle(): string
     {
         return 'Hero Yöneticisi';
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('aiHeroMetinleriUret')
+                ->label('AI ile Hero Metinleri Üret')
+                ->icon(Heroicon::OutlinedSparkles)
+                ->color('primary')
+                ->modalHeading('Hero Vitrin Metinleri Üret')
+                ->modalDescription('Diaspora odaklı rozet, vurucu başlık ve eylem çağrıları (CTA) üretmek için odak noktanızı yazın.')
+                ->form([
+                    TextInput::make('odak_noktasi')
+                        ->label('Odak Noktası / Kampanya Konusu')
+                        ->placeholder('Örn: Avrupa\'daki gurbetçiler için güvenilir Türk pazarı ve ilan platformu')
+                        ->required(),
+                ])
+                ->action(function (array $data, CmsAiAssistant $assistant): void {
+                    $icerik = $assistant->generateHeroContent($data['odak_noktasi']);
+                    $currentState = $this->form->getState();
+                    $this->form->fill([
+                        ...$currentState,
+                        'rozet' => $icerik['rozet'] ?? ($currentState['rozet'] ?? null),
+                        'baslik' => $icerik['baslik'] ?? ($currentState['baslik'] ?? null),
+                        'vurgu' => $icerik['vurgu'] ?? ($currentState['vurgu'] ?? null),
+                        'alt_baslik' => $icerik['alt_baslik'] ?? ($currentState['alt_baslik'] ?? null),
+                        'cta1_etiket' => $icerik['cta1_etiket'] ?? ($currentState['cta1_etiket'] ?? null),
+                        'cta2_etiket' => $icerik['cta2_etiket'] ?? ($currentState['cta2_etiket'] ?? null),
+                    ]);
+
+                    Notification::make()
+                        ->title('Hero metinleri hazırlandı')
+                        ->body('Başlıklar, rozet ve buton etiketleri forma uygulandı. İnceleyip kaydedebilirsiniz.')
+                        ->success()
+                        ->send();
+                }),
+        ];
     }
 
     /** Blade'de "Vitrin aktif değil" uyarısını göstermek için. */

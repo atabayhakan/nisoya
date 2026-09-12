@@ -39,7 +39,7 @@ class NisoyaYonetimMcpTest extends TestCase
     public function test_tum_araclar_yonetim_araci_tabanindan_turer(): void
     {
         $araclar = $this->sunucuAraclari();
-        $this->assertCount(8, $araclar, 'Nisoya Yönetim Sunucusu tam olarak 8 araç barındırmalı.');
+        $this->assertCount(13, $araclar, 'Nisoya Yönetim Sunucusu tam olarak 13 araç barındırmalı.');
 
         foreach ($araclar as $sinif) {
             $this->assertTrue(
@@ -80,7 +80,7 @@ class NisoyaYonetimMcpTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonPath('result.tools.0.name', 'nisoya_ilan_ara');
-        $this->assertCount(8, $response->json('result.tools'));
+        $this->assertCount(13, $response->json('result.tools'));
     }
 
     public function test_ozet_metrikler_araci_dogru_verileri_doner(): void
@@ -218,5 +218,168 @@ class NisoyaYonetimMcpTest extends TestCase
         $data = $response->json('result.structuredContent');
         $this->assertStringContainsString('Antep Sofrası', $data['davet_mesaj_metni']);
         $this->assertStringContainsString('https://wa.me/?text=', $data['whatsapp_linki']);
+    }
+
+    public function test_cms_ozet_araci_tasarim_ve_icerik_durumunu_verir(): void
+    {
+        $response = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 7,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_cms_ozet',
+                'arguments' => ['detayli' => false],
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $data = $response->json('result.structuredContent');
+        $this->assertArrayHasKey('aktif_tema', $data);
+        $this->assertArrayHasKey('hero', $data);
+        $this->assertArrayHasKey('duyuru_bandi', $data);
+        $this->assertArrayHasKey('sayfalar_istatistik', $data);
+        $this->assertArrayHasKey('sss_istatistik', $data);
+    }
+
+    public function test_duyuru_yonet_araci_okuma_ve_guncelleme_yapar(): void
+    {
+        // 1. Güncelleme
+        $resUpdate = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 8,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_duyuru_yonet',
+                'arguments' => [
+                    'islem' => 'guncelle',
+                    'aktif' => true,
+                    'metin' => 'Almanya geneli ücretsiz kargo haftası!',
+                    'link' => 'https://nisoya.com/kampanya',
+                    'link_metni' => 'İncele',
+                    'renk' => 'marka',
+                ],
+            ],
+        ]);
+
+        $resUpdate->assertStatus(200);
+        $this->assertTrue($resUpdate->json('result.structuredContent.basarili'));
+        $this->assertEquals('1', Settings::get('duyuru.aktif'));
+        $this->assertEquals('Almanya geneli ücretsiz kargo haftası!', Settings::get('duyuru.metin'));
+
+        // 2. Okuma
+        $resRead = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 9,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_duyuru_yonet',
+                'arguments' => ['islem' => 'oku'],
+            ],
+        ]);
+
+        $resRead->assertStatus(200);
+        $this->assertTrue($resRead->json('result.structuredContent.aktif'));
+        $this->assertEquals('Almanya geneli ücretsiz kargo haftası!', $resRead->json('result.structuredContent.metin'));
+    }
+
+    public function test_hero_yonet_araci_okuma_ve_guncelleme_yapar(): void
+    {
+        $resUpdate = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 10,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_hero_yonet',
+                'arguments' => [
+                    'islem' => 'guncelle',
+                    'baslik' => 'Avrupa Türk Topluluğu',
+                    'vurgu' => 'Tek Pazaryerinde Buluşuyor',
+                    'rozet' => '🌍 Nisoya 2026',
+                    'cta1_etiket' => 'Ücretsiz İlan Ver',
+                ],
+            ],
+        ]);
+
+        $resUpdate->assertStatus(200);
+        $this->assertTrue($resUpdate->json('result.structuredContent.basarili'));
+        $this->assertEquals('Avrupa Türk Topluluğu', Settings::get('hero.baslik'));
+        $this->assertEquals('Tek Pazaryerinde Buluşuyor', Settings::get('hero.vurgu'));
+    }
+
+    public function test_sss_yonet_araci_listeler_ve_ekler(): void
+    {
+        $resEkle = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 11,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_sss_yonet',
+                'arguments' => [
+                    'islem' => 'ekle',
+                    'soru' => 'Nisoya üzerinden satış yapmak ücretli mi?',
+                    'cevap' => 'Hayır, bireysel ilan vermek ve alışveriş yapmak tamamen ücretsizdir.',
+                    'is_active' => true,
+                    'sort_order' => 1,
+                ],
+            ],
+        ]);
+
+        $resEkle->assertStatus(200);
+        $this->assertTrue($resEkle->json('result.structuredContent.basarili'));
+        $id = $resEkle->json('result.structuredContent.id');
+
+        // Listeleme
+        $resListele = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 12,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_sss_yonet',
+                'arguments' => ['islem' => 'listele'],
+            ],
+        ]);
+
+        $resListele->assertStatus(200);
+        $this->assertGreaterThanOrEqual(1, $resListele->json('result.structuredContent.toplam_adet'));
+    }
+
+    public function test_sayfa_yonet_araci_listeler_ve_olusturur(): void
+    {
+        $resOlustur = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 13,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_sayfa_yonet',
+                'arguments' => [
+                    'islem' => 'olustur',
+                    'title' => 'Topluluk Kuralları',
+                    'slug' => 'topluluk-kurallari-test',
+                    'status' => 'yayinda',
+                    'meta_description' => 'Nisoya topluluk etik ve kuralları rehberi.',
+                ],
+            ],
+        ]);
+
+        $resOlustur->assertStatus(200);
+        $this->assertTrue($resOlustur->json('result.structuredContent.basarili'));
+
+        // Detay
+        $resDetay = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 14,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_sayfa_yonet',
+                'arguments' => [
+                    'islem' => 'detay',
+                    'slug' => 'topluluk-kurallari-test',
+                ],
+            ],
+        ]);
+
+        $resDetay->assertStatus(200);
+        $this->assertTrue($resDetay->json('result.structuredContent.basarili'));
+        $this->assertEquals('Topluluk Kuralları', $resDetay->json('result.structuredContent.sayfa.title'));
     }
 }

@@ -10,7 +10,9 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 /**
+ * @property PageStatus $status casts() enum'a çeviriyor; statik analiz için zorunlu.
  * @property Carbon|null $publish_at datetime cast (bkz. casts())
+ * @property array<array<string, mixed>>|null $blocks
  */
 class Page extends Model
 {

@@ -7,10 +7,13 @@ use App\Filament\Resources\SssSorulari\Pages\CreateSssSorusu;
 use App\Filament\Resources\SssSorulari\Pages\EditSssSorusu;
 use App\Filament\Resources\SssSorulari\Pages\ListSssSorulari;
 use App\Models\SssSorusu;
+use App\Services\Ai\CmsAiAssistant;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -37,7 +40,7 @@ class SssSorusuResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'İçerik & Tasarım (CMS)';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 6;
 
     public static function getNavigationLabel(): string
     {
@@ -66,7 +69,29 @@ class SssSorusuResource extends Resource
                 ->label('Cevap')
                 ->required()
                 ->rows(4)
-                ->columnSpanFull(),
+                ->columnSpanFull()
+                ->hintAction(
+                    Action::make('aiCevapUret')
+                        ->label('AI ile Cevap Taslağı Yaz')
+                        ->icon(Heroicon::OutlinedSparkles)
+                        ->action(function (callable $get, callable $set, CmsAiAssistant $assistant): void {
+                            $soru = (string) $get('soru');
+                            if (blank($soru)) {
+                                Notification::make()
+                                    ->title('Önce soruyu yazınız')
+                                    ->warning()
+                                    ->send();
+
+                                return;
+                            }
+                            $cevap = $assistant->generateFaqAnswer($soru);
+                            $set('cevap', $cevap);
+                            Notification::make()
+                                ->title('SSS cevabı hazırlandı')
+                                ->success()
+                                ->send();
+                        })
+                ),
             Toggle::make('is_active')->label('Aktif')->default(true),
             TextInput::make('sort_order')->label('Sıra')->numeric()->default(0),
         ]);

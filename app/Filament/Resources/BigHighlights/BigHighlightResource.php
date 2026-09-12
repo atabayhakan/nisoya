@@ -20,7 +20,7 @@ class BigHighlightResource extends HomeHighlightResourceBase
 
     protected static ?string $navigationLabel = 'Ana Sayfa — Büyük Kart';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 8;
 
     protected static function slot(): string
     {

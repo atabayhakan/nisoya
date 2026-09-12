@@ -3,8 +3,10 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\RestrictsToAdmins;
+use App\Services\Ai\CmsAiAssistant;
 use App\Support\Settings;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -32,7 +34,7 @@ class DuyuruBandi extends Page
 
     protected static ?string $navigationLabel = 'Duyuru Bandı';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 4;
 
     protected string $view = 'filament.pages.duyuru-bandi';
 
@@ -55,6 +57,40 @@ class DuyuruBandi extends Page
         ]);
     }
 
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('aiDuyuruUret')
+                ->label('AI ile Duyuru Oluştur')
+                ->icon(Heroicon::OutlinedSparkles)
+                ->color('primary')
+                ->modalHeading('Yapay Zeka ile Duyuru Metni Oluştur')
+                ->modalDescription('Kampanya, tatil indirimi, kargo duyurusu veya acil bildirim için konuyu belirtin.')
+                ->form([
+                    TextInput::make('konu')
+                        ->label('Duyuru Konusu veya Amacı')
+                        ->placeholder('Örn: Almanya ve Hollanda için 100€ üzeri ücretsiz kargo')
+                        ->required(),
+                ])
+                ->action(function (array $data, CmsAiAssistant $assistant): void {
+                    $sonuc = $assistant->generateAnnouncement($data['konu']);
+                    $this->form->fill([
+                        ...$this->form->getState(),
+                        'aktif' => true,
+                        'metin' => $sonuc['metin'] ?? '',
+                        'link' => $sonuc['link'] ?? '',
+                        'link_metni' => $sonuc['link_metni'] ?? '',
+                        'renk' => $sonuc['renk'] ?? 'marka',
+                    ]);
+                    Notification::make()
+                        ->title('Duyuru metni üretildi')
+                        ->body('Form alanları dolduruldu. Değişiklikleri inceleyip Kaydet butonuna basabilirsiniz.')
+                        ->success()
+                        ->send();
+                }),
+        ];
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -65,22 +101,26 @@ class DuyuruBandi extends Page
                     ->schema([
                         Toggle::make('aktif')
                             ->label('Duyuru bandı açık')
+                            ->live()
                             ->columnSpanFull(),
 
                         Textarea::make('metin')
                             ->label('Duyuru metni')
                             ->rows(2)
                             ->maxLength(300)
+                            ->live(onBlur: true)
                             ->placeholder('Örn: 15 Ağustos’ta kısa bir bakım çalışması yapılacaktır.')
                             ->columnSpanFull(),
 
                         TextInput::make('link')
                             ->label('Bağlantı (opsiyonel)')
                             ->url()
+                            ->live(onBlur: true)
                             ->placeholder('https://…'),
 
                         TextInput::make('link_metni')
                             ->label('Bağlantı metni (opsiyonel)')
+                            ->live(onBlur: true)
                             ->placeholder('Detay'),
 
                         Select::make('renk')
@@ -90,6 +130,7 @@ class DuyuruBandi extends Page
                                 'uyari' => 'Uyarı (amber)',
                                 'onemli' => 'Önemli (kırmızı)',
                             ])
+                            ->live()
                             ->native(false),
 
                         Toggle::make('kapatilabilir')

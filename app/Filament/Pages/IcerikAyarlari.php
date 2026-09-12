@@ -23,7 +23,7 @@ class IcerikAyarlari extends Page
 
     protected static ?string $navigationLabel = 'İçerik (Metinler)';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 10;
 
     protected string $view = 'filament.pages.icerik-ayarlari';
 
