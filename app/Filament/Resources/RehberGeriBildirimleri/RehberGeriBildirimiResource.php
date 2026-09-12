@@ -6,15 +6,18 @@ use App\Filament\Concerns\RestrictsToAdmins;
 use App\Filament\Resources\RehberGeriBildirimleri\Pages\ListRehberGeriBildirimleri;
 use App\Filament\Resources\TemsilcilikIslemleri\TemsilcilikIslemiResource;
 use App\Models\RehberGeriBildirimi;
+use App\Services\Ai\CountryGuideAiAssistant;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 use UnitEnum;
 
 /**
@@ -80,6 +83,37 @@ class RehberGeriBildirimiResource extends Resource
                 TernaryFilter::make('incelendi')->label('İncelendi'),
             ])
             ->recordActions([
+                Action::make('aiAnaliz')
+                    ->label('AI Analiz')
+                    ->icon(Heroicon::OutlinedSparkles)
+                    ->color('warning')
+                    ->modalHeading(fn (RehberGeriBildirimi $r): string => 'AI Geri Bildirim Analizi #'.$r->id)
+                    ->modalDescription(function (RehberGeriBildirimi $r, CountryGuideAiAssistant $assistant): HtmlString {
+                        $procedureName = $r->islem && $r->islem->islemTuru ? $r->islem->islemTuru->ad : 'Konsolosluk İşlemi';
+                        $currentNotes = $r->islem ? $r->islem->notlar : null;
+                        $eval = $assistant->evaluateConsularFeedback((string) $r->metin, $procedureName, $currentNotes);
+
+                        $color = match ($eval['oncelik']) {
+                            'yuksek' => 'text-rose-600 dark:text-rose-400',
+                            'orta' => 'text-amber-600 dark:text-amber-400',
+                            default => 'text-emerald-600 dark:text-emerald-400',
+                        };
+
+                        return new HtmlString(
+                            "<div class='space-y-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 text-sm'>"
+                            ."<div class='flex items-center justify-between font-bold'>"
+                            ."<span>Öncelik: <span class='{$color} uppercase'>".e($eval['oncelik']).'</span></span>'
+                            ."<span class='text-xs text-gray-500'>Geçerlilik: ".e($eval['gecerlilik']).'</span>'
+                            .'</div>'
+                            ."<div><strong class='text-xs text-gray-500'>Öneri Özeti:</strong><p class='text-xs mt-0.5 text-gray-800 dark:text-gray-200'>".e($eval['oneri_ozeti']).'</p></div>'
+                            ."<div class='pt-2 border-t border-gray-200 dark:border-gray-700'><strong class='text-xs text-gray-500'>Önerilen Aksiyon:</strong><p class='text-xs mt-0.5 text-primary-600 dark:text-primary-400 font-medium'>".e($eval['aksiyon_onerisi']).'</p></div>'
+                            .'</div>'
+                        );
+                    })
+                    ->action(function (RehberGeriBildirimi $r): void {
+                        $r->update(['incelendi' => true]);
+                        Notification::make()->title('Geri bildirim incelendi olarak işaretlendi')->success()->send();
+                    }),
                 Action::make('islemeGit')
                     ->label('İçeriğe git')
                     ->icon(Heroicon::OutlinedPencilSquare)

@@ -12,8 +12,14 @@ use App\Mcp\Sunucular\NisoyaYonetimSunucusu;
 use App\Models\Conversation;
 use App\Models\Deal;
 use App\Models\FeatureRequest;
+use App\Models\IslemTuru;
 use App\Models\Listing;
+use App\Models\Temsilcilik;
+use App\Models\TemsilcilikIslemi;
 use App\Models\User;
+use App\Models\YasamKategorisi;
+use App\Models\YasamKonuIcerigi;
+use App\Models\YasamKonusu;
 use App\Support\Settings;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
@@ -44,7 +50,7 @@ class NisoyaYonetimMcpTest extends TestCase
     public function test_tum_araclar_yonetim_araci_tabanindan_turer(): void
     {
         $araclar = $this->sunucuAraclari();
-        $this->assertCount(16, $araclar, 'Nisoya Yönetim Sunucusu tam olarak 16 araç barındırmalı.');
+        $this->assertCount(19, $araclar, 'Nisoya Yönetim Sunucusu tam olarak 19 araç barındırmalı.');
 
         foreach ($araclar as $sinif) {
             $this->assertTrue(
@@ -85,7 +91,7 @@ class NisoyaYonetimMcpTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonPath('result.tools.0.name', 'nisoya_ilan_ara');
-        $this->assertCount(16, $response->json('result.tools'));
+        $this->assertCount(19, $response->json('result.tools'));
     }
 
     public function test_ozet_metrikler_araci_dogru_verileri_doner(): void
@@ -532,5 +538,177 @@ class NisoyaYonetimMcpTest extends TestCase
         $this->assertEquals(FeatureRequestStatus::Onaylandi, $request->status);
         $listing->refresh();
         $this->assertTrue($listing->is_featured);
+    }
+
+    public function test_temsilcilik_yonet_araci_listeler_ve_gunceller(): void
+    {
+        $t = Temsilcilik::create([
+            'country_code' => 'DE',
+            'sehir' => 'Berlin',
+            'ad' => 'Berlin Başkonsolosluğu Test',
+            'slug' => 'berlin-baskonsoloslugu-test',
+            'adres' => 'Heerstr. 21, 14052 Berlin',
+            'resmi_url' => 'http://berlin.bk.mfa.gov.tr',
+            'is_active' => true,
+        ]);
+
+        // 1. Listele
+        $resListele = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 21,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_temsilcilik_yonet',
+                'arguments' => ['islem' => 'listele', 'country_code' => 'DE', 'sehir' => 'Berlin'],
+            ],
+        ]);
+
+        $resListele->assertStatus(200);
+        $this->assertGreaterThanOrEqual(1, $resListele->json('result.structuredContent.toplam_bulunan'));
+
+        // 2. Güncelle
+        $resGuncelle = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 22,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_temsilcilik_yonet',
+                'arguments' => [
+                    'islem' => 'guncelle',
+                    'temsilcilik_id' => $t->id,
+                    'adres' => 'Yeni Adres 123, Berlin',
+                ],
+            ],
+        ]);
+
+        $resGuncelle->assertStatus(200);
+        $this->assertTrue($resGuncelle->json('result.structuredContent.basarili'));
+
+        $t->refresh();
+        $this->assertEquals('Yeni Adres 123, Berlin', $t->adres);
+    }
+
+    public function test_konsolosluk_rehber_yonet_araci_listeler_ve_durum_gunceller(): void
+    {
+        $t = Temsilcilik::create([
+            'country_code' => 'DE',
+            'sehir' => 'Köln',
+            'ad' => 'Köln Başkonsolosluğu Test',
+            'slug' => 'koln-baskonsoloslugu-test',
+            'is_active' => true,
+        ]);
+
+        $islemTuru = IslemTuru::create([
+            'ad' => 'Pasaport Yenileme Test',
+            'slug' => 'pasaport-yenileme-test',
+            'kategori' => 'Pasaport',
+            'is_active' => true,
+        ]);
+
+        $icerik = TemsilcilikIslemi::create([
+            'temsilcilik_id' => $t->id,
+            'islem_turu_id' => $islemTuru->id,
+            'evraklar' => [['ad' => 'Kimlik kartı', 'not' => 'Aslı']],
+            'sure_metni' => '1 hafta',
+            'ucret_metni' => '45 €',
+            'resmi_kaynak_url' => 'https://www.konsolosluk.gov.tr',
+            'status' => TemsilcilikIslemi::STATUS_TASLAK,
+        ]);
+
+        // 1. Listele
+        $resListele = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 23,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_konsolosluk_rehber_yonet',
+                'arguments' => ['islem' => 'listele', 'durum' => 'taslak'],
+            ],
+        ]);
+
+        $resListele->assertStatus(200);
+        $this->assertGreaterThanOrEqual(1, $resListele->json('result.structuredContent.listelenen'));
+
+        // 2. Durum Güncelle
+        $resGuncelle = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 24,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_konsolosluk_rehber_yonet',
+                'arguments' => [
+                    'islem' => 'durum_guncelle',
+                    'icerik_id' => $icerik->id,
+                    'yeni_durum' => 'yayin',
+                ],
+            ],
+        ]);
+
+        $resGuncelle->assertStatus(200);
+        $this->assertTrue($resGuncelle->json('result.structuredContent.basarili'));
+
+        $icerik->refresh();
+        $this->assertEquals(TemsilcilikIslemi::STATUS_YAYIN, $icerik->status);
+    }
+
+    public function test_yasam_rehberi_yonet_araci_konulari_ve_icerikleri_yonetir(): void
+    {
+        $kat = YasamKategorisi::create([
+            'ad' => 'Barınma Test',
+            'slug' => 'barinma-test',
+            'ikon' => '🏠',
+            'is_active' => true,
+        ]);
+
+        $konu = YasamKonusu::create([
+            'kategori_id' => $kat->id,
+            'baslik' => 'Kiralık Ev Arama Test',
+            'slug' => 'kiralik-ev-arama-test',
+            'is_active' => true,
+        ]);
+
+        $icerik = YasamKonuIcerigi::create([
+            'yasam_konusu_id' => $konu->id,
+            'country_code' => 'DE',
+            'icerik' => [['tip' => 'paragraf', 'metin' => 'Almanya kiralık ev rehberi test.']],
+            'kaynak_url' => 'https://example.com/guide',
+            'status' => YasamKonuIcerigi::STATUS_TASLAK,
+            'yazan_tur' => YasamKonuIcerigi::YAZAN_AI,
+        ]);
+
+        // 1. Konular
+        $resKonular = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 25,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_yasam_rehberi_yonet',
+                'arguments' => ['islem' => 'konular'],
+            ],
+        ]);
+
+        $resKonular->assertStatus(200);
+        $this->assertGreaterThanOrEqual(1, $resKonular->json('result.structuredContent.toplam_kategori'));
+
+        // 2. Durum Güncelle
+        $resGuncelle = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 26,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_yasam_rehberi_yonet',
+                'arguments' => [
+                    'islem' => 'durum_guncelle',
+                    'icerik_id' => $icerik->id,
+                    'yeni_durum' => 'yayinda',
+                ],
+            ],
+        ]);
+
+        $resGuncelle->assertStatus(200);
+        $this->assertTrue($resGuncelle->json('result.structuredContent.basarili'));
+
+        $icerik->refresh();
+        $this->assertEquals(YasamKonuIcerigi::STATUS_YAYIN, $icerik->status);
     }
 }

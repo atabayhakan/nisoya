@@ -9,7 +9,9 @@ use App\Filament\Resources\YasamKonuIcerikleri\Pages\ListYasamKonuIcerikleri;
 use App\Models\Country;
 use App\Models\YasamKonuIcerigi;
 use App\Models\YasamKonusu;
+use App\Services\Ai\CountryGuideAiAssistant;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Forms\Components\DatePicker;
@@ -24,6 +26,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 use UnitEnum;
 
 /**
@@ -95,6 +98,32 @@ class YasamKonuIcerigiResource extends Resource
                 ]),
 
             Section::make('İçerik')
+                ->headerActions([
+                    Action::make('aiYasamIcerigiUret')
+                        ->label('AI ile İçerik Taslağı Üret')
+                        ->icon(Heroicon::OutlinedSparkles)
+                        ->color('primary')
+                        ->action(function (callable $get, callable $set, CountryGuideAiAssistant $assistant): void {
+                            $konuId = $get('yasam_konusu_id');
+                            $countryCode = (string) $get('country_code');
+                            if (! $konuId || blank($countryCode)) {
+                                Notification::make()->title('Lütfen önce konu ve ülkeyi seçin')->warning()->send();
+
+                                return;
+                            }
+                            $konu = YasamKonusu::with('kategori')->find($konuId);
+                            if (! $konu) {
+                                return;
+                            }
+                            $katAdi = $konu->kategori ? $konu->kategori->ad : 'Genel Yaşam';
+                            $taslak = $assistant->generateLifeGuideContent($konu->baslik, $katAdi, $countryCode);
+                            $set('icerik', $taslak['icerik']);
+                            $set('kaynak_aciklama', $taslak['kaynak_aciklama']);
+                            $set('kaynak_url', $taslak['kaynak_url']);
+                            $set('yazan_tur', YasamKonuIcerigi::YAZAN_AI);
+                            Notification::make()->title('AI Yaşam Rehberi blokları forma yüklendi')->success()->send();
+                        }),
+                ])
                 ->schema([
                     Repeater::make('icerik')
                         ->label('Gövde')
@@ -237,6 +266,44 @@ class YasamKonuIcerigiResource extends Resource
                                 ->send();
                         }),
                 ]),
+            ])
+            ->recordActions([
+                Action::make('aiHizliIncele')
+                    ->label('AI İncele & Doğrula')
+                    ->icon(Heroicon::OutlinedSparkles)
+                    ->color('info')
+                    ->modalHeading(fn (YasamKonuIcerigi $record): string => ($record->country_code ?? 'Ülke').' — '.($record->konu ? $record->konu->baslik : 'Konu'))
+                    ->modalDescription(function (YasamKonuIcerigi $record): HtmlString {
+                        $blokSayisi = is_array($record->icerik) ? count($record->icerik) : 0;
+                        $kaynak = $record->kaynak_url ?: 'Belirtilmedi';
+                        $aciklama = $record->kaynak_aciklama ?: 'Belirtilmedi';
+                        $durum = $record->status === YasamKonuIcerigi::STATUS_YAYIN ? 'Yayında' : 'Taslak';
+
+                        return new HtmlString(
+                            "<div class='space-y-2 text-sm p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700'>"
+                            ."<div><strong>Durum:</strong> <span class='font-semibold'>{$durum}</span></div>"
+                            ."<div><strong>Gövde Blok Sayısı:</strong> {$blokSayisi} blok</div>"
+                            ."<div><strong>Kaynak Açıklaması:</strong> {$aciklama}</div>"
+                            ."<div><strong>Kaynak Bağlantısı:</strong> <span class='text-xs text-primary-600 break-all'>{$kaynak}</span></div>"
+                            ."<div class='text-xs text-gray-500 pt-1 border-t'>Son Doğrulama: ".($record->dogrulanma_tarihi ? $record->dogrulanma_tarihi->format('d.m.Y') : 'Hiç').'</div>'
+                            .'</div>'
+                        );
+                    })
+                    ->action(function (YasamKonuIcerigi $record): void {
+                        if ($record->status === YasamKonuIcerigi::STATUS_TASLAK && filled($record->kaynak_url)) {
+                            $record->update([
+                                'status' => YasamKonuIcerigi::STATUS_YAYIN,
+                                'dogrulanma_tarihi' => now(),
+                            ]);
+                            Notification::make()->title('Yaşam rehberi içeriği onaylandı ve yayına alındı')->success()->send();
+                        } else {
+                            Notification::make()->title('İçerik incelendi')->info()->send();
+                        }
+                    }),
+                Action::make('duzenle')
+                    ->label('Düzenle')
+                    ->icon(Heroicon::OutlinedPencilSquare)
+                    ->url(fn (YasamKonuIcerigi $record): string => static::getUrl('edit', ['record' => $record])),
             ])
             ->defaultSort('id', 'desc');
     }

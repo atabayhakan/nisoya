@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * Bir yaşam konusunun (`YasamKonusu`) tek bir ülkedeki içeriği. Ülke
@@ -16,6 +17,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * `[{"tip": "baslik|paragraf|madde", "metin": "..."}, ...]`. Ardışık "madde"
  * blokları Blade'de tek `<ul>`'a toplanır. Bu depoda gövde içerik hiçbir
  * yerde serbest markdown olarak saklanmıyor (bkz. migration yorumu).
+ *
+ * @property int $id
+ * @property int $yasam_konusu_id
+ * @property string $country_code
+ * @property array<int, array{tip: string, metin: string}>|null $icerik
+ * @property string|null $kaynak_url
+ * @property string|null $kaynak_aciklama
+ * @property string $status
+ * @property string $yazan_tur
+ * @property Carbon|null $dogrulanma_tarihi
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read YasamKonusu|null $konu
+ * @property-read Country|null $country
  */
 class YasamKonuIcerigi extends Model
 {

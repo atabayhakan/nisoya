@@ -9,7 +9,9 @@ use App\Filament\Resources\TemsilcilikIslemleri\Pages\ListTemsilcilikIslemleri;
 use App\Models\IslemTuru;
 use App\Models\Temsilcilik;
 use App\Models\TemsilcilikIslemi;
+use App\Services\Ai\CountryGuideAiAssistant;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Forms\Components\DatePicker;
@@ -25,6 +27,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 use UnitEnum;
 
 /**
@@ -104,6 +107,33 @@ class TemsilcilikIslemiResource extends Resource
                 ]),
 
             Section::make('İçerik')
+                ->headerActions([
+                    Action::make('aiRehberUret')
+                        ->label('AI ile Taslak Üret')
+                        ->icon(Heroicon::OutlinedSparkles)
+                        ->color('primary')
+                        ->action(function (callable $get, callable $set, CountryGuideAiAssistant $assistant): void {
+                            $temsilcilikId = $get('temsilcilik_id');
+                            $islemTuruId = $get('islem_turu_id');
+                            if (! $temsilcilikId || ! $islemTuruId) {
+                                Notification::make()->title('Lütfen önce temsilcilik ve işlem türünü seçin')->warning()->send();
+
+                                return;
+                            }
+                            $temsilcilik = Temsilcilik::find($temsilcilikId);
+                            $islemTuru = IslemTuru::find($islemTuruId);
+                            if (! $temsilcilik || ! $islemTuru) {
+                                return;
+                            }
+                            $taslak = $assistant->generateConsularContent($temsilcilik->ad, $islemTuru->ad, $temsilcilik->country_code);
+                            $set('evraklar', $taslak['evraklar']);
+                            $set('sure_metni', $taslak['sure_metni']);
+                            $set('ucret_metni', $taslak['ucret_metni']);
+                            $set('notlar', $taslak['notlar']);
+                            $set('resmi_kaynak_url', $taslak['resmi_kaynak_url']);
+                            Notification::make()->title('AI taslak içeriği forma yüklendi')->success()->send();
+                        }),
+                ])
                 ->schema([
                     Repeater::make('evraklar')
                         ->label('Gerekli evraklar')
@@ -233,6 +263,45 @@ class TemsilcilikIslemiResource extends Resource
                                 ->send();
                         }),
                 ]),
+            ])
+            ->recordActions([
+                Action::make('aiHizliIncele')
+                    ->label('AI İncele & Doğrula')
+                    ->icon(Heroicon::OutlinedSparkles)
+                    ->color('info')
+                    ->modalHeading(fn (TemsilcilikIslemi $record): string => ($record->temsilcilik ? $record->temsilcilik->ad : 'Temsilcilik').' — '.($record->islemTuru ? $record->islemTuru->ad : 'İşlem'))
+                    ->modalDescription(function (TemsilcilikIslemi $record): HtmlString {
+                        $evrakSayisi = count($record->evraklar);
+                        $sure = $record->sure_metni ?: 'Belirtilmedi';
+                        $ucret = $record->ucret_metni ?: 'Belirtilmedi';
+                        $kaynak = $record->resmi_kaynak_url ?: 'Belirtilmedi';
+                        $durum = $record->status === TemsilcilikIslemi::STATUS_YAYIN ? 'Yayında' : 'Taslak';
+
+                        return new HtmlString(
+                            "<div class='space-y-2 text-sm p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700'>"
+                            ."<div><strong>Durum:</strong> <span class='font-semibold'>{$durum}</span></div>"
+                            ."<div><strong>Kayıtlı Evrak Sayısı:</strong> {$evrakSayisi} adet</div>"
+                            ."<div><strong>Süre & Ücret:</strong> {$sure} / {$ucret}</div>"
+                            ."<div><strong>Resmî Kaynak:</strong> <span class='text-xs text-primary-600 break-all'>{$kaynak}</span></div>"
+                            ."<div class='text-xs text-gray-500 pt-1 border-t'>Son Doğrulama: ".($record->dogrulanma_tarihi ? $record->dogrulanma_tarihi->format('d.m.Y') : 'Hiç').'</div>'
+                            .'</div>'
+                        );
+                    })
+                    ->action(function (TemsilcilikIslemi $record): void {
+                        if ($record->status === TemsilcilikIslemi::STATUS_TASLAK && filled($record->resmi_kaynak_url) && $record->resmi_kaynak_url !== self::JENERIK_KAYNAK_URL) {
+                            $record->update([
+                                'status' => TemsilcilikIslemi::STATUS_YAYIN,
+                                'dogrulanma_tarihi' => now(),
+                            ]);
+                            Notification::make()->title('İçerik onaylandı ve yayına alındı')->success()->send();
+                        } else {
+                            Notification::make()->title('İçerik incelendi')->info()->send();
+                        }
+                    }),
+                Action::make('duzenle')
+                    ->label('Düzenle')
+                    ->icon(Heroicon::OutlinedPencilSquare)
+                    ->url(fn (TemsilcilikIslemi $record): string => static::getUrl('edit', ['record' => $record])),
             ])
             ->defaultSort('id', 'desc');
     }

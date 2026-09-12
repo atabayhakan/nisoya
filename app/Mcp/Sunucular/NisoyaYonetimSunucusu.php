@@ -14,12 +14,15 @@ use App\Mcp\Araclar\Yonetim\IlanArama;
 use App\Mcp\Araclar\Yonetim\IlanDetay;
 use App\Mcp\Araclar\Yonetim\IlanDurumuGuncelle;
 use App\Mcp\Araclar\Yonetim\KategoriYonet;
+use App\Mcp\Araclar\Yonetim\KonsoloslukRehberYonet;
 use App\Mcp\Araclar\Yonetim\OneCikarmaYonet;
 use App\Mcp\Araclar\Yonetim\OzetMetrikler;
 use App\Mcp\Araclar\Yonetim\SahipsizIsletmeler;
 use App\Mcp\Araclar\Yonetim\SayfaYonet;
 use App\Mcp\Araclar\Yonetim\SssYonet;
+use App\Mcp\Araclar\Yonetim\TemsilcilikYonet;
 use App\Mcp\Araclar\Yonetim\WhatsAppDavet;
+use App\Mcp\Araclar\Yonetim\YasamRehberiYonet;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -31,14 +34,14 @@ use Laravel\Mcp\Server\Tool;
  *
  * Yapay zekâ asistanlarının (Claude, ChatGPT, Antigravity, Cursor vb.) Nisoya
  * platformu üzerinde güvenli ilan yönetimi, esnaf keşfi, moderasyon, analitik,
- * CMS ve pazaryeri/ticaret operasyonlarını gerçekleştirmesini sağlar.
+ * CMS, pazaryeri ve ülke rehberi operasyonlarını gerçekleştirmesini sağlar.
  */
 #[Name('nisoya-yonetim')]
-#[Version('1.2.0')]
+#[Version('1.3.0')]
 #[Instructions(<<<'MARKDOWN'
 Nisoya (nisoya.com) — Yurtdışındaki Türkler ve diaspora toplulukları için geliştirilmiş ücretsiz Türkçe ilan ve pazaryeri platformudur.
 
-Bu MCP sunucusu, Nisoya'nın resmi yönetim, büyüme, CMS ve pazaryeri ticaret arayüzüdür.
+Bu MCP sunucusu, Nisoya'nın resmi yönetim, büyüme, CMS, pazaryeri ticaret ve ülke rehberi arayüzüdür.
 
 ## Kullanabileceğiniz Temel Yetenekler:
 1. **İlan Arama & İnceleme (`nisoya_ilan_ara`, `nisoya_ilan_detay`):**
@@ -61,6 +64,10 @@ Bu MCP sunucusu, Nisoya'nın resmi yönetim, büyüme, CMS ve pazaryeri ticaret 
    - Kategorileri listeleyin, yeni kategori ekleyin veya güncelleyin (`nisoya_kategori_yonet`).
    - Alıcı-satıcı anlaşmalarını inceleyin ve ihtilaf/sorunlu durumları çözüme kavuşturun (`nisoya_anlasma_yonet`).
    - İlan öne çıkarma (featured) taleplerini listeleyin, onaylayın veya reddedin (`nisoya_one_cikarma_yonet`).
+8. **Ülke Rehberi & Konsolosluk Yönetimi (`nisoya_temsilcilik_yonet`, `nisoya_konsolosluk_rehber_yonet`, `nisoya_yasam_rehberi_yonet`):**
+   - Dış temsilcilikleri (başkonsolosluk/büyükelçilik) listele, adres/iletişim bilgilerini güncelle (`nisoya_temsilcilik_yonet`).
+   - Konsolosluk işlem rehberlerini (evrak, harç, süre, notlar) incele, yayına al, kullanıcı geri bildirimlerini listele (`nisoya_konsolosluk_rehber_yonet`).
+   - Yaşam rehberi kategori/konu ağacını ve ülke içeriklerini listele/güncelle, topluluk önerilerini karara bağla (`nisoya_yasam_rehberi_yonet`).
 
 ## Güvenlik Kuralları:
 - İlan, kategori veya anlaşma durumunu değiştirmeden önce kullanıcıya yapacağınız eylemi açıkça bildirin.
@@ -72,7 +79,7 @@ class NisoyaYonetimSunucusu extends Server
     public int $defaultPaginationLength = 50;
 
     /**
-     * Kayıtlı yönetim araçları listesi (16 Hazır Yönetim Aracı).
+     * Kayıtlı yönetim araçları listesi (19 Hazır Yönetim Aracı).
      *
      * @var array<int, class-string<Tool>>
      */
@@ -93,5 +100,8 @@ class NisoyaYonetimSunucusu extends Server
         KategoriYonet::class,
         AnlasmaYonet::class,
         OneCikarmaYonet::class,
+        TemsilcilikYonet::class,
+        KonsoloslukRehberYonet::class,
+        YasamRehberiYonet::class,
     ];
 }

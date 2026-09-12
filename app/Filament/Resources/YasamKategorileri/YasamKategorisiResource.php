@@ -7,9 +7,12 @@ use App\Filament\Resources\YasamKategorileri\Pages\CreateYasamKategorisi;
 use App\Filament\Resources\YasamKategorileri\Pages\EditYasamKategorisi;
 use App\Filament\Resources\YasamKategorileri\Pages\ListYasamKategorileri;
 use App\Models\YasamKategorisi;
+use App\Services\Ai\CountryGuideAiAssistant;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -76,7 +79,24 @@ class YasamKategorisiResource extends Resource
                     TextInput::make('ikon')
                         ->label('İkon (emoji)')
                         ->placeholder('🏦')
-                        ->maxLength(60),
+                        ->maxLength(60)
+                        ->hintAction(
+                            Action::make('aiEmojiOner')
+                                ->label('AI Emoji')
+                                ->icon(Heroicon::OutlinedSparkles)
+                                ->tooltip('Kategori adına göre emoji belirle')
+                                ->action(function (callable $get, callable $set, CountryGuideAiAssistant $assistant): void {
+                                    $ad = (string) $get('ad');
+                                    if (blank($ad)) {
+                                        Notification::make()->title('Lütfen önce kategori adını girin')->warning()->send();
+
+                                        return;
+                                    }
+                                    $emoji = $assistant->suggestEmoji($ad);
+                                    $set('ikon', $emoji);
+                                    Notification::make()->title("Önerilen emoji '{$emoji}' uygulandı")->success()->send();
+                                })
+                        ),
                     TextInput::make('sort_order')->label('Sıra')->numeric()->default(0),
                     Toggle::make('is_active')->label('Aktif (rehberde göster)')->default(true),
                 ]),

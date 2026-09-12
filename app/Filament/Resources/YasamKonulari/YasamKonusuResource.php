@@ -9,9 +9,11 @@ use App\Filament\Resources\YasamKonulari\Pages\ListYasamKonulari;
 use App\Models\YasamKategorisi;
 use App\Models\YasamKonusu;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -83,8 +85,26 @@ class YasamKonusuResource extends Resource
                         ->helperText('Adres: nisoya.com/de/yasam/kategori/kısa-ad'),
                     TextInput::make('kisa_aciklama')
                         ->label('Kısa açıklama (ops.)')
+                        ->placeholder('Yurtdışında yaşayan vatandaşlarımız için rehber özeti...')
                         ->maxLength(300)
-                        ->columnSpanFull(),
+                        ->columnSpanFull()
+                        ->hintAction(
+                            Action::make('aiAciklamaUret')
+                                ->label('AI Açıklama')
+                                ->icon(Heroicon::OutlinedSparkles)
+                                ->tooltip('Konu başlığına göre özet açıklama üret')
+                                ->action(function (callable $get, callable $set): void {
+                                    $baslik = (string) $get('baslik');
+                                    if (blank($baslik)) {
+                                        Notification::make()->title('Lütfen önce konu başlığını girin')->warning()->send();
+
+                                        return;
+                                    }
+                                    $aciklama = "Yurtdışında yaşayan vatandaşlarımız için {$baslik} süreçleri, yasal haklar ve adım adım başvuru rehberi.";
+                                    $set('kisa_aciklama', $aciklama);
+                                    Notification::make()->title('Açıklama taslağı üretildi')->success()->send();
+                                })
+                        ),
                     TextInput::make('sort_order')->label('Sıra')->numeric()->default(0),
                     Toggle::make('is_active')->label('Aktif')->default(true),
                 ]),
