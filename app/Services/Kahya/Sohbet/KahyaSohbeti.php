@@ -149,7 +149,7 @@ class KahyaSohbeti
             : '');
 
         try {
-            $yanit = $this->ajan($gecmis, $sahip)->prompt(
+            $yanit = $this->ajan($gecmis, $sahip, $saglayici, $model)->prompt(
                 $promptMetni,
                 provider: $saglayici,
                 model: $model,
@@ -204,7 +204,7 @@ class KahyaSohbeti
     // ------------------------------------------------------------- İçeriden
 
     /** @param  Collection<int, KahyaMesaji>  $gecmis */
-    protected function ajan($gecmis, User $sahip): KahyaAjani
+    protected function ajan($gecmis, User $sahip, ?string $saglayici = null, ?string $model = null): KahyaAjani
     {
         return new KahyaAjani(
             $this->teshis,
@@ -216,6 +216,8 @@ class KahyaSohbeti
             $this->yonlendirici,
             $gecmis,
             $sahip,
+            $saglayici,
+            $model,
         );
     }
 

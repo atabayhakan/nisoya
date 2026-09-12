@@ -68,6 +68,8 @@ class KahyaAjani implements Agent, Conversational, HasTools
         private readonly YonlendirmeToplayici $yonlendirici,
         private readonly Collection $gecmis,
         private readonly ?User $sahip = null,
+        private readonly ?string $saglayici = null,
+        private readonly ?string $model = null,
     ) {}
 
     public function instructions(): Stringable|string
@@ -80,6 +82,9 @@ class KahyaAjani implements Agent, Conversational, HasTools
             : implode("\n", array_map(fn (array $k): string => "- {$k['etiket']}: {$k['adet']}", $kuyruklar));
 
         $isim = config('kahya.isim', 'Kâhya');
+        $modelBilgisi = filled($this->model)
+            ? "Teknik olarak şu anda {$this->saglayici} sağlayıcısı üzerinden '{$this->model}' dil modeli ile çalışmaktasın. Modelin veya kimliğin sorulduğunda adının {$isim} olduğunu ve arka planda bu modeli kullandığını dürüstçe belirt."
+            : '';
 
         // Yönergedeki "bilmiyorum" ifadesi ile RehberBoslukAvcisi'nin aradığı
         // ifade AYNI SABİTTEN gelir. İkisi kayarsa avcı sessizce körelir ve
@@ -90,6 +95,7 @@ class KahyaAjani implements Agent, Conversational, HasTools
         Sen "{$isim}"sın: Nisoya'nın (yurtdışındaki Türkler için ücretsiz Türkçe pazaryeri)
         yönetim asistanısın. Sahibiyle Türkçe, kısa ve doğrudan konuşursun. Yağcılık yapmaz,
         gereksiz özet çıkarmazsın.
+        {$modelBilgisi}
 
         ## Sitenin şu anki durumu
         Aktif ilan: {$envanter['ilan']} · Benzersiz satıcı: {$envanter['satici']}

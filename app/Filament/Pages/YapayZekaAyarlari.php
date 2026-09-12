@@ -75,7 +75,7 @@ class YapayZekaAyarlari extends Page
                     ]),
 
                 Section::make('Sağlayıcı ve Anahtar')
-                    ->description('Fotoğrafla hızlı ilan özelliği için kullanılacak yapay zeka. Anahtarı girdiğinde özellik anında aktifleşir — sunucuya erişmene gerek yok.')
+                    ->description('Sitedeki tüm yapay zekâ özellikleri (Fotoğrafla Hızlı İlan, Görsel Moderasyonu, Nisoya AI Arama ve Kâhya Asistanı) için temel sağlayıcı ve varsayılan model.')
                     ->columns(2)
                     ->schema([
                         Select::make('saglayici')
@@ -88,12 +88,12 @@ class YapayZekaAyarlari extends Page
                             ])
                             ->required()
                             ->native(false)
-                            ->helperText('OpenRouter tek API anahtarıyla birçok modele erişim verir.'),
+                            ->helperText('OpenRouter tek API anahtarıyla yüzlerce modele erişim sağlar.'),
 
                         TextInput::make('model')
-                            ->label('Model')
+                            ->label('Varsayılan Model')
                             ->placeholder('openai/gpt-4o-mini')
-                            ->helperText('⚠️ MUTLAKA görüntü (vision) destekleyen bir model seç — özellik fotoğraf gönderir. Önerilen: openai/gpt-4o-mini (ucuz, güvenilir, doğrulandı) veya google/gemini-2.0-flash-001 (çok ucuz). "tencent/hy3:free" gibi metin-only modeller ÇALIŞMAZ. Boş bırakırsan varsayılan (openai/gpt-4o-mini) kullanılır.'),
+                            ->helperText('Fotoğrafla ilan ve genel AI işlemleri için kullanılır. Kâhya Sohbeti\'nde ayrı bir model tanımlanmamışsa Kâhya da doğrudan bu modeli kullanır. Fotoğraflı ilan için modelin görüntü (vision) desteklemesi önerilir. Boş bırakılırsa varsayılan (openai/gpt-4o-mini) kullanılır.'),
 
                         TextInput::make('api_anahtari')
                             ->label('API anahtarı')

@@ -118,17 +118,16 @@ class KahyaAyarlari extends Page
                     ]),
 
                 Section::make('Sohbet')
-                    ->description('Kâhya ile Konuş sayfasında eylem seçimini yapan model. '
-                        .'Boş bırakılırsa Yapay Zekâ Ayarları\'ndaki varsayılan model kullanılır.')
+                    ->description('Kâhya ile Konuş sayfasında eylem seçimini ve sohbeti yürüten model. '
+                        .'Boş bırakılırsa "Yapay Zekâ Ayarları" sayfasında belirlenen Varsayılan Model kullanılır.')
                     ->schema([
                         TextInput::make('sohbet_modeli')
-                            ->label('Sohbet modeli (isteğe bağlı)')
-                            ->placeholder('örn. anthropic/claude-sonnet-4.5')
+                            ->label('Kâhya Özel Sohbet Modeli (isteğe bağlı)')
+                            ->placeholder('örn. anthropic/claude-sonnet-4.5 veya meta/llama-3.3-70b-instruct')
                             // Doğru işi seçmek yanlış işi seçmekten çok daha
                             // ucuz: hata bedeli canlıda ödenir. Bu yüzden buraya
                             // varsayılandan güçlü bir model yazmak mantıklı.
-                            ->helperText('Sağlayıcı Yapay Zekâ Ayarları\'ndaki sağlayıcıdır; burası yalnız model adını değiştirir. '
-                                .'Eylem seçimi için varsayılandan güçlü bir model önerilir.')
+                            ->helperText('Boş bırakırsanız Yapay Zekâ Ayarları\'ndaki model geçerlidir. Eğer Kâhya\'nın ilan ekleme/sorgulama gibi karmaşık işlerde genel siteden daha güçlü veya farklı bir model kullanmasını isterseniz buraya model adını yazabilirsiniz.')
                             ->maxLength(120)
                             ->columnSpanFull(),
                     ]),
