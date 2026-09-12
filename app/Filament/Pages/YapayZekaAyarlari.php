@@ -11,6 +11,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use UnitEnum;
@@ -87,13 +88,37 @@ class YapayZekaAyarlari extends Page
                                 'gemini' => 'Google Gemini',
                             ])
                             ->required()
+                            ->live()
                             ->native(false)
                             ->helperText('OpenRouter tek API anahtarıyla yüzlerce modele erişim sağlar.'),
 
                         TextInput::make('model')
                             ->label('Varsayılan Model')
                             ->placeholder('openai/gpt-4o-mini')
-                            ->helperText('Fotoğrafla ilan ve genel AI işlemleri için kullanılır. Kâhya Sohbeti\'nde ayrı bir model tanımlanmamışsa Kâhya da doğrudan bu modeli kullanır. Fotoğraflı ilan için modelin görüntü (vision) desteklemesi önerilir. Boş bırakılırsa varsayılan (openai/gpt-4o-mini) kullanılır.'),
+                            ->datalist(fn (Get $get): array => match ($get('saglayici') ?? 'openrouter') {
+                                'openrouter' => [
+                                    'openai/gpt-4o-mini',
+                                    'google/gemini-2.0-flash-001',
+                                    'anthropic/claude-3-5-haiku',
+                                    'openai/gpt-4o',
+                                    'meta-llama/llama-3.2-11b-vision-instruct',
+                                ],
+                                'openai' => [
+                                    'gpt-4o-mini',
+                                    'gpt-4o',
+                                ],
+                                'anthropic' => [
+                                    'claude-haiku-4-5',
+                                    'claude-3-5-haiku-20241022',
+                                    'claude-3-5-sonnet-20241022',
+                                ],
+                                'gemini' => [
+                                    'gemini-2.0-flash',
+                                    'gemini-1.5-flash',
+                                ],
+                                default => [],
+                            })
+                            ->helperText('Fotoğrafla ilan ve genel AI işlemleri için kullanılır. Kâhya Sohbeti\'nde ayrı bir model tanımlanmamışsa Kâhya da doğrudan bu modeli kullanır. Modelin görüntü (vision) desteklemesi gerekir. Boş bırakılırsa varsayılan (openai/gpt-4o-mini) kullanılır.'),
 
                         TextInput::make('api_anahtari')
                             ->label('API anahtarı')
@@ -183,9 +208,16 @@ class YapayZekaAyarlari extends Page
                 ->send();
         } else {
             $error = $provider->lastError() ?? 'Sağlayıcı yanıt vermedi.';
-            $hint = str_contains(mb_strtolower($error), 'image')
-                ? ' → Bu model görüntü (vision) desteklemiyor. Görüntü destekleyen bir model seç (ör. openai/gpt-4o-mini, google/gemini-2.0-flash-001).'
-                : '';
+            $lower = mb_strtolower($error);
+            $hint = '';
+
+            if (str_contains($lower, 'training violation') || str_contains($lower, 'data policy') || str_contains($lower, 'guardrail')) {
+                $hint = "\n\n💡 İpucu: OpenRouter gizlilik ayarlarınız (https://openrouter.ai/settings/privacy) bu modelin sağlayıcısını kısıtlıyor veya model vision desteklemiyor. Varsayılan Model kutusunu boş bırakın (openai/gpt-4o-mini kullanılır) ya da 'google/gemini-2.0-flash-001' seçin.";
+            } elseif (str_contains($lower, 'not a valid model id')) {
+                $hint = "\n\n💡 İpucu: Girilen model adı geçersiz. Kutuyu boş bırakın veya açılır listedeki modellerden birini (ör. openai/gpt-4o-mini) seçin.";
+            } elseif (str_contains($lower, 'image') || str_contains($lower, 'vision')) {
+                $hint = ' → Bu model görüntü (vision) desteklemiyor. Görüntü destekleyen bir model seç (ör. openai/gpt-4o-mini, google/gemini-2.0-flash-001).';
+            }
 
             Notification::make()
                 ->title('Bağlantı kurulamadı')
