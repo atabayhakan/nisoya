@@ -3,15 +3,20 @@
 namespace App\Filament\Resources\TemsilcilikIslemleri;
 
 use App\Filament\Concerns\RestrictsToAdmins;
+use App\Filament\Resources\IslemTurleri\IslemTuruResource;
+use App\Filament\Resources\RehberGeriBildirimleri\RehberGeriBildirimiResource;
 use App\Filament\Resources\TemsilcilikIslemleri\Pages\CreateTemsilcilikIslemi;
 use App\Filament\Resources\TemsilcilikIslemleri\Pages\EditTemsilcilikIslemi;
 use App\Filament\Resources\TemsilcilikIslemleri\Pages\ListTemsilcilikIslemleri;
+use App\Filament\Resources\Temsilcilikler\TemsilcilikResource;
+use App\Models\Country;
 use App\Models\IslemTuru;
 use App\Models\Temsilcilik;
 use App\Models\TemsilcilikIslemi;
 use App\Services\Ai\CountryGuideAiAssistant;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Forms\Components\DatePicker;
@@ -25,6 +30,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
@@ -64,7 +70,7 @@ class TemsilcilikIslemiResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return 'işlem içeriği';
+        return 'İşlem İçeriği';
     }
 
     public static function getPluralModelLabel(): string
@@ -81,6 +87,11 @@ class TemsilcilikIslemiResource extends Resource
     public static function getNavigationBadgeColor(): ?string
     {
         return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Doğrulama bekleyen taslak işlem içeriği sayısı';
     }
 
     public static function form(Schema $schema): Schema
@@ -189,45 +200,141 @@ class TemsilcilikIslemiResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with(['temsilcilik.country', 'islemTuru'])->withCount('geriBildirimler'))
             ->columns([
-                TextColumn::make('temsilcilik.ad')->label('Temsilcilik')->searchable()->sortable(),
-                TextColumn::make('islemTuru.ad')->label('İşlem')->searchable(),
+                TextColumn::make('temsilcilik.ad')
+                    ->label('Temsilcilik')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('medium')
+                    ->icon(Heroicon::OutlinedBuildingLibrary)
+                    ->iconColor('info')
+                    ->description(function (TemsilcilikIslemi $record): ?string {
+                        $t = $record->temsilcilik;
+                        if (! $t) {
+                            return null;
+                        }
+                        $c = $t->country;
+                        $flag = $c && $c->emoji ? $c->emoji.' ' : '';
+
+                        return $flag.$t->country_code.($t->sehir ? ' • '.$t->sehir : '');
+                    }),
+
+                TextColumn::make('islemTuru.ad')
+                    ->label('İşlem Türü')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('medium')
+                    ->icon(fn (TemsilcilikIslemi $record): BackedEnum => $record->islemTuru
+                        ? IslemTuruResource::getIconForRecord($record->islemTuru)
+                        : Heroicon::OutlinedClipboardDocumentList
+                    )
+                    ->iconColor('primary')
+                    ->description(fn (TemsilcilikIslemi $record): ?string => $record->sure_metni ? '⏱ '.$record->sure_metni : null),
+
+                TextColumn::make('ucret_metni')
+                    ->label('Ücret / Harç')
+                    ->badge()
+                    ->color('gray')
+                    ->placeholder('Belirtilmedi')
+                    ->toggleable(isToggledHiddenByDefault: false),
+
                 TextColumn::make('status')
                     ->label('Durum')
                     ->badge()
-                    ->color(fn (string $state): string => $state === TemsilcilikIslemi::STATUS_YAYIN ? 'success' : 'gray')
+                    ->color(fn (string $state): string => $state === TemsilcilikIslemi::STATUS_YAYIN ? 'success' : 'warning')
+                    ->icon(fn (string $state): BackedEnum => $state === TemsilcilikIslemi::STATUS_YAYIN ? Heroicon::OutlinedCheckCircle : Heroicon::OutlinedClock)
                     ->formatStateUsing(fn (string $state): string => $state === TemsilcilikIslemi::STATUS_YAYIN ? 'Yayında' : 'Taslak'),
+
                 TextColumn::make('dogrulanma_tarihi')
-                    ->label('Son doğrulama')
+                    ->label('Son Doğrulama')
                     ->date('d.m.Y')
-                    ->placeholder('hiç')
+                    ->placeholder('Hiç')
+                    ->description(function (TemsilcilikIslemi $record): ?string {
+                        if ($record->status !== TemsilcilikIslemi::STATUS_YAYIN) {
+                            return null;
+                        }
+                        if (! $record->dogrulanma_tarihi || $record->dogrulanma_tarihi->diffInDays(now()) > TemsilcilikIslemi::BAYATLIK_GUN) {
+                            return '⚠️ Bayat içerik';
+                        }
+
+                        return '✓ Güncel';
+                    })
                     ->sortable(),
-                TextColumn::make('geri_bildirimler_count')->label('Geri bildirim')->counts('geriBildirimler'),
+
+                TextColumn::make('resmi_kaynak_url')
+                    ->label('Resmî Kaynak')
+                    ->icon(Heroicon::OutlinedGlobeAlt)
+                    ->formatStateUsing(function (?string $state): string {
+                        if (blank($state)) {
+                            return 'Kaynak yok';
+                        }
+                        $host = parse_url($state, PHP_URL_HOST);
+
+                        return $host ? str_replace('www.', '', (string) $host) : 'Kaynak';
+                    })
+                    ->badge()
+                    ->color(fn (?string $state): string => filled($state) && $state !== self::JENERIK_KAYNAK_URL ? 'info' : 'gray')
+                    ->url(fn (?string $state): ?string => filled($state) ? $state : null)
+                    ->openUrlInNewTab()
+                    ->tooltip('Resmi doğrulama kaynağını yeni sekmede aç')
+                    ->toggleable(isToggledHiddenByDefault: false),
+
+                TextColumn::make('geri_bildirimler_count')
+                    ->label('Geri Bildirim')
+                    ->counts('geriBildirimler')
+                    ->badge()
+                    ->color(fn (int $state): string => $state > 0 ? 'danger' : 'gray')
+                    ->icon(Heroicon::OutlinedChatBubbleLeftRight)
+                    ->url(fn (TemsilcilikIslemi $record): string => RehberGeriBildirimiResource::getUrl('index', [
+                        'tableFilters' => ['incelendi' => ['value' => '0']],
+                    ]))
+                    ->tooltip('Geri bildirimleri incele')
+                    ->sortable(),
             ])
             ->filters([
+                SelectFilter::make('country_code')
+                    ->label('Ülke')
+                    ->options(fn () => Country::query()->orderBy('sort_order')
+                        ->get()
+                        ->mapWithKeys(fn (Country $c) => [$c->code => ($c->emoji ? $c->emoji.' ' : '').$c->name_tr])
+                    )
+                    ->query(fn ($query, $data) => filled($data['value'] ?? null)
+                        ? $query->whereHas('temsilcilik', fn ($q) => $q->where('country_code', $data['value']))
+                        : $query
+                    )
+                    ->searchable(),
+
+                SelectFilter::make('islem_turu_id')
+                    ->label('İşlem Türü')
+                    ->options(fn () => IslemTuru::query()->orderBy('sort_order')->pluck('ad', 'id'))
+                    ->searchable(),
+
+                SelectFilter::make('temsilcilik_id')
+                    ->label('Temsilcilik')
+                    ->options(fn () => Temsilcilik::query()->orderBy('country_code')->orderBy('sort_order')->pluck('ad', 'id'))
+                    ->searchable(),
+
                 SelectFilter::make('status')
                     ->label('Durum')
                     ->options([
                         TemsilcilikIslemi::STATUS_TASLAK => 'Taslak',
                         TemsilcilikIslemi::STATUS_YAYIN => 'Yayında',
                     ]),
-                SelectFilter::make('temsilcilik_id')
-                    ->label('Temsilcilik')
-                    ->options(fn () => Temsilcilik::query()->orderBy('sort_order')->pluck('ad', 'id')),
+
+                Filter::make('bayat_icerikler')
+                    ->label('⚠️ Bayat İçerikler (>90 gün)')
+                    ->query(fn ($query) => $query->where('status', TemsilcilikIslemi::STATUS_YAYIN)->where(function ($q) {
+                        $q->whereNull('dogrulanma_tarihi')
+                            ->orWhere('dogrulanma_tarihi', '<', now()->subDays(TemsilcilikIslemi::BAYATLIK_GUN));
+                    })),
+
+                Filter::make('geri_bildirimli')
+                    ->label('Geri Bildirim Alanlar')
+                    ->query(fn ($query) => $query->has('geriBildirimler')),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    /*
-                     * 1656 kayıtlık bir listede teker teker açıp durum +
-                     * doğrulama tarihini elle değiştirmek gerçekçi değil
-                     * (sahip 2026-09-11'de bunu fark etti — Yaşam Konu
-                     * İçerikleri'nde de aynı eksik vardı, bkz. o resource).
-                     * K7 kapısı burada da UI seviyesinde: jenerik/boş
-                     * resmi_kaynak_url taşıyan bir taslak, seçilse bile
-                     * atlanır — bu düğme "gerçekten araştırılmış" ile
-                     * "iskelet doğduğu gibi kalmış" arasındaki farkı
-                     * otomatik gözetir.
-                     */
                     BulkAction::make('yayina_al')
                         ->label('Yayına Al')
                         ->icon('heroicon-o-check-circle')
@@ -262,13 +369,46 @@ class TemsilcilikIslemiResource extends Resource
                                 ->success()
                                 ->send();
                         }),
+
+                    BulkAction::make('taslaga_al')
+                        ->label('Taslağa Al')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('Seçili içerikleri taslağa çek')
+                        ->modalDescription('Seçilen içerikler yayından kaldırılır ve taslak durumuna getirilir.')
+                        ->action(function ($records) {
+                            $records->each->update(['status' => TemsilcilikIslemi::STATUS_TASLAK]);
+                            Notification::make()->title('Seçili içerikler taslağa alındı')->warning()->send();
+                        }),
+
+                    BulkAction::make('tarihi_guncelle')
+                        ->label('Doğrulama Tarihini Bugün Yap')
+                        ->icon('heroicon-o-calendar-days')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Son doğrulama tarihini güncelle')
+                        ->modalDescription('Seçili içeriklerin son doğrulama tarihi bugünün tarihi olarak güncellenir.')
+                        ->action(function ($records) {
+                            $records->each->update(['dogrulanma_tarihi' => now()]);
+                            Notification::make()->title('Doğrulama tarihleri güncellendi')->success()->send();
+                        }),
                 ]),
             ])
             ->recordActions([
+                Action::make('canli_sayfa')
+                    ->label('Canlı Sayfa')
+                    ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
+                    ->color('gray')
+                    ->tooltip('Canlı rehber sayfasını yeni sekmede aç')
+                    ->visible(fn (TemsilcilikIslemi $record): bool => $record->status === TemsilcilikIslemi::STATUS_YAYIN && $record->temsilcilik !== null && $record->islemTuru !== null)
+                    ->url(fn (TemsilcilikIslemi $record): string => url('/'.strtolower($record->temsilcilik->country_code).'/'.$record->temsilcilik->slug.'/'.$record->islemTuru->slug))
+                    ->openUrlInNewTab(),
+
                 Action::make('aiHizliIncele')
                     ->label('AI İncele & Doğrula')
                     ->icon(Heroicon::OutlinedSparkles)
-                    ->color('info')
+                    ->color('primary')
                     ->modalHeading(fn (TemsilcilikIslemi $record): string => ($record->temsilcilik ? $record->temsilcilik->ad : 'Temsilcilik').' — '.($record->islemTuru ? $record->islemTuru->ad : 'İşlem'))
                     ->modalDescription(function (TemsilcilikIslemi $record): HtmlString {
                         $evrakSayisi = count($record->evraklar);
@@ -282,8 +422,8 @@ class TemsilcilikIslemiResource extends Resource
                             ."<div><strong>Durum:</strong> <span class='font-semibold'>{$durum}</span></div>"
                             ."<div><strong>Kayıtlı Evrak Sayısı:</strong> {$evrakSayisi} adet</div>"
                             ."<div><strong>Süre & Ücret:</strong> {$sure} / {$ucret}</div>"
-                            ."<div><strong>Resmî Kaynak:</strong> <span class='text-xs text-primary-600 break-all'>{$kaynak}</span></div>"
-                            ."<div class='text-xs text-gray-500 pt-1 border-t'>Son Doğrulama: ".($record->dogrulanma_tarihi ? $record->dogrulanma_tarihi->format('d.m.Y') : 'Hiç').'</div>'
+                            ."<div><strong>Resmî Kaynak:</strong> <span class='text-xs text-primary-700 dark:text-primary-400 break-all'>{$kaynak}</span></div>"
+                            ."<div class='text-xs text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-200 dark:border-gray-700'>Son Doğrulama: ".($record->dogrulanma_tarihi ? $record->dogrulanma_tarihi->format('d.m.Y') : 'Hiç').'</div>'
                             .'</div>'
                         );
                     })
@@ -298,10 +438,28 @@ class TemsilcilikIslemiResource extends Resource
                             Notification::make()->title('İçerik incelendi')->info()->send();
                         }
                     }),
+
                 Action::make('duzenle')
                     ->label('Düzenle')
                     ->icon(Heroicon::OutlinedPencilSquare)
+                    ->color('primary')
                     ->url(fn (TemsilcilikIslemi $record): string => static::getUrl('edit', ['record' => $record])),
+
+                ActionGroup::make([
+                    Action::make('resmi_kaynak')
+                        ->label('Resmî Kaynağa Git')
+                        ->icon(Heroicon::OutlinedGlobeAlt)
+                        ->color('gray')
+                        ->visible(fn (TemsilcilikIslemi $record): bool => filled($record->resmi_kaynak_url))
+                        ->url(fn (TemsilcilikIslemi $record): string => (string) $record->resmi_kaynak_url)
+                        ->openUrlInNewTab(),
+
+                    Action::make('temsilcilik_git')
+                        ->label('Temsilciliği Düzenle')
+                        ->icon(Heroicon::OutlinedBuildingLibrary)
+                        ->color('gray')
+                        ->url(fn (TemsilcilikIslemi $record): string => TemsilcilikResource::getUrl('edit', ['record' => $record->temsilcilik_id])),
+                ]),
             ])
             ->defaultSort('id', 'desc');
     }
