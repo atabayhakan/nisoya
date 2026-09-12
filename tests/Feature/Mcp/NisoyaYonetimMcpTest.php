@@ -20,6 +20,7 @@ use App\Models\User;
 use App\Models\YasamKategorisi;
 use App\Models\YasamKonuIcerigi;
 use App\Models\YasamKonusu;
+use App\Support\Modules;
 use App\Support\Settings;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CountrySeeder;
@@ -833,7 +834,7 @@ class NisoyaYonetimMcpTest extends TestCase
         ]);
 
         $resModul->assertStatus(200);
-        $this->assertEquals(count(\App\Support\Modules::KEYS), $resModul->json('result.structuredContent.toplam_modul'));
+        $this->assertEquals(count(Modules::KEYS), $resModul->json('result.structuredContent.toplam_modul'));
 
         // 2. Ülkeleri listele
         $resUlke = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [

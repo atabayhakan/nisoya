@@ -28,7 +28,7 @@
         </div>
         <div class="rounded-lg bg-gray-50 p-2.5 dark:bg-gray-800">
             <span class="text-gray-500 dark:text-gray-400">SMTP Durumu:</span>
-            <span class="font-bold {{ $smtp ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }} ml-1">
+            <span class="font-bold {{ $smtp ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }} ml-1">
                 {{ $smtp ? 'Yapılandırılmış' : 'Eksik' }}
             </span>
         </div>
