@@ -175,4 +175,17 @@ return [
 
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Model Context Protocol (MCP) Sunucusu Ayarları
+    |--------------------------------------------------------------------------
+    | Claude, ChatGPT, Cursor ve diğer yapay zekâ asistanlarının Nisoya ile
+    | güvenli konuşmasını sağlayan API anahtarı ve yetkilendirme ayarları.
+    */
+    'mcp' => [
+        'enabled' => (bool) env('NISOYA_MCP_ENABLED', true),
+        'api_key' => env('NISOYA_MCP_KEY'),
+        'route' => 'api/mcp',
+    ],
+
 ];

@@ -124,6 +124,11 @@ class YapayZekaAyarlari extends Page
      */
     public array $modeller = [];
 
+    /**
+     * Model Context Protocol (MCP) Bearer API Anahtarı.
+     */
+    public ?string $mcp_api_key = null;
+
     public static function canAccess(): bool
     {
         return auth()->user()?->isAdmin() ?? false;
@@ -179,6 +184,8 @@ class YapayZekaAyarlari extends Page
             'metin_moderasyon_aktif' => (Settings::get('ai.metin_moderasyon_aktif') ?? '1') === '1',
             'ilan_cevirisi_aktif' => (Settings::get('ai.ilan_cevirisi_aktif') ?? '1') === '1',
         ]);
+
+        $this->mcp_api_key = Settings::get('mcp.api_key') ?: (string) config('ai.mcp.api_key', '');
     }
 
     public function form(Schema $schema): Schema
@@ -564,6 +571,65 @@ class YapayZekaAyarlari extends Page
             'configured_count' => $configuredCount,
             'total_providers' => count(self::PROVIDERS),
             'provider_statuses' => $providerStatuses,
+        ];
+    }
+
+    /** Yeni ve güvenli bir MCP API anahtarı üretir. */
+    public function yeniMcpAnahtariUret(): void
+    {
+        $yeniAnahtar = 'nisoya_mcp_'.bin2hex(random_bytes(16));
+        Settings::setMany(['mcp.api_key' => $yeniAnahtar]);
+        $this->mcp_api_key = $yeniAnahtar;
+
+        Notification::make()
+            ->title('Yeni MCP API Anahtarı Üretildi ✓')
+            ->body("Yeni anahtar başarıyla kaydedildi:\n{$yeniAnahtar}\n\nBu anahtarı Claude Code, Claude Desktop veya Cursor ayarlarınıza ekleyin.")
+            ->success()
+            ->persistent()
+            ->send();
+    }
+
+    /** Model Context Protocol (MCP) bağlantı kılavuzu ve istemci yapılandırmalarını üretir. */
+    public function getMcpBilgisiProperty(): array
+    {
+        $key = $this->mcp_api_key ?: (Settings::get('mcp.api_key') ?: (string) config('ai.mcp.api_key', ''));
+        $endpoint = url('/api/mcp');
+
+        $claudeCode = 'claude mcp add --transport http --header "Authorization: Bearer '.($key ?: 'API_ANAHTARINIZ')."\" nisoya-yonetim {$endpoint}";
+
+        $claudeDesktop = json_encode([
+            'mcpServers' => [
+                'nisoya' => [
+                    'command' => 'npx',
+                    'args' => [
+                        '-y',
+                        'mcp-remote',
+                        $endpoint,
+                        '--header',
+                        'Authorization: Bearer '.($key ?: 'API_ANAHTARINIZ'),
+                    ],
+                ],
+            ],
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        $cursorConfig = json_encode([
+            'mcpServers' => [
+                'nisoya' => [
+                    'url' => $endpoint,
+                    'headers' => [
+                        'Authorization' => 'Bearer '.($key ?: 'API_ANAHTARINIZ'),
+                    ],
+                ],
+            ],
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        return [
+            'endpoint' => $endpoint,
+            'api_key' => $key,
+            'is_configured' => filled($key),
+            'claude_code' => $claudeCode,
+            'claude_desktop' => $claudeDesktop,
+            'cursor' => $cursorConfig,
         ];
     }
 }

@@ -39,6 +39,7 @@ class Settings
         'giris.google_client_secret',
         'kahya.telegram.bot_token',
         'kahya.telegram.webhook_sirri',
+        'mcp.api_key',
     ];
 
     /** Tüm ayarları (key => value) cache'den döndürür. */

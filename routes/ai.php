@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Middleware\McpApiKeyDogrula;
 use App\Mcp\Sunucular\DemoSunucusu;
 use App\Mcp\Sunucular\KahyaSunucusu;
+use App\Mcp\Sunucular\NisoyaYonetimSunucusu;
 use Laravel\Mcp\Facades\Mcp;
 
 /*
@@ -34,3 +36,16 @@ Mcp::local('kahya', KahyaSunucusu::class);
  * `demo.mcp_acik` ayarı açık değilse hiç kaydedilmez.
  */
 Mcp::local('demo', DemoSunucusu::class);
+
+/*
+ * Nisoya Yönetim MCP Sunucusu (Çift Taşıma: Yerel Stdio + Uzak Güvenli HTTP)
+ *
+ * 1. Yerel istemciler için (Claude Desktop, Cursor):
+ *    `php artisan mcp:start nisoya`
+ * 2. Uzak istemciler için (Claude Code, ChatGPT, Antigravity):
+ *    `POST /api/mcp` (Authorization: Bearer <API_KEY> başlığı zorunlu)
+ */
+Mcp::local('nisoya', NisoyaYonetimSunucusu::class);
+
+Mcp::web('api/mcp', NisoyaYonetimSunucusu::class)
+    ->middleware(McpApiKeyDogrula::class);
