@@ -420,4 +420,172 @@ PROMPT;
             default => '📘',
         };
     }
+
+    /**
+     * Temsilcilik için akıllı yönlendirme ve randevu notu taslağı üretir.
+     *
+     * @return array{
+     *     yonlendirme_notu: string,
+     *     oneri_resmi_url: string,
+     *     onemli_islemler: list<string>,
+     *     ziyaret_ipucu: string
+     * }
+     */
+    public function generateMissionGuidance(string $missionName, string $city, string $countryCode): array
+    {
+        if ($this->isConfigured()) {
+            $prompt = <<<PROMPT
+Sen Türkiye Cumhuriyeti Dışişleri Bakanlığı konsolosluk ağı ve yurtdışı Türkler uzmanısın.
+Platform: Nisoya Ülke Rehberi (nisoya.com).
+
+Temsilcilik: "{$missionName}"
+Şehir: "{$city}"
+Ülke: "{$countryCode}"
+
+Görev: Bu dış temsilcilik için vatandaşlara yönelik randevu, başvuru ve ziyaret rehberi taslağı oluştur.
+İstenen JSON formatı:
+{
+  "yonlendirme_notu": "Bu temsilcilikteki konsolosluk işlemleri (pasaport, noter, kimlik, askerlik vb.) için güncel randevu alma usulleri, mesai saatleri ve başvuru yönlendirme metni.",
+  "oneri_resmi_url": "https://... (temsilciliğin mfa.gov.tr veya konsolosluk.gov.tr resmi adresi)",
+  "onemli_islemler": ["Pasaport Yenileme", "T.C. Kimlik Kartı", "Noter ve Vekaletname", "Askerlik Erteleme", "Doğum ve Nüfus Kaydı"],
+  "ziyaret_ipucu": "Randevuya 15 dk erken gelinmeli, harç ödemesi için nakit/kart şartları, yerel toplu taşıma veya park uyarısı."
+}
+Yanıtını SADECE geçerli bir JSON nesnesi olarak ver.
+PROMPT;
+
+            $schema = [
+                'type' => 'object',
+                'properties' => [
+                    'yonlendirme_notu' => ['type' => 'string'],
+                    'oneri_resmi_url' => ['type' => 'string'],
+                    'onemli_islemler' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'string'],
+                    ],
+                    'ziyaret_ipucu' => ['type' => 'string'],
+                ],
+                'required' => ['yonlendirme_notu', 'oneri_resmi_url', 'onemli_islemler', 'ziyaret_ipucu'],
+            ];
+
+            try {
+                $res = $this->ai->analyzeText($prompt, $schema, 20);
+                if (is_array($res) && filled($res['yonlendirme_notu'] ?? null)) {
+                    /** @var list<string> $islemler */
+                    $islemler = [];
+                    foreach ($res['onemli_islemler'] ?? [] as $islem) {
+                        if (filled($islem)) {
+                            $islemler[] = trim((string) $islem);
+                        }
+                    }
+
+                    return [
+                        'yonlendirme_notu' => trim((string) $res['yonlendirme_notu']),
+                        'oneri_resmi_url' => trim((string) ($res['oneri_resmi_url'] ?? 'https://www.konsolosluk.gov.tr')),
+                        'onemli_islemler' => $islemler ?: ['Pasaport Yenileme', 'T.C. Kimlik Kartı', 'Noter & Vekaletname', 'Askerlik'],
+                        'ziyaret_ipucu' => trim((string) ($res['ziyaret_ipucu'] ?? 'Randevu saatinizden 15 dakika önce tüm belgelerin asıllarıyla hazır bulununuz.')),
+                    ];
+                }
+            } catch (\Throwable $e) {
+                Log::warning('CountryGuideAiAssistant generateMissionGuidance hatası: '.$e->getMessage());
+            }
+        }
+
+        $sehirSlug = Str::slug($city);
+        $urlFallback = filled($sehirSlug) ? "https://{$sehirSlug}.bk.mfa.gov.tr" : 'https://www.konsolosluk.gov.tr';
+
+        return [
+            'yonlendirme_notu' => "{$missionName} bünyesinde gerçekleştirilen tüm konsolosluk ve noter işlemleri için konsolosluk.gov.tr üzerinden randevu alınması zorunludur. Randevusuz işlem kabul edilmemektedir.",
+            'oneri_resmi_url' => $urlFallback,
+            'onemli_islemler' => [
+                'Pasaport Yenileme ve Kayıp Başvurusu',
+                'T.C. Kimlik Kartı Çıkarma & Değiştirme',
+                'Noterlik & Vekaletname Düzenleme',
+                'Dövizle Askerlik ve Erteleme Başvurusu',
+                'Nüfus Kayıt ve Doğum Tescil İşlemleri',
+            ],
+            'ziyaret_ipucu' => 'Randevu saatinden en az 15 dakika önce temsilcilik girişinde hazır bulununuz. Yanınızda işlem harçları için geçerli ödeme aracı ve tüm evrakların asılları ile fotokopilerini hazır bulundurunuz.',
+        ];
+    }
+
+    /**
+     * Temsilcilik verilerini (adres, koordinat, portal, işlem sayısı) denetler ve kalite skoru üretir.
+     *
+     * @return array{
+     *     puan: int,
+     *     durum: string,
+     *     eksikler: list<string>,
+     *     guclu_yonler: list<string>,
+     *     oneriler: list<string>
+     * }
+     */
+    public function auditMission(
+        string $missionName,
+        string $countryCode,
+        ?string $address,
+        ?float $latitude,
+        ?float $longitude,
+        ?string $officialUrl,
+        int $proceduresCount,
+        int $publishedCount = 0
+    ): array {
+        $eksikler = [];
+        $gucluYonler = [];
+        $oneriler = [];
+        $puan = 0;
+
+        // 1. Adres kontrolü (25 puan)
+        if (filled($address) && mb_strlen($address) >= 10) {
+            $puan += 25;
+            $gucluYonler[] = 'Fiziksel açık adres eksiksiz girilmiş.';
+        } else {
+            $eksikler[] = 'Açık adres eksik veya çok kısa.';
+            $oneriler[] = 'Temsilciliğin güncel posta adresi ve posta kodunu kaydedin.';
+        }
+
+        // 2. GPS Koordinat / Harita kontrolü (25 puan)
+        if ($latitude !== null && $longitude !== null) {
+            $puan += 25;
+            $gucluYonler[] = 'GPS koordinatları tam (Google Haritalar ve yerel harita entegrasyonu aktif).';
+        } else {
+            $eksikler[] = 'GPS koordinatları (Enlem / Boylam) tanımlanmamış.';
+            $oneriler[] = 'Ziyaretçilerin doğrudan yol tarifi alabilmesi için enlem ve boylamı kaydedin.';
+        }
+
+        // 3. Resmî Web Sitesi (25 puan)
+        if (filled($officialUrl) && filter_var($officialUrl, FILTER_VALIDATE_URL)) {
+            $puan += 25;
+            $gucluYonler[] = 'Dışişleri Bakanlığı / Konsolosluk resmî web bağlantısı tanımlı.';
+        } else {
+            $eksikler[] = 'Resmî temsilcilik web portalı bağlantısı eksik.';
+            $oneriler[] = 'mfa.gov.tr veya konsolosluk.gov.tr resmi sayfasını ekleyin.';
+        }
+
+        // 4. Rehber İşlem İçerikleri (25 puan)
+        if ($publishedCount > 0) {
+            $puan += 25;
+            $gucluYonler[] = "{$publishedCount} adet doğrulanmış ve yayında işlem rehberi mevcut.";
+        } elseif ($proceduresCount > 0) {
+            $puan += 15;
+            $eksikler[] = "Toplam {$proceduresCount} işlem rehberi var fakat hiçbiri yayına alınmamış (taslak durumunda).";
+            $oneriler[] = 'Taslak işlem rehberlerini doğrulayıp yayına alın.';
+        } else {
+            $eksikler[] = 'Bu temsilciliğe bağlı özel konsolosluk işlem içeriği henüz girilmemiş.';
+            $oneriler[] = 'En çok aranan işlemler için (Pasaport, Kimlik, Noter) işlem rehberlerini ekleyin veya yönlendirme notunu eksiksiz tutun.';
+        }
+
+        $durum = match (true) {
+            $puan >= 90 => 'Mükemmel (Tam Donanımlı)',
+            $puan >= 70 => 'İyi (Küçük Eksikler Var)',
+            $puan >= 50 => 'Orta Seviye (Geliştirilmeli)',
+            default => 'Kritik Eksikler Mevcut',
+        };
+
+        return [
+            'puan' => $puan,
+            'durum' => $durum,
+            'eksikler' => $eksikler,
+            'guclu_yonler' => $gucluYonler,
+            'oneriler' => $oneriler,
+        ];
+    }
 }

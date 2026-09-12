@@ -569,7 +569,7 @@ class NisoyaYonetimMcpTest extends TestCase
         $resListele->assertStatus(200);
         $this->assertGreaterThanOrEqual(1, $resListele->json('result.structuredContent.toplam_bulunan'));
 
-        // 2. Güncelle
+        // 2. Güncelle (adres ve GPS koordinatları)
         $resGuncelle = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
             'jsonrpc' => '2.0',
             'id' => 22,
@@ -580,6 +580,8 @@ class NisoyaYonetimMcpTest extends TestCase
                     'islem' => 'guncelle',
                     'temsilcilik_id' => $t->id,
                     'adres' => 'Yeni Adres 123, Berlin',
+                    'latitude' => 52.5097998,
+                    'longitude' => 13.3560419,
                 ],
             ],
         ]);
@@ -589,6 +591,26 @@ class NisoyaYonetimMcpTest extends TestCase
 
         $t->refresh();
         $this->assertEquals('Yeni Adres 123, Berlin', $t->adres);
+        $this->assertEquals('52.5097998', (string) $t->latitude);
+        $this->assertEquals('13.3560419', (string) $t->longitude);
+
+        // 3. Denetle
+        $resDenetle = $this->withToken(self::TEST_API_KEY)->postJson('/api/mcp', [
+            'jsonrpc' => '2.0',
+            'id' => 23,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'nisoya_temsilcilik_yonet',
+                'arguments' => [
+                    'islem' => 'denetle',
+                    'temsilcilik_id' => $t->id,
+                ],
+            ],
+        ]);
+
+        $resDenetle->assertStatus(200);
+        $this->assertTrue($resDenetle->json('result.structuredContent.basarili'));
+        $this->assertArrayHasKey('puan', $resDenetle->json('result.structuredContent.denetim_sonucu'));
     }
 
     public function test_konsolosluk_rehber_yonet_araci_listeler_ve_durum_gunceller(): void

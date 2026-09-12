@@ -79,4 +79,56 @@ class CountryGuideAiAssistantTest extends TestCase
         $this->assertEquals('🏠', $assistant->suggestEmoji('Kiralık Ev Bulma'));
         $this->assertEquals('🛂', $assistant->suggestEmoji('Vize ve Pasaport'));
     }
+
+    public function test_generate_mission_guidance_returns_fallback_structure(): void
+    {
+        $assistant = $this->assistantOlustur();
+        $sonuc = $assistant->generateMissionGuidance('Köln Başkonsolosluğu', 'Köln', 'DE');
+
+        $this->assertArrayHasKey('yonlendirme_notu', $sonuc);
+        $this->assertArrayHasKey('oneri_resmi_url', $sonuc);
+        $this->assertArrayHasKey('onemli_islemler', $sonuc);
+        $this->assertArrayHasKey('ziyaret_ipucu', $sonuc);
+
+        $this->assertNotEmpty($sonuc['yonlendirme_notu']);
+        $this->assertStringContainsString('koln', $sonuc['oneri_resmi_url']);
+        $this->assertNotEmpty($sonuc['onemli_islemler']);
+    }
+
+    public function test_audit_mission_calculates_health_score(): void
+    {
+        $assistant = $this->assistantOlustur();
+
+        // 1. Tam donanımlı temsilcilik
+        $tamRapor = $assistant->auditMission(
+            missionName: 'Berlin Büyükelçiliği',
+            countryCode: 'DE',
+            address: 'Tiergartenstr. 19-21, 10785 Berlin',
+            latitude: 52.5097998,
+            longitude: 13.3560419,
+            officialUrl: 'https://berlin.be.mfa.gov.tr',
+            proceduresCount: 10,
+            publishedCount: 8
+        );
+
+        $this->assertEquals(100, $tamRapor['puan']);
+        $this->assertStringContainsString('Mükemmel', $tamRapor['durum']);
+        $this->assertEmpty($tamRapor['eksikler']);
+
+        // 2. Eksik koordinat ve kaynaksız temsilcilik
+        $eksikRapor = $assistant->auditMission(
+            missionName: 'Yeni Temsilcilik',
+            countryCode: 'FR',
+            address: null,
+            latitude: null,
+            longitude: null,
+            officialUrl: null,
+            proceduresCount: 0,
+            publishedCount: 0
+        );
+
+        $this->assertEquals(0, $eksikRapor['puan']);
+        $this->assertStringContainsString('Kritik Eksikler', $eksikRapor['durum']);
+        $this->assertCount(4, $eksikRapor['eksikler']);
+    }
 }

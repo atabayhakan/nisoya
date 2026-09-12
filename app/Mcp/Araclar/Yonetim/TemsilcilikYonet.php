@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Mcp\Araclar\Yonetim;
 
 use App\Models\Temsilcilik;
+use App\Models\TemsilcilikIslemi;
+use App\Services\Ai\CountryGuideAiAssistant;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
 use Laravel\Mcp\Request;
@@ -13,12 +15,13 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Title;
 
 #[Name('nisoya_temsilcilik_yonet')]
-#[Title('Temsilcilikler — Dış temsilcilikleri (başkonsolosluk/büyükelçilik) listele veya güncelle')]
+#[Title('Temsilcilikler — Dış temsilcilikleri (başkonsolosluk/büyükelçilik) listele, güncelle veya denetle')]
 #[Description(
     'Nisoya Ülke Rehberi dış temsilciliklerini (başkonsolosluk, büyükelçilik) yönetir. '.
     'islem="listele" (ülke ve şehre göre listeler), '.
-    'islem="detay" (temsilcilik_id veya slug ile tam iletişim ve mesai saatlerini inceler), '.
-    'islem="guncelle" (telefon, eposta, adres, randevu_url veya mesai saatlerini günceller).'
+    'islem="detay" (temsilcilik_id ile tam iletişim, GPS koordinatları ve harita linklerini inceler), '.
+    'islem="guncelle" (adres, sehir, resmi_url, yonlendirme_notu, latitude, longitude, is_active günceller), '.
+    'islem="denetle" (temsilcilik verilerini AI ve kalite standartlarına göre denetler).'
 )]
 class TemsilcilikYonet extends YonetimAraci
 {
@@ -27,7 +30,7 @@ class TemsilcilikYonet extends YonetimAraci
     {
         return [
             'islem' => $schema->string()
-                ->description('İşlem türü: "listele", "detay", "guncelle".')
+                ->description('İşlem türü: "listele", "detay", "guncelle", "denetle".')
                 ->required(),
             'temsilcilik_id' => $schema->integer()
                 ->description('İncelenecek veya güncellenecek temsilcilik ID numarası.'),
@@ -41,6 +44,10 @@ class TemsilcilikYonet extends YonetimAraci
                 ->description('Güncellenecek resmi web adresi.'),
             'yonlendirme_notu' => $schema->string()
                 ->description('Güncellenecek randevu/yönlendirme notu.'),
+            'latitude' => $schema->number()
+                ->description('Güncellenecek enlem koordinatı (örn: 52.5097998).'),
+            'longitude' => $schema->number()
+                ->description('Güncellenecek boylam koordinatı (örn: 13.3560419).'),
             'is_active' => $schema->boolean()
                 ->description('Aktiflik durumu.'),
             'limit' => $schema->integer()
@@ -56,6 +63,7 @@ class TemsilcilikYonet extends YonetimAraci
         return match ($islem) {
             'detay' => $this->detay($request),
             'guncelle' => $this->guncelle($request),
+            'denetle' => $this->denetle($request),
             default => $this->listele($request),
         };
     }
@@ -87,6 +95,9 @@ class TemsilcilikYonet extends YonetimAraci
                 'ulke' => $t->country_code,
                 'sehir' => $t->sehir,
                 'adres' => $t->adres,
+                'latitude' => $t->latitude !== null ? (float) $t->latitude : null,
+                'longitude' => $t->longitude !== null ? (float) $t->longitude : null,
+                'harita_destegi' => $t->latitude !== null && $t->longitude !== null,
                 'resmi_url' => $t->resmi_url,
                 'islem_sayisi' => $t->islemler_count,
                 'aktif_mi' => (bool) $t->is_active,
@@ -117,6 +128,10 @@ class TemsilcilikYonet extends YonetimAraci
                 'country_code' => $t->country_code,
                 'sehir' => $t->sehir,
                 'adres' => $t->adres,
+                'latitude' => $t->latitude !== null ? (float) $t->latitude : null,
+                'longitude' => $t->longitude !== null ? (float) $t->longitude : null,
+                'harita_destegi' => $t->latitude !== null && $t->longitude !== null,
+                'harita_baglantilari' => $t->haritaBaglantilari()->all(),
                 'resmi_url' => $t->resmi_url,
                 'yonlendirme_notu' => $t->yonlendirme_notu,
                 'islem_sayisi' => $t->islemler_count,
@@ -148,6 +163,16 @@ class TemsilcilikYonet extends YonetimAraci
             }
         }
 
+        if ($request->has('latitude') && $request->get('latitude') !== null) {
+            $t->latitude = (float) $request->get('latitude');
+            $degisen[] = 'latitude';
+        }
+
+        if ($request->has('longitude') && $request->get('longitude') !== null) {
+            $t->longitude = (float) $request->get('longitude');
+            $degisen[] = 'longitude';
+        }
+
         if ($request->has('is_active')) {
             $t->is_active = (bool) $request->get('is_active');
             $degisen[] = 'is_active';
@@ -156,7 +181,7 @@ class TemsilcilikYonet extends YonetimAraci
         if (empty($degisen)) {
             return [
                 'basarili' => false,
-                'mesaj' => 'Güncellenecek en az bir alan belirtilmelidir (adres, sehir, resmi_url, yonlendirme_notu, is_active).',
+                'mesaj' => 'Güncellenecek en az bir alan belirtilmelidir (adres, sehir, resmi_url, yonlendirme_notu, latitude, longitude, is_active).',
             ];
         }
 
@@ -166,6 +191,44 @@ class TemsilcilikYonet extends YonetimAraci
             'basarili' => true,
             'mesaj' => "Temsilcilik (#{$t->id} - {$t->ad}) bilgileri güncellendi.",
             'degisen_alanlar' => $degisen,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function denetle(Request $request): array
+    {
+        $id = (int) $request->get('temsilcilik_id');
+        $t = Temsilcilik::with('islemler')->find($id);
+
+        if (! $t) {
+            return [
+                'basarili' => false,
+                'mesaj' => "ID'si {$id} olan temsilcilik bulunamadı.",
+            ];
+        }
+
+        $toplamIslem = $t->islemler->count();
+        $yayindaIslem = $t->islemler->where('status', TemsilcilikIslemi::STATUS_YAYIN)->count();
+
+        /** @var CountryGuideAiAssistant $assistant */
+        $assistant = app(CountryGuideAiAssistant::class);
+        $rapor = $assistant->auditMission(
+            missionName: $t->ad,
+            countryCode: $t->country_code,
+            address: $t->adres,
+            latitude: $t->latitude !== null ? (float) $t->latitude : null,
+            longitude: $t->longitude !== null ? (float) $t->longitude : null,
+            officialUrl: $t->resmi_url,
+            proceduresCount: $toplamIslem,
+            publishedCount: $yayindaIslem
+        );
+
+        return [
+            'basarili' => true,
+            'temsilcilik_id' => $t->id,
+            'ad' => $t->ad,
+            'ulke' => $t->country_code,
+            'denetim_sonucu' => $rapor,
         ];
     }
 }
