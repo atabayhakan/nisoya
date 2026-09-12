@@ -33,4 +33,25 @@ return [
         'api_key' => env('GOOGLE_PLACES_API_KEY'),
     ],
 
+    // Otomatik Tersine Katılım (Reverse Onboarding): Keşfedilen yüksek güvenli Türk
+    // işletmeleri için doğrudan sahiplenilebilir vitrin ilanı oluşturulsun mu?
+    'auto_create_listings' => (bool) env('GROWTH_AUTO_CREATE_LISTINGS', false),
+
+    // Yapay Zekâ (LLM) ile şüpheli/sınırda esnaf tespiti yapılsın mı?
+    'use_llm' => (bool) env('GROWTH_USE_LLM', false),
+
+    // LLM ve tespit güven eşiği (bu yüzdenin üstü doğrudan geçer, altı inceleme bekler)
+    'min_confidence' => (int) env('GROWTH_MIN_CONFIDENCE', 70),
+
+    // Günlük maksimum taranacak işletme kotası (Google Places bütçe koruması)
+    'daily_limit' => (int) env('GROWTH_DAILY_LIMIT', 100),
+
+    // Kalite filtresi: Minimum Google Places puanı
+    'min_rating' => (float) env('GROWTH_MIN_RATING', 3.5),
+
+    // Kalite filtresi: Minimum Google Places yorum sayısı
+    'min_reviews' => (int) env('GROWTH_MIN_REVIEWS', 3),
+
+    // WhatsApp ve davet mesajı imza / yetkili adı
+    'whatsapp_signature' => env('GROWTH_WHATSAPP_SIGNATURE', 'Hakan · nisoya.com'),
 ];

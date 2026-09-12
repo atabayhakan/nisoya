@@ -91,4 +91,51 @@ class BuyumeAyarlariTest extends TestCase
         $this->assertFalse($result['ok']);
         $this->assertStringContainsString('API key not valid', $result['message']);
     }
+
+    public function test_save_persists_advanced_growth_settings(): void
+    {
+        $this->actingAs($this->admin());
+
+        Livewire::test(BuyumeAyarlari::class)
+            ->set('data.auto_create_listings', true)
+            ->set('data.use_llm', true)
+            ->set('data.min_confidence', '80')
+            ->set('data.daily_limit', '250')
+            ->set('data.min_rating', '4.0')
+            ->set('data.min_reviews', '10')
+            ->set('data.whatsapp_signature', 'Test İmza · nisoya.com')
+            ->call('save');
+
+        $this->assertSame('1', Settings::get('growth.auto_create_listings'));
+        $this->assertSame('1', Settings::get('growth.use_llm'));
+        $this->assertSame('80', Settings::get('growth.min_confidence'));
+        $this->assertSame('250', Settings::get('growth.daily_limit'));
+        $this->assertSame('4.0', Settings::get('growth.min_rating'));
+        $this->assertSame('10', Settings::get('growth.min_reviews'));
+        $this->assertSame('Test İmza · nisoya.com', Settings::get('growth.whatsapp_signature'));
+    }
+
+    public function test_overpass_probe_reports_status(): void
+    {
+        Http::fake(['overpass-api.de/*' => Http::response('[out:json];', 200)]);
+
+        $result = app(OverpassDiscoverySource::class)->probe();
+
+        $this->assertTrue($result['ok']);
+        $this->assertStringContainsString('yanıt veriyor', $result['message']);
+    }
+
+    public function test_hizli_kesif_baslat_runs_cleanly(): void
+    {
+        $this->actingAs($this->admin());
+
+        config(['growth.source' => 'fixture']);
+
+        Livewire::test(BuyumeAyarlari::class)
+            ->set('kesif_ulke', 'DE')
+            ->set('kesif_sehir', 'Berlin')
+            ->set('kesif_meslek', 'lokanta')
+            ->call('hizliKesifBaslat')
+            ->assertHasNoErrors();
+    }
 }

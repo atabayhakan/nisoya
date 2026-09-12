@@ -384,6 +384,41 @@ class AppServiceProvider extends ServiceProvider
         if ($source) {
             Config::set('growth.source', $source);
         }
+
+        $autoCreate = Settings::get('growth.auto_create_listings');
+        if ($autoCreate !== null) {
+            Config::set('growth.auto_create_listings', $autoCreate === '1');
+        }
+
+        $useLlm = Settings::get('growth.use_llm');
+        if ($useLlm !== null) {
+            Config::set('growth.use_llm', $useLlm === '1');
+        }
+
+        $minConfidence = Settings::get('growth.min_confidence');
+        if ($minConfidence !== null) {
+            Config::set('growth.min_confidence', (int) $minConfidence);
+        }
+
+        $dailyLimit = Settings::get('growth.daily_limit');
+        if ($dailyLimit !== null) {
+            Config::set('growth.daily_limit', (int) $dailyLimit);
+        }
+
+        $minRating = Settings::get('growth.min_rating');
+        if ($minRating !== null) {
+            Config::set('growth.min_rating', (float) $minRating);
+        }
+
+        $minReviews = Settings::get('growth.min_reviews');
+        if ($minReviews !== null) {
+            Config::set('growth.min_reviews', (int) $minReviews);
+        }
+
+        $waSig = Settings::get('growth.whatsapp_signature');
+        if ($waSig) {
+            Config::set('growth.whatsapp_signature', $waSig);
+        }
     }
 
     /**

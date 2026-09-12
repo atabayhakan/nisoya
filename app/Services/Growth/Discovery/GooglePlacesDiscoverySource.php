@@ -127,13 +127,15 @@ final class GooglePlacesDiscoverySource implements BusinessDiscoverySource
      * Anahtarın gerçekten çalıştığını doğrular (admin panel "test et" için).
      * discover()'dan farklı: HTTP durumunu ayırt eder — boş sonuç ≠ hata.
      *
-     * @return array{ok: bool, message: string}
+     * @return array{ok: bool, message: string, latency_ms?: int}
      */
     public function probe(): array
     {
         if (! $this->isConfigured()) {
             return ['ok' => false, 'message' => 'API anahtarı girilmemiş.'];
         }
+
+        $start = microtime(true);
 
         try {
             $response = Http::withHeaders([
@@ -144,15 +146,31 @@ final class GooglePlacesDiscoverySource implements BusinessDiscoverySource
                 'maxResultCount' => 1,
             ]);
 
+            $latencyMs = (int) round((microtime(true) - $start) * 1000);
+
             if ($response->successful()) {
                 $count = count($response->json('places') ?? []);
 
-                return ['ok' => true, 'message' => "Google Places yanıt verdi ({$count} sonuç). Anahtar çalışıyor."];
+                return [
+                    'ok' => true,
+                    'message' => "Google Places API (New) başarıyla yanıt verdi ({$count} sonuç, {$latencyMs}ms). Anahtar aktif ve faturalandırma açık.",
+                    'latency_ms' => $latencyMs,
+                ];
             }
 
-            return ['ok' => false, 'message' => $response->json('error.message') ?? ('HTTP '.$response->status())];
+            return [
+                'ok' => false,
+                'message' => $response->json('error.message') ?? ('HTTP '.$response->status()),
+                'latency_ms' => $latencyMs,
+            ];
         } catch (\Throwable $e) {
-            return ['ok' => false, 'message' => $e->getMessage()];
+            $latencyMs = (int) round((microtime(true) - $start) * 1000);
+
+            return [
+                'ok' => false,
+                'message' => $e->getMessage(),
+                'latency_ms' => $latencyMs,
+            ];
         }
     }
 

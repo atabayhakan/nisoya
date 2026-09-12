@@ -40,6 +40,8 @@ class WhatsAppDavetServisi
      */
     public function mesaj(string $isletmeAdi, string $sehir, string $listingUrl, string $claimUrl): string
     {
+        $signature = (string) (config('growth.whatsapp_signature') ?: 'Hakan · nisoya.com');
+
         return "Selamlar,\n\n"
             ."Nisoya'da ({$sehir}) bölgenizdeki Türkçe konuşan topluluk için {$isletmeAdi} adına özel bir tanıtım vitrini hazırladık:\n"
             ."{$listingUrl}\n\n"
@@ -47,7 +49,7 @@ class WhatsAppDavetServisi
             ."{$claimUrl}\n\n"
             ."Nisoya'da komisyon veya üyelik ücreti yoktur, platformumuz tamamen ücretsizdir.\n\n"
             ."Bol kazançlar ve iyi çalışmalar dileriz!\n"
-            .'Hakan · nisoya.com';
+            .$signature;
     }
 
     /**

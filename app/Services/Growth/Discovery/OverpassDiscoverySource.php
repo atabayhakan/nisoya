@@ -42,6 +42,49 @@ final class OverpassDiscoverySource implements BusinessDiscoverySource
     }
 
     /**
+     * Overpass API sunucusunun canlı ve yanıt verir durumda olduğunu doğrular.
+     *
+     * @return array{ok: bool, message: string, latency_ms?: int}
+     */
+    public function probe(): array
+    {
+        $start = microtime(true);
+
+        try {
+            $response = Http::asForm()
+                ->withHeaders(['User-Agent' => 'Nisoya/1.0 (+https://nisoya.com)'])
+                ->timeout(10)
+                ->post(self::ENDPOINT, [
+                    'data' => '[out:json][timeout:5];node(around:500,52.52,13.40)["amenity"="restaurant"];out count;',
+                ]);
+
+            $latencyMs = (int) round((microtime(true) - $start) * 1000);
+
+            if ($response->successful()) {
+                return [
+                    'ok' => true,
+                    'message' => "OpenStreetMap Overpass API ayakta ve yanıt veriyor ({$latencyMs}ms).",
+                    'latency_ms' => $latencyMs,
+                ];
+            }
+
+            return [
+                'ok' => false,
+                'message' => 'Overpass sunucusu HTTP '.$response->status().' döndü (yoğunluk veya geçici kısıtlama).',
+                'latency_ms' => $latencyMs,
+            ];
+        } catch (\Throwable $e) {
+            $latencyMs = (int) round((microtime(true) - $start) * 1000);
+
+            return [
+                'ok' => false,
+                'message' => 'Overpass API bağlantı hatası: '.$e->getMessage(),
+                'latency_ms' => $latencyMs,
+            ];
+        }
+    }
+
+    /**
      * @param  array{key: string, tr: string, en: string, osm?: string, local?: string}  $trade
      * @return list<DiscoveredBusiness>
      */

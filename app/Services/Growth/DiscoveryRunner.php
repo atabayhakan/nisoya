@@ -120,6 +120,14 @@ final class DiscoveryRunner
                 ],
             );
 
+            if (config('growth.auto_create_listings') && $result->band === DetectionResult::BAND_TURKISH && $record->listing_id === null) {
+                try {
+                    app(ClaimableListingCreator::class)->createFromTarget($record);
+                } catch (\Throwable $e) {
+                    Log::warning('Growth: Otomatik vitrin oluşturulamadı', ['target_id' => $record->id, 'error' => $e->getMessage()]);
+                }
+            }
+
             $stats['saved']++;
             $stats['created'] += $record->wasRecentlyCreated ? 1 : 0;
             $stats[$result->band === DetectionResult::BAND_TURKISH ? 'turkish' : 'ambiguous']++;
