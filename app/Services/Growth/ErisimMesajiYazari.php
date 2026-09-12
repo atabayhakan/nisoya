@@ -73,16 +73,24 @@ class ErisimMesajiYazari
      * Taslak üretir. AI kapalıysa/başarısızsa kişisel cümle boş döner —
      * mesajın geri kalanı yine kurulur, sahip cümleyi kendisi yazar.
      *
-     * @return array{konu: string, mesaj: string, kisisel_cumle: ?string}
+     * @return array{konu: string, mesaj: string, kisisel_cumle: ?string, has_claimable: bool, claim_url: ?string, listing_url: ?string}
      */
     public function taslak(OutreachTarget $aday): array
     {
         $cumle = $this->kisiselCumle($aday);
+        $hasClaimable = $aday->listing !== null && $aday->listing->isClaimable();
+
+        $konu = $hasClaimable
+            ? "{$aday->name} için Nisoya vitrininiz hazır"
+            : 'Yurtdışındaki Türkler için ücretsiz ilan alanı — Nisoya';
 
         return [
-            'konu' => 'Yurtdışındaki Türkler için ücretsiz ilan alanı — Nisoya',
+            'konu' => $konu,
             'kisisel_cumle' => $cumle,
-            'mesaj' => $this->mesajiKur($cumle),
+            'mesaj' => $this->mesajiKur($cumle, $aday),
+            'has_claimable' => $hasClaimable,
+            'claim_url' => $hasClaimable ? url('/sahiplen/'.$aday->listing->claim_token) : null,
+            'listing_url' => $hasClaimable ? route('listings.show', [$aday->listing->id, $aday->listing->slug]) : null,
         ];
     }
 
@@ -163,28 +171,55 @@ class ErisimMesajiYazari
      * orası sahibin okuduğu, burası gönderilen. İkisi ayrışırsa sahip bir
      * şey okuyup başka bir şey göndermiş olur.
      */
-    private function mesajiKur(?string $kisiselCumle): string
+    private function mesajiKur(?string $kisiselCumle, ?OutreachTarget $aday = null): string
     {
         $kisisel = $kisiselCumle ?? '[buraya tek cümlelik kişisel bir dokunuş ekle]';
 
+        if ($aday !== null && $aday->listing !== null && $aday->listing->isClaimable()) {
+            $listing = $aday->listing;
+            $claimUrl = url('/sahiplen/'.$listing->claim_token);
+            $listingUrl = route('listings.show', [$listing->id, $listing->slug]);
+
+            return <<<MESAJ
+Merhaba,
+
+Ben Hakan. Yurtdışında yaşayan Türklerin birbirine hizmet verip ürün satabildiği ücretsiz bir platform kurdum: nisoya.com
+
+{$kisisel}
+
+Sizi neden yazdım: {$aday->name} için Nisoya'da önceden bir tanıtım vitrini hazırladık.
+Vitrininizi buradan inceleyebilirsiniz:
+{$listingUrl}
+
+Bilgilerinizi kontrol edip vitrininizi 15 saniyede ücretsiz olarak sahiplenebilirsiniz:
+{$claimUrl}
+
+Nisoya'da komisyon yok, üyelik ücreti yok, ödemeye aracılık etmiyoruz — platform tamamen ücretsiz ve bölgenizdeki Türkçe konuşan topluluğu işletmenizle buluşturmayı amaçlıyor.
+
+Herhangi bir sorunuz olursa bu e-postayı doğrudan yanıtlamanız yeterli.
+
+Kolay gelsin,
+Hakan · nisoya.com
+MESAJ;
+        }
+
         return <<<MESAJ
-        Merhaba,
+Merhaba,
 
-        Ben Hakan. Yurtdışında yaşayan Türklerin birbirine hizmet verip ürün
-        satabildiği ücretsiz bir platform kurdum: nisoya.com
+Ben Hakan. Yurtdışında yaşayan Türklerin birbirine hizmet verip ürün satabildiği ücretsiz bir platform kurdum: nisoya.com
 
-        {$kisisel}
+{$kisisel}
 
-        Sizi neden yazdım: işletmenizi Nisoya'da ücretsiz listeleyebilirsiniz.
-        Komisyon yok, üyelik ücreti yok, ödemeye aracılık etmiyoruz — site
-        yalnızca bir buluşma yeri. Bulunduğunuz şehirdeki Türkler sizi Türkçe
-        arayarak bulabilir.
+Sizi neden yazdım: işletmenizi Nisoya'da ücretsiz listeleyebilirsiniz.
+Komisyon yok, üyelik ücreti yok, ödemeye aracılık etmiyoruz — site
+yalnızca bir buluşma yeri. Bulunduğunuz şehirdeki Türkler sizi Türkçe
+arayarak bulabilir.
 
-        İlgilenirseniz beş dakikada açılıyor: nisoya.com
-        Soru olursa bu postayı yanıtlamanız yeterli.
+İlgilenirseniz beş dakikada açılıyor: nisoya.com
+Soru olursa bu postayı yanıtlamanız yeterli.
 
-        Kolay gelsin,
-        Hakan · nisoya.com
-        MESAJ;
+Kolay gelsin,
+Hakan · nisoya.com
+MESAJ;
     }
 }

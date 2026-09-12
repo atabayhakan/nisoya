@@ -37,6 +37,13 @@ class BekleyenHamlelerTable
                     ->label('Görev')
                     ->placeholder('—')
                     ->limit(40),
+                TextColumn::make('listing.title')
+                    ->label('İlgili Vitrin')
+                    ->placeholder('—')
+                    ->limit(30)
+                    ->url(fn (BekleyenHamle $record): ?string => $record->listing ? route('listings.show', [$record->listing->id, $record->listing->slug]) : null)
+                    ->openUrlInNewTab()
+                    ->toggleable(),
                 TextColumn::make('durum')
                     ->label('Durum')
                     ->badge()

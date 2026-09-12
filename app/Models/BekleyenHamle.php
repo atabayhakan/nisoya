@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
  * Dış-eylem onay kuyruğundaki bir hamle kartı — gerekçe migration'da.
  *
  * @property ?int $kahya_gorevi_id
+ * @property ?int $listing_id
  * @property string $baslik
  * @property string $gerekce
  * @property string $icerik
@@ -34,7 +35,7 @@ class BekleyenHamle extends Model
     protected $table = 'bekleyen_hamleler';
 
     protected $fillable = [
-        'kahya_gorevi_id', 'baslik', 'gerekce', 'icerik', 'tur', 'alici_eposta',
+        'kahya_gorevi_id', 'listing_id', 'baslik', 'gerekce', 'icerik', 'tur', 'alici_eposta',
         'durum', 'karar_notu', 'karar_at', 'gonderildi_at', 'gonderim_hata',
         'cikis_jetonu',
     ];
@@ -49,6 +50,12 @@ class BekleyenHamle extends Model
     public function gorev(): BelongsTo
     {
         return $this->belongsTo(KahyaGorevi::class, 'kahya_gorevi_id');
+    }
+
+    /** @return BelongsTo<Listing, $this> */
+    public function listing(): BelongsTo
+    {
+        return $this->belongsTo(Listing::class);
     }
 
     /** @param  Builder<self>  $sorgu */

@@ -255,6 +255,12 @@ class Listing extends Model
         return $this->hasMany(ListingTranslation::class);
     }
 
+    /** @return HasMany<BekleyenHamle, $this> */
+    public function bekleyenHamleler(): HasMany
+    {
+        return $this->hasMany(BekleyenHamle::class);
+    }
+
     /** @return HasOne<ListingImage, $this> */
     public function coverImage(): HasOne
     {

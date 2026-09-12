@@ -2,13 +2,17 @@
 
 namespace App\Filament\Resources\OutreachTargets\Tables;
 
+use App\Filament\Resources\BekleyenHamleler\BekleyenHamlelerResource;
+use App\Models\BekleyenHamle;
 use App\Models\OutreachTarget;
+use App\Services\Growth\ClaimableListingCreator;
 use App\Services\Growth\ErisimMesajiYazari;
 use App\Support\Growth\GrowthCatalog;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -63,6 +67,21 @@ class OutreachTargetsTable
                     ->placeholder('—')
                     ->copyable()
                     ->toggleable(),
+                TextColumn::make('listing_id')
+                    ->label('Vitrin')
+                    ->badge()
+                    ->color(fn (OutreachTarget $r): string => match (true) {
+                        $r->listing === null => 'gray',
+                        $r->listing->isClaimable() => 'warning',
+                        default => 'success',
+                    })
+                    ->formatStateUsing(fn (OutreachTarget $r): string => match (true) {
+                        $r->listing === null => 'Yok',
+                        $r->listing->isClaimable() => 'Bekliyor',
+                        default => 'Sahiplenildi',
+                    })
+                    ->url(fn (OutreachTarget $r): ?string => $r->listing ? route('listings.show', [$r->listing->id, $r->listing->slug]) : null)
+                    ->openUrlInNewTab(),
                 IconColumn::make('needs_review')
                     ->label('İnceleme')
                     ->boolean(),
@@ -151,6 +170,61 @@ class OutreachTargetsTable
                             'aday' => $r,
                             'taslak' => $taslak,
                         ]);
+                    }),
+                Action::make('vitrin-olustur')
+                    ->label('Vitrin Hazırla')
+                    ->icon(Heroicon::OutlinedSparkles)
+                    ->color('warning')
+                    ->visible(fn (OutreachTarget $r): bool => $r->listing_id === null)
+                    ->requiresConfirmation()
+                    ->modalHeading('Sahiplenilebilir Vitrin Oluştur')
+                    ->modalDescription(fn (OutreachTarget $r): string => "{$r->name} ({$r->city}) için otomatik sahiplenilebilir vitrin ve davet bağlantısı oluşturulacak. Devam edilsin mi?")
+                    ->action(function (OutreachTarget $r) {
+                        $result = app(ClaimableListingCreator::class)->createFromTarget($r);
+                        $r->refresh();
+
+                        Notification::make()
+                            ->title('Vitrin Hazırlandı!')
+                            ->body("{$r->name} için vitrin oluşturuldu. Sahiplenme bağlantısı hazır.")
+                            ->actions([
+                                Action::make('goruntule')
+                                    ->label('Sahiplenme Ekranı')
+                                    ->url($result['claim_url'])
+                                    ->openUrlInNewTab(),
+                            ])
+                            ->success()
+                            ->send();
+                    }),
+                Action::make('hamle-olustur')
+                    ->label('Hamle Kartı Aç')
+                    ->icon(Heroicon::OutlinedPaperAirplane)
+                    ->color('success')
+                    ->visible(fn (OutreachTarget $r): bool => filled($r->contact_email) && app(ErisimMesajiYazari::class)->uygunMu($r))
+                    ->requiresConfirmation()
+                    ->modalHeading('Kâhya Onay Kuyruğuna Ekle')
+                    ->modalDescription(fn (OutreachTarget $r): string => "Bu işletme için hazırlanan davet mektubu Kâhya'nın onay kuyruğuna (Bekleyen Hamleler) eklenecek. Panelden onaylayarak gönderebilirsiniz.")
+                    ->action(function (OutreachTarget $r) {
+                        $taslak = app(ErisimMesajiYazari::class)->taslak($r);
+
+                        $hamle = BekleyenHamle::create([
+                            'listing_id' => $r->listing_id,
+                            'baslik' => $taslak['konu'],
+                            'gerekce' => "{$r->name} ({$r->city}) işletmesine vitrin sahiplenme daveti",
+                            'icerik' => $taslak['mesaj'],
+                            'tur' => 'eposta',
+                            'alici_eposta' => mb_strtolower(trim((string) $r->contact_email)),
+                        ]);
+
+                        Notification::make()
+                            ->title('Hamle Kartı Oluşturuldu (#'.$hamle->id.')')
+                            ->body('Davet mektubu Kâhya Bekleyen Hamleler onay kuyruğuna eklendi.')
+                            ->actions([
+                                Action::make('incele')
+                                    ->label('Hamlelere Git')
+                                    ->url(BekleyenHamlelerResource::getUrl('index')),
+                            ])
+                            ->success()
+                            ->send();
                     }),
                 EditAction::make(),
             ])

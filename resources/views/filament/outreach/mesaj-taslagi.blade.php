@@ -21,6 +21,31 @@
         @endif
     </div>
 
+    @if (!empty($taslak['has_claimable']))
+        <div class="rounded-xl border border-emerald-300 bg-emerald-50/80 p-3.5 text-xs dark:border-emerald-700/60 dark:bg-emerald-950/40">
+            <div class="flex items-center gap-2 font-semibold text-emerald-800 dark:text-emerald-300">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>İşletmeye Özel Vitrin Hazır</span>
+            </div>
+            <div class="mt-2 space-y-1 text-stone-700 dark:text-stone-300">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-stone-500 dark:text-stone-400">Vitrin:</span>
+                    <a href="{{ $taslak['listing_url'] }}" target="_blank" class="truncate font-mono text-emerald-700 underline hover:text-emerald-800 dark:text-emerald-400">
+                        {{ $taslak['listing_url'] }}
+                    </a>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-stone-500 dark:text-stone-400">Sahiplen:</span>
+                    <a href="{{ $taslak['claim_url'] }}" target="_blank" class="truncate font-mono text-emerald-700 underline hover:text-emerald-800 dark:text-emerald-400">
+                        {{ $taslak['claim_url'] }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endif
+
     @if ($taslak['kisisel_cumle'] === null)
         {{-- Sebebi söylemek şart: sessizce boş parantez bırakmak "AI bozuk"
              hissi verir. Oysa çoğu zaman bilerek boş bırakılıyor. --}}
