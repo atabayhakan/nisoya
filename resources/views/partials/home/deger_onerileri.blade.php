@@ -1,4 +1,4 @@
-﻿    @if (\App\Support\HomeSections::visible('deger_onerileri'))
+    @if (\App\Support\HomeSections::visible('deger_onerileri'))
     {{-- Değer önerileri + istatistik şeridi (Konteyner İçinde Bento Grid) --}}
     <section class="mx-auto max-w-6xl px-4 py-8 sm:py-12" x-data x-reveal>
         <div class="grid gap-4 lg:grid-cols-4 lg:grid-rows-2">
@@ -88,12 +88,15 @@
                     @endforelse
                 </div>
 
-                <div class="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm lg:col-span-2 dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
-                    <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                        <x-heroicon-o-shield-check class="h-5 w-5" />
-                    </span>
-                    <h3 class="mt-4 font-semibold text-stone-900 dark:text-stone-100">{{ setting('home.deger2_baslik') }}</h3>
-                    <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">{{ setting('home.deger2_metin') }}</p>
+                <div class="group rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md lg:col-span-2 dark:border-stone-800 dark:bg-stone-900">
+                    <div class="flex items-center justify-between">
+                        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-700 transition group-hover:bg-emerald-700 group-hover:text-white dark:bg-emerald-950/60 dark:text-emerald-400 dark:group-hover:bg-emerald-500 dark:group-hover:text-stone-950">
+                            <x-heroicon-o-shield-check class="h-6 w-6" />
+                        </span>
+                        <span class="rounded-full bg-emerald-100/90 px-3 py-1 text-2xs font-bold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">✓ Doğrulanmış Üyeler</span>
+                    </div>
+                    <h3 class="mt-5 text-xl font-bold text-stone-900 dark:text-stone-100">{{ setting('home.deger2_baslik', 'Güvenli Topluluk') }}</h3>
+                    <p class="mt-2 text-sm text-stone-600 dark:text-stone-300 leading-relaxed">{{ setting('home.deger2_metin', 'Değerlendirme ve doğrulanmış üyelerle güven içinde iletişim kurun.') }}</p>
                 </div>
 
                 {{-- Küçük kart — aynı desen, bkz. App\Models\HomeHighlight
@@ -177,24 +180,15 @@
                     @endforelse
                 </div>
 
-                <div class="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:shadow-none">
-                    <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                        <x-heroicon-o-globe-alt class="h-5 w-5" />
-                    </span>
-                    {{-- KATALOG SAYISI DEĞİL, SÖZ (2026-08-05).
-
-                         Burada "25 ülke · 50 şehir · 97 kategoride hizmet ve
-                         ürün" yazıyordu. Üçü de sahte değildi ama üçü de
-                         yanıltıyordu: 'şehir' CitySeeder'ın ülke başına
-                         tohumladığı sayı (ilanı olan şehir DEĞİL), 'kategori'
-                         katalog boyutu, 'ülke' ise ilan olan ülke değil AÇIK
-                         olan ülke. Aynı yanıltıcı üçlü hero'nun kanıt
-                         satırından kaldırılmıştı; bu kartta unutulmuştu.
-
-                         Kartın işi ("nerede olursan ol") sayıya değil vaade
-                         dayanıyor — envanter büyüdükçe de küçükken de doğru. --}}
-                    <h3 class="mt-4 font-semibold text-stone-900 dark:text-stone-100">Nerede olursan ol, Türkçe</h3>
-                    <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Ülkeni seç, şehrindeki Türkçe konuşan kişiye ulaş.</p>
+                <div class="group rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md dark:border-stone-800 dark:bg-stone-900">
+                    <div class="flex items-center justify-between">
+                        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-700 transition group-hover:bg-emerald-700 group-hover:text-white dark:bg-emerald-950/60 dark:text-emerald-400 dark:group-hover:bg-emerald-500 dark:group-hover:text-stone-950">
+                            <x-heroicon-o-globe-alt class="h-6 w-6" />
+                        </span>
+                        <span class="rounded-full bg-stone-100 px-3 py-1 text-2xs font-bold text-stone-700 dark:bg-stone-800 dark:text-stone-300">🌍 60+ Ülke</span>
+                    </div>
+                    <h3 class="mt-5 text-xl font-bold text-stone-900 dark:text-stone-100">Nerede olursan ol, Türkçe</h3>
+                    <p class="mt-2 text-sm text-stone-600 dark:text-stone-300 leading-relaxed">Ülkeni seç, şehrindeki Türkçe konuşan esnafa, ustaya ve topluluğa anında ulaş.</p>
                 </div>
             </div>
     </section>

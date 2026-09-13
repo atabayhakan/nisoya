@@ -92,38 +92,92 @@
                     {{ \App\Support\Hero::altBaslik() }}
                 </p>
 
-                {{-- Nisoya AI çubuğu --}}
-                <div class="mx-auto mt-6 max-w-2xl">
-                    <x-nisoya-ai-arama />
-                </div>
+                {{-- Hibrit Akıllı Komuta Merkezi: AI Asistanı & İlan Keşfi --}}
+                <div x-data="{ aramaModu: 'ai' }" class="mx-auto mt-6 max-w-2xl text-center">
+                    {{-- Sekme Değiştirici --}}
+                    <div class="mb-3.5 inline-flex rounded-2xl bg-black/40 p-1.5 ring-1 ring-white/15 backdrop-blur-md">
+                        <button
+                            type="button"
+                            @click="aramaModu = 'ai'"
+                            :class="aramaModu === 'ai'
+                                ? 'bg-emerald-700 text-white shadow-brand dark:bg-emerald-500 dark:text-stone-950 font-bold'
+                                : 'text-white/80 hover:text-white font-medium'"
+                            class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm transition"
+                        >
+                            <x-heroicon-s-sparkles class="h-4 w-4 shrink-0" />
+                            <span>Nisoya AI Asistanı</span>
+                            <span class="rounded-md bg-white/20 px-1.5 py-0.5 text-3xs font-extrabold uppercase tracking-wider text-white">Akıllı</span>
+                        </button>
+                        <button
+                            type="button"
+                            @click="aramaModu = 'ilan'"
+                            :class="aramaModu === 'ilan'
+                                ? 'bg-emerald-700 text-white shadow-brand dark:bg-emerald-500 dark:text-stone-950 font-bold'
+                                : 'text-white/80 hover:text-white font-medium'"
+                            class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm transition"
+                        >
+                            <x-heroicon-o-magnifying-glass class="h-4 w-4 shrink-0" />
+                            <span>İlan & Hizmet Keşfi</span>
+                        </button>
+                    </div>
 
-                {{-- Arama kutusu --}}
-                <form action="{{ url('/ilanlar') }}" method="GET" class="mx-auto mt-3 flex max-w-2xl flex-col gap-2 rounded-2xl bg-white/95 p-2 shadow-lg ring-1 ring-stone-200/80 backdrop-blur sm:flex-row dark:bg-stone-900/95 dark:ring-stone-800">
-                    <input type="text" name="q" placeholder="{{ setting('home.arama_placeholder') }}"
-                           class="flex-1 rounded-xl border-0 bg-transparent px-4 py-3 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:text-stone-100 dark:placeholder-stone-500">
-                    <select name="ulke" class="rounded-xl border-0 bg-stone-50 px-4 py-3 text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:text-stone-200">
-                        <option value="">Tüm ülkeler</option>
-                        @foreach ($countries as $country)
-                            <option value="{{ $country->code }}">{{ $country->emoji }} {{ $country->name_tr }}</option>
-                        @endforeach
-                    </select>
-                    <button type="submit" class="rounded-xl bg-emerald-700 px-6 py-3 font-semibold text-white transition hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
-                        Ara
-                    </button>
-                </form>
+                    {{-- 1. Mod: Nisoya AI Asistanı --}}
+                    <div x-show="aramaModu === 'ai'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-98" x-transition:enter-end="opacity-100 scale-100">
+                        <x-nisoya-ai-arama :ziyaretci-ulke="$ziyaretciUlke" :show-prompts="true" />
+                    </div>
 
-                {{-- Hızlı diaspora kısayolları --}}
-                <div class="mt-4 flex flex-wrap items-center justify-center gap-1.5 text-xs">
-                    <span class="{{ $heroMedya ? 'text-white/70' : 'text-stone-500 dark:text-stone-400' }}">Popüler:</span>
-                    <a href="{{ url('/ilanlar?q=nakliye') }}" class="rounded-full px-2.5 py-1 transition {{ $heroMedya ? 'bg-white/10 text-white/90 hover:bg-white/20' : 'bg-stone-200/70 text-stone-700 hover:bg-stone-300/70 dark:bg-stone-800 dark:text-stone-300' }}">Nakliyeci</a>
-                    <a href="{{ url('/ilanlar?q=tamir') }}" class="rounded-full px-2.5 py-1 transition {{ $heroMedya ? 'bg-white/10 text-white/90 hover:bg-white/20' : 'bg-stone-200/70 text-stone-700 hover:bg-stone-300/70 dark:bg-stone-800 dark:text-stone-300' }}">Usta & Tamir</a>
-                    <a href="{{ url('/ilanlar?q=tercuman') }}" class="rounded-full px-2.5 py-1 transition {{ $heroMedya ? 'bg-white/10 text-white/90 hover:bg-white/20' : 'bg-stone-200/70 text-stone-700 hover:bg-stone-300/70 dark:bg-stone-800 dark:text-stone-300' }}">Tercüman</a>
-                    @if (\App\Support\Modules::enabled('hali_saha'))
-                        <a href="{{ route('football.index') }}" class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium transition {{ $heroMedya ? 'bg-emerald-500/25 text-emerald-200 hover:bg-emerald-500/35' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950 dark:text-emerald-300' }}">⚽ Halı Saha Maçı</a>
-                    @endif
-                    @if (\App\Support\Modules::enabled('is_ilanlari'))
-                        <a href="{{ route('jobs.index') }}" class="rounded-full px-2.5 py-1 transition {{ $heroMedya ? 'bg-white/10 text-white/90 hover:bg-white/20' : 'bg-stone-200/70 text-stone-700 hover:bg-stone-300/70 dark:bg-stone-800 dark:text-stone-300' }}">💼 İş İlanları</a>
-                    @endif
+                    {{-- 2. Mod: Klasik İlan ve Hizmet Arama --}}
+                    <div x-show="aramaModu === 'ilan'" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-98" x-transition:enter-end="opacity-100 scale-100">
+                        <form action="{{ url('/ilanlar') }}" method="GET" class="flex flex-col gap-2 rounded-2xl bg-white/95 p-2 shadow-xl ring-1 ring-stone-200/90 backdrop-blur sm:flex-row dark:bg-stone-900/95 dark:ring-stone-700/80">
+                            <input type="text" name="q" placeholder="{{ setting('home.arama_placeholder', 'Usta, tercüman, nakliye, ev veya iş ara...') }}"
+                                   class="h-11 flex-1 rounded-xl border-0 bg-transparent px-4 text-sm sm:text-base font-medium text-stone-800 placeholder-stone-500 focus:outline-none focus:ring-0 dark:text-stone-100 dark:placeholder-stone-500">
+                            <select name="ulke" class="h-11 rounded-xl border-0 bg-stone-100 px-3 text-sm font-medium text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:text-stone-200">
+                                <option value="">Tüm ülkeler (60+)</option>
+                                @foreach ($countries as $country)
+                                    <option value="{{ $country->code }}" @selected(($ziyaretciUlke?->code ?? '') === $country->code)>
+                                        {{ $country->emoji }} {{ $country->name_tr }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-emerald-700 px-6 font-bold text-white shadow-brand transition hover:bg-emerald-800 active:scale-[0.98] dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-stone-900">
+                                <span>Ara</span>
+                                <span aria-hidden="true">→</span>
+                            </button>
+                        </form>
+
+                        {{-- Hızlı diaspora kısayolları --}}
+                        <div class="mt-3 flex flex-wrap items-center justify-center gap-1.5 text-xs">
+                            <span class="{{ $heroMedya ? 'text-white/80' : 'text-stone-500 dark:text-stone-400' }}">Popüler:</span>
+                            <a href="{{ url('/ilanlar?q=nakliye') }}" class="rounded-full px-2.5 py-1 font-medium transition {{ $heroMedya ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-stone-200/70 text-stone-700 hover:bg-stone-300/70 dark:bg-stone-800 dark:text-stone-300' }}">🚚 Nakliyeci</a>
+                            <a href="{{ url('/ilanlar?q=tamir') }}" class="rounded-full px-2.5 py-1 font-medium transition {{ $heroMedya ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-stone-200/70 text-stone-700 hover:bg-stone-300/70 dark:bg-stone-800 dark:text-stone-300' }}">🔧 Usta & Tamir</a>
+                            <a href="{{ url('/ilanlar?q=tercuman') }}" class="rounded-full px-2.5 py-1 font-medium transition {{ $heroMedya ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-stone-200/70 text-stone-700 hover:bg-stone-300/70 dark:bg-stone-800 dark:text-stone-300' }}">📑 Tercüman</a>
+                            @if (\App\Support\Modules::enabled('hali_saha'))
+                                <a href="{{ route('football.index') }}" class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium transition {{ $heroMedya ? 'bg-emerald-500/25 text-emerald-200 hover:bg-emerald-500/35' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950 dark:text-emerald-300' }}">⚽ Halı Saha Maçı</a>
+                            @endif
+                            @if (\App\Support\Modules::enabled('is_ilanlari'))
+                                <a href="{{ route('jobs.index') }}" class="rounded-full px-2.5 py-1 font-medium transition {{ $heroMedya ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-stone-200/70 text-stone-700 hover:bg-stone-300/70 dark:bg-stone-800 dark:text-stone-300' }}">💼 İş İlanları</a>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Güven ve Ağ Rozetleri --}}
+                    <div class="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs font-medium {{ $heroMedya ? 'text-white/80' : 'text-stone-600 dark:text-stone-300' }}">
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="text-emerald-500 font-bold">✓</span> 60+ Ülke Diaspora Ağı
+                        </span>
+                        <span class="hidden sm:inline opacity-30">•</span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="text-emerald-500 font-bold">✓</span> %100 Türkçe Hizmet
+                        </span>
+                        <span class="hidden sm:inline opacity-30">•</span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="text-emerald-500 font-bold">✓</span> Yapay Zekâ Destekli Rehber
+                        </span>
+                        <span class="hidden sm:inline opacity-30">•</span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="text-emerald-500 font-bold">✓</span> Güvenli Topluluk
+                        </span>
+                    </div>
                 </div>
             </div>
         </section>
