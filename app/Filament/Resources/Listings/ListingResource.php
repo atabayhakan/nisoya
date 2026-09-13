@@ -8,6 +8,7 @@ use App\Filament\Resources\Listings\Pages\EditListing;
 use App\Filament\Resources\Listings\Pages\ListListings;
 use App\Filament\Resources\Listings\Schemas\ListingForm;
 use App\Filament\Resources\Listings\Tables\ListingsTable;
+use App\Filament\Resources\Listings\Widgets\ListingsStatsWidget;
 use App\Models\Listing;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -69,6 +70,13 @@ class ListingResource extends Resource
     {
         return [
             //
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            ListingsStatsWidget::class,
         ];
     }
 
