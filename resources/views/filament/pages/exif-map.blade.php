@@ -1,235 +1,348 @@
 <x-filament-panels::page>
-    <x-filament::section>
-        <x-slot name="heading">
-            <div class="flex items-center gap-3">
-                <span>🛰️ EXIF Haritası</span>
-                <span class="text-sm font-normal text-stone-500">
-                    GPS koordinatı içeren tüm görseller
-                </span>
-            </div>
-        </x-slot>
+    <div
+        x-data="exifMapApp()"
+        x-init="init()"
+        class="space-y-4"
+    >
+        {{-- Kontrol & Filtre Çubuğu --}}
+        <x-filament::section>
+            <div class="flex flex-wrap items-center justify-between gap-3 text-sm">
+                <div class="flex flex-wrap items-center gap-4">
+                    <label class="inline-flex items-center gap-2 cursor-pointer font-medium text-gray-700 dark:text-gray-300">
+                        <input
+                            type="checkbox"
+                            x-model="sensitiveOnly"
+                            @change="loadMarkers()"
+                            class="rounded border-gray-300 text-rose-600 focus:ring-rose-500 dark:border-gray-700 dark:bg-gray-900"
+                        >
+                        <span>Sadece Hassas EXIF</span>
+                    </label>
 
-        <div wire:id="exif-map" class="space-y-4">
-            {{-- Filtre bar --}}
-            <div class="flex flex-wrap items-center gap-3 rounded-lg bg-stone-50 p-3 dark:bg-stone-800">
-                <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" id="sensitive-only" class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-500">
-                    <span>Sadece hassas EXIF</span>
-                </label>
-                <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" id="cluster-mode" checked class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-500">
-                    <span>Cluster göster</span>
-                </label>
-                <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" id="heatmap-mode" class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-500">
-                    <span>Heatmap modu</span>
-                </label>
-                <div class="ms-auto text-xs text-stone-500" id="map-stats">
-                    <span id="marker-count">0</span> marker
+                    <label class="inline-flex items-center gap-2 cursor-pointer font-medium text-gray-700 dark:text-gray-300">
+                        <input
+                            type="checkbox"
+                            x-model="clusterMode"
+                            @change="toggleCluster()"
+                            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-900"
+                        >
+                        <span>Kümeleme (Cluster)</span>
+                    </label>
+
+                    {{-- Hızlı Bölge Odaklanma Butonları --}}
+                    <div class="inline-flex items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
+                        <button
+                            type="button"
+                            @click="focusRegion('world')"
+                            class="rounded px-2 py-1 text-xs font-medium text-gray-700 hover:bg-white dark:text-gray-300 dark:hover:bg-gray-700"
+                        >
+                            🌍 Dünya
+                        </button>
+                        <button
+                            type="button"
+                            @click="focusRegion('europe')"
+                            class="rounded px-2 py-1 text-xs font-medium text-gray-700 hover:bg-white dark:text-gray-300 dark:hover:bg-gray-700"
+                        >
+                            🇪🇺 Avrupa
+                        </button>
+                        <button
+                            type="button"
+                            @click="focusRegion('turkey')"
+                            class="rounded px-2 py-1 text-xs font-medium text-gray-700 hover:bg-white dark:text-gray-300 dark:hover:bg-gray-700"
+                        >
+                            🇹🇷 Türkiye
+                        </button>
+                        <button
+                            type="button"
+                            @click="focusRegion('central_asia')"
+                            class="rounded px-2 py-1 text-xs font-medium text-gray-700 hover:bg-white dark:text-gray-300 dark:hover:bg-gray-700"
+                        >
+                            🇰🇬 Orta Asya
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    <span class="inline-flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span x-text="statusText">Harita hazırlanıyor...</span>
                 </div>
             </div>
+        </x-filament::section>
 
-            {{-- Harita --}}
+        {{-- Harita Konteyneri --}}
+        <div class="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            {{-- Yükleniyor Göstergesi --}}
+            <div
+                x-show="loading"
+                x-transition.opacity
+                class="absolute inset-0 z-40 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs dark:bg-gray-900/80"
+            >
+                <div class="text-4xl animate-bounce">🛰️</div>
+                <div class="mt-2 text-sm font-semibold text-gray-800 dark:text-gray-200">Coğrafi İstihbarat Haritası Yükleniyor...</div>
+                <div class="text-xs text-gray-500">Koordinat ve kümeleme verileri taranıyor</div>
+            </div>
+
+            {{-- Harita Canvas --}}
             <div
                 id="exif-map-canvas"
-                style="height: 600px; min-height: 400px; border-radius: 0.75rem; overflow: hidden; border: 1px solid rgb(214 211 209);"
-                class="relative"
+                style="height: 620px; width: 100%; z-index: 10;"
+            ></div>
+
+            {{-- 0 Marker Durumunda Bilgilendirici Alt Bildirim Rozeti --}}
+            <div
+                x-show="!loading && markersCount === 0"
+                x-transition
+                class="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl border border-primary-200 bg-primary-50/95 p-3.5 shadow-lg backdrop-blur-md dark:border-primary-800 dark:bg-primary-950/90"
             >
-                <div class="absolute inset-0 z-50 flex items-center justify-center bg-stone-50 dark:bg-stone-900" id="map-loading">
-                    <div class="text-center">
-                        <div class="mb-2 text-3xl">🗺️</div>
-                        <p class="text-sm text-stone-500">Harita yükleniyor...</p>
+                <div class="flex items-center gap-2.5 text-xs text-primary-900 dark:text-primary-200">
+                    <span class="text-lg">🗺️</span>
+                    <div>
+                        <strong class="font-semibold">Harita Aktif:</strong>
+                        <span>Sistemde henüz GPS koordinatı içeren görsel bulunmuyor veya yüklenen görsellerin GPS verileri KVKK gereği otomatik temizlenmiş durumda.</span>
                     </div>
                 </div>
-            </div>
-
-            {{-- Cluster listesi (yan panel gibi altta) --}}
-            <div id="cluster-panel" class="hidden rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-700 dark:bg-stone-800">
-                <h3 class="mb-3 text-sm font-semibold text-stone-700 dark:text-stone-300">
-                    <span id="cluster-panel-title">Kümeler</span>
-                </h3>
-                <div id="cluster-list" class="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"></div>
+                <a
+                    href="{{ \App\Filament\Resources\ListingImages\ListingImageResource::getUrl('index') }}"
+                    class="rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-primary-500 transition shrink-0"
+                >
+                    Görseller Tablosunu Aç
+                </a>
             </div>
         </div>
-    </x-filament::section>
 
-    {{-- Leaflet CSS/JS --}}
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-          crossorigin="">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="">
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-            crossorigin=""></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
-    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js" crossorigin=""></script>
+        {{-- Şüpheli Kümeler (Clusters) ve Kopya Noktalar Paneli --}}
+        <x-filament::section>
+            <x-slot name="heading">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span>🔍 Şüpheli Coğrafi Kümeler & Kopya Noktaları</span>
+                        <span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-950 dark:text-amber-300" x-text="clusterCountText">0 Küme</span>
+                    </div>
+                    <span class="text-xs text-gray-500 font-normal">Aynı koordinattan yüklenen görseller organize sahtekarlık veya bot çetelerine işaret edebilir.</span>
+                </div>
+            </x-slot>
+
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                <template x-for="(c, idx) in clusters" :key="idx">
+                    <div
+                        @click="flyToCoordinates(c.lat, c.lng)"
+                        class="group cursor-pointer rounded-xl border border-gray-200 bg-gray-50 p-3.5 transition hover:border-primary-500 hover:bg-primary-50/40 dark:border-gray-800 dark:bg-gray-900/60 dark:hover:border-primary-600 dark:hover:bg-primary-950/20 shadow-xs"
+                    >
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary-600">📍 Küme #<span x-text="idx + 1"></span></span>
+                            <span class="rounded-md bg-rose-100 px-2 py-0.5 text-2xs font-bold text-rose-700 dark:bg-rose-950 dark:text-rose-300" x-text="c.count + ' Görsel'"></span>
+                        </div>
+                        <div class="mt-1.5 text-2xs font-mono text-gray-500" x-text="c.lat.toFixed(4) + ', ' + c.lng.toFixed(4)"></div>
+                        <div class="mt-2 flex items-center justify-between text-2xs text-gray-600 dark:text-gray-400">
+                            <span x-text="c.listing_ids.length + ' Farklı İlan'"></span>
+                            <span class="text-primary-600 font-semibold group-hover:underline">Haritada İncele →</span>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="clusters.length === 0" class="col-span-full py-4 text-center text-xs text-gray-500">
+                    Yoğunlaşmış şüpheli koordinat kümesi tespit edilmedi. Tüm görseller sağlıklı dağılımda.
+                </div>
+            </div>
+        </x-filament::section>
+    </div>
+
+    {{-- Leaflet Script ve Stil Yükleyicisi --}}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="" />
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const mapEl = document.getElementById('exif-map-canvas');
-            const loadingEl = document.getElementById('map-loading');
-            const markerCountEl = document.getElementById('marker-count');
-            const clusterListEl = document.getElementById('cluster-list');
-            const clusterPanel = document.getElementById('cluster-panel');
-            const clusterPanelTitle = document.getElementById('cluster-panel-title');
+        function exifMapApp() {
+            return {
+                map: null,
+                markerLayer: null,
+                sensitiveOnly: false,
+                clusterMode: true,
+                loading: true,
+                markersCount: 0,
+                clusters: [],
+                statusText: 'Harita başlatılıyor...',
+                clusterCountText: 'Yükleniyor...',
 
-            // Haritayı başlat — varsayılan İstanbul
-            const map = L.map(mapEl).setView([41.0082, 28.9784], 4);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap',
-            }).addTo(map);
+                async init() {
+                    await this.loadDependencies();
+                    this.initMap();
+                    await this.loadMarkers();
+                    await this.loadClusters();
+                },
 
-            let markerLayer = L.markerClusterGroup({
-                maxClusterRadius: 50,
-                spiderfyOnMaxZoom: true,
-                showCoverageOnHover: false,
-            });
-            let heatLayer = null;
-            let allMarkers = [];
+                loadDependencies() {
+                    return new Promise((resolve) => {
+                        if (window.L && window.L.markerClusterGroup) {
+                            return resolve();
+                        }
 
-            function showMarkerPopup(marker) {
-                const m = marker.options.exifData;
-                const img = m.thumb ? `<img src="${m.thumb}" alt="" class="mb-2 h-24 w-full rounded object-cover">` : '';
-                const sensitive = m.sensitive ? '<span class="badge bg-red-500">Hassas</span>' : '<span class="badge bg-green-500">Temiz</span>';
-                const camera = (m.camera || m.model) ? `<div class="text-xs text-stone-500">${(m.camera || '') + ' ' + (m.model || '')}</div>` : '';
-                const listing = m.listing ? `<a href="${m.listing.url}" target="_blank" class="text-sm font-medium text-emerald-700 hover:underline">${m.listing.title}</a>` : '';
-                const user = m.user ? `<div class="text-xs text-stone-500">👤 ${m.user.name}</div>` : '';
-                const date = m.uploaded_at ? new Date(m.uploaded_at).toLocaleDateString('tr-TR') : '';
+                        const loadScript = (src) => {
+                            return new Promise((res, rej) => {
+                                if (document.querySelector(`script[src="${src}"]`)) {
+                                    return res();
+                                }
+                                const script = document.createElement('script');
+                                script.src = src;
+                                script.async = true;
+                                script.onload = res;
+                                script.onerror = rej;
+                                document.head.appendChild(script);
+                            });
+                        };
 
-                return `
-                    <div class="min-w-[200px] font-sans">
-                        ${img}
-                        ${sensitive}
-                        <div class="mt-1 font-semibold text-stone-900">${listing}</div>
-                        ${user}
-                        ${camera}
-                        <div class="mt-1 text-xs text-stone-600">${date}</div>
-                        <div class="mt-1 text-2xs text-stone-600">${m.lat.toFixed(4)}, ${m.lng.toFixed(4)}</div>
-                    </div>
-                `;
-            }
-
-            function addMarkers(data) {
-                markerLayer.clearLayers();
-                allMarkers = [];
-                const heatPoints = [];
-
-                data.markers.forEach((m) => {
-                    const icon = L.divIcon({
-                        className: 'exif-marker',
-                        html: `<div style="background:${m.sensitive ? '#dc2626' : '#059669'};color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3)">📷</div>`,
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12],
+                        loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js')
+                            .then(() => loadScript('https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js'))
+                            .then(() => resolve())
+                            .catch((err) => {
+                                console.error('Harita kütüphaneleri yüklenemedi:', err);
+                                resolve();
+                            });
                     });
+                },
 
-                    const marker = L.marker([m.lat, m.lng], { icon, exifData: m });
-                    marker.bindPopup(showMarkerPopup(marker));
-                    markerLayer.addLayer(marker);
-                    allMarkers.push(marker);
-                    heatPoints.push([m.lat, m.lng, 1]);
-                });
+                initMap() {
+                    if (!window.L) return;
+                    const canvas = document.getElementById('exif-map-canvas');
+                    if (!canvas || this.map) return;
 
-                if (heatLayer) {
-                    map.removeLayer(heatLayer);
-                    heatLayer = null;
-                }
+                    // Varsayılan odak: Avrupa / Türkiye merkezi
+                    this.map = L.map(canvas, {
+                        zoomControl: true,
+                        attributionControl: true,
+                    }).setView([46.0, 20.0], 4);
 
-                if (data.markers.length === 0) {
-                    markerCountEl.textContent = '0';
-                    loadingEl.style.display = 'none';
-                    return;
-                }
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    }).addTo(this.map);
 
-                if (data.bounds) {
-                    const b = data.bounds;
-                    map.fitBounds([[b.south, b.west], [b.north, b.east]], { padding: [30, 30] });
-                } else {
-                    const group = L.featureGroup(allMarkers);
-                    map.fitBounds(group.getBounds(), { padding: [30, 30] });
-                }
+                    this.markerLayer = L.markerClusterGroup({
+                        maxClusterRadius: 50,
+                        spiderfyOnMaxZoom: true,
+                        showCoverageOnHover: false,
+                    });
+                    this.map.addLayer(this.markerLayer);
+                },
 
-                heatLayer = L.heatLayer(heatPoints, { radius: 25, blur: 15 });
+                async loadMarkers() {
+                    this.loading = true;
+                    this.statusText = 'Veriler çekiliyor...';
+                    try {
+                        const url = new URL('{{ route('exif-map.images') }}', window.location.origin);
+                        if (this.sensitiveOnly) {
+                            url.searchParams.set('sensitive', '1');
+                        }
 
-                markerCountEl.textContent = data.markers.length;
-                loadingEl.style.display = 'none';
-            }
+                        const response = await fetch(url);
+                        const data = await response.json();
 
-            function toggleCluster() {
-                const enabled = document.getElementById('cluster-mode').checked;
-                if (enabled) {
-                    map.addLayer(markerLayer);
-                    map.removeLayer(heatLayer);
-                    document.getElementById('heatmap-mode').checked = false;
-                } else {
-                    map.removeLayer(markerLayer);
-                }
-            }
+                        this.renderMarkers(data);
+                    } catch (e) {
+                        console.error('Marker yükleme hatası:', e);
+                        this.statusText = 'Hata oluştu';
+                    } finally {
+                        this.loading = false;
+                    }
+                },
 
-            function toggleHeatmap() {
-                const enabled = document.getElementById('heatmap-mode').checked;
-                if (enabled && heatLayer) {
-                    map.addLayer(heatLayer);
-                    map.removeLayer(markerLayer);
-                    document.getElementById('cluster-mode').checked = false;
-                } else {
-                    if (heatLayer) map.removeLayer(heatLayer);
-                }
-            }
+                renderMarkers(data) {
+                    if (!this.markerLayer || !this.map) return;
+                    this.markerLayer.clearLayers();
+                    const allMarkers = [];
 
-            async function loadMarkers(sensitive = false) {
-                loadingEl.style.display = 'flex';
-                try {
-                    const url = new URL('{{ route('exif-map.images') }}', window.location.origin);
-                    if (sensitive) url.searchParams.set('sensitive', 1);
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    addMarkers(data);
-                } catch (err) {
-                    console.error('Marker yükleme hatası:', err);
-                } finally {
-                    loadingEl.style.display = 'none';
-                }
-            }
+                    const markers = data.markers || [];
+                    this.markersCount = markers.length;
+                    this.statusText = `${this.markersCount} GPS'li görsel haritada`;
 
-            async function loadClusters() {
-                clusterListEl.innerHTML = '<div class="col-span-full text-sm text-stone-500">Yükleniyor...</div>';
-                try {
-                    const response = await fetch('{{ route('exif-map.clusters') }}');
-                    const data = await response.json();
-                    clusterListEl.innerHTML = '';
-                    data.clusters.slice(0, 12).forEach((c) => {
-                        const el = document.createElement('button');
-                        el.type = 'button';
-                        el.className = 'rounded-lg border border-stone-200 bg-stone-50 p-3 text-left transition hover:border-emerald-500 hover:bg-emerald-50 dark:border-stone-700 dark:bg-stone-900 dark:hover:bg-emerald-950/30';
-                        el.innerHTML = `
-                            <div class="flex items-center justify-between">
-                                <div class="text-sm font-semibold text-stone-900 dark:text-stone-100">${c.count} görsel</div>
-                                <div class="text-xs text-stone-500">${c.lat.toFixed(3)}, ${c.lng.toFixed(3)}</div>
+                    markers.forEach((m) => {
+                        const isSensitive = m.sensitive;
+                        const iconHtml = `<div style="background:${isSensitive ? '#e11d48' : '#059669'};color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.35);">📷</div>`;
+
+                        const customIcon = L.divIcon({
+                            className: 'exif-map-pin',
+                            html: iconHtml,
+                            iconSize: [28, 28],
+                            iconAnchor: [14, 14],
+                        });
+
+                        const marker = L.marker([m.lat, m.lng], { icon: customIcon });
+
+                        // Popup Kartı
+                        const imgTag = m.thumb ? `<img src="${m.thumb}" class="w-full h-28 object-cover rounded-lg mb-2 shadow-xs" />` : '';
+                        const listingTitle = m.listing ? `<a href="${m.listing.url}" target="_blank" class="font-bold text-sm text-primary-600 hover:underline block mb-1">${m.listing.title}</a>` : '<div class="text-sm font-semibold mb-1">Bağımsız Görsel</div>';
+                        const seller = m.user ? `<div class="text-xs text-gray-500 mb-1">👤 Satıcı: <strong class="text-gray-700">${m.user.name}</strong></div>` : '';
+                        const camera = (m.camera || m.model) ? `<div class="text-xs text-gray-500 mb-1">📷 Cihaz: ${m.camera || ''} ${m.model || ''}</div>` : '';
+                        const statusBadge = isSensitive ? '<span style="background:#fee2e2;color:#991b1b;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;">⚠️ Hassas EXIF</span>' : '<span style="background:#d1fae5;color:#065f46;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;">✓ Güvenli</span>';
+                        const coord = `<div class="text-2xs font-mono text-gray-400 mt-1">📍 ${m.lat.toFixed(4)}, ${m.lng.toFixed(4)}</div>`;
+
+                        const popupContent = `
+                            <div style="min-width:220px; font-family:inherit; padding:4px;">
+                                ${imgTag}
+                                <div style="margin-bottom:6px;">${statusBadge}</div>
+                                ${listingTitle}
+                                ${seller}
+                                ${camera}
+                                ${coord}
                             </div>
-                            <div class="mt-1 text-xs text-stone-500">📍 ${c.listing_ids.length} ilan</div>
                         `;
-                        el.onclick = () => map.flyTo([c.lat, c.lng], 12);
-                        clusterListEl.appendChild(el);
+
+                        marker.bindPopup(popupContent);
+                        this.markerLayer.addLayer(marker);
+                        allMarkers.push(marker);
                     });
-                    clusterPanelTitle.textContent = `${data.cluster_count} küme (${data.total_images} görsel)`;
-                    clusterPanel.classList.remove('hidden');
-                } catch (err) {
-                    console.error('Cluster yükleme hatası:', err);
+
+                    if (allMarkers.length > 0) {
+                        const group = L.featureGroup(allMarkers);
+                        this.map.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 14 });
+                    }
+                },
+
+                async loadClusters() {
+                    try {
+                        const response = await fetch('{{ route('exif-map.clusters') }}');
+                        const data = await response.json();
+                        this.clusters = (data.clusters || []).slice(0, 8);
+                        this.clusterCountText = `${data.cluster_count || 0} Küme (${data.total_images || 0} Görsel)`;
+                    } catch (e) {
+                        console.error('Cluster çekme hatası:', e);
+                        this.clusterCountText = '0 Küme';
+                    }
+                },
+
+                toggleCluster() {
+                    if (!this.map || !this.markerLayer) return;
+                    if (this.clusterMode) {
+                        this.map.addLayer(this.markerLayer);
+                    } else {
+                        this.map.removeLayer(this.markerLayer);
+                    }
+                },
+
+                flyToCoordinates(lat, lng) {
+                    if (!this.map) return;
+                    this.map.flyTo([lat, lng], 13, { duration: 1.2 });
+                    window.scrollTo({ top: 320, behavior: 'smooth' });
+                },
+
+                focusRegion(region) {
+                    if (!this.map) return;
+                    switch (region) {
+                        case 'europe':
+                            this.map.flyTo([51.1657, 10.4515], 5);
+                            break;
+                        case 'turkey':
+                            this.map.flyTo([38.9637, 35.2433], 6);
+                            break;
+                        case 'central_asia':
+                            this.map.flyTo([42.8746, 74.5698], 6);
+                            break;
+                        case 'world':
+                        default:
+                            this.map.flyTo([46.0, 20.0], 4);
+                            break;
+                    }
                 }
-            }
-
-            // Event listeners
-            document.getElementById('sensitive-only').addEventListener('change', (e) => {
-                loadMarkers(e.target.checked);
-            });
-            document.getElementById('cluster-mode').addEventListener('change', toggleCluster);
-            document.getElementById('heatmap-mode').addEventListener('change', toggleHeatmap);
-
-            // İlk yükleme
-            loadMarkers();
-            loadClusters();
-        });
+            };
+        }
     </script>
 </x-filament-panels::page>
