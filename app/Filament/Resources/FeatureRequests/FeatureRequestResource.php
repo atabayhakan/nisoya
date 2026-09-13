@@ -8,6 +8,7 @@ use App\Filament\Resources\FeatureRequests\Pages\EditFeatureRequest;
 use App\Filament\Resources\FeatureRequests\Pages\ListFeatureRequests;
 use App\Filament\Resources\FeatureRequests\Schemas\FeatureRequestForm;
 use App\Filament\Resources\FeatureRequests\Tables\FeatureRequestsTable;
+use App\Filament\Resources\FeatureRequests\Widgets\FeatureRequestStatsWidget;
 use App\Models\FeatureRequest;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -37,7 +38,7 @@ class FeatureRequestResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return 'öne çıkarma talebi';
+        return 'Öne Çıkarma Talebi';
     }
 
     public static function getPluralModelLabel(): string
@@ -47,7 +48,14 @@ class FeatureRequestResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return (string) (FeatureRequest::query()->where('status', 'beklemede')->count() ?: '');
+        $count = FeatureRequest::query()->where('status', 'beklemede')->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
     }
 
     public static function form(Schema $schema): Schema
@@ -58,6 +66,13 @@ class FeatureRequestResource extends Resource
     public static function table(Table $table): Table
     {
         return FeatureRequestsTable::configure($table);
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            FeatureRequestStatsWidget::class,
+        ];
     }
 
     public static function getRelations(): array
