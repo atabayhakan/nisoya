@@ -8,6 +8,7 @@ use App\Filament\Resources\Categories\Pages\EditCategory;
 use App\Filament\Resources\Categories\Pages\ListCategories;
 use App\Filament\Resources\Categories\Schemas\CategoryForm;
 use App\Filament\Resources\Categories\Tables\CategoriesTable;
+use App\Filament\Resources\Categories\Widgets\CategoryStatsWidget;
 use App\Models\Category;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -59,6 +60,13 @@ class CategoryResource extends Resource
     {
         return [
             //
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            CategoryStatsWidget::class,
         ];
     }
 
