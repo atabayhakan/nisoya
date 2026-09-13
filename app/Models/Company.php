@@ -50,6 +50,7 @@ class Company extends Model
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Country, $this> */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class, 'country_code', 'code');
