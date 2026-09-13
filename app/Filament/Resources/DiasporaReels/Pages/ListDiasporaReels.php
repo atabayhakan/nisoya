@@ -7,6 +7,7 @@ use App\Filament\Resources\DiasporaReels\Widgets\DiasporaReelsStatsWidget;
 use App\Models\Country;
 use App\Models\DiasporaReel;
 use App\Services\Ai\CmsAiAssistant;
+use App\Services\Diaspora\DiasporaIntelligenceService;
 use App\Services\Diaspora\DiasporaRankingEngine;
 use App\Services\Diaspora\DiasporaSyncEngine;
 use Database\Seeders\DiasporaReelSeeder;
@@ -94,7 +95,7 @@ class ListDiasporaReels extends ListRecords
                         ->label('Şehir (Opsiyonel)')
                         ->placeholder('Köln, Bişkek, Berlin...'),
                 ])
-                ->action(function (array $data, CmsAiAssistant $assistant): void {
+                ->action(function (array $data, CmsAiAssistant $assistant, DiasporaIntelligenceService $intelligence): void {
                     $story = $assistant->generateDiasporaStory(
                         (string) $data['odak'],
                         isset($data['country_code']) ? (string) $data['country_code'] : null,
@@ -109,13 +110,25 @@ class ListDiasporaReels extends ListRecords
                         ? (string) $data['city']
                         : ($story['suggested_city'] ?? null);
 
-                    DiasporaReel::create([
+                    $enriched = $intelligence->enrich([
                         'title' => $story['title'] ?? (string) $data['odak'],
                         'caption' => $story['caption'] ?? null,
                         'instagram_url' => (string) $data['instagram_url'],
+                        'instagram_username' => $story['suggested_username'] ?? null,
                         'country_code' => $countryCode,
                         'city' => $city,
-                        'instagram_username' => $story['suggested_username'] ?? null,
+                    ]);
+
+                    DiasporaReel::create([
+                        'title' => (string) $enriched['title'],
+                        'caption' => $enriched['caption'] ?? null,
+                        'instagram_url' => (string) $data['instagram_url'],
+                        'country_code' => $enriched['country_code'] ?? $countryCode,
+                        'city' => $enriched['city'] ?? $city,
+                        'category' => $enriched['category'] ?? DiasporaReel::CATEGORY_GENEL,
+                        'safety_score' => $enriched['safety_score'] ?? 100,
+                        'safety_status' => $enriched['safety_status'] ?? 'safe',
+                        'instagram_username' => $enriched['instagram_username'] ?? ($story['suggested_username'] ?? null),
                         'status' => DiasporaReel::STATUS_PUBLISHED,
                         'is_active' => true,
                     ]);

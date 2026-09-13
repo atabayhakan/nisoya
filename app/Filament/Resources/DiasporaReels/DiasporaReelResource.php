@@ -432,7 +432,7 @@ class DiasporaReelResource extends Resource
             ->emptyStateIcon(Heroicon::OutlinedPlayCircle)
             ->emptyStateActions([
                 Action::make('ornekleriYukle')
-                    ->label('📥 6 Örnek Diaspora Hikayesini Yükle (Seed)')
+                    ->label('6 Örnek Diaspora Hikayesini Yükle (Seed)')
                     ->icon(Heroicon::OutlinedArrowDownTray)
                     ->color('info')
                     ->action(function (): void {
@@ -444,10 +444,79 @@ class DiasporaReelResource extends Resource
                             ->send();
                     }),
                 Action::make('aiReelsEkle')
-                    ->label('✨ AI ile Hızlı Ekle (Claude)')
+                    ->label('AI ile Hızlı Ekle (Claude)')
                     ->icon(Heroicon::OutlinedSparkles)
                     ->color('primary')
-                    ->url(fn (): string => ListDiasporaReels::getUrl()),
+                    ->modalHeading('Claude ile Diaspora Reels Hikayesi Oluştur')
+                    ->modalDescription('Diasporadaki bir etkinlik, buluşma veya lezzet konusunu yazın. Claude sizin için başlık, samimi hikaye notu ve şehir bilgilerini hazırlasın.')
+                    ->form([
+                        TextInput::make('odak')
+                            ->label('Konu / Odak Noktası')
+                            ->placeholder('Örn: Köln\'de Türk gençlik spor buluşması veya Bişkek Türk börekçisi')
+                            ->required(),
+                        TextInput::make('instagram_url')
+                            ->label('Instagram Reel / Gönderi Linki')
+                            ->placeholder('https://www.instagram.com/reel/C8xABC12345/')
+                            ->required(),
+                        Select::make('country_code')
+                            ->label('Ülke (Opsiyonel)')
+                            ->options(function () {
+                                return Country::query()
+                                    ->where('is_active', true)
+                                    ->orderBy('sort_order')
+                                    ->get()
+                                    ->mapWithKeys(fn (Country $c) => [$c->code => ($c->emoji ? $c->emoji.' ' : '').$c->name_tr]);
+                            })
+                            ->searchable()
+                            ->nullable(),
+                        TextInput::make('city')
+                            ->label('Şehir (Opsiyonel)')
+                            ->placeholder('Köln, Bişkek, Berlin...'),
+                    ])
+                    ->action(function (array $data, CmsAiAssistant $assistant, DiasporaIntelligenceService $intelligence): void {
+                        $story = $assistant->generateDiasporaStory(
+                            (string) $data['odak'],
+                            isset($data['country_code']) ? (string) $data['country_code'] : null,
+                            isset($data['city']) ? (string) $data['city'] : null
+                        );
+
+                        $countryCode = filled($data['country_code'] ?? null)
+                            ? (string) $data['country_code']
+                            : ($story['country_code'] ?? 'DE');
+
+                        $city = filled($data['city'] ?? null)
+                            ? (string) $data['city']
+                            : ($story['suggested_city'] ?? null);
+
+                        $enriched = $intelligence->enrich([
+                            'title' => $story['title'] ?? (string) $data['odak'],
+                            'caption' => $story['caption'] ?? null,
+                            'instagram_url' => (string) $data['instagram_url'],
+                            'instagram_username' => $story['suggested_username'] ?? null,
+                            'country_code' => $countryCode,
+                            'city' => $city,
+                        ]);
+
+                        DiasporaReel::create([
+                            'title' => (string) $enriched['title'],
+                            'caption' => $enriched['caption'] ?? null,
+                            'instagram_url' => (string) $data['instagram_url'],
+                            'country_code' => $enriched['country_code'] ?? $countryCode,
+                            'city' => $enriched['city'] ?? $city,
+                            'category' => $enriched['category'] ?? DiasporaReel::CATEGORY_GENEL,
+                            'safety_score' => $enriched['safety_score'] ?? 100,
+                            'safety_status' => $enriched['safety_status'] ?? 'safe',
+                            'instagram_username' => $enriched['instagram_username'] ?? ($story['suggested_username'] ?? null),
+                            'status' => DiasporaReel::STATUS_PUBLISHED,
+                            'is_active' => true,
+                        ]);
+
+                        Notification::make()
+                            ->title('Diaspora Reel hikayesi oluşturuldu')
+                            ->body('Claude AI başlık ve açıklamayı başarıyla hazırladı ve vitrine ekledi.')
+                            ->success()
+                            ->send();
+                    }),
                 Action::make('manuelEkle')
                     ->label('Manuel Reel Ekle')
                     ->icon(Heroicon::OutlinedPlus)
