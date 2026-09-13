@@ -4,8 +4,10 @@ namespace App\Filament\Resources\FootballPlayerRequests;
 
 use App\Enums\FootballRequestType;
 use App\Filament\Resources\FootballPlayerRequests\Pages\ListFootballPlayerRequests;
+use App\Filament\Resources\FootballPlayerRequests\Widgets\FootballPlayerRequestStatsWidget;
 use App\Models\FootballPlayerRequest;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\DateTimePicker;
@@ -34,7 +36,7 @@ class FootballPlayerRequestResource extends Resource
 
     protected static ?string $navigationLabel = 'Oyuncu / Maç İlanları';
 
-    protected static ?string $modelLabel = 'futbol ilanı';
+    protected static ?string $modelLabel = 'Futbol İlanı';
 
     protected static ?string $pluralModelLabel = 'Futbol İlanları';
 
@@ -74,7 +76,8 @@ class FootballPlayerRequestResource extends Resource
             ->columns([
                 TextColumn::make('user.name')
                     ->label('Kullanıcı')
-                    ->searchable(),
+                    ->searchable()
+                    ->description(fn (FootballPlayerRequest $record): ?string => $record->venue_name),
                 TextColumn::make('type')
                     ->label('Tür')
                     ->badge(),
@@ -98,12 +101,28 @@ class FootballPlayerRequestResource extends Resource
                     ->label('İlan Türü')
                     ->options(FootballRequestType::class),
             ])
+            ->recordActions([
+                Action::make('yayinToggle')
+                    ->label(fn (FootballPlayerRequest $record): string => $record->is_active ? 'Yayından Kaldır' : 'Yayınla')
+                    ->icon('heroicon-o-eye')
+                    ->color('warning')
+                    ->action(function (FootballPlayerRequest $record): void {
+                        $record->update(['is_active' => ! $record->is_active]);
+                    }),
+            ])
             ->defaultSort('created_at', 'desc')
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            FootballPlayerRequestStatsWidget::class,
+        ];
     }
 
     public static function getPages(): array

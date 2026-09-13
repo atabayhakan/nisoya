@@ -6,6 +6,7 @@ use App\Filament\Resources\ContactMessages\Pages\EditContactMessage;
 use App\Filament\Resources\ContactMessages\Pages\ListContactMessages;
 use App\Filament\Resources\ContactMessages\Schemas\ContactMessageForm;
 use App\Filament\Resources\ContactMessages\Tables\ContactMessagesTable;
+use App\Filament\Resources\ContactMessages\Widgets\ContactMessageStatsWidget;
 use App\Models\ContactMessage;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -33,7 +34,7 @@ class ContactMessageResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return 'mesaj';
+        return 'Mesaj';
     }
 
     public static function getPluralModelLabel(): string
@@ -67,6 +68,13 @@ class ContactMessageResource extends Resource
     {
         return [
             //
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            ContactMessageStatsWidget::class,
         ];
     }
 

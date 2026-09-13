@@ -1,4 +1,4 @@
-﻿<x-layouts.app>
+<x-layouts.app>
     <div class="mx-auto max-w-6xl px-4 py-8">
         {{-- Üst Başlık & Şehir Seçici --}}
         <div class="rounded-3xl border border-stone-200 bg-gradient-to-r from-emerald-900 via-stone-900 to-emerald-950 p-6 text-white shadow-lg sm:p-10 dark:border-stone-800">
@@ -26,6 +26,10 @@
                        class="inline-flex items-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-500">
                         <span>+</span> Takımını Kur
                     </a>
+                    <a href="{{ route('football.venues.index', \Illuminate\Support\Str::slug($currentCity)) }}"
+                       class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 px-4 py-3 text-sm font-black text-stone-950 shadow-md transition hover:from-amber-300 hover:to-amber-400">
+                        <span>📍</span> En Yakın Halı Sahalar
+                    </a>
                     <a href="{{ route('football.requests.create') }}"
                        class="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20">
                         <span>👥</span> Oyuncu / Maç Ara
@@ -36,19 +40,19 @@
             {{-- 4 Temel Metrik Kartı --}}
             <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <div class="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
-                    <p class="text-xs font-semibold text-stone-500">Aktif Takım</p>
+                    <p class="text-xs font-semibold text-stone-300">Aktif Takım</p>
                     <p class="mt-1 text-2xl font-bold text-white">{{ $metrics['teams_count'] }}</p>
                 </div>
                 <div class="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
-                    <p class="text-xs font-semibold text-stone-500">Kayıtlı Oyuncu</p>
+                    <p class="text-xs font-semibold text-stone-300">Kayıtlı Oyuncu</p>
                     <p class="mt-1 text-2xl font-bold text-emerald-400">{{ $metrics['players_count'] }}</p>
                 </div>
                 <div class="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
-                    <p class="text-xs font-semibold text-stone-500">Halı Saha</p>
+                    <p class="text-xs font-semibold text-stone-300">Halı Saha</p>
                     <p class="mt-1 text-2xl font-bold text-white">{{ $metrics['venues_count'] }}</p>
                 </div>
                 <div class="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
-                    <p class="text-xs font-semibold text-stone-500">Bu Hafta Maç</p>
+                    <p class="text-xs font-semibold text-stone-300">Bu Hafta Maç</p>
                     <p class="mt-1 text-2xl font-bold text-amber-400">{{ $metrics['weekly_matches_count'] }}</p>
                 </div>
             </div>
@@ -65,6 +69,124 @@
                         {{ $c->name }}
                     </a>
                 @endforeach
+            </div>
+        @endif
+
+        {{-- EA Sports FC / Ultimate Team TOTW Showcase --}}
+        @if (! empty($totw))
+            <div class="mt-8 overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-stone-950 via-stone-900 to-amber-950/40 p-6 text-white shadow-xl sm:p-8">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-amber-500/20 pb-4">
+                    <div>
+                        <div class="inline-flex items-center gap-2 rounded-full bg-amber-500/20 px-3 py-1 text-2xs font-extrabold uppercase tracking-widest text-amber-300">
+                            <span>⚡ EA FC 26</span>
+                            <span>•</span>
+                            <span>TEAM OF THE WEEK</span>
+                        </div>
+                        <h2 class="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">
+                            {{ $currentCity }} Haftanın Halı Saha 7'si (TOTW)
+                        </h2>
+                        <p class="mt-1 text-xs text-stone-300">
+                            Lig maçlarında gösterdikleri üstün performans ve MVP oylarıyla haftanın altın kartlarına seçilen oyuncular.
+                        </p>
+                    </div>
+                    <span class="rounded-xl border border-amber-400/40 bg-stone-900/80 px-3 py-1.5 text-center text-xs font-black text-amber-300">
+                        HAFTA #8
+                    </span>
+                </div>
+
+                {{-- Futbolcu Kartları Izgarası --}}
+                <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    @foreach ($totw as $card)
+                        <div class="group relative overflow-hidden rounded-2xl border-2 border-amber-400/80 bg-gradient-to-b from-amber-200/20 via-stone-900 to-stone-950 p-4 text-center shadow-lg transition-all hover:-translate-y-1 hover:border-amber-300 hover:shadow-amber-500/20">
+                            {{-- Kart Üstü Reyting & Mevki --}}
+                            <div class="flex items-start justify-between">
+                                <div class="text-left">
+                                    <div class="text-2xl font-black text-amber-300 leading-none">{{ $card['ovr'] }}</div>
+                                    <div class="text-[11px] font-black uppercase text-amber-100">{{ $card['position'] }}</div>
+                                </div>
+                                <span class="rounded-full bg-amber-500/30 px-2 py-0.5 text-[10px] font-bold text-amber-200">
+                                    ★ GOLD
+                                </span>
+                            </div>
+
+                            {{-- Avatar / Silüet --}}
+                            <div class="my-2 flex items-center justify-center">
+                                <div class="flex h-16 w-16 items-center justify-center rounded-full border-2 border-amber-400/60 bg-stone-800 text-2xl font-black text-amber-300 shadow-inner">
+                                    {{ mb_substr($card['name'], 0, 1) }}
+                                </div>
+                            </div>
+
+                            {{-- Oyuncu & Takım Adı --}}
+                            <h3 class="text-sm font-black text-white truncate">{{ $card['name'] }}</h3>
+                            <p class="text-2xs font-semibold text-stone-400 truncate">{{ $card['team'] }}</p>
+
+                            {{-- EA FC İstatistik Rozeti --}}
+                            <div class="mt-3 grid grid-cols-3 gap-1 border-t border-amber-400/20 pt-2 text-[10px] font-bold">
+                                <div><span class="text-stone-400">PAC</span> <span class="text-white">{{ $card['pac'] }}</span></div>
+                                <div><span class="text-stone-400">SHO</span> <span class="text-white">{{ $card['sho'] }}</span></div>
+                                <div><span class="text-stone-400">PAS</span> <span class="text-white">{{ $card['pas'] }}</span></div>
+                                <div><span class="text-stone-400">DRI</span> <span class="text-white">{{ $card['dri'] }}</span></div>
+                                <div><span class="text-stone-400">DEF</span> <span class="text-white">{{ $card['def'] }}</span></div>
+                                <div><span class="text-stone-400">PHY</span> <span class="text-white">{{ $card['phy'] }}</span></div>
+                            </div>
+
+                            {{-- Haftanın Unvanı --}}
+                            <div class="mt-2.5 rounded-lg bg-amber-500/20 py-1 text-3xs font-black uppercase text-amber-300">
+                                {{ $card['badge'] }}
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
+        {{-- Kings League / Baller League Formatı: Viral Halı Saha Vitrini --}}
+        @if (! empty($viralFeed))
+            <div class="mt-8 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8 dark:border-stone-800 dark:bg-stone-900">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-stone-100 pb-4 dark:border-stone-800">
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-0.5 text-2xs font-bold text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
+                            <span>🔥</span>
+                            <span>KINGS LEAGUE & VIRAL VİTRİN</span>
+                        </div>
+                        <h2 class="mt-1 text-xl font-extrabold text-stone-900 dark:text-stone-100 sm:text-2xl">
+                            Efsane Halı Saha Takımları & Haftanın Golleri
+                        </h2>
+                        <p class="text-xs text-stone-500 dark:text-stone-400">
+                            Sahalarda çekilen en iyi jeneriklik hareketler, son dakika geri dönüşleri ve popüler halı saha kulüpleri.
+                        </p>
+                    </div>
+                    <a href="{{ route('football.teams.create') }}" class="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 px-3.5 py-2 text-xs font-bold text-white transition hover:bg-stone-800 dark:bg-stone-700 dark:hover:bg-stone-600">
+                        <span>🏆 Kendi Takımını Tanıt</span>
+                    </a>
+                </div>
+
+                <div class="mt-5 grid gap-4 sm:grid-cols-3">
+                    @foreach ($viralFeed as $item)
+                        <div class="flex flex-col justify-between rounded-2xl border border-stone-100 bg-stone-50 p-4 transition hover:border-emerald-300 dark:border-stone-800 dark:bg-stone-800/60">
+                            <div>
+                                <div class="flex items-center justify-between">
+                                    <span class="rounded-lg bg-white px-2 py-0.5 text-2xs font-extrabold shadow-sm dark:bg-stone-700 dark:text-stone-200">
+                                        {{ $item['tag'] }}
+                                    </span>
+                                    <span class="text-2xs font-semibold text-stone-500 dark:text-stone-400">
+                                        👁️ {{ $item['views'] }}
+                                    </span>
+                                </div>
+                                <h3 class="mt-2.5 font-bold text-sm text-stone-900 line-clamp-2 dark:text-stone-100">
+                                    {{ $item['title'] }}
+                                </h3>
+                                <p class="mt-1 text-xs text-stone-600 line-clamp-2 dark:text-stone-300">
+                                    {{ $item['summary'] }}
+                                </p>
+                            </div>
+                            <div class="mt-4 flex items-center justify-between border-t border-stone-200/60 pt-2.5 text-2xs dark:border-stone-700">
+                                <span class="font-bold text-emerald-700 dark:text-emerald-400 truncate">{{ $item['team'] }}</span>
+                                <span class="text-stone-500 dark:text-stone-400">❤️ {{ $item['likes'] }} Beğeni</span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
         @endif
 

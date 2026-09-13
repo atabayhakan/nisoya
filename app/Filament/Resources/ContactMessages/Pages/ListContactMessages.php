@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ContactMessages\Pages;
 
 use App\Enums\ContactMessageStatus;
 use App\Filament\Resources\ContactMessages\ContactMessageResource;
+use App\Filament\Resources\ContactMessages\Widgets\ContactMessageStatsWidget;
 use App\Models\ContactMessage;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -17,6 +18,13 @@ class ListContactMessages extends ListRecords
     {
         return [
             //
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            ContactMessageStatsWidget::class,
         ];
     }
 

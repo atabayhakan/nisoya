@@ -143,4 +143,65 @@ class FootballVenue extends Model
 
         return $query->whereRaw('LOWER(city) = ?', [mb_strtolower(trim($city))]);
     }
+
+    public function getGoogleMapsUrl(): ?string
+    {
+        if ($this->latitude && $this->longitude) {
+            return "https://www.google.com/maps/dir/?api=1&destination={$this->latitude},{$this->longitude}";
+        }
+        if ($this->address) {
+            $query = urlencode($this->name.' '.$this->address.' '.$this->city);
+
+            return "https://www.google.com/maps/search/?api=1&query={$query}";
+        }
+
+        return null;
+    }
+
+    public function getYandexMapsUrl(): ?string
+    {
+        if ($this->latitude && $this->longitude) {
+            return "https://yandex.com/maps/?rtext=~{$this->latitude},{$this->longitude}";
+        }
+        if ($this->address) {
+            $text = urlencode($this->name.' '.$this->city);
+
+            return "https://yandex.com/maps/?text={$text}";
+        }
+
+        return null;
+    }
+
+    public function getAppleMapsUrl(): ?string
+    {
+        if ($this->latitude && $this->longitude) {
+            return "https://maps.apple.com/?daddr={$this->latitude},{$this->longitude}";
+        }
+        if ($this->address) {
+            $q = urlencode($this->name.' '.$this->city);
+
+            return "https://maps.apple.com/?q={$q}";
+        }
+
+        return null;
+    }
+
+    public function distanceFrom(?float $userLat, ?float $userLng): ?float
+    {
+        if ($userLat === null || $userLng === null || ! $this->latitude || ! $this->longitude) {
+            return null;
+        }
+
+        $earthRadiusKm = 6371.0;
+        $dLat = deg2rad($this->latitude - $userLat);
+        $dLon = deg2rad($this->longitude - $userLng);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+            cos(deg2rad($userLat)) * cos(deg2rad($this->latitude)) *
+            sin($dLon / 2) * sin($dLon / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return round($earthRadiusKm * $c, 1);
+    }
 }

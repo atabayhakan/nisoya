@@ -11,11 +11,14 @@ use App\Models\FootballTeam;
 use App\Models\FootballTeamMember;
 use App\Models\User;
 use App\Notifications\FootballTeamInviteNotification;
+use App\Services\Football\FootballCrestGeneratorService;
 use App\Services\ImageService;
 use App\Services\ProfanityFilterService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -110,6 +113,42 @@ class FootballTeamController extends Controller
             'countries' => $countries,
             'defaultCity' => $userCity,
             'defaultCountry' => $userCountry,
+            'availableSymbols' => FootballCrestGeneratorService::getAvailableSymbols(),
+            'availableStyles' => FootballCrestGeneratorService::getAvailableStyles(),
+        ]);
+    }
+
+    public function generateAiLogo(Request $request, FootballCrestGeneratorService $crestGenerator): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'min:2', 'max:60'],
+            'city' => ['nullable', 'string', 'max:50'],
+            'primary_color' => ['nullable', 'string', 'max:30'],
+            'secondary_color' => ['nullable', 'string', 'max:30'],
+            'symbol' => ['nullable', 'string', 'max:30'],
+            'style' => ['nullable', 'string', 'max:30'],
+        ]);
+
+        $symbol = $validated['symbol'] ?? 'kartal';
+        $style = $validated['style'] ?? 'klasik_kalkan';
+        $city = ! empty($validated['city']) ? $validated['city'] : 'İSTANBUL';
+
+        $result = $crestGenerator->generateAndStore(
+            teamName: $validated['name'],
+            city: $city,
+            primaryColor: $validated['primary_color'] ?? null,
+            secondaryColor: $validated['secondary_color'] ?? null,
+            symbol: $symbol,
+            style: $style,
+        );
+
+        return response()->json([
+            'success' => true,
+            'path' => $result['path'],
+            'url' => $result['url'],
+            'svg' => $result['svg'],
+            'initials' => $result['initials'],
+            'colors' => $result['colors'],
         ]);
     }
 
@@ -124,6 +163,7 @@ class FootballTeamController extends Controller
             'secondary_kit_color' => ['nullable', 'string', 'max:30'],
             'description' => ['nullable', 'string', 'max:2000'],
             'logo' => ['nullable', 'image', 'max:4096'],
+            'ai_logo_path' => ['nullable', 'string', 'max:255'],
         ]);
 
         if ($this->profanityFilter->hasProfanity($validated['name'])) {
@@ -134,6 +174,11 @@ class FootballTeamController extends Controller
         if ($request->hasFile('logo')) {
             $processed = $this->imageService->storeOptimized($request->file('logo'), 'football/teams');
             $logoPath = $processed['medium'] ?? ($processed['thumb'] ?? null);
+        } elseif (! empty($validated['ai_logo_path'])) {
+            $candidate = $validated['ai_logo_path'];
+            if (str_starts_with($candidate, 'football/teams/') && Storage::disk('public')->exists($candidate)) {
+                $logoPath = $candidate;
+            }
         }
 
         $team = FootballTeam::create([
@@ -171,6 +216,8 @@ class FootballTeamController extends Controller
         return view('football.teams.edit', [
             'team' => $team,
             'countries' => $countries,
+            'availableSymbols' => FootballCrestGeneratorService::getAvailableSymbols(),
+            'availableStyles' => FootballCrestGeneratorService::getAvailableStyles(),
         ]);
     }
 
@@ -187,6 +234,7 @@ class FootballTeamController extends Controller
             'secondary_kit_color' => ['nullable', 'string', 'max:30'],
             'description' => ['nullable', 'string', 'max:2000'],
             'logo' => ['nullable', 'image', 'max:4096'],
+            'ai_logo_path' => ['nullable', 'string', 'max:255'],
         ]);
 
         if ($this->profanityFilter->hasProfanity($validated['name'])) {
@@ -196,6 +244,11 @@ class FootballTeamController extends Controller
         if ($request->hasFile('logo')) {
             $processed = $this->imageService->storeOptimized($request->file('logo'), 'football/teams');
             $team->logo_path = $processed['medium'] ?? ($processed['thumb'] ?? null);
+        } elseif (! empty($validated['ai_logo_path'])) {
+            $candidate = $validated['ai_logo_path'];
+            if (str_starts_with($candidate, 'football/teams/') && Storage::disk('public')->exists($candidate)) {
+                $team->logo_path = $candidate;
+            }
         }
 
         $team->update([

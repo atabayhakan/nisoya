@@ -5,8 +5,10 @@ namespace App\Filament\Resources\FootballMatches;
 use App\Enums\FootballMatchStatus;
 use App\Enums\FootballResultStatus;
 use App\Filament\Resources\FootballMatches\Pages\ListFootballMatches;
+use App\Filament\Resources\FootballMatches\Widgets\FootballMatchStatsWidget;
 use App\Models\FootballMatch;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\DateTimePicker;
@@ -14,6 +16,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -35,7 +38,7 @@ class FootballMatchResource extends Resource
 
     protected static ?string $navigationLabel = 'Maçlar';
 
-    protected static ?string $modelLabel = 'halı saha maçı';
+    protected static ?string $modelLabel = 'Halı Saha Maçı';
 
     protected static ?string $pluralModelLabel = 'Halı Saha Maçları';
 
@@ -115,12 +118,44 @@ class FootballMatchResource extends Resource
                     ->label('Maç Durumu')
                     ->options(FootballMatchStatus::class),
             ])
+            ->recordActions([
+                Action::make('skorOnayla')
+                    ->label('Skoru Doğrula')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn (FootballMatch $record): bool => in_array($record->result_status, [FootballResultStatus::Girildi, FootballResultStatus::Itiraz], true))
+                    ->requiresConfirmation()
+                    ->action(function (FootballMatch $record): void {
+                        $record->update([
+                            'result_status' => FootballResultStatus::Dogrulandi->value,
+                            'status' => FootballMatchStatus::Oynandi->value,
+                        ]);
+                        Notification::make()
+                            ->title('Skor Başarıyla Onaylandı')
+                            ->success()
+                            ->send();
+                    }),
+                Action::make('oneCikarToggle')
+                    ->label(fn (FootballMatch $record): string => $record->is_featured ? 'Öne Çıkarmayı Kaldır' : 'Öne Çıkar')
+                    ->icon('heroicon-o-star')
+                    ->color('warning')
+                    ->action(function (FootballMatch $record): void {
+                        $record->update(['is_featured' => ! $record->is_featured]);
+                    }),
+            ])
             ->defaultSort('match_date', 'desc')
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            FootballMatchStatsWidget::class,
+        ];
     }
 
     public static function getPages(): array

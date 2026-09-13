@@ -139,6 +139,7 @@ Route::middleware('module:hali_saha')->prefix('spor')->name('football.')->group(
         // Takım Kurma & Eylemler
         Route::get('/takim/yeni', [FootballTeamController::class, 'create'])->name('teams.create');
         Route::post('/takim', [FootballTeamController::class, 'store'])->middleware(['honeypot', 'throttle:team-create'])->name('teams.store');
+        Route::post('/takim/ai-logo', [FootballTeamController::class, 'generateAiLogo'])->middleware('throttle:15,1')->name('teams.ai-logo');
         Route::get('/takim/{team}/duzenle', [FootballTeamController::class, 'edit'])->name('teams.edit');
         Route::put('/takim/{team}', [FootballTeamController::class, 'update'])->name('teams.update');
         Route::post('/takim/{team}/davet', [FootballTeamController::class, 'invitePlayer'])->name('teams.invite');
@@ -166,6 +167,9 @@ Route::middleware('module:hali_saha')->prefix('spor')->name('football.')->group(
         Route::post('/ilan/{playerRequest}/basvur', [FootballRequestController::class, 'apply'])->middleware('throttle:request-apply')->name('requests.apply');
         Route::delete('/ilan/{playerRequest}', [FootballRequestController::class, 'destroy'])->name('requests.destroy');
     });
+
+    // AI Halı Saha Kaşifi (Herkese açık akıllı öneri)
+    Route::post('/halisahalar/ai-oneri', [FootballVenueController::class, 'aiRecommend'])->middleware('throttle:30,1')->name('venues.ai-recommend');
 
     // Şehir bazlı herkese açık sayfalar
     Route::get('/{city}', [FootballBrowseController::class, 'city'])->name('city');

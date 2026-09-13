@@ -7,6 +7,7 @@ use App\Filament\Resources\Stories\Pages\EditStory;
 use App\Filament\Resources\Stories\Pages\ListStories;
 use App\Filament\Resources\Stories\Schemas\StoryForm;
 use App\Filament\Resources\Stories\Tables\StoriesTable;
+use App\Filament\Resources\Stories\Widgets\StoryStatsWidget;
 use App\Models\Story;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -34,7 +35,7 @@ class StoryResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return 'hikaye';
+        return 'Hikaye';
     }
 
     public static function getPluralModelLabel(): string
@@ -56,6 +57,13 @@ class StoryResource extends Resource
     {
         return [
             //
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            StoryStatsWidget::class,
         ];
     }
 

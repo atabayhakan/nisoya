@@ -7,6 +7,7 @@ use App\Filament\Resources\Reviews\Pages\EditReview;
 use App\Filament\Resources\Reviews\Pages\ListReviews;
 use App\Filament\Resources\Reviews\Schemas\ReviewForm;
 use App\Filament\Resources\Reviews\Tables\ReviewsTable;
+use App\Filament\Resources\Reviews\Widgets\ReviewStatsWidget;
 use App\Models\Review;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -34,7 +35,7 @@ class ReviewResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return 'değerlendirme';
+        return 'Değerlendirme';
     }
 
     public static function getPluralModelLabel(): string
@@ -56,6 +57,13 @@ class ReviewResource extends Resource
     {
         return [
             //
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            ReviewStatsWidget::class,
         ];
     }
 

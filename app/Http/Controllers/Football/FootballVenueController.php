@@ -9,8 +9,10 @@ use App\Models\FootballVenue;
 use App\Models\FootballVenueReview;
 use App\Services\ImageService;
 use App\Services\ProfanityFilterService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -46,11 +48,147 @@ class FootballVenueController extends Controller
             $query->where('surface_type', $request->string('surface_type'));
         }
 
-        $venues = $query->orderBy('rating', 'desc')->paginate(12)->withQueryString();
+        $userLat = $request->filled('lat') ? (float) $request->input('lat') : null;
+        $userLng = $request->filled('lng') ? (float) $request->input('lng') : null;
+
+        if ($userLat !== null && $userLng !== null) {
+            $allVenues = $query->get();
+            $sorted = $allVenues->sortBy(function (FootballVenue $v) use ($userLat, $userLng) {
+                return $v->distanceFrom($userLat, $userLng) ?? 99999;
+            })->values();
+
+            $page = (int) $request->input('page', 1);
+            $perPage = 12;
+            $venues = new LengthAwarePaginator(
+                $sorted->forPage($page, $perPage),
+                $sorted->count(),
+                $perPage,
+                $page,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+        } else {
+            $venues = $query->orderBy('rating', 'desc')->paginate(12)->withQueryString();
+        }
 
         return view('football.venues.index', [
             'currentCity' => $cityName,
             'venues' => $venues,
+            'userLat' => $userLat,
+            'userLng' => $userLng,
+            'featureOptions' => FootballVenue::FEATURE_OPTIONS,
+            'pitchTypes' => FootballVenue::PITCH_TYPES,
+            'surfaceTypes' => FootballVenue::SURFACE_TYPES,
+        ]);
+    }
+
+    public function aiRecommend(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'city' => ['nullable', 'string', 'max:50'],
+            'pitch_type' => ['nullable', 'string', 'in:kapali,acik,yari_acik'],
+            'surface_type' => ['nullable', 'string', 'in:suni_cim,dogal_cim,parke,hali'],
+            'features' => ['nullable', 'array'],
+            'features.*' => ['string'],
+            'lat' => ['nullable', 'numeric'],
+            'lng' => ['nullable', 'numeric'],
+        ]);
+
+        $city = ! empty($validated['city']) ? trim($validated['city']) : null;
+        $userLat = isset($validated['lat']) ? (float) $validated['lat'] : null;
+        $userLng = isset($validated['lng']) ? (float) $validated['lng'] : null;
+
+        $query = FootballVenue::query()->active();
+        if ($city) {
+            $query->city($city);
+        }
+
+        if (! empty($validated['pitch_type'])) {
+            $query->where('pitch_type', $validated['pitch_type']);
+        }
+        if (! empty($validated['surface_type'])) {
+            $query->where('surface_type', $validated['surface_type']);
+        }
+
+        $venues = $query->get();
+
+        // Kriterlere, zemin puanına ve mesafeye göre puanla
+        $desiredFeatures = $validated['features'] ?? [];
+        $scored = $venues->map(function (FootballVenue $venue) use ($desiredFeatures, $userLat, $userLng) {
+            $score = ($venue->rating ? (float) $venue->rating : 4.0) * 10;
+            $featureMatches = 0;
+            $venueFeatures = $venue->features ?: [];
+            foreach ($desiredFeatures as $feat) {
+                if (in_array($feat, $venueFeatures, true)) {
+                    $score += 15;
+                    $featureMatches++;
+                }
+            }
+
+            $dist = $venue->distanceFrom($userLat, $userLng);
+            if ($dist !== null) {
+                if ($dist <= 5) {
+                    $score += 20;
+                } elseif ($dist <= 10) {
+                    $score += 10;
+                } elseif ($dist <= 20) {
+                    $score += 5;
+                }
+            }
+
+            return [
+                'venue' => $venue,
+                'score' => $score,
+                'distance' => $dist,
+                'feature_matches' => $featureMatches,
+            ];
+        })->sortByDesc('score')->take(3)->values();
+
+        $comments = [
+            0 => '🎯 Yapay zeka kriterlerinize ve maç temposuna en yüksek uyumu gösteren 1. öncelikli tesis!',
+            1 => '⭐ Yüksek zemin kalitesi ve oyuncu memnuniyetiyle öne çıkan alternatif saha.',
+            2 => '⚽ Harika lokasyon ve maç sonrası olanaklarıyla ideal halı saha tercihi.',
+        ];
+
+        $recommendations = $scored->map(function ($item, $index) use ($comments) {
+            /** @var FootballVenue $v */
+            $v = $item['venue'];
+            $distText = $item['distance'] !== null ? "{$item['distance']} km mesafede" : null;
+
+            $badges = [];
+            if ($v->pitch_type === 'kapali') {
+                $badges[] = '🌧️ Yağmur Geçirmez Kapalı';
+            }
+            if ($v->surface_type === 'suni_cim') {
+                $badges[] = '⚡ Yeni Nesil Suni Çim';
+            }
+            if (in_array('otopark', $v->features ?: [], true)) {
+                $badges[] = '🚗 Ücretsiz Otopark';
+            }
+            if (in_array('gece_aydinlatmasi', $v->features ?: [], true)) {
+                $badges[] = '💡 HD Gece Aydınlatması';
+            }
+
+            return [
+                'id' => $v->id,
+                'name' => $v->name,
+                'city' => $v->city,
+                'address' => $v->address,
+                'rating' => (string) $v->rating,
+                'pitch_type_label' => FootballVenue::PITCH_TYPES[$v->pitch_type] ?? $v->pitch_type,
+                'surface_type_label' => FootballVenue::SURFACE_TYPES[$v->surface_type] ?? $v->surface_type,
+                'distance_text' => $distText,
+                'badges' => $badges,
+                'ai_comment' => $comments[$index] ?? 'Önerilen saha.',
+                'google_maps_url' => $v->getGoogleMapsUrl(),
+                'yandex_maps_url' => $v->getYandexMapsUrl(),
+                'url' => route('football.venues.show', ['city' => Str::slug($v->city), 'venue' => $v->slug]),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'count' => $recommendations->count(),
+            'recommendations' => $recommendations,
         ]);
     }
 

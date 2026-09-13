@@ -89,6 +89,9 @@ class FootballBrowseController extends Controller
             ->orderBy('sort_order')
             ->get();
 
+        $totw = $this->getTotwCards($cityName);
+        $viralFeed = $this->getViralFeed($cityName);
+
         return view('football.index', [
             'currentCity' => $cityName,
             'metrics' => $metrics,
@@ -97,7 +100,117 @@ class FootballBrowseController extends Controller
             'venues' => $venues,
             'requests' => $requests,
             'cities' => $cities,
+            'totw' => $totw,
+            'viralFeed' => $viralFeed,
         ]);
+    }
+
+    /**
+     * EA FC Ultimate Team Haftanın Halı Saha Karması (TOTW).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function getTotwCards(string $cityName): array
+    {
+        return [
+            [
+                'name' => 'Emre K.',
+                'team' => 'Kreuzberg Panterleri',
+                'position' => 'FOR',
+                'ovr' => 89,
+                'pac' => 91,
+                'sho' => 92,
+                'pas' => 84,
+                'dri' => 88,
+                'def' => 45,
+                'phy' => 83,
+                'badge' => '🔥 Haftanın Golcüsü (5 Gol)',
+                'card_type' => 'gold_totw',
+            ],
+            [
+                'name' => 'Caner D.',
+                'team' => 'FC Boğaziçi',
+                'position' => 'OS',
+                'ovr' => 87,
+                'pac' => 82,
+                'sho' => 84,
+                'pas' => 93,
+                'dri' => 89,
+                'def' => 74,
+                'phy' => 80,
+                'badge' => '🎯 Asist Kralı (4 Asist)',
+                'card_type' => 'gold_totw',
+            ],
+            [
+                'name' => 'Burak T.',
+                'team' => 'Hilal United',
+                'position' => 'DEF',
+                'ovr' => 86,
+                'pac' => 79,
+                'sho' => 65,
+                'pas' => 78,
+                'dri' => 75,
+                'def' => 91,
+                'phy' => 90,
+                'badge' => '🛡️ Geçilmez Duvar',
+                'card_type' => 'gold_totw',
+            ],
+            [
+                'name' => 'Tolga S.',
+                'team' => 'Anadolu Yıldızları',
+                'position' => 'KL',
+                'ovr' => 88,
+                'pac' => 86,
+                'sho' => 85,
+                'pas' => 80,
+                'dri' => 88,
+                'def' => 50,
+                'phy' => 87,
+                'badge' => '🧤 Haftanın Kalecisi (14 Kurtarış)',
+                'card_type' => 'gold_totw',
+            ],
+        ];
+    }
+
+    /**
+     * Kings League & Baller League İlhamlı Viral Halı Saha Vitrini.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function getViralFeed(string $cityName): array
+    {
+        return [
+            [
+                'title' => '90+2 Doksana Takılan Akrep Vuruşu!',
+                'team' => 'FC Boğaziçi Fırtınası',
+                'author' => 'Kaptan Selim',
+                'views' => '14.2K',
+                'likes' => 842,
+                'tag' => '🔥 Haftanın Golü',
+                'tag_color' => 'amber',
+                'summary' => 'Maçın son saniyelerinde sol kanattan gelen ortada arka direkte muazzam vole golü.',
+            ],
+            [
+                'title' => 'Kings League Kurallarıyla 6v6 Derbi Nefes Kesti',
+                'team' => 'Kreuzberg Panterleri vs Hilal United',
+                'author' => 'Halı Saha Medya Ekibi',
+                'views' => '22.8K',
+                'likes' => '1.5K',
+                'tag' => '⭐ Haftanın Maçı',
+                'tag_color' => 'emerald',
+                'summary' => 'Son 5 dakikada uygulanan 1v1 altın gol kuralıyla derbi unutulmaz anlara sahne oldu.',
+            ],
+            [
+                'title' => '14 Kurtarış Yapan Kaleci Tek Başına Puanı Aldı',
+                'team' => 'Anadolu Yıldızları',
+                'author' => 'Kaptan Tolga',
+                'views' => '9.8K',
+                'likes' => 630,
+                'tag' => '🧤 Maçın MVP\'si',
+                'tag_color' => 'purple',
+                'summary' => 'Üst üste 3 penaltı kurtaran kalecinin performansı sosyal medyada viral oldu.',
+            ],
+        ];
     }
 
     /**
