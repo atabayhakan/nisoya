@@ -7,8 +7,11 @@ use App\Filament\Resources\DiasporaReels\Pages\CreateDiasporaReel;
 use App\Filament\Resources\DiasporaReels\Pages\EditDiasporaReel;
 use App\Filament\Resources\DiasporaReels\Pages\ListDiasporaReels;
 use App\Models\Country;
+use App\Models\DiasporaAccount;
 use App\Models\DiasporaReel;
 use App\Services\Ai\CmsAiAssistant;
+use App\Services\Diaspora\DiasporaIntelligenceService;
+use App\Services\Diaspora\InstagramMetadataExtractor;
 use App\Support\InstagramMedia;
 use BackedEnum;
 use Database\Seeders\DiasporaReelSeeder;
@@ -34,7 +37,7 @@ use Illuminate\Support\Str;
 use UnitEnum;
 
 /**
- * Diaspora Reels & Hikayeleri CMS Yönetimi (Model A).
+ * Diaspora Reels & Hikayeleri CMS Yönetimi.
  * Türk diasporasının en yoğun olduğu ülkelerden (DE, KG, NL vb.)
  * Instagram Reels ve video paylaşımlarını ana sayfa vitrininde sergiler.
  */
@@ -75,7 +78,7 @@ class DiasporaReelResource extends Resource
                 ->required()
                 ->maxLength(500)
                 ->placeholder('https://www.instagram.com/reel/C8xABC12345/')
-                ->helperText('Instagram Reel, Video veya Gönderi linki yapıştırın.')
+                ->helperText('Instagram Reel veya video linkini yapıştırıp yandaki sihirbaz butonuna basabilirsiniz.')
                 ->live(onBlur: true)
                 ->afterStateUpdated(function ($state, callable $set, callable $get): void {
                     if ($state && blank($get('instagram_username'))) {
@@ -85,6 +88,66 @@ class DiasporaReelResource extends Resource
                         }
                     }
                 })
+                ->hintAction(
+                    Action::make('akilliAyristir')
+                        ->label('⚡ Linkten Otomatik Doldur (oEmbed & AI)')
+                        ->icon(Heroicon::OutlinedSparkles)
+                        ->color('primary')
+                        ->action(function (callable $get, callable $set, InstagramMetadataExtractor $extractor, DiasporaIntelligenceService $intelligence): void {
+                            $url = (string) $get('instagram_url');
+                            if (blank($url)) {
+                                Notification::make()
+                                    ->title('Önce Instagram linki yapıştırın')
+                                    ->warning()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $meta = $extractor->extract($url);
+                            $enriched = $intelligence->enrich([
+                                'title' => $meta['title'] ?? null,
+                                'caption' => $meta['caption'] ?? null,
+                                'instagram_url' => $url,
+                                'instagram_username' => $meta['author_username'] ?? $get('instagram_username'),
+                                'country_code' => $get('country_code'),
+                                'city' => $get('city'),
+                                'thumbnail_url' => $meta['thumbnail_url'] ?? null,
+                            ]);
+
+                            if (filled($enriched['title'])) {
+                                $set('title', $enriched['title']);
+                            }
+                            if (filled($enriched['caption'])) {
+                                $set('caption', $enriched['caption']);
+                            }
+                            if (filled($enriched['instagram_username'])) {
+                                $set('instagram_username', $enriched['instagram_username']);
+                            }
+                            if (filled($enriched['country_code'])) {
+                                $set('country_code', $enriched['country_code']);
+                            }
+                            if (filled($enriched['city'])) {
+                                $set('city', $enriched['city']);
+                            }
+                            if (filled($enriched['category'])) {
+                                $set('category', $enriched['category']);
+                            }
+                            if (filled($enriched['thumbnail_url'])) {
+                                $set('thumbnail_url', $enriched['thumbnail_url']);
+                            }
+                            if (isset($enriched['safety_score'])) {
+                                $set('safety_score', $enriched['safety_score']);
+                                $set('safety_status', $enriched['safety_status']);
+                            }
+
+                            Notification::make()
+                                ->title('Link Başarıyla Ayrıştırıldı ve Dolduruldu')
+                                ->body("Kategori: {$enriched['category']}, Güvenlik Skoru: %{$enriched['safety_score']}")
+                                ->success()
+                                ->send();
+                        })
+                )
                 ->columnSpanFull(),
 
             TextInput::make('instagram_username')
@@ -110,6 +173,12 @@ class DiasporaReelResource extends Resource
                 ->label('Şehir')
                 ->placeholder('Berlin, Bişkek, Frankfurt, Amsterdam...')
                 ->maxLength(100),
+
+            Select::make('category')
+                ->label('İçerik Kategorisi')
+                ->options(DiasporaReel::getCategories())
+                ->default(DiasporaReel::CATEGORY_GENEL)
+                ->required(),
 
             TextInput::make('title')
                 ->label('Başlık / Etkinlik Adı')
@@ -158,6 +227,22 @@ class DiasporaReelResource extends Resource
                 ->placeholder('Kreuzberg sokaklarında hafta sonu coşkusu...')
                 ->columnSpanFull(),
 
+            Select::make('status')
+                ->label('Yayın / Onay Durumu')
+                ->options([
+                    DiasporaReel::STATUS_PUBLISHED => '✅ Yayında (Canlı Vitrinde)',
+                    DiasporaReel::STATUS_DRAFT => '📥 Taslak (Onay Bekliyor)',
+                    DiasporaReel::STATUS_ARCHIVED => '📦 Arşivlendi',
+                ])
+                ->default(DiasporaReel::STATUS_PUBLISHED)
+                ->required(),
+
+            Select::make('account_id')
+                ->label('Kaynak İzlenen Hesap (Opsiyonel)')
+                ->options(fn () => DiasporaAccount::query()->pluck('username', 'id')->toArray())
+                ->searchable()
+                ->nullable(),
+
             TextInput::make('thumbnail_url')
                 ->label('Özel Kapak Görseli Linki (Opsiyonel)')
                 ->maxLength(500)
@@ -169,6 +254,13 @@ class DiasporaReelResource extends Resource
                 ->maxLength(500)
                 ->placeholder('https://... veya /storage/...')
                 ->helperText('Instagram harici doğrudan MP4 video linki varsa buraya girilebilir.'),
+
+            TextInput::make('safety_score')
+                ->label('AI Güvenlik Skoru (0-100)')
+                ->numeric()
+                ->minValue(0)
+                ->maxValue(100)
+                ->default(100),
 
             Toggle::make('is_featured')
                 ->label('Vitrin Öne Çıkan (Geniş Kart)')
@@ -192,7 +284,7 @@ class DiasporaReelResource extends Resource
                 TextColumn::make('sort_order')
                     ->label('Sıra')
                     ->sortable()
-                    ->width('60px')
+                    ->width('50px')
                     ->alignCenter(),
 
                 TextColumn::make('country.name_tr')
@@ -210,9 +302,16 @@ class DiasporaReelResource extends Resource
                     ->searchable()
                     ->sortable(),
 
+                TextColumn::make('category')
+                    ->label('Kategori')
+                    ->formatStateUsing(fn (?string $state): string => DiasporaReel::getCategories()[$state ?? ''] ?? ($state ?: 'Genel'))
+                    ->badge()
+                    ->color('info')
+                    ->sortable(),
+
                 TextColumn::make('title')
                     ->label('Başlık & Hikaye')
-                    ->description(fn (DiasporaReel $record): ?string => $record->caption ? Str::limit($record->caption, 65) : null)
+                    ->description(fn (DiasporaReel $record): ?string => $record->caption ? Str::limit($record->caption, 60) : null)
                     ->searchable()
                     ->weight('bold')
                     ->wrap(),
@@ -225,6 +324,30 @@ class DiasporaReelResource extends Resource
                     ->placeholder('—')
                     ->searchable(),
 
+                TextColumn::make('status')
+                    ->label('Durum')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        DiasporaReel::STATUS_PUBLISHED => 'success',
+                        DiasporaReel::STATUS_DRAFT => 'warning',
+                        DiasporaReel::STATUS_ARCHIVED => 'gray',
+                        default => 'info',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        DiasporaReel::STATUS_PUBLISHED => 'Yayında',
+                        DiasporaReel::STATUS_DRAFT => 'Onay Bekliyor',
+                        DiasporaReel::STATUS_ARCHIVED => 'Arşiv',
+                        default => $state,
+                    })
+                    ->sortable(),
+
+                TextColumn::make('engagement_score')
+                    ->label('Puan')
+                    ->icon('heroicon-m-sparkles')
+                    ->iconColor('amber')
+                    ->sortable()
+                    ->alignCenter(),
+
                 ToggleColumn::make('is_featured')
                     ->label('Öne Çıkan')
                     ->alignCenter(),
@@ -234,22 +357,51 @@ class DiasporaReelResource extends Resource
                     ->alignCenter(),
             ])
             ->filters([
+                SelectFilter::make('status')
+                    ->label('Yayın Durumu')
+                    ->options([
+                        DiasporaReel::STATUS_PUBLISHED => 'Yayında',
+                        DiasporaReel::STATUS_DRAFT => 'Onay Bekleyenler (Taslak)',
+                        DiasporaReel::STATUS_ARCHIVED => 'Arşivlenenler',
+                    ]),
+
+                SelectFilter::make('category')
+                    ->label('Kategori')
+                    ->options(DiasporaReel::getCategories()),
+
                 SelectFilter::make('country_code')
                     ->label('Ülke')
                     ->options(fn (): array => Country::query()->where('is_active', true)->orderBy('sort_order')->get()->mapWithKeys(fn (Country $c) => [$c->code => ($c->emoji ? $c->emoji.' ' : '').$c->name_tr])->toArray())
                     ->searchable(),
 
                 TernaryFilter::make('is_active')
-                    ->label('Yayın Durumu')
+                    ->label('Aktiflik')
                     ->trueLabel('Yalnız Aktifler')
                     ->falseLabel('Yalnız Pasifler'),
 
                 TernaryFilter::make('is_featured')
-                    ->label('Vurgu Durumu')
+                    ->label('Vurgu')
                     ->trueLabel('Yalnız Öne Çıkanlar')
                     ->falseLabel('Standart Kartlar'),
             ])
             ->actions([
+                Action::make('onaylaVeYayinla')
+                    ->label('Onayla')
+                    ->icon(Heroicon::OutlinedCheckCircle)
+                    ->color('success')
+                    ->visible(fn (DiasporaReel $record): bool => $record->status === DiasporaReel::STATUS_DRAFT)
+                    ->action(function (DiasporaReel $record): void {
+                        $record->update([
+                            'status' => DiasporaReel::STATUS_PUBLISHED,
+                            'is_active' => true,
+                        ]);
+
+                        Notification::make()
+                            ->title('İçerik Onaylandı ve Yayına Alındı')
+                            ->success()
+                            ->send();
+                    }),
+
                 Action::make('onizle')
                     ->label('Önizle')
                     ->icon(Heroicon::OutlinedEye)

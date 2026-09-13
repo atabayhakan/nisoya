@@ -7,6 +7,8 @@ use App\Filament\Resources\DiasporaReels\Widgets\DiasporaReelsStatsWidget;
 use App\Models\Country;
 use App\Models\DiasporaReel;
 use App\Services\Ai\CmsAiAssistant;
+use App\Services\Diaspora\DiasporaRankingEngine;
+use App\Services\Diaspora\DiasporaSyncEngine;
 use Database\Seeders\DiasporaReelSeeder;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -32,24 +34,40 @@ class ListDiasporaReels extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('ornekleriYukle')
-                ->label('Örnekleri Yükle (Seed)')
-                ->icon(Heroicon::OutlinedArrowDownTray)
-                ->color('gray')
-                ->tooltip('Ana sayfa için 6 adet örnek diaspora reels ve etkinlik kaydını yükler')
-                ->action(function (): void {
-                    (new DiasporaReelSeeder)->run();
+            Action::make('tumunuSenkronizeEt')
+                ->label('İzlenen Hesapları Tara')
+                ->icon(Heroicon::OutlinedArrowPath)
+                ->color('primary')
+                ->tooltip('Kayıtlı tüm diaspora hesaplarını tarayıp yeni reels videolarını aktarır.')
+                ->action(function (DiasporaSyncEngine $syncEngine): void {
+                    $res = $syncEngine->syncAll();
+
                     Notification::make()
-                        ->title('Örnek Diaspora Reels Yüklendi')
-                        ->body('Almanya, Kırgızistan, Hollanda ve İngiltere için 6 adet örnek diaspora içeriği başarıyla kaydedildi.')
+                        ->title('Senkronizasyon Tamamlandı')
+                        ->body("{$res['accounts_count']} hesap tarandı, {$res['total_created']} yeni içerik aktarıldı ({$res['autopilot_published']} otopilot yayında).")
+                        ->success()
+                        ->send();
+                }),
+
+            Action::make('siralaVePuanla')
+                ->label('Akıllı Sıralama & Puanla')
+                ->icon(Heroicon::OutlinedSparkles)
+                ->color('amber')
+                ->tooltip('Beğeni, izlenme ve güncellik puanlarını hesaplayarak vitrin sıralamasını günceller.')
+                ->action(function (DiasporaRankingEngine $rankingEngine): void {
+                    $res = $rankingEngine->recalculateAndRank();
+
+                    Notification::make()
+                        ->title('Etkileşim Sıralaması Güncellendi')
+                        ->body("{$res['recalculated_count']} içerik puanlandı. {$res['promoted_featured']} içerik öne çıkan geniş bento karta yükseltildi.")
                         ->success()
                         ->send();
                 }),
 
             Action::make('aiReelsTaslagi')
-                ->label('AI ile Hızlı Reel Ekle (Claude)')
+                ->label('AI ile Hızlı Ekle (Claude)')
                 ->icon(Heroicon::OutlinedSparkles)
-                ->color('primary')
+                ->color('gray')
                 ->modalHeading('Claude ile Diaspora Reels Hikayesi Oluştur')
                 ->modalDescription('Diasporadaki bir etkinlik, buluşma veya lezzet konusunu yazın. Claude sizin için başlık, samimi hikaye notu ve şehir bilgilerini hazırlasın.')
                 ->form([
@@ -98,12 +116,27 @@ class ListDiasporaReels extends ListRecords
                         'country_code' => $countryCode,
                         'city' => $city,
                         'instagram_username' => $story['suggested_username'] ?? null,
+                        'status' => DiasporaReel::STATUS_PUBLISHED,
                         'is_active' => true,
                     ]);
 
                     Notification::make()
                         ->title('Diaspora Reel hikayesi oluşturuldu')
                         ->body('Claude AI başlık ve açıklamayı başarıyla hazırladı ve vitrine ekledi.')
+                        ->success()
+                        ->send();
+                }),
+
+            Action::make('ornekleriYukle')
+                ->label('Örnekleri Yükle (Seed)')
+                ->icon(Heroicon::OutlinedArrowDownTray)
+                ->color('gray')
+                ->tooltip('Ana sayfa için 6 adet örnek diaspora reels ve etkinlik kaydını yükler')
+                ->action(function (): void {
+                    (new DiasporaReelSeeder)->run();
+                    Notification::make()
+                        ->title('Örnek Diaspora Reels Yüklendi')
+                        ->body('Almanya, Kırgızistan, Hollanda ve İngiltere için 6 adet örnek diaspora içeriği başarıyla kaydedildi.')
                         ->success()
                         ->send();
                 }),
@@ -119,13 +152,20 @@ class ListDiasporaReels extends ListRecords
      */
     public function getTabs(): array
     {
+        $draftCount = DiasporaReel::query()->where('status', DiasporaReel::STATUS_DRAFT)->count();
+
         return [
             'hepsi' => Tab::make('Tüm Paylaşımlar')
                 ->badge(DiasporaReel::query()->count() ?: null),
 
+            'onay_bekleyen' => Tab::make('📥 Onay Bekleyenler (Taslak)')
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', DiasporaReel::STATUS_DRAFT))
+                ->badge($draftCount ?: null)
+                ->badgeColor('warning'),
+
             'yayinda' => Tab::make('Yayında (Aktif)')
-                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('is_active', true))
-                ->badge(DiasporaReel::query()->where('is_active', true)->count() ?: null)
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('is_active', true)->where('status', DiasporaReel::STATUS_PUBLISHED))
+                ->badge(DiasporaReel::query()->where('is_active', true)->where('status', DiasporaReel::STATUS_PUBLISHED)->count() ?: null)
                 ->badgeColor('success'),
 
             'one_cikan' => Tab::make('Öne Çıkanlar')

@@ -50,13 +50,28 @@
             </p>
         @endif
 
-        <div class="mt-2 pt-2 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between">
-            <div class="flex items-center gap-2 text-2xs">
-                @if ($reel->is_featured)
-                    <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 font-bold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/60 dark:text-amber-400">★ Öne Çıkan</span>
+        <div class="mt-2 pt-2 border-t border-stone-200 dark:border-stone-800 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-1.5 text-2xs">
+                @if ($reel->category)
+                    <span class="inline-flex items-center rounded-md bg-sky-50 px-2 py-0.5 font-semibold text-sky-700 ring-1 ring-sky-200 dark:bg-sky-950/60 dark:text-sky-400">
+                        {{ \App\Models\DiasporaReel::getCategories()[$reel->category] ?? $reel->category }}
+                    </span>
                 @endif
-                <span class="inline-flex items-center rounded-md {{ $reel->is_active ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400' : 'bg-stone-100 text-stone-600' }} px-2 py-0.5 font-semibold">
-                    {{ $reel->is_active ? 'Yayında' : 'Pasif' }}
+                @if ($reel->safety_score !== null)
+                    <span class="inline-flex items-center rounded-md {{ $reel->safety_score >= 85 ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400' : 'bg-amber-50 text-amber-700 ring-1 ring-amber-200' }} px-1.5 py-0.5 font-medium">
+                        🛡️ %{{ $reel->safety_score }} Güvenli
+                    </span>
+                @endif
+                @if ($reel->engagement_score > 0)
+                    <span class="inline-flex items-center rounded-md bg-amber-50 px-1.5 py-0.5 font-bold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/60 dark:text-amber-400">
+                        ★ {{ $reel->engagement_score }} Puan
+                    </span>
+                @endif
+                @if ($reel->is_featured)
+                    <span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-0.5 font-bold text-purple-700 ring-1 ring-purple-200 dark:bg-purple-950/60 dark:text-purple-400">Öne Çıkan</span>
+                @endif
+                <span class="inline-flex items-center rounded-md {{ $reel->status === 'published' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400' : 'bg-amber-50 text-amber-700 ring-1 ring-amber-200' }} px-2 py-0.5 font-semibold">
+                    {{ $reel->status === 'published' ? 'Yayında' : 'Onay Bekliyor' }}
                 </span>
             </div>
 
