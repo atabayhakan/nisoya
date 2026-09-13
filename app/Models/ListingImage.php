@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 /**
  * @property-read Listing|null $listing
  * @property bool $is_representative
+ * @property-read string|null $reverseLocationLabel
  */
 class ListingImage extends Model
 {

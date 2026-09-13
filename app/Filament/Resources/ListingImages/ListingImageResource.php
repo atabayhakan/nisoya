@@ -3,8 +3,11 @@
 namespace App\Filament\Resources\ListingImages;
 
 use App\Enums\ListingStatus;
+use App\Filament\Concerns\RestrictsToAdmins;
 use App\Filament\Resources\ListingImages\Pages\ListListingImages;
 use App\Filament\Resources\ListingImages\Pages\ViewListingImage;
+use App\Filament\Resources\ListingImages\Widgets\ListingImageStatsWidget;
+use App\Filament\Resources\Listings\ListingResource;
 use App\Models\Country;
 use App\Models\ListingImage;
 use App\Notifications\GpsPrivacyNotification;
@@ -31,6 +34,8 @@ use UnitEnum;
 
 class ListingImageResource extends Resource
 {
+    use RestrictsToAdmins;
+
     protected static ?string $model = ListingImage::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;
@@ -46,12 +51,24 @@ class ListingImageResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return 'görsel';
+        return 'Görsel';
     }
 
     public static function getPluralModelLabel(): string
     {
         return 'Görseller';
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = ListingImage::query()->where('is_flagged', true)->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'danger';
     }
 
     public static function infolist(Schema $schema): Schema
@@ -69,10 +86,20 @@ class ListingImageResource extends Resource
                     ->label('Önizleme')
                     ->disk('public')
                     ->height(60)
-                    ->extraImgAttributes(['class' => 'rounded object-cover']),
+                    ->extraImgAttributes(['class' => 'rounded-lg object-cover shadow-sm ring-1 ring-gray-200 dark:ring-gray-800']),
 
                 TextColumn::make('listing.title')
                     ->label('İlan')
+                    ->weight('bold')
+                    ->description(function (ListingImage $record): ?string {
+                        $cat = $record->listing && $record->listing->category ? $record->listing->category->name : null;
+                        $user = $record->listing && $record->listing->user ? $record->listing->user->name : null;
+                        if ($cat && $user) {
+                            return "{$cat} • {$user}";
+                        }
+
+                        return $cat ?? $user;
+                    })
                     ->searchable()
                     ->sortable()
                     ->limit(40)
@@ -80,7 +107,7 @@ class ListingImageResource extends Resource
 
                 TextColumn::make('width')
                     ->label('Boyut')
-                    ->formatStateUsing(fn ($record) => $record->width && $record->height
+                    ->formatStateUsing(fn (ListingImage $record): string => $record->width && $record->height
                         ? "{$record->width}×{$record->height}"
                         : '—')
                     ->badge()
@@ -88,8 +115,17 @@ class ListingImageResource extends Resource
 
                 TextColumn::make('size_bytes')
                     ->label('Dosya')
-                    ->formatStateUsing(fn ($state) => $state ? number_format($state / 1024, 1).' KB' : '—')
-                    ->numeric()
+                    ->formatStateUsing(function ($state): string {
+                        if (! $state) {
+                            return '—';
+                        }
+                        $bytes = (int) $state;
+                        if ($bytes >= 1048576) {
+                            return number_format($bytes / 1048576, 1, ',', '.').' MB';
+                        }
+
+                        return number_format($bytes / 1024, 0, ',', '.').' KB';
+                    })
                     ->sortable(),
 
                 IconColumn::make('had_gps')
@@ -99,13 +135,13 @@ class ListingImageResource extends Resource
                     ->falseIcon('heroicon-o-check-circle')
                     ->trueColor('warning')
                     ->falseColor('success')
-                    ->tooltip(fn (bool $state) => $state
+                    ->tooltip(fn (bool $state): string => $state
                         ? '⚠️ Orijinal görsel GPS koordinatları içeriyordu (temizlendi)'
                         : 'GPS verisi yok'),
 
                 TextColumn::make('gps_lat')
                     ->label('GPS Konum')
-                    ->formatStateUsing(function ($record) {
+                    ->formatStateUsing(function (ListingImage $record): string {
                         if (! $record->gps_lat || ! $record->gps_lng) {
                             return '—';
                         }
@@ -115,7 +151,8 @@ class ListingImageResource extends Resource
                     ->placeholder('—')
                     ->fontFamily('mono')
                     ->size('xs')
-                    ->copyable(),
+                    ->copyable()
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 IconColumn::make('has_sensitive_exif')
                     ->label('Hassas EXIF')
@@ -124,29 +161,39 @@ class ListingImageResource extends Resource
                     ->falseIcon('heroicon-o-shield-check')
                     ->trueColor('danger')
                     ->falseColor('success')
-                    ->tooltip(fn (bool $state) => $state
+                    ->tooltip(fn (bool $state): string => $state
                         ? 'GPS, seri no vb. hassas EXIF bilgisi içeriyor'
                         : 'EXIF temiz'),
 
                 TextColumn::make('reverse_city')
                     ->label('Konum (Reverse)')
-                    ->formatStateUsing(function ($state, $record) {
-                        return $record->reverseLocationLabel;
+                    ->formatStateUsing(function ($state, ListingImage $record): string {
+                        $loc = $record->reverseLocationLabel;
+                        if (filled($loc)) {
+                            return (string) $loc;
+                        }
+
+                        return ($record->gps_lat && $record->gps_lng) ? 'Bekliyor' : '—';
                     })
                     ->searchable(query: function ($query, string $search) {
-                        return $query->where(function ($q) use ($search) {
+                        return $query->where(function ($q) use ($search): void {
                             $q->where('reverse_city', 'like', "%{$search}%")
                                 ->orWhere('reverse_country_name', 'like', "%{$search}%");
                         });
                     })
-                    ->placeholder('— (henüz kodlanmadı)')
-                    ->badge()
-                    ->color('info')
-                    ->icon('heroicon-o-map-pin'),
+                    ->placeholder('—')
+                    ->badge(fn (ListingImage $record): bool => filled($record->reverseLocationLabel))
+                    ->color(fn (ListingImage $record): string => filled($record->reverseLocationLabel) ? 'info' : 'gray')
+                    ->icon(fn (ListingImage $record): ?string => filled($record->reverseLocationLabel) ? 'heroicon-o-map-pin' : null),
 
                 IconColumn::make('is_cover')
                     ->label('Kapak')
-                    ->boolean(),
+                    ->boolean()
+                    ->trueIcon('heroicon-s-star')
+                    ->falseIcon('heroicon-o-minus')
+                    ->trueColor('warning')
+                    ->falseColor('gray')
+                    ->sortable(),
 
                 IconColumn::make('is_flagged')
                     ->label('AI Moderasyon')
@@ -155,14 +202,17 @@ class ListingImageResource extends Resource
                     ->falseIcon('heroicon-o-check-circle')
                     ->trueColor('danger')
                     ->falseColor('success')
-                    ->tooltip(fn (ListingImage $record) => $record->is_flagged
+                    ->tooltip(fn (ListingImage $record): string => $record->is_flagged
                         ? '⚠️ AI tarafından uygunsuz işaretlendi: '.($record->flagged_reason ?? 'sebep belirtilmedi')
-                        : 'AI moderasyonundan geçti'),
+                        : 'AI moderasyonundan geçti')
+                    ->sortable(),
 
                 TextColumn::make('created_at')
                     ->label('Yüklendi')
                     ->dateTime('d.m.Y H:i')
-                    ->sortable(),
+                    ->description(fn (ListingImage $record): string => $record->created_at ? $record->created_at->diffForHumans() : '')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 // === GİZLİLİK FİLTRELERİ ===
@@ -293,7 +343,7 @@ class ListingImageResource extends Resource
 
                 Filter::make('no_exif')
                     ->label('EXIF olmayan (temiz)')
-                    ->query(fn ($query) => $query->where(function ($q) {
+                    ->query(fn ($query) => $query->where(function ($q): void {
                         $q->whereNull('exif_metadata')
                             ->orWhere('exif_metadata', '{}');
                     })),
@@ -312,15 +362,37 @@ class ListingImageResource extends Resource
             ->actions([
                 ViewAction::make()
                     ->label('EXIF Detay'),
+
+                Action::make('kapakYap')
+                    ->label('Kapak Yap')
+                    ->icon(Heroicon::OutlinedStar)
+                    ->color('warning')
+                    ->visible(fn (ListingImage $record): bool => ! $record->is_cover && $record->listing !== null)
+                    ->requiresConfirmation()
+                    ->modalHeading('Kapak Görseli Olarak Belirle')
+                    ->modalDescription('Bu görsel ilanın vitrin ve arama sonuçlarındaki ana kapak resmi yapılacak. Onaylıyor musunuz?')
+                    ->action(function (ListingImage $record): void {
+                        ListingImage::query()
+                            ->where('listing_id', $record->listing_id)
+                            ->update(['is_cover' => false]);
+
+                        $record->update(['is_cover' => true]);
+
+                        Notification::make()
+                            ->title('Kapak görseli güncellendi')
+                            ->success()
+                            ->send();
+                    }),
+
                 Action::make('approve_flagged')
-                    ->label('Onayla (işareti kaldır)')
+                    ->label('Onayla (İşareti Kaldır)')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn (ListingImage $record) => $record->is_flagged)
+                    ->visible(fn (ListingImage $record): bool => $record->is_flagged)
                     ->requiresConfirmation()
-                    ->modalHeading('Görseli onayla')
+                    ->modalHeading('Görseli Onayla')
                     ->modalDescription('AI işareti kaldırılır. İlan "Onay bekliyor" durumundaysa tekrar "Aktif" yapılır.')
-                    ->action(function (ListingImage $record) {
+                    ->action(function (ListingImage $record): void {
                         $record->update(['is_flagged' => false, 'flagged_reason' => null]);
 
                         $listing = $record->listing;
@@ -339,16 +411,23 @@ class ListingImageResource extends Resource
                             ->success()
                             ->send();
                     }),
-                DeleteAction::make(),
+
+                Action::make('sitedeGor')
+                    ->label('İlana Git')
+                    ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
+                    ->color('gray')
+                    ->visible(fn (ListingImage $record): bool => $record->listing !== null)
+                    ->url(fn (ListingImage $record): string => route('listings.show', [$record->listing->id, $record->listing->slug]), shouldOpenInNewTab: true),
+
                 Action::make('redact_gps')
-                    ->label('GPS Bilgisini Sil')
+                    ->label('GPS Sil')
                     ->icon('heroicon-o-map-pin')
                     ->color('warning')
-                    ->visible(fn (ListingImage $record) => $record->had_gps)
+                    ->visible(fn (ListingImage $record): bool => $record->had_gps)
                     ->requiresConfirmation()
                     ->modalHeading('GPS bilgisini sil')
                     ->modalDescription('EXIF metadata\'sından GPS koordinatları kaldırılacak. Görsel yayından etkilenmez.')
-                    ->action(function (ListingImage $record) {
+                    ->action(function (ListingImage $record): void {
                         $exif = $record->exif_metadata ?? [];
                         unset($exif['GPSLatitude'], $exif['GPSLongitude'], $exif['GPSLatitudeRef'], $exif['GPSLongitudeRef'], $exif['GPSAltitude']);
 
@@ -371,6 +450,8 @@ class ListingImageResource extends Resource
                             ->success()
                             ->send();
                     }),
+
+                DeleteAction::make(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -381,7 +462,7 @@ class ListingImageResource extends Resource
                         ->requiresConfirmation()
                         ->modalHeading('Seçili görsellerden GPS bilgisini sil')
                         ->modalDescription('EXIF metadata\'sından GPS koordinatları kaldırılacak.')
-                        ->action(function ($records) {
+                        ->action(function ($records): void {
                             $count = 0;
                             foreach ($records as $record) {
                                 if (! $record->had_gps) {
@@ -411,7 +492,7 @@ class ListingImageResource extends Resource
                         ->requiresConfirmation()
                         ->modalHeading('GPS\'li görseller için kullanıcıları uyar')
                         ->modalDescription('Seçili görsellerin sahiplerine KVKK kapsamında bilgilendirme e-postası gönderilir.')
-                        ->action(function ($records) {
+                        ->action(function ($records): void {
                             $count = 0;
                             foreach ($records as $record) {
                                 if (! $record->had_gps || ! $record->listing?->user) {
@@ -439,7 +520,24 @@ class ListingImageResource extends Resource
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('created_at', 'desc')
+            ->emptyStateHeading('Henüz görsel bulunmuyor')
+            ->emptyStateDescription('İlanlara fotoğraf eklendikçe görseller, EXIF metadata bilgileri, GPS koordinatları ve AI moderasyon durumları burada listelenir.')
+            ->emptyStateIcon(Heroicon::OutlinedPhoto)
+            ->emptyStateActions([
+                Action::make('ilanlar')
+                    ->label('Tüm İlanları Gör')
+                    ->icon(Heroicon::OutlinedShoppingBag)
+                    ->color('primary')
+                    ->url(fn (): string => ListingResource::getUrl('index')),
+            ]);
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            ListingImageStatsWidget::class,
+        ];
     }
 
     public static function getRelations(): array
