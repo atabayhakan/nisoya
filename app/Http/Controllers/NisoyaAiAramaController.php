@@ -40,6 +40,11 @@ class NisoyaAiAramaController extends Controller
 
         return response()->json([
             'niyet' => $sonuc['niyet'],
+            'baslik' => $sonuc['baslik'] ?? null,
+            'mesaj' => $sonuc['mesaj'] ?? null,
+            'oneri' => $sonuc['oneri'] ?? null,
+            'eylemler' => $sonuc['eylemler'] ?? [],
+            'ulke' => $sonuc['ulke'] ?? null,
             'sonuclar' => $sonuc['sonuclar']->values(),
             'ilanBaglantisi' => $sonuc['ilanBaglantisi'],
             'aktif' => true,

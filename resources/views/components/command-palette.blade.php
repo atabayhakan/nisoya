@@ -199,13 +199,36 @@
                             <button type="button" @click="clearAi()" class="text-2xs font-semibold text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200">Kapat ✕</button>
                         </div>
 
-                        <template x-if="aiResult && aiResult.niyet === 'kapsam_disi'">
+                        {{-- Akıllı Başlık, Mesaj ve İpucu --}}
+                        <template x-if="aiResult && (aiResult.mesaj || aiResult.baslik)">
+                            <div class="mb-2.5 rounded-xl bg-white/90 p-3 shadow-2xs dark:bg-stone-900/90 border border-emerald-200/80 dark:border-emerald-800/60">
+                                <h5 class="text-xs font-bold text-stone-900 dark:text-stone-100" x-text="aiResult.baslik"></h5>
+                                <p class="mt-1 text-xs text-stone-700 dark:text-stone-300 leading-relaxed" x-text="aiResult.mesaj"></p>
+                                <p x-show="aiResult.oneri" class="mt-1 text-2xs italic text-stone-500 dark:text-stone-400" x-text="'💡 ' + aiResult.oneri"></p>
+
+                                {{-- Akıllı Eylem Butonları --}}
+                                <template x-if="aiResult.eylemler && aiResult.eylemler.length">
+                                    <div class="mt-2.5 flex flex-wrap items-center gap-1.5 pt-2 border-t border-stone-100 dark:border-stone-800">
+                                        <template x-for="act in aiResult.eylemler" :key="act.url">
+                                            <a :href="act.url"
+                                               :class="act.stil === 'primary' ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-stone-100 text-stone-800 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-200'"
+                                               class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-2xs font-bold transition active:scale-95">
+                                                <span x-text="act.baslik"></span>
+                                                <span aria-hidden="true">→</span>
+                                            </a>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template x-if="aiResult && aiResult.niyet === 'kapsam_disi' && !aiResult.mesaj">
                             <p class="text-xs text-amber-800 dark:text-amber-300">Bu işlem T.C. konsolosluk yetki alanı dışındadır. İlgili ülkenin göç dairesine başvurmanız gerekir.</p>
                         </template>
 
                         <template x-if="aiResult && aiResult.sonuclar && aiResult.sonuclar.length">
                             <div class="space-y-1.5 mt-2">
-                                <span class="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">Doğrulanmış Rehber İşlemleri:</span>
+                                <span class="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">Doğrulanmış Sonuçlar:</span>
                                 <template x-for="item in aiResult.sonuclar" :key="item.url">
                                     <a :href="item.url" class="flex items-center justify-between rounded-xl bg-white p-2.5 text-xs font-medium text-stone-800 shadow-2xs hover:bg-emerald-50 transition dark:bg-stone-800 dark:text-stone-200">
                                         <div class="min-w-0 pr-2">
@@ -218,7 +241,7 @@
                             </div>
                         </template>
 
-                        <template x-if="aiResult && aiResult.ilanBaglantisi">
+                        <template x-if="aiResult && aiResult.ilanBaglantisi && (!aiResult.eylemler || !aiResult.eylemler.length)">
                             <div class="mt-2.5 pt-2 border-t border-emerald-200/60 dark:border-emerald-800/40">
                                 <a :href="aiResult.ilanBaglantisi" class="text-xs font-bold text-emerald-700 hover:underline dark:text-emerald-400 inline-flex items-center gap-1">
                                     <span>Eşleşen ilanları listele</span>

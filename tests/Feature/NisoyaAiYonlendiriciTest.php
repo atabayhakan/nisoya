@@ -132,7 +132,10 @@ class NisoyaAiYonlendiriciTest extends TestCase
     {
         $this->sahteBagla(['niyet' => 'rehber', 'ulke_kodu' => null, 'islem_turu_slug' => null, 'anahtar_kelimeler' => []]);
 
-        $this->assertFalse(app(NisoyaAiYonlendirici::class)->aranmaliMi('pasaport'));
+        $this->assertFalse(app(NisoyaAiYonlendirici::class)->aranmaliMi('merhaba'));
+        $this->assertFalse(app(NisoyaAiYonlendirici::class)->aranmaliMi('a'));
+        $this->assertTrue(app(NisoyaAiYonlendirici::class)->aranmaliMi('maç'));
+        $this->assertTrue(app(NisoyaAiYonlendirici::class)->aranmaliMi('pasaport'));
         $this->assertTrue(app(NisoyaAiYonlendirici::class)->aranmaliMi('pasaportum kayboldu'));
     }
 
