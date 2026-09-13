@@ -56,6 +56,9 @@ class TasarimAyarlari extends Page
         'gorunum.logo_rengi' => '#059669',
         'gorunum.logo_yazi_tipi' => 'indie-flower',
         'gorunum.logo_ikon_gizle' => '0',
+        'gorunum.header_ai_rozet' => '1',
+        'gorunum.header_ulke_stili' => 'bayrak_isim',
+        'gorunum.header_cta_metni' => 'İlan Ver',
     ];
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSwatch;
@@ -98,6 +101,12 @@ class TasarimAyarlari extends Page
 
     public bool $logoIkonGizle = false;
 
+    public bool $headerAiRozet = true;
+
+    public string $headerUlkeStili = 'bayrak_isim'; // bayrak_isim, bayrak_yalniz, kod_isim
+
+    public string $headerCtaMetni = 'İlan Ver';
+
     public function getTitle(): string
     {
         return 'Görünüm ve Tema';
@@ -122,6 +131,9 @@ class TasarimAyarlari extends Page
         $this->logoRenk = Settings::get('gorunum.logo_rengi', '#059669');
         $this->logoFont = Settings::get('gorunum.logo_yazi_tipi', 'indie-flower');
         $this->logoIkonGizle = Settings::get('gorunum.logo_ikon_gizle', '0') === '1';
+        $this->headerAiRozet = Settings::get('gorunum.header_ai_rozet', '1') === '1';
+        $this->headerUlkeStili = Settings::get('gorunum.header_ulke_stili', 'bayrak_isim');
+        $this->headerCtaMetni = Settings::get('gorunum.header_cta_metni', 'İlan Ver');
     }
 
     /**
@@ -258,6 +270,9 @@ class TasarimAyarlari extends Page
             'gorunum.logo_rengi' => $this->logoRenk,
             'gorunum.logo_yazi_tipi' => $this->logoFont,
             'gorunum.logo_ikon_gizle' => $this->logoIkonGizle ? '1' : '0',
+            'gorunum.header_ai_rozet' => $this->headerAiRozet ? '1' : '0',
+            'gorunum.header_ulke_stili' => $this->headerUlkeStili,
+            'gorunum.header_cta_metni' => $this->headerCtaMetni ?: 'İlan Ver',
         ]);
 
         Notification::make()

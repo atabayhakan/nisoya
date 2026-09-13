@@ -28,7 +28,7 @@
             x-transition:leave="transition ease-in duration-100"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            class="absolute left-0 top-full z-40 mt-2 w-[min(90vw,32rem)] rounded-2xl border border-stone-200 bg-white p-2 shadow-xl dark:border-stone-800 dark:bg-stone-900"
+            class="absolute left-0 top-full z-40 mt-2 w-[min(90vw,32rem)] rounded-2xl border border-stone-200/90 bg-white/95 p-2.5 shadow-xl backdrop-blur-md ring-1 ring-black/5 dark:border-stone-800 dark:bg-stone-900/95"
             role="menu"
             aria-label="Keşfet"
             x-cloak

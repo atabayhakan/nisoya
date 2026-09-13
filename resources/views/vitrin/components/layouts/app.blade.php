@@ -126,6 +126,10 @@
                 {{-- Mobilde kimlik + çıkış --}}
                 <x-mobil-hesap />
 
+                @php
+                    $headerCtaMetni = \App\Support\Settings::get('gorunum.header_cta_metni') ?: 'İlan Ver';
+                @endphp
+
                 @auth
                     <span class="hidden h-5 w-px bg-stone-200 md:block dark:bg-stone-800"></span>
 
@@ -143,32 +147,103 @@
                         @endif
                     </a>
 
-                    <a href="{{ route('panel.profile.edit') }}" class="hidden items-center gap-2 rounded-full border border-stone-200/90 bg-stone-50/80 py-1 pl-1 pr-3 text-xs font-bold text-stone-700 shadow-2xs transition hover:border-emerald-300 hover:bg-white hover:text-emerald-700 md:flex dark:border-stone-800 dark:bg-stone-800/60 dark:text-stone-200 dark:hover:border-emerald-600 dark:hover:text-emerald-300" title="Hesabım">
-                        <x-avatar :user="auth()->user()" size="h-6 w-6" text="text-[10px]" />
-                        <span class="max-w-[100px] truncate">{{ auth()->user()->name }}</span>
-                    </a>
+                    {{-- Modern Profil Açılır Menüsü (User Menu Dropdown) --}}
+                    <div class="relative hidden md:block" x-data="{ userMenuAcik: false }" @keydown.escape.window="userMenuAcik = false" @click.outside="userMenuAcik = false">
+                        <button
+                            type="button"
+                            @click="userMenuAcik = !userMenuAcik"
+                            class="flex h-9 items-center gap-2 rounded-full border border-stone-200/90 bg-stone-50/80 py-1 pl-1.5 pr-2.5 text-xs font-bold text-stone-700 shadow-2xs transition hover:border-emerald-300 hover:bg-white hover:text-emerald-700 dark:border-stone-800 dark:bg-stone-800/60 dark:text-stone-200 dark:hover:border-emerald-600 dark:hover:text-emerald-300"
+                            :aria-expanded="userMenuAcik ? 'true' : 'false'"
+                            aria-haspopup="true"
+                            aria-label="Kullanıcı Menüsü"
+                        >
+                            <x-avatar :user="auth()->user()" size="h-6 w-6" text="text-[10px]" />
+                            <span class="max-w-[100px] truncate">{{ auth()->user()->name }}</span>
+                            <x-heroicon-o-chevron-down class="h-3 w-3 text-stone-400 transition-transform duration-200 dark:text-stone-500" ::class="userMenuAcik ? 'rotate-180' : ''" />
+                        </button>
 
-                    <a href="{{ route('dashboard') }}" class="hidden h-9 items-center rounded-full px-2.5 text-xs font-bold text-stone-700 transition hover:bg-stone-100 md:inline-flex dark:text-stone-300 dark:hover:bg-stone-800">Panelim</a>
+                        <div
+                            x-show="userMenuAcik"
+                            x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave="transition ease-in duration-100"
+                            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                            class="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-2xl border border-stone-200/90 bg-white/95 p-2 shadow-xl backdrop-blur-md ring-1 ring-black/5 dark:border-stone-800 dark:bg-stone-900/95 z-50"
+                            x-cloak
+                        >
+                            {{-- Kullanıcı Bilgisi --}}
+                            <div class="border-b border-stone-100 p-2.5 dark:border-stone-800">
+                                <div class="flex items-center gap-2.5">
+                                    <x-avatar :user="auth()->user()" size="h-9 w-9" text="text-xs" />
+                                    <div class="min-w-0 flex-1">
+                                        <div class="truncate text-xs font-bold text-stone-900 dark:text-stone-100">{{ auth()->user()->name }}</div>
+                                        <div class="truncate text-[11px] text-stone-500 dark:text-stone-400">{{ auth()->user()->email }}</div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 flex items-center gap-1.5">
+                                    @if (auth()->user()->isAdmin())
+                                        <span class="rounded-md bg-purple-50 px-1.5 py-0.5 text-[10px] font-bold text-purple-700 dark:bg-purple-950/50 dark:text-purple-300">👑 Yönetici</span>
+                                    @else
+                                        <span class="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">✓ Üye</span>
+                                    @endif
+                                    @if (auth()->user()->city)
+                                        <span class="text-[10px] text-stone-500 dark:text-stone-400">📍 {{ auth()->user()->city }}</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- Menü Linkleri --}}
+                            <div class="py-1 space-y-0.5">
+                                <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800">
+                                    <x-heroicon-o-squares-2x2 class="h-4 w-4 text-stone-500 dark:text-stone-400" />
+                                    <span>Panelim</span>
+                                </a>
+                                <a href="{{ route('panel.listings.index') }}" class="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800">
+                                    <x-heroicon-o-rectangle-stack class="h-4 w-4 text-stone-500 dark:text-stone-400" />
+                                    <span>İlanlarım</span>
+                                </a>
+                                <a href="{{ route('panel.favorites.index') }}" class="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800">
+                                    <x-heroicon-o-heart class="h-4 w-4 text-stone-500 dark:text-stone-400" />
+                                    <span>Favorilerim</span>
+                                </a>
+                                <a href="{{ route('panel.profile.edit') }}" class="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800">
+                                    <x-heroicon-o-user class="h-4 w-4 text-stone-500 dark:text-stone-400" />
+                                    <span>Profil & Ayarlar</span>
+                                </a>
+                                @if (auth()->user()->isAdmin())
+                                    <a href="{{ url('/admin') }}" class="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-purple-700 transition hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-950/40">
+                                        <x-heroicon-o-cog-6-tooth class="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                                        <span>Yönetim Paneli (Admin)</span>
+                                    </a>
+                                @endif
+                            </div>
+
+                            {{-- Çıkış Yap --}}
+                            <div class="border-t border-stone-100 pt-1 mt-1 dark:border-stone-800">
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/30">
+                                        <x-heroicon-o-arrow-right-on-rectangle class="h-4 w-4" />
+                                        <span>Çıkış Yap</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
 
                     <a href="{{ route('panel.listings.create') }}" class="hidden h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-emerald-700 px-3.5 text-xs font-bold text-white shadow-brand transition hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-md md:inline-flex dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">
                         <x-heroicon-o-plus class="h-4 w-4 stroke-2" />
-                        <span>İlan Ver</span>
+                        <span>{{ $headerCtaMetni }}</span>
                     </a>
-
-                    <form method="POST" action="{{ route('logout') }}" class="hidden md:block">
-                        @csrf
-                        <button type="submit" class="inline-flex h-9 items-center rounded-full px-2 text-xs font-semibold text-stone-500 transition hover:bg-red-50 hover:text-red-600 dark:text-stone-400 dark:hover:bg-red-950/30 dark:hover:text-red-400" title="Çıkış Yap">
-                            <x-heroicon-o-arrow-right-on-rectangle class="h-4 w-4" />
-                            <span class="sr-only">Çıkış</span>
-                        </button>
-                    </form>
                 @else
                     <span class="hidden h-5 w-px bg-stone-200 md:block dark:bg-stone-800"></span>
                     <a href="{{ route('login') }}" class="hidden h-9 items-center rounded-full px-3.5 text-xs font-bold text-stone-700 transition hover:bg-stone-100 hover:text-emerald-700 md:inline-flex dark:text-stone-200 dark:hover:bg-stone-800 dark:hover:text-emerald-400">Giriş</a>
                     <a href="{{ route('register') }}" class="hidden h-9 items-center rounded-full border border-stone-200/90 bg-stone-50/80 px-3.5 text-xs font-bold text-stone-700 shadow-2xs transition hover:border-emerald-300 hover:bg-white hover:text-emerald-700 md:inline-flex dark:border-stone-800 dark:bg-stone-800/60 dark:text-stone-200 dark:hover:border-emerald-600 dark:hover:text-emerald-300">Kayıt</a>
                     <a href="{{ route('panel.listings.create') }}" class="hidden h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-emerald-700 px-3.5 text-xs font-bold text-white shadow-brand transition hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-md md:inline-flex dark:bg-emerald-500 dark:text-stone-900 dark:hover:bg-emerald-400">
                         <x-heroicon-o-plus class="h-4 w-4 stroke-2" />
-                        <span>İlan Ver</span>
+                        <span>{{ $headerCtaMetni }}</span>
                     </a>
                 @endauth
             </div>

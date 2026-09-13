@@ -52,6 +52,9 @@ Alpine.data('commandPalette', (staticEntries) => ({
     loading: false,
     activeIndex: 0,
     debounceTimer: null,
+    aiLoading: false,
+    aiResult: null,
+    aiError: false,
 
     get staticMatches() {
         const q = this.query.trim().toLocaleLowerCase('tr');
@@ -63,7 +66,16 @@ Alpine.data('commandPalette', (staticEntries) => ({
     },
 
     get results() {
-        return [...this.staticMatches, ...this.liveResults];
+        const list = [...this.staticMatches, ...this.liveResults];
+        if (this.query.trim().length >= 3 && !this.aiResult) {
+            list.unshift({
+                category: 'AI Asistan',
+                title: `✨ Nisoya AI (Claude)'ya Sor: "${this.query.trim()}"`,
+                subtitle: 'Doğal dille akıllı diaspora rehberi ve ilan analizi',
+                isAiAction: true,
+            });
+        }
+        return list;
     },
 
     openPalette() {
@@ -76,25 +88,60 @@ Alpine.data('commandPalette', (staticEntries) => ({
         this.open = false;
         this.query = '';
         this.liveResults = [];
+        this.aiResult = null;
+        this.aiError = false;
         this.activeIndex = 0;
         clearTimeout(this.debounceTimer);
     },
 
-    setQuery(tag) {
+    setQuery(tag, askNow = false) {
         this.query = tag;
+        this.aiResult = null;
+        this.aiError = false;
         this.onInput();
         this.$nextTick(() => this.$refs.input?.focus());
+        if (askNow) {
+            this.askAi(tag);
+        }
     },
 
     clearQuery() {
         this.query = '';
         this.liveResults = [];
+        this.aiResult = null;
+        this.aiError = false;
         this.activeIndex = 0;
         this.$nextTick(() => this.$refs.input?.focus());
     },
 
+    async askAi(q = this.query.trim()) {
+        if (!q || q.length < 3 || this.aiLoading) return;
+        this.aiLoading = true;
+        this.aiError = false;
+        try {
+            const response = await fetch(`/arama/ai?q=${encodeURIComponent(q)}`, {
+                headers: { Accept: 'application/json' },
+            });
+            if (!response.ok) throw new Error();
+            const data = await response.json();
+            this.aiResult = data;
+        } catch (e) {
+            this.aiError = true;
+            this.aiResult = null;
+        } finally {
+            this.aiLoading = false;
+        }
+    },
+
+    clearAi() {
+        this.aiResult = null;
+        this.aiError = false;
+    },
+
     onInput() {
         this.activeIndex = 0;
+        this.aiResult = null;
+        this.aiError = false;
         clearTimeout(this.debounceTimer);
         const q = this.query.trim();
         if (q.length < 2) {
@@ -132,6 +179,10 @@ Alpine.data('commandPalette', (staticEntries) => ({
             if (this.query.trim().length > 0) {
                 window.location.href = `/ilanlar?q=${encodeURIComponent(this.query.trim())}`;
             }
+            return;
+        }
+        if (item.isAiAction) {
+            this.askAi();
             return;
         }
         this.closePalette();

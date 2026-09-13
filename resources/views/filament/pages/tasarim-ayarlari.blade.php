@@ -506,4 +506,49 @@
             </svg>
         </div>
     </x-filament::section>
+
+    {{-- 6. ÜST MENÜ (HEADER) & AKILLI ARAMA --}}
+    <x-filament::section>
+        <x-slot name="heading">
+            <span class="flex items-center gap-2.5">
+                <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-700 text-xs font-bold text-white">6</span>
+                Üst Menü (Header) ve Arama
+                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">Her iki temada geçerli</span>
+            </span>
+        </x-slot>
+        <x-slot name="description">
+            Arama kutusundaki AI/Claude entegrasyonunu, ülke seçici biçimini ve ilan butonunu buradan yönetirsin.
+        </x-slot>
+
+        <div class="grid gap-6 sm:grid-cols-3">
+            {{-- AI Destekli Arama Rozeti --}}
+            <div class="rounded-xl border border-gray-200 bg-stone-50/50 p-4 dark:border-gray-700 dark:bg-stone-900/50">
+                <label class="flex cursor-pointer items-start gap-3">
+                    <input type="checkbox" wire:model.live="headerAiRozet" class="fi-checkbox-input mt-0.5" />
+                    <span>
+                        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">✨ AI Destekli Arama Rozeti</span>
+                        <span class="block text-xs text-gray-500 dark:text-gray-400 mt-1">Arama çubuğunda yapay zekâ göstergesini açar; ⌘K aramasında Claude/AI diaspora asistanını etkin kılar.</span>
+                    </span>
+                </label>
+            </div>
+
+            {{-- Ülke Seçici Gösterimi --}}
+            <div class="rounded-xl border border-gray-200 bg-stone-50/50 p-4 dark:border-gray-700 dark:bg-stone-900/50">
+                <label for="header-ulke-stili" class="block text-xs font-semibold text-gray-800 dark:text-gray-200">Ülke Seçici Biçimi</label>
+                <select id="header-ulke-stili" wire:model.live="headerUlkeStili" class="mt-2 w-full rounded-xl border-gray-300 text-xs focus:border-primary-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                    <option value="bayrak_isim">Bayrak Emojisi + Ülke Adı (Örn: 🇺🇸 Amerika Birleşik Devletleri)</option>
+                    <option value="bayrak_yalniz">Yalnız Bayrak Emojisi (Örn: 🇺🇸)</option>
+                    <option value="kod_isim">ISO Kodu + Ülke Adı (Örn: US Amerika)</option>
+                </select>
+                <span class="block text-[11px] text-gray-500 dark:text-gray-400 mt-1.5">Masaüstü ve mobilde seçili ülkenin nasıl gösterileceğini belirler.</span>
+            </div>
+
+            {{-- İlan Ver Buton Metni --}}
+            <div class="rounded-xl border border-gray-200 bg-stone-50/50 p-4 dark:border-gray-700 dark:bg-stone-900/50">
+                <label for="header-cta-metni" class="block text-xs font-semibold text-gray-800 dark:text-gray-200">İlan Butonu Metni</label>
+                <input id="header-cta-metni" type="text" wire:model.live="headerCtaMetni" placeholder="İlan Ver" maxlength="30" class="mt-2 w-full rounded-xl border-gray-300 text-xs focus:border-primary-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+                <span class="block text-[11px] text-gray-500 dark:text-gray-400 mt-1.5">Örn: "İlan Ver", "+ Ücretsiz İlan Ver", "İlan Yayınla".</span>
+            </div>
+        </div>
+    </x-filament::section>
 </x-filament-panels::page>

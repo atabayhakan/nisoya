@@ -15,6 +15,16 @@
         $staticEntries->push(['category' => 'Aksiyon', 'title' => 'Temayı Değiştir', 'action' => 'toggleTheme']);
     }
 
+    $aiRozetAktif = \App\Support\Settings::get('gorunum.header_ai_rozet', '1') === '1' && config('ai.features.nisoya_ai_arama', true);
+
+    $aiSorular = [
+        ['etiket' => '🛂 Pasaport Yenileme', 'soru' => 'Pasaport yenileme randevusu ve gerekli evraklar'],
+        ['etiket' => '🏛️ Konsolosluk Randevusu', 'soru' => 'Konsolosluk randevusu nasıl alınır ve vekaletname'],
+        ['etiket' => '🏦 Hesap Açma', 'soru' => 'Yurt dışında ikametgah ve vergi olmadan banka hesabı'],
+        ['etiket' => '⚖️ Türk Avukat', 'soru' => 'Türkçe bilen göçmenlik ve iş hukuku avukatı'],
+        ['etiket' => '⚽ Halı Saha Ligi', 'soru' => 'Şehrimde halı saha maçı ve Türk futbol takımları'],
+    ];
+
     $hizliAramalar = [
         ['etiket' => 'Kiralık Ev', 'ikon' => '🏠'],
         ['etiket' => 'İkinci El', 'ikon' => '🏷️'],
@@ -73,15 +83,23 @@
     <button
         type="button"
         @click="openPalette()"
-        class="inline-flex h-9 w-9 md:w-full items-center justify-center md:justify-between md:gap-2.5 rounded-full border border-stone-200/90 bg-stone-50/80 p-0 md:px-3 text-xs font-medium text-stone-500 shadow-2xs transition hover:border-emerald-300 hover:bg-white hover:text-stone-800 shrink-0 dark:border-stone-800 dark:bg-stone-800/60 dark:text-stone-400 dark:hover:border-emerald-600 dark:hover:text-stone-200"
-        aria-label="Ara (Cmd/Ctrl+K)"
-        title="Ara (Cmd/Ctrl+K)"
+        class="inline-flex h-9 w-9 md:w-full items-center justify-center md:justify-between md:gap-2 rounded-full border border-stone-200/90 bg-stone-50/80 p-0 md:px-3 text-xs font-medium text-stone-500 shadow-2xs transition hover:border-emerald-400 hover:bg-white hover:text-stone-800 shrink-0 dark:border-stone-800 dark:bg-stone-800/60 dark:text-stone-400 dark:hover:border-emerald-600 dark:hover:text-stone-200"
+        aria-label="Ara veya AI'ya sor (Cmd/Ctrl+K)"
+        title="Ara veya AI'ya sor (Cmd/Ctrl+K)"
     >
         <div class="flex items-center gap-2 min-w-0">
             <x-heroicon-o-magnifying-glass class="h-4 w-4 shrink-0 text-stone-500 dark:text-stone-400" />
-            <span class="hidden md:inline truncate text-stone-500 dark:text-stone-400">İlan, iş veya rehber ara...</span>
+            <span class="hidden md:inline truncate text-stone-500 dark:text-stone-400">İlan veya rehber ara...</span>
         </div>
-        <kbd class="hidden shrink-0 rounded-md border border-stone-200 bg-white px-1.5 py-0.5 text-[10px] font-bold text-stone-500 md:inline dark:border-stone-700 dark:bg-stone-800 dark:text-stone-400">⌘K</kbd>
+        <div class="hidden items-center gap-1.5 md:flex shrink-0">
+            @if ($aiRozetAktif)
+                <span class="hidden lg:inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-300/30 dark:border-emerald-700/40">
+                    <span class="animate-pulse">✨</span>
+                    <span>AI</span>
+                </span>
+            @endif
+            <kbd class="shrink-0 rounded-md border border-stone-200 bg-white px-1.5 py-0.5 text-[10px] font-bold text-stone-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-400">⌘K</kbd>
+        </div>
     </button>
 
     <template x-teleport="body">
@@ -92,7 +110,7 @@
             @click.self="closePalette()"
             role="dialog"
             aria-modal="true"
-            aria-label="Hızlı arama"
+            aria-label="Hızlı arama ve AI asistan"
             x-cloak
         >
             <div
@@ -112,10 +130,10 @@
             >
                 {{-- Arama Başlığı & Giriş Kutusu --}}
                 <div class="flex items-center gap-3 border-b border-stone-100 px-4 py-3.5 sm:px-5 dark:border-stone-800">
-                    <template x-if="!loading">
+                    <template x-if="!loading && !aiLoading">
                         <x-heroicon-o-magnifying-glass class="h-5 w-5 shrink-0 text-emerald-700 dark:text-emerald-400" />
                     </template>
-                    <template x-if="loading">
+                    <template x-if="loading || aiLoading">
                         <svg class="h-5 w-5 shrink-0 animate-spin text-emerald-700 dark:text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -127,8 +145,8 @@
                         x-model="query"
                         @input="onInput()"
                         type="text"
-                        placeholder="İlan, hizmet, iş ilanı, rehber veya yetenek ara..."
-                        class="w-full border-0 bg-transparent p-0 text-sm sm:text-base font-medium text-stone-900 placeholder-stone-500 focus:outline-none focus:ring-0 dark:text-stone-50 dark:placeholder-stone-400"
+                        placeholder="İlan, rehber veya yetenek ara ya da AI'ya sor..."
+                        class="w-full border-0 bg-transparent p-0 text-sm sm:text-base font-medium text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-0 dark:text-stone-50 dark:placeholder-stone-500"
                         autocomplete="off"
                         role="combobox"
                         aria-expanded="true"
@@ -136,6 +154,19 @@
                     >
 
                     <div class="flex items-center gap-1.5 shrink-0">
+                        <button
+                            type="button"
+                            x-show="query.trim().length >= 3"
+                            @click="askAi()"
+                            :disabled="aiLoading"
+                            class="inline-flex items-center gap-1 rounded-xl bg-linear-to-r from-emerald-600 to-teal-600 px-2.5 py-1 text-2xs font-bold text-white shadow-2xs hover:from-emerald-700 hover:to-teal-700 transition active:scale-95 disabled:opacity-50"
+                        >
+                            <span x-show="!aiLoading">✨ AI'ya Sor</span>
+                            <span x-show="aiLoading" class="flex items-center gap-1">
+                                <svg class="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                <span>Düşünüyor...</span>
+                            </span>
+                        </button>
                         <button
                             type="button"
                             x-show="query.length > 0"
@@ -151,8 +182,76 @@
 
                 {{-- Arama Gövdesi --}}
                 <div id="command-palette-listbox" role="listbox" class="max-h-[60vh] overflow-y-auto p-3 sm:p-4">
-                    {{-- 1. DURUM: Henüz bir şey yazılmadı (Varsayılan Popüler Aramalar ve Hızlı Gezinme) --}}
+                    {{-- AI Yükleniyor Durumu --}}
+                    <div x-show="aiLoading" class="p-3.5 border border-emerald-200/80 bg-emerald-50/50 dark:border-emerald-800/40 dark:bg-emerald-950/20 text-center rounded-2xl mb-3" x-cloak>
+                        <div class="inline-flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                            <svg class="h-4 w-4 animate-spin text-emerald-700 dark:text-emerald-400" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                            <span>✨ Nisoya AI (Claude) diaspora rehberi ve ilanları inceliyor...</span>
+                        </div>
+                    </div>
+
+                    {{-- AI Yanıt Kutusu --}}
+                    <div x-show="aiResult" class="p-3.5 border border-emerald-300 bg-emerald-50/80 rounded-2xl mb-3 shadow-2xs dark:border-emerald-800 dark:bg-emerald-950/30" x-cloak>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                                <span>✨ Nisoya AI (Claude) Asistan Yanıtı</span>
+                            </span>
+                            <button type="button" @click="clearAi()" class="text-2xs font-semibold text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200">Kapat ✕</button>
+                        </div>
+
+                        <template x-if="aiResult && aiResult.niyet === 'kapsam_disi'">
+                            <p class="text-xs text-amber-800 dark:text-amber-300">Bu işlem T.C. konsolosluk yetki alanı dışındadır. İlgili ülkenin göç dairesine başvurmanız gerekir.</p>
+                        </template>
+
+                        <template x-if="aiResult && aiResult.sonuclar && aiResult.sonuclar.length">
+                            <div class="space-y-1.5 mt-2">
+                                <span class="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">Doğrulanmış Rehber İşlemleri:</span>
+                                <template x-for="item in aiResult.sonuclar" :key="item.url">
+                                    <a :href="item.url" class="flex items-center justify-between rounded-xl bg-white p-2.5 text-xs font-medium text-stone-800 shadow-2xs hover:bg-emerald-50 transition dark:bg-stone-800 dark:text-stone-200">
+                                        <div class="min-w-0 pr-2">
+                                            <div class="truncate font-bold text-stone-900 dark:text-stone-100" x-text="item.baslik"></div>
+                                            <div class="truncate text-[11px] text-stone-500 dark:text-stone-400" x-show="item.altbaslik" x-text="item.altbaslik"></div>
+                                        </div>
+                                        <span class="text-emerald-700 dark:text-emerald-400 font-bold shrink-0">Görüntüle →</span>
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template x-if="aiResult && aiResult.ilanBaglantisi">
+                            <div class="mt-2.5 pt-2 border-t border-emerald-200/60 dark:border-emerald-800/40">
+                                <a :href="aiResult.ilanBaglantisi" class="text-xs font-bold text-emerald-700 hover:underline dark:text-emerald-400 inline-flex items-center gap-1">
+                                    <span>Eşleşen ilanları listele</span>
+                                    <span>→</span>
+                                </a>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- 1. DURUM: Henüz bir şey yazılmadı (Claude Prompt Çipleri, Popüler Aramalar ve Hızlı Gezinme) --}}
                     <div x-show="query.trim().length === 0" class="space-y-4">
+                        {{-- Claude/AI Akıllı Soru Çipleri --}}
+                        @if ($aiRozetAktif)
+                            <div class="rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/30 p-3 dark:border-emerald-800/50 dark:bg-emerald-950/20">
+                                <div class="mb-2 flex items-center justify-between px-1">
+                                    <span class="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+                                        <span>✨ Nisoya AI (Claude) Akıllı Soru Önerileri</span>
+                                    </span>
+                                    <span class="text-[10px] text-stone-500 dark:text-stone-400">Tıkla & Sor</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    @foreach ($aiSorular as $as)
+                                        <button
+                                            type="button"
+                                            @click="setQuery('{{ addslashes($as['soru']) }}', true)"
+                                            class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200/80 bg-white/95 px-2.5 py-1.5 text-xs font-semibold text-stone-700 shadow-2xs transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800 active:scale-95 dark:border-emerald-800/60 dark:bg-stone-800/90 dark:text-stone-300 dark:hover:border-emerald-600 dark:hover:text-emerald-300"
+                                        >
+                                            <span>{{ $as['etiket'] }}</span>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                         {{-- Popüler / Hızlı Aramalar --}}
                         <div>
                             <div class="mb-2.5 flex items-center justify-between px-1">
@@ -241,6 +340,9 @@
                                 <div class="flex items-center gap-3 min-w-0 flex-1">
                                     {{-- Kategori İkonu --}}
                                     <span class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300 group-hover:scale-105 transition">
+                                        <template x-if="item.category === 'AI Asistan'">
+                                            <x-heroicon-s-sparkles class="h-4 w-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
+                                        </template>
                                         <template x-if="item.category === 'İş İlanı'">
                                             <x-heroicon-o-briefcase class="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                         </template>
@@ -256,7 +358,7 @@
                                         <template x-if="item.category === 'Aksiyon'">
                                             <x-heroicon-o-sparkles class="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
                                         </template>
-                                        <template x-if="!['İş İlanı', 'Yetenek', 'Rehber', 'Menü', 'Sayfa', 'Aksiyon'].includes(item.category)">
+                                        <template x-if="!['AI Asistan', 'İş İlanı', 'Yetenek', 'Rehber', 'Menü', 'Sayfa', 'Aksiyon'].includes(item.category)">
                                             <x-heroicon-o-tag class="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
                                         </template>
                                     </span>
@@ -293,8 +395,8 @@
                         </span>
                     </div>
                     <span class="hidden sm:inline-flex items-center gap-1 text-[10px] text-stone-500 dark:text-stone-400">
-                        <x-heroicon-s-bolt class="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" />
-                        <span>Nisoya Hızlı Arama</span>
+                        <span class="text-emerald-700 dark:text-emerald-400">✨</span>
+                        <span>Nisoya AI (Claude) Destekli</span>
                     </span>
                 </div>
             </div>
