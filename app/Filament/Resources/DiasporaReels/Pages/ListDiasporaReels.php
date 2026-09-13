@@ -3,24 +3,49 @@
 namespace App\Filament\Resources\DiasporaReels\Pages;
 
 use App\Filament\Resources\DiasporaReels\DiasporaReelResource;
+use App\Filament\Resources\DiasporaReels\Widgets\DiasporaReelsStatsWidget;
 use App\Models\Country;
 use App\Models\DiasporaReel;
 use App\Services\Ai\CmsAiAssistant;
+use Database\Seeders\DiasporaReelSeeder;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListDiasporaReels extends ListRecords
 {
     protected static string $resource = DiasporaReelResource::class;
 
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            DiasporaReelsStatsWidget::class,
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('ornekleriYukle')
+                ->label('Örnekleri Yükle (Seed)')
+                ->icon(Heroicon::OutlinedArrowDownTray)
+                ->color('gray')
+                ->tooltip('Ana sayfa için 6 adet örnek diaspora reels ve etkinlik kaydını yükler')
+                ->action(function (): void {
+                    (new DiasporaReelSeeder)->run();
+                    Notification::make()
+                        ->title('Örnek Diaspora Reels Yüklendi')
+                        ->body('Almanya, Kırgızistan, Hollanda ve İngiltere için 6 adet örnek diaspora içeriği başarıyla kaydedildi.')
+                        ->success()
+                        ->send();
+                }),
+
             Action::make('aiReelsTaslagi')
                 ->label('AI ile Hızlı Reel Ekle (Claude)')
                 ->icon(Heroicon::OutlinedSparkles)
@@ -82,8 +107,43 @@ class ListDiasporaReels extends ListRecords
                         ->success()
                         ->send();
                 }),
+
             CreateAction::make()
-                ->label('Manuel Reel Ekle'),
+                ->label('Manuel Reel Ekle')
+                ->icon(Heroicon::OutlinedPlus),
+        ];
+    }
+
+    /**
+     * @return array<string, Tab>
+     */
+    public function getTabs(): array
+    {
+        return [
+            'hepsi' => Tab::make('Tüm Paylaşımlar')
+                ->badge(DiasporaReel::query()->count() ?: null),
+
+            'yayinda' => Tab::make('Yayında (Aktif)')
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('is_active', true))
+                ->badge(DiasporaReel::query()->where('is_active', true)->count() ?: null)
+                ->badgeColor('success'),
+
+            'one_cikan' => Tab::make('Öne Çıkanlar')
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('is_featured', true))
+                ->badge(DiasporaReel::query()->where('is_featured', true)->count() ?: null)
+                ->badgeColor('warning'),
+
+            'de' => Tab::make('🇩🇪 Almanya')
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('country_code', 'DE'))
+                ->badge(DiasporaReel::query()->where('country_code', 'DE')->count() ?: null),
+
+            'kg' => Tab::make('🇰🇬 Kırgızistan')
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('country_code', 'KG'))
+                ->badge(DiasporaReel::query()->where('country_code', 'KG')->count() ?: null),
+
+            'diger' => Tab::make('🌍 Diğer')
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->whereNotIn('country_code', ['DE', 'KG']))
+                ->badge(DiasporaReel::query()->whereNotIn('country_code', ['DE', 'KG'])->count() ?: null),
         ];
     }
 }

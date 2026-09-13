@@ -11,8 +11,11 @@ use App\Models\DiasporaReel;
 use App\Services\Ai\CmsAiAssistant;
 use App\Support\InstagramMedia;
 use BackedEnum;
+use Database\Seeders\DiasporaReelSeeder;
 use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -24,7 +27,10 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 use UnitEnum;
 
 /**
@@ -185,43 +191,119 @@ class DiasporaReelResource extends Resource
             ->columns([
                 TextColumn::make('sort_order')
                     ->label('Sıra')
-                    ->sortable(),
+                    ->sortable()
+                    ->width('60px')
+                    ->alignCenter(),
 
                 TextColumn::make('country.name_tr')
                     ->label('Ülke')
-                    ->formatStateUsing(fn ($record) => ($record->country?->emoji ? $record->country->emoji.' ' : '').($record->country?->name_tr ?: '—'))
+                    ->formatStateUsing(fn (DiasporaReel $record): string => ($record->country ? ($record->country->emoji.' ') : '').($record->country ? $record->country->name_tr : '—'))
+                    ->badge()
+                    ->color('gray')
                     ->sortable(),
 
                 TextColumn::make('city')
                     ->label('Şehir')
-                    ->searchable(),
+                    ->icon('heroicon-m-map-pin')
+                    ->iconColor('stone')
+                    ->placeholder('—')
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('title')
-                    ->label('Başlık')
+                    ->label('Başlık & Hikaye')
+                    ->description(fn (DiasporaReel $record): ?string => $record->caption ? Str::limit($record->caption, 65) : null)
                     ->searchable()
+                    ->weight('bold')
                     ->wrap(),
 
                 TextColumn::make('instagram_username')
-                    ->label('Hesap')
+                    ->label('Instagram')
+                    ->badge()
+                    ->color('danger')
+                    ->icon('heroicon-m-camera')
+                    ->placeholder('—')
                     ->searchable(),
 
                 ToggleColumn::make('is_featured')
-                    ->label('Öne Çıkan'),
+                    ->label('Öne Çıkan')
+                    ->alignCenter(),
 
                 ToggleColumn::make('is_active')
-                    ->label('Aktif'),
+                    ->label('Aktif')
+                    ->alignCenter(),
             ])
-            ->defaultSort('sort_order')
-            ->reorderable('sort_order')
+            ->filters([
+                SelectFilter::make('country_code')
+                    ->label('Ülke')
+                    ->options(fn (): array => Country::query()->where('is_active', true)->orderBy('sort_order')->get()->mapWithKeys(fn (Country $c) => [$c->code => ($c->emoji ? $c->emoji.' ' : '').$c->name_tr])->toArray())
+                    ->searchable(),
+
+                TernaryFilter::make('is_active')
+                    ->label('Yayın Durumu')
+                    ->trueLabel('Yalnız Aktifler')
+                    ->falseLabel('Yalnız Pasifler'),
+
+                TernaryFilter::make('is_featured')
+                    ->label('Vurgu Durumu')
+                    ->trueLabel('Yalnız Öne Çıkanlar')
+                    ->falseLabel('Standart Kartlar'),
+            ])
             ->actions([
+                Action::make('onizle')
+                    ->label('Önizle')
+                    ->icon(Heroicon::OutlinedEye)
+                    ->color('info')
+                    ->modalHeading(fn (DiasporaReel $record): string => $record->title)
+                    ->modalDescription(fn (DiasporaReel $record): string => ($record->country ? ($record->country->emoji.' ') : '🌍 ').$record->displayLocation().' • '.($record->instagram_username ?: 'Instagram Reels'))
+                    ->modalContent(fn (DiasporaReel $record) => view('filament.partials.diaspora-reel-preview', ['reel' => $record]))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Kapat'),
+
                 Action::make('instagramdaAc')
                     ->label('Instagram')
                     ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
+                    ->color('gray')
                     ->url(fn (DiasporaReel $record): string => $record->instagram_url)
                     ->openUrlInNewTab(),
+
                 EditAction::make(),
                 DeleteAction::make(),
-            ]);
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ])
+            ->emptyStateHeading('Henüz Diaspora Hikayesi veya Reels Eklenmemiş')
+            ->emptyStateDescription('Almanya, Kırgızistan, Hollanda vb. ülkelerdeki Türk diasporasının Instagram Reels videolarını ve etkinlik hikayelerini burada listeleyerek ana sayfada canlı vitrinde yayınlayabilirsiniz.')
+            ->emptyStateIcon(Heroicon::OutlinedPlayCircle)
+            ->emptyStateActions([
+                Action::make('ornekleriYukle')
+                    ->label('📥 6 Örnek Diaspora Hikayesini Yükle (Seed)')
+                    ->icon(Heroicon::OutlinedArrowDownTray)
+                    ->color('info')
+                    ->action(function (): void {
+                        (new DiasporaReelSeeder)->run();
+                        Notification::make()
+                            ->title('Örnek diaspora reels kayıtları yüklendi')
+                            ->body('Ana sayfa vitrini için 6 küratörlü diaspora reels kaydı eklendi.')
+                            ->success()
+                            ->send();
+                    }),
+                Action::make('aiReelsEkle')
+                    ->label('✨ AI ile Hızlı Ekle (Claude)')
+                    ->icon(Heroicon::OutlinedSparkles)
+                    ->color('primary')
+                    ->url(fn (): string => ListDiasporaReels::getUrl()),
+                Action::make('manuelEkle')
+                    ->label('Manuel Reel Ekle')
+                    ->icon(Heroicon::OutlinedPlus)
+                    ->color('gray')
+                    ->url(fn (): string => CreateDiasporaReel::getUrl()),
+            ])
+            ->defaultSort('sort_order')
+            ->reorderable('sort_order');
     }
 
     public static function getPages(): array

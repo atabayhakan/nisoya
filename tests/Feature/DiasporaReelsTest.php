@@ -172,4 +172,57 @@ class DiasporaReelsTest extends TestCase
             'instagram_username' => '@hamburg_turkleri',
         ]);
     }
+
+    public function test_admin_can_trigger_seed_action_from_list_page(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'email_verified_at' => now(),
+        ]);
+
+        $this->assertDatabaseCount('diaspora_reels', 0);
+
+        Livewire::actingAs($admin)
+            ->test(ListDiasporaReels::class)
+            ->callAction('ornekleriYukle')
+            ->assertHasNoActionErrors();
+
+        $this->assertDatabaseCount('diaspora_reels', 6);
+    }
+
+    public function test_tabs_and_stats_widget_work_properly(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'email_verified_at' => now(),
+        ]);
+
+        DiasporaReel::create([
+            'title' => 'Berlin Etkinlik',
+            'instagram_url' => 'https://www.instagram.com/reel/C1111111111/',
+            'country_code' => 'DE',
+            'city' => 'Berlin',
+            'is_active' => true,
+            'is_featured' => true,
+        ]);
+
+        DiasporaReel::create([
+            'title' => 'Bişkek Buluşma',
+            'instagram_url' => 'https://www.instagram.com/reel/C2222222222/',
+            'country_code' => 'KG',
+            'city' => 'Bişkek',
+            'is_active' => false,
+            'is_featured' => false,
+        ]);
+
+        Livewire::actingAs($admin)
+            ->test(ListDiasporaReels::class)
+            ->assertSee('Berlin Etkinlik')
+            ->set('activeTab', 'yayinda')
+            ->assertSee('Berlin Etkinlik')
+            ->assertDontSee('Bişkek Buluşma')
+            ->set('activeTab', 'kg')
+            ->assertSee('Bişkek Buluşma')
+            ->assertDontSee('Berlin Etkinlik');
+    }
 }
