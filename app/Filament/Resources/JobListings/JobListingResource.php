@@ -1,21 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\JobListings;
 
 use App\Enums\JobStatus;
+use App\Filament\Resources\JobListings\Pages\CreateJobListing;
 use App\Filament\Resources\JobListings\Pages\EditJobListing;
 use App\Filament\Resources\JobListings\Pages\ListJobListings;
+use App\Filament\Resources\JobListings\Schemas\JobListingForm;
+use App\Filament\Resources\JobListings\Tables\JobListingsTable;
+use App\Filament\Resources\JobListings\Widgets\JobListingStatsWidget;
 use App\Models\JobListing;
 use BackedEnum;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class JobListingResource extends Resource
@@ -46,38 +46,45 @@ class JobListingResource extends Resource
         return 'İş İlanları';
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        $pending = JobListing::query()->where('status', JobStatus::Beklemede)->count();
+
+        return $pending > 0 ? (string) $pending : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Onay bekleyen yeni iş ilanları';
+    }
+
     public static function form(Schema $schema): Schema
     {
-        return $schema->components([
-            Select::make('status')->label('Durum')->options(JobStatus::class)->required(),
-            Toggle::make('is_featured')->label('Öne çıkan'),
-            DateTimePicker::make('featured_until')->label('Öne çıkarma bitişi'),
-        ]);
+        return JobListingForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('title')->label('Başlık')->searchable()->limit(50),
-                TextColumn::make('company.name')->label('Şirket')->searchable(),
-                TextColumn::make('category.name')->label('Kategori')->toggleable(),
-                TextColumn::make('status')->label('Durum')->badge(),
-                TextColumn::make('applications_count')->label('Başvuru')->counts('applications'),
-                IconColumn::make('is_featured')->label('Öne çıkan')->boolean(),
-                TextColumn::make('created_at')->label('Tarih')->dateTime('d.m.Y')->sortable(),
-            ])
-            ->filters([
-                SelectFilter::make('status')->label('Durum')->options(JobStatus::class),
-                SelectFilter::make('is_featured')->label('Öne çıkan')->options([1 => 'Evet', 0 => 'Hayır']),
-            ])
-            ->defaultSort('created_at', 'desc');
+        return JobListingsTable::configure($table);
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            JobListingStatsWidget::class,
+        ];
     }
 
     public static function getPages(): array
     {
         return [
             'index' => ListJobListings::route('/'),
+            'create' => CreateJobListing::route('/create'),
             'edit' => EditJobListing::route('/{record}/edit'),
         ];
     }
