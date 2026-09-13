@@ -71,6 +71,7 @@ use App\Http\Controllers\YasamRehberiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/ulke-sec/{kod}', [HomeController::class, 'ulkeSec'])->name('country.select');
 
 // Keşif (herkese açık)
 Route::get('/ilanlar', [BrowseController::class, 'index'])->name('listings.index');

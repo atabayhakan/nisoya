@@ -17,6 +17,7 @@ use App\Services\RehberYuzeyi;
 use App\Services\VisitorLocationService;
 use App\Support\CategoryIcon;
 use App\Support\Modules;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -163,7 +164,7 @@ class HomeController extends Controller
     /**
      * Halı saha / spor bölümünün anasayfa verisi.
      *
-     * @return array{aktif: bool, sehir: string, maclar: Collection<int, FootballMatch>, haftaninMaci: ?FootballMatch, istatistikler: array{takim: int, mac: int, saha: int, oyuncu: int}}|null
+     * @return array{aktif: bool, sehir: string, ulke_kodu: string, ulke_adi: string, maclar: Collection<int, FootballMatch>, haftaninMaci: ?FootballMatch, istatistikler: array{takim: int, mac: int, saha: int, oyuncu: int}, populerSehirler: list<array{ad: string, ulke: string}>}|null
      */
     private function sporVerisi(Request $request): ?array
     {
@@ -171,14 +172,45 @@ class HomeController extends Controller
             return null;
         }
 
-        $sehir = $request->user()?->city ?: 'Berlin';
+        $user = $request->user();
+        $countryCode = $user?->country_code
+            ?: ($request->session()->get('visitor_country_code')
+                ?: app(VisitorLocationService::class)->resolve($request)?->code
+                ?: 'KG');
+        $countryCode = strtoupper(substr((string) $countryCode, 0, 2));
+
+        $country = Country::find($countryCode) ?: Country::first();
+        $countryName = $country?->name_tr ?: 'Kırgızistan';
+
+        $sehir = $user?->city;
+        if (! filled($sehir)) {
+            $defaultCity = City::query()
+                ->where('country_code', $countryCode)
+                ->where('is_active', true)
+                ->orderBy('id')
+                ->first();
+            $sehir = $defaultCity?->name ?: ($countryCode === 'KG' ? 'Bişkek' : ($countryCode === 'DE' ? 'Berlin' : $countryName));
+        }
 
         $maclar = FootballMatch::query()
             ->verified()
+            ->where(function ($q) use ($countryCode, $sehir) {
+                $q->where('city', $sehir)
+                    ->orWhere('country_code', $countryCode);
+            })
             ->with(['homeTeam', 'awayTeam', 'venue', 'mvpPlayer'])
             ->latest('match_date')
             ->take(4)
             ->get();
+
+        if ($maclar->isEmpty()) {
+            $maclar = FootballMatch::query()
+                ->verified()
+                ->with(['homeTeam', 'awayTeam', 'venue', 'mvpPlayer'])
+                ->latest('match_date')
+                ->take(4)
+                ->get();
+        }
 
         $haftaninMaci = FootballMatch::query()
             ->verified()
@@ -187,11 +219,42 @@ class HomeController extends Controller
             ->latest('match_date')
             ->first() ?? $maclar->first();
 
+        // Ülkeye göre popüler şehirler (kullanıcının ülkesindeki şehirler öncelikli)
+        $yerelSehirler = City::query()
+            ->where('country_code', $countryCode)
+            ->where('is_active', true)
+            ->orderBy('id')
+            ->take(2)
+            ->get()
+            ->map(fn (City $c) => [
+                'ad' => $c->name,
+                'ulke' => ($country?->emoji ? $country->emoji.' ' : '').$countryName,
+            ])
+            ->all();
+
+        $digerSehirler = [
+            ['ad' => 'Berlin', 'ulke' => '🇩🇪 Almanya'],
+            ['ad' => 'Amsterdam', 'ulke' => '🇳🇱 Hollanda'],
+            ['ad' => 'Londra', 'ulke' => '🇬🇧 İngiltere'],
+            ['ad' => 'Köln', 'ulke' => '🇩🇪 Almanya'],
+            ['ad' => 'Viyana', 'ulke' => '🇦🇹 Avusturya'],
+            ['ad' => 'Brüksel', 'ulke' => '🇧🇪 Belçika'],
+        ];
+
+        $populerSehirler = collect(array_merge($yerelSehirler, $digerSehirler))
+            ->unique('ad')
+            ->take(8)
+            ->values()
+            ->all();
+
         return [
             'aktif' => true,
             'sehir' => $sehir,
+            'ulke_kodu' => $countryCode,
+            'ulke_adi' => $countryName,
             'maclar' => $maclar,
             'haftaninMaci' => $haftaninMaci,
+            'populerSehirler' => $populerSehirler,
             'istatistikler' => [
                 'takim' => FootballTeam::query()->active()->count(),
                 'mac' => FootballMatch::query()->verified()->count(),
@@ -279,6 +342,9 @@ class HomeController extends Controller
 
         $cozulenKod = $yuzey->cozulenUlkeKodu($request->user(), $request);
         $secili = $cozulenKod !== null ? $ulkeler->firstWhere('code', $cozulenKod) : null;
+        if ($secili === null && $cozulenKod !== null) {
+            $secili = $yuzey->kapsananUlkeler()->firstWhere('code', $cozulenKod);
+        }
         $yasamSecili = $cozulenKod !== null ? $yasamUlkeler->firstWhere('code', $cozulenKod) : null;
 
         return [
@@ -290,5 +356,38 @@ class HomeController extends Controller
             'yasamSecili' => $yasamSecili,
             'yasamOzeti' => $yasamSecili !== null ? $yuzey->yasamOzeti($yasamSecili) : null,
         ];
+    }
+
+    /**
+     * Ziyaretçinin / üyenin ana sayfa ve site genelindeki ülke seçimini değiştirir.
+     */
+    public function ulkeSec(Request $request, string $kod): RedirectResponse
+    {
+        $country = Country::query()
+            ->where('code', strtoupper($kod))
+            ->where('is_active', true)
+            ->first();
+
+        if ($country) {
+            $code = $country->code;
+            $request->session()->put('visitor_country_code', $code);
+
+            if ($user = $request->user()) {
+                $updateData = ['country_code' => $code];
+                $defaultCity = City::query()
+                    ->where('country_code', $code)
+                    ->where('is_active', true)
+                    ->orderBy('id')
+                    ->first();
+
+                if (! filled($user->city) || ! City::query()->where('country_code', $code)->where('name', $user->city)->exists()) {
+                    $updateData['city'] = $defaultCity?->name;
+                }
+
+                $user->update($updateData);
+            }
+        }
+
+        return redirect()->back(fallback: route('home'));
     }
 }

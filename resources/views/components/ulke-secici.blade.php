@@ -64,7 +64,7 @@
             @foreach ($countries as $ulke)
                 <li x-show="!arama || '{{ Str::lower($ulke->name_tr) }} {{ Str::lower($ulke->code) }}'.includes(arama.toLowerCase())">
                     <a
-                        href="{{ url('/ilanlar') }}?ulke={{ $ulke->code }}"
+                        href="{{ route('country.select', $ulke->code) }}"
                         class="flex items-center justify-between rounded-xl px-2.5 py-2 text-xs font-medium transition {{ $country?->code === $ulke->code ? 'bg-emerald-50 text-emerald-800 font-bold dark:bg-emerald-950/40 dark:text-emerald-300' : 'text-stone-700 hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800' }}"
                     >
                         <div class="flex items-center gap-2 min-w-0">
@@ -108,7 +108,7 @@
                 <div class="mb-2 flex items-center justify-between">
                     <div>
                         <h2 class="text-base font-bold text-stone-900 dark:text-stone-50">Hangi ülke?</h2>
-                        <p class="text-xs text-stone-500 dark:text-stone-400">Seçtiğin ülkedeki ilanlara yönlendirilirsin.</p>
+                        <p class="text-xs text-stone-500 dark:text-stone-400">Tüm içerik, rehber ve ilanlar seçtiğin ülkeye göre uyarlanır.</p>
                     </div>
                     <button type="button" @click="kapat()" class="-mr-1 grid h-9 w-9 place-items-center rounded-full text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800" aria-label="Kapat">
                         <x-heroicon-o-x-mark class="h-5 w-5" />
@@ -119,7 +119,7 @@
                     @foreach ($countries as $ulke)
                         <li>
                             <a
-                                href="{{ url('/ilanlar') }}?ulke={{ $ulke->code }}"
+                                href="{{ route('country.select', $ulke->code) }}"
                                 class="flex min-h-12 items-center justify-between rounded-2xl px-3 text-sm font-medium transition {{ $country?->code === $ulke->code ? 'bg-emerald-50 text-emerald-800 font-bold dark:bg-emerald-950/40 dark:text-emerald-300' : 'text-stone-700 hover:bg-stone-50 dark:text-stone-200 dark:hover:bg-stone-800' }}"
                             >
                                 <div class="flex items-center gap-3 min-w-0">

@@ -23,19 +23,39 @@ class VisitorLocationService
             return null;
         }
 
-        // Local/dev'de gerçek IP genelde 127.0.0.1 (özel IP, çözümlenemez).
-        // Önizleme/test için sadece debug modda ?test_country=DE ile zorlanabilir
-        // (sonraki isteklerde de kalıcı olsun diye session'a yazılır).
-        if (config('app.debug') && $request->filled('test_country')) {
-            $code = strtoupper(substr($request->string('test_country'), 0, 2));
-            $request->session()->put('visitor_country_code', $code);
+        // Açıkça URL'den belirtilen ülke (?ulke=KG veya ?test_country=KG)
+        if ($request->filled('ulke')) {
+            $code = strtoupper(substr($request->string('ulke'), 0, 2));
+            if ($request->hasSession()) {
+                $request->session()->put('visitor_country_code', $code);
+            }
 
             return $this->fromCode($code);
         }
 
-        // mmdb dosyasını her istekte açmamak için sonucu oturuma önbellekle
-        // (null dahil — çözümlenemeyen IP için tekrar tekrar denemesin).
-        if ($request->session()->has('visitor_country_code')) {
+        if (config('app.debug') && $request->filled('test_country')) {
+            $code = strtoupper(substr($request->string('test_country'), 0, 2));
+            if ($request->hasSession()) {
+                $request->session()->put('visitor_country_code', $code);
+            }
+
+            return $this->fromCode($code);
+        }
+
+        // Giriş yapmış üyenin yaşadığı ülke her zaman birincil önceliktir
+        if ($userCountry = $request->user()?->country_code) {
+            $code = strtoupper(trim((string) $userCountry));
+            if ($code !== '') {
+                if ($request->hasSession() && ! $request->session()->has('visitor_country_code')) {
+                    $request->session()->put('visitor_country_code', $code);
+                }
+
+                return $this->fromCode($code);
+            }
+        }
+
+        // Oturumda kayıtlı ülke tercihi
+        if ($request->hasSession() && $request->session()->has('visitor_country_code')) {
             $code = $request->session()->get('visitor_country_code');
 
             return $code ? $this->fromCode($code) : null;
@@ -53,7 +73,9 @@ class VisitorLocationService
             }
         }
 
-        $request->session()->put('visitor_country_code', $code);
+        if ($request->hasSession()) {
+            $request->session()->put('visitor_country_code', $code);
+        }
 
         return $code ? $this->fromCode($code) : null;
     }

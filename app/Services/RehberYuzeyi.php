@@ -85,6 +85,10 @@ class RehberYuzeyi
      */
     public function cozulenUlkeKodu(?User $uye, Request $request): ?string
     {
+        if ($request->filled('ulke')) {
+            return strtoupper(substr($request->string('ulke'), 0, 2));
+        }
+
         $kod = trim((string) $uye?->country_code);
 
         if ($kod === '') {
@@ -102,21 +106,39 @@ class RehberYuzeyi
      */
     public function ulkeOzeti(Country $country): array
     {
-        return [
-            'temsilcilikSayisi' => Temsilcilik::query()
+        $yayindaSayisi = Temsilcilik::query()
+            ->aktif()
+            ->where('country_code', $country->code)
+            ->whereHas('islemler', fn ($q) => $q->where('status', TemsilcilikIslemi::STATUS_YAYIN))
+            ->count();
+        $temsilcilikSayisi = $yayindaSayisi > 0
+            ? $yayindaSayisi
+            : Temsilcilik::query()->aktif()->where('country_code', $country->code)->count();
+
+        $islemTurleri = IslemTuru::query()
+            ->aktif()
+            ->whereHas('islemler', fn ($q) => $q->where('status', TemsilcilikIslemi::STATUS_YAYIN)
+                ->whereHas('temsilcilik', fn ($t) => $t->where('is_active', true)
+                    ->where('country_code', $country->code)))
+            ->orderBy('sort_order')
+            ->orderBy('ad')
+            ->limit(6)
+            ->get();
+
+        if ($islemTurleri->isEmpty()) {
+            $islemTurleri = IslemTuru::query()
                 ->aktif()
-                ->where('country_code', $country->code)
-                ->whereHas('islemler', fn ($q) => $q->where('status', TemsilcilikIslemi::STATUS_YAYIN))
-                ->count(),
-            'islemTurleri' => IslemTuru::query()
-                ->aktif()
-                ->whereHas('islemler', fn ($q) => $q->where('status', TemsilcilikIslemi::STATUS_YAYIN)
-                    ->whereHas('temsilcilik', fn ($t) => $t->where('is_active', true)
-                        ->where('country_code', $country->code)))
+                ->whereHas('islemler', fn ($q) => $q->whereHas('temsilcilik', fn ($t) => $t->where('is_active', true)
+                    ->where('country_code', $country->code)))
                 ->orderBy('sort_order')
                 ->orderBy('ad')
                 ->limit(6)
-                ->get(),
+                ->get();
+        }
+
+        return [
+            'temsilcilikSayisi' => $temsilcilikSayisi,
+            'islemTurleri' => $islemTurleri,
         ];
     }
 

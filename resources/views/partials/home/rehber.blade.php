@@ -91,23 +91,24 @@
                     </div>
 
                     {{-- Yaşam Rehberi — İKİNCİL blok, Ülke Rehberi zaten birincilken --}}
-                    @if ($rehber['yasamOzeti'] !== null && $rehber['yasamOzeti']->isNotEmpty())
+                    @if ($rehber['yasamOzeti'] !== null && $rehber['yasamOzeti']->isNotEmpty() && ($rehber['yasamSecili'] !== null || $rehber['secili'] !== null))
+                        @php($yasamUlke = $rehber['yasamSecili'] ?? $rehber['secili'])
                         <div class="mt-8 border-t border-emerald-100 pt-6 dark:border-emerald-900/40">
                             <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                     <p class="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-400">Yaşam Rehberi</p>
                                     <p class="mt-1 text-sm text-stone-600 dark:text-stone-300">
-                                        Bankacılıktan barınmaya, {{ $rehber['yasamSecili']->name_tr }} için gündelik hayat bilgileri.
+                                        Bankacılıktan barınmaya, {{ $yasamUlke->name_tr }} için gündelik hayat bilgileri.
                                     </p>
                                 </div>
-                                <a href="{{ route('yasam-rehberi.kategoriler', strtolower($rehber['yasamSecili']->code)) }}" class="text-xs font-bold text-emerald-700 hover:underline dark:text-emerald-400">
+                                <a href="{{ route('yasam-rehberi.kategoriler', strtolower($yasamUlke->code)) }}" class="text-xs font-bold text-emerald-700 hover:underline dark:text-emerald-400">
                                     Tüm Yaşam Kategorileri →
                                 </a>
                             </div>
 
                             <div class="mt-4 flex flex-wrap gap-2">
                                 @foreach ($rehber['yasamOzeti'] as $satir)
-                                    <a href="{{ route('yasam-rehberi.konular', [strtolower($rehber['yasamSecili']->code), $satir['kategori']->slug]) }}"
+                                    <a href="{{ route('yasam-rehberi.konular', [strtolower($yasamUlke->code), $satir['kategori']->slug]) }}"
                                        class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/90 bg-white px-3.5 py-1.5 text-sm font-medium text-emerald-800 shadow-2xs transition hover:border-emerald-400 hover:bg-emerald-50/60 hover:text-emerald-900 dark:border-emerald-800/80 dark:bg-stone-900 dark:text-emerald-300 dark:hover:border-emerald-600">
                                         @if ($satir['kategori']->ikon)<span aria-hidden="true">{{ $satir['kategori']->ikon }}</span>@endif
                                         <span>{{ $satir['kategori']->ad }}</span>

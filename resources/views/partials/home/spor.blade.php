@@ -124,15 +124,13 @@
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
                             @php
-                                $populerSehirler = [
+                                $populerSehirler = $spor['populerSehirler'] ?? [
+                                    ['ad' => 'Bişkek', 'ulke' => '🇰🇬 Kırgızistan'],
                                     ['ad' => 'Berlin', 'ulke' => '🇩🇪 Almanya'],
                                     ['ad' => 'Frankfurt', 'ulke' => '🇩🇪 Almanya'],
-                                    ['ad' => 'Köln', 'ulke' => '🇩🇪 Almanya'],
                                     ['ad' => 'Amsterdam', 'ulke' => '🇳🇱 Hollanda'],
-                                    ['ad' => 'Rotterdam', 'ulke' => '🇳🇱 Hollanda'],
                                     ['ad' => 'Londra', 'ulke' => '🇬🇧 İngiltere'],
                                     ['ad' => 'Viyana', 'ulke' => '🇦🇹 Avusturya'],
-                                    ['ad' => 'Brüksel', 'ulke' => '🇧🇪 Belçika'],
                                 ];
                             @endphp
                             @foreach ($populerSehirler as $sehirItem)
