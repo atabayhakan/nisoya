@@ -14,12 +14,19 @@ class TagForm
             ->components([
                 TextInput::make('name')
                     ->label('Etiket Adı')
+                    ->prefix('#')
+                    ->placeholder('Örn: usta, nakliye, ikinci-el')
+                    ->helperText('Arama filtrelerinde ve ilan kartlarında görünecek anahtar sözcük.')
                     ->required()
                     ->maxLength(50)
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn (?string $state, callable $set) => $set('slug', Str::slug((string) $state))),
+
                 TextInput::make('slug')
-                    ->label('Kısa ad (URL)')
+                    ->label('Kısa ad (URL Slug)')
+                    ->prefix('etiket/')
+                    ->placeholder('Örn: usta, evden-eve-nakliye')
+                    ->helperText('URL adreslerinde kullanılacak benzersiz tanımlayıcı.')
                     ->required()
                     ->maxLength(50)
                     ->unique(ignoreRecord: true),

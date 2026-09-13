@@ -162,6 +162,11 @@ class ListingsTable
                 SelectFilter::make('type')
                     ->label('Tür')
                     ->options(ListingType::class),
+                SelectFilter::make('tag_id')
+                    ->label('Etiket')
+                    ->relationship('tags', 'name')
+                    ->searchable()
+                    ->preload(),
                 TernaryFilter::make('is_featured')
                     ->label('Öne çıkan'),
                 TernaryFilter::make('fraud_reason')

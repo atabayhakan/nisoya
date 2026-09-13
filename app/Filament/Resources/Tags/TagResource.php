@@ -8,6 +8,7 @@ use App\Filament\Resources\Tags\Pages\EditTag;
 use App\Filament\Resources\Tags\Pages\ListTags;
 use App\Filament\Resources\Tags\Schemas\TagForm;
 use App\Filament\Resources\Tags\Tables\TagsTable;
+use App\Filament\Resources\Tags\Widgets\TagStatsWidget;
 use App\Models\Tag;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -35,9 +36,16 @@ class TagResource extends Resource
         return 'Etiketler';
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Tag::query()->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
     public static function getModelLabel(): string
     {
-        return 'etiket';
+        return 'Etiket';
     }
 
     public static function getPluralModelLabel(): string
@@ -53,6 +61,13 @@ class TagResource extends Resource
     public static function table(Table $table): Table
     {
         return TagsTable::configure($table);
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            TagStatsWidget::class,
+        ];
     }
 
     public static function getRelations(): array
