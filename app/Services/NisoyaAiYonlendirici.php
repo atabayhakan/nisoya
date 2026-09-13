@@ -3,9 +3,14 @@
 namespace App\Services;
 
 use App\Contracts\AiProvider;
+use App\Enums\JobStatus;
+use App\Enums\ListingStatus;
 use App\Models\Country;
 use App\Models\IslemTuru;
+use App\Models\JobListing;
+use App\Models\Listing;
 use App\Models\YasamKategorisi;
+use App\Support\Para;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -128,17 +133,71 @@ class NisoyaAiYonlendirici
             $ulkeAdi = $country ? $country->name_tr : 'bulunduğunuz ülkede';
             $ulkeEmoji = $country ? $country->emoji : '🌍';
 
+            // Gerçek aktif iş ilanlarını sorgula
+            $queryBuilder = JobListing::query()
+                ->where('status', JobStatus::Aktif)
+                ->when($hedefUlke, fn ($q) => $q->where('country_code', $hedefUlke));
+
+            $filtreKelimeler = array_values(array_filter(
+                $yorum['anahtar_kelimeler'],
+                fn (string $k) => ! in_array(mb_strtolower(trim($k)), ['iş', 'is', 'ilan', 'ilani', 'ilanı', 'ilanları', 'işler', 'kariyer', 'bul'], true)
+            ));
+
+            if (! empty($filtreKelimeler)) {
+                $queryBuilder->where(function ($sub) use ($filtreKelimeler) {
+                    foreach ($filtreKelimeler as $kelime) {
+                        $sub->orWhere('title', 'like', "%{$kelime}%")
+                            ->orWhere('description', 'like', "%{$kelime}%");
+                    }
+                });
+            }
+
+            $isler = $queryBuilder->with(['company', 'country'])->latest()->take(5)->get();
+
+            /** @var Collection<int, array{baslik: string, altbaslik: string, url: string}> $sonuclar */
+            $sonuclar = collect();
+
+            foreach ($isler as $is) {
+                $sehir = $is->city ?: ($is->country ? $is->country->name_tr : 'Yurt Dışı');
+                $sirket = $is->company ? $is->company->name : 'Nisoya Üyesi';
+                $calismaTuru = $is->employment_type->getLabel();
+                $maas = $is->salary_min ? ' • '.Para::bicimle($is->salary_min).' '.($is->salary_currency ?: '') : '';
+
+                $sonuclar->push([
+                    'baslik' => "💼 {$is->title}",
+                    'altbaslik' => "{$sirket} • {$sehir} • {$calismaTuru}{$maas}",
+                    'url' => route('jobs.show', [$is->id, $is->slug]),
+                ]);
+            }
+
+            $varMi = $sonuclar->isNotEmpty();
+
+            if ($varMi) {
+                $baslik = "💼 {$ulkeEmoji} {$ulkeAdi} İş & Kariyer Fırsatları";
+                $mesaj = "{$ulkeAdi} genelinde '{$sorgu}' ile eşleşen {$sonuclar->count()} aktif iş fırsatı bulundu.";
+                $oneri = 'İlan detaylarını inceleyip doğrudan başvurabilir veya kendi şirketiniz için iş ilanı verebilirsiniz.';
+                $eylemler = [
+                    ['baslik' => '💼 Yeni İş İlanı Yayınla', 'url' => route('panel.jobs.create'), 'stil' => 'primary', 'ikon' => 'briefcase'],
+                    ['baslik' => '🔍 Tüm İş İlanlarını İncele', 'url' => $this->isBaglantisi($sorgu, $hedefUlke), 'stil' => 'outline', 'ikon' => 'magnifying-glass'],
+                ];
+            } else {
+                $baslik = "💼 {$ulkeEmoji} {$ulkeAdi} için Henüz Aktif İş İlanı Bulunmuyor";
+                $mesaj = "Şu anda {$ulkeAdi} bölgesinde bu alanda yayınlanmış aktif bir iş veya eleman ilanı bulunmuyor.";
+                $oneri = 'Diasporadaki ilk iş fırsatını siz oluşturabilir ve binlerce Türkçe konuşan üyeye ulaşabilirsiniz!';
+                $eylemler = [
+                    ['baslik' => '💼 İlk İş İlanını Sen Yayınla', 'url' => route('panel.jobs.create'), 'stil' => 'primary', 'ikon' => 'plus'],
+                    ['baslik' => '🌍 Tüm Ülkelerdeki İşleri Gör', 'url' => route('jobs.index'), 'stil' => 'secondary', 'ikon' => 'briefcase'],
+                ];
+            }
+
             return [
                 'niyet' => 'is',
-                'baslik' => "💼 {$ulkeEmoji} {$ulkeAdi} İş İlanları",
-                'mesaj' => "{$ulkeAdi} genelindeki iş ve kariyer fırsatlarını filtreleyebilirsiniz.",
-                'oneri' => 'Şirketiniz veya projeniz için ilk iş ilanını vererek Türk diaspora topluluğuna kolayca ulaşabilirsiniz.',
-                'eylemler' => [
-                    ['baslik' => '💼 İş İlanı Yayınla', 'url' => route('panel.jobs.create'), 'stil' => 'primary', 'ikon' => 'briefcase'],
-                    ['baslik' => '🔍 Tüm İş İlanlarını Gör', 'url' => $this->isBaglantisi($sorgu, $hedefUlke), 'stil' => 'outline', 'ikon' => 'magnifying-glass'],
-                ],
+                'baslik' => $baslik,
+                'mesaj' => $mesaj,
+                'oneri' => $oneri,
+                'eylemler' => $eylemler,
                 'ulke' => ['kod' => $hedefUlke, 'ad' => $ulkeAdi, 'emoji' => $ulkeEmoji],
-                'sonuclar' => collect(),
+                'sonuclar' => $sonuclar,
                 'ilanBaglantisi' => $this->isBaglantisi($sorgu, $hedefUlke),
             ];
         }
@@ -150,17 +209,69 @@ class NisoyaAiYonlendirici
             $ulkeAdi = $country ? $country->name_tr : 'Tüm Ülkeler';
             $ulkeEmoji = $country ? $country->emoji : '🌍';
 
+            // Gerçek aktif ilanları sorgula
+            $queryBuilder = Listing::query()
+                ->where('status', ListingStatus::Aktif)
+                ->when($hedefUlke, fn ($q) => $q->where('country_code', $hedefUlke));
+
+            $filtreKelimeler = array_values(array_filter(
+                $yorum['anahtar_kelimeler'],
+                fn (string $k) => ! in_array(mb_strtolower(trim($k)), ['ilan', 'ilanlar', 'ilanları', 'fiyat', 'fiyatı', 'arıyorum', 'var'], true)
+            ));
+
+            if (! empty($filtreKelimeler)) {
+                $queryBuilder->where(function ($sub) use ($filtreKelimeler) {
+                    foreach ($filtreKelimeler as $kelime) {
+                        $sub->orWhere('title', 'like', "%{$kelime}%")
+                            ->orWhere('description', 'like', "%{$kelime}%");
+                    }
+                });
+            }
+
+            $ilanlar = $queryBuilder->with(['country'])->latest()->take(5)->get();
+
+            /** @var Collection<int, array{baslik: string, altbaslik: string, url: string}> $sonuclar */
+            $sonuclar = collect();
+
+            foreach ($ilanlar as $ilan) {
+                $sehir = $ilan->city ?: ($ilan->country ? $ilan->country->name_tr : 'Yurt Dışı');
+                $fiyat = $ilan->price ? Para::bicimle($ilan->price).' '.($ilan->currency ?: '') : 'Fiyat Belirtilmemiş';
+
+                $sonuclar->push([
+                    'baslik' => "📢 {$ilan->title}",
+                    'altbaslik' => "{$sehir} • {$fiyat}",
+                    'url' => route('listings.show', [$ilan->id, $ilan->slug]),
+                ]);
+            }
+
+            $varMi = $sonuclar->isNotEmpty();
+
+            if ($varMi) {
+                $baslik = "📢 {$ulkeEmoji} {$ulkeAdi} İlan & Hizmet Pazarı";
+                $mesaj = "{$ulkeAdi} bölgesinde '{$sorgu}' araması için {$sonuclar->count()} pazar yeri kaydı bulundu.";
+                $oneri = 'İlan detaylarını inceleyebilir veya siz de ilan vererek Türkçe konuşan topluluğa ulaşabilirsiniz.';
+                $eylemler = [
+                    ['baslik' => '📝 Yeni İlan Ver', 'url' => url('/ilan-ver'), 'stil' => 'primary', 'ikon' => 'plus'],
+                    ['baslik' => '🔎 Tüm İlanları Filtrele', 'url' => $this->ilanBaglantisi($sorgu), 'stil' => 'outline', 'ikon' => 'arrow-right'],
+                ];
+            } else {
+                $baslik = "📢 {$ulkeEmoji} {$ulkeAdi} Bölgesinde Henüz İlan Bulunmuyor";
+                $mesaj = "Şu anda {$ulkeAdi} pazarında '{$sorgu}' ile ilgili yayınlanmış aktif bir ilan bulunamadı.";
+                $oneri = "İlk ilanı veya hizmet talebini siz oluşturarak {$ulkeAdi} diaspora topluluğundan hızlıca yanıt alabilirsiniz!";
+                $eylemler = [
+                    ['baslik' => '📝 İlk İlanı Sen Ver', 'url' => url('/ilan-ver'), 'stil' => 'primary', 'ikon' => 'plus'],
+                    ['baslik' => '🌐 Tüm Pazar Yerinde Ara', 'url' => $this->ilanBaglantisi($sorgu), 'stil' => 'outline', 'ikon' => 'magnifying-glass'],
+                ];
+            }
+
             return [
                 'niyet' => 'ilan',
-                'baslik' => "📢 {$ulkeEmoji} {$ulkeAdi} İlan & Hizmet Pazarı",
-                'mesaj' => "'{$sorgu}' araması için pazar yeri ilanları ve Türkçe hizmet verenler listeleniyor.",
-                'oneri' => 'Aradığınız hizmet veya ürünü bulamadıysanız yeni bir talep ilanı oluşturabilirsiniz.',
-                'eylemler' => [
-                    ['baslik' => '📝 Yeni İlan Ver', 'url' => url('/ilan-ver'), 'stil' => 'primary', 'ikon' => 'plus'],
-                    ['baslik' => '🔎 İlanları Listele', 'url' => $this->ilanBaglantisi($sorgu), 'stil' => 'outline', 'ikon' => 'arrow-right'],
-                ],
+                'baslik' => $baslik,
+                'mesaj' => $mesaj,
+                'oneri' => $oneri,
+                'eylemler' => $eylemler,
                 'ulke' => ['kod' => $hedefUlke, 'ad' => $ulkeAdi, 'emoji' => $ulkeEmoji],
-                'sonuclar' => collect(),
+                'sonuclar' => $sonuclar,
                 'ilanBaglantisi' => $this->ilanBaglantisi($sorgu),
             ];
         }
@@ -237,6 +348,29 @@ class NisoyaAiYonlendirici
         $hedefUlke = $this->dogrulaUlke($varsayilanUlkeKodu);
         $country = $hedefUlke ? Country::query()->where('code', $hedefUlke)->first() : null;
         $ulkeAdi = $country ? $country->name_tr : 'seçili ülkede';
+        $ulkeEmoji = $country ? $country->emoji : '🌍';
+
+        if ($yorum['niyet'] === 'rehber') {
+            $hedefUlkeRehber = $this->dogrulaUlke($yorum['ulke_kodu']) ?? $hedefUlke;
+            $countryRehber = $hedefUlkeRehber ? Country::query()->where('code', $hedefUlkeRehber)->first() : null;
+            $ulkeAdiRehber = $countryRehber ? $countryRehber->name_tr : 'bulunduğunuz ülkede';
+            $ulkeEmojiRehber = $countryRehber ? $countryRehber->emoji : '🏛️';
+
+            return [
+                'niyet' => 'belirsiz',
+                'baslik' => "🏛️ {$ulkeEmojiRehber} T.C. {$ulkeAdiRehber} Konsolosluk Rehberi",
+                'mesaj' => "{$ulkeAdiRehber} için aradığınız resmî işlem rehber kaydı henüz sisteme eklenmemiş olabilir. T.C. Dışişleri Bakanlığı e-Konsolosluk sistemi ve Çağrı Merkezi üzerinden randevu ve güncel evrak bilgilerine doğrudan ulaşabilirsiniz.",
+                'oneri' => 'Resmî randevu almak için konsolosluk.gov.tr portalını ziyaret edebilir veya 7/24 çağrı merkezini arayabilirsiniz.',
+                'eylemler' => [
+                    ['baslik' => '🌐 e-Konsolosluk Randevu Portalı', 'url' => 'https://www.konsolosluk.gov.tr', 'stil' => 'primary', 'ikon' => 'globe'],
+                    ['baslik' => '📞 Konsolosluk Hattı (+90 312 292 29 29)', 'url' => 'tel:+903122922929', 'stil' => 'secondary', 'ikon' => 'phone'],
+                    ['baslik' => '📖 Genel Konsolosluk Rehberi', 'url' => url('/rehber'), 'stil' => 'outline', 'ikon' => 'building-library'],
+                ],
+                'ulke' => ['kod' => $hedefUlkeRehber, 'ad' => $ulkeAdiRehber, 'emoji' => $ulkeEmojiRehber],
+                'sonuclar' => collect(),
+                'ilanBaglantisi' => $this->ilanBaglantisi($sorgu),
+            ];
+        }
 
         return [
             'niyet' => 'belirsiz',
@@ -247,6 +381,7 @@ class NisoyaAiYonlendirici
                 ['baslik' => '🌐 e-Konsolosluk Randevu Portalı', 'url' => 'https://www.konsolosluk.gov.tr', 'stil' => 'primary', 'ikon' => 'globe'],
                 ['baslik' => '📢 Platform İlanlarında Ara', 'url' => $this->ilanBaglantisi($sorgu), 'stil' => 'outline', 'ikon' => 'magnifying-glass'],
             ],
+            'ulke' => ['kod' => $hedefUlke, 'ad' => $ulkeAdi, 'emoji' => $ulkeEmoji],
             'sonuclar' => collect(),
             'ilanBaglantisi' => $this->ilanBaglantisi($sorgu),
         ];
@@ -437,6 +572,57 @@ class NisoyaAiYonlendirici
                 'ulke_kodu' => $ulkeKodu,
                 'sehir' => null,
                 'islem_turu_slug' => null,
+                'yasam_kategori_slug' => null,
+                'anahtar_kelimeler' => $this->kabaKelimelerAyikla($sorgu),
+            ];
+        }
+
+        // 3. İş & Kariyer doğrudan terimleri (ör. "iş", "işler", "iş ilanları", "garson", "şoför", "eleman")
+        if (preg_match('/^(\s*i[sş]\s*|\s*i[sş]ler\s*|\s*i[sş]\s*ilan[a-zçğıöşü]*\s*|\s*eleman\s*|\s*garson\s*|\s*[sş]of[oö]r\s*|\s*kariyer\s*|\s*i[sş]\s*bul\s*)$/ui', $kucuk) ||
+            preg_match('/\b(i[sş]\s*ilanlar[iı]|eleman\s*aran[iı]yor|garson\s*aran[iı]yor|[sş]of[oö]r\s*aran[iı]yor)\b/ui', $kucuk)) {
+            $ulkeKodu = $this->metindenUlkeCikar($kucuk) ?? $varsayilanUlkeKodu;
+
+            return [
+                'niyet' => 'is',
+                'ulke_kodu' => $ulkeKodu,
+                'sehir' => null,
+                'islem_turu_slug' => null,
+                'yasam_kategori_slug' => null,
+                'anahtar_kelimeler' => $this->kabaKelimelerAyikla($sorgu),
+            ];
+        }
+
+        // 4. Esnaf, Pazar Yeri & Hizmetler (ör. "avukat", "doktor", "nakliyat", "tamirci", "kiralık")
+        if (preg_match('/^(\s*avukat\s*|\s*doktor\s*|\s*hekim\s*|\s*nakliyat\s*|\s*nakliye\s*|\s*tamirci\s*|\s*kiral[iı]k\s*|\s*sat[iı]l[iı]k\s*|\s*ikinci\s*el\s*|\s*berber\s*|\s*kuaf[oö]r\s*|\s*terzi\s*|\s*muhasebeci\s*|\s*terc[uü]man\s*)$/ui', $kucuk) ||
+            preg_match('/\b(t[uü]rk\s*avukat|t[uü]rk\s*doktor|evden\s*eve\s*nakliyat|kiral[iı]k\s*ev|kiral[iı]k\s*oda|ikinci\s*el\s*e[sş]ya)\b/ui', $kucuk)) {
+            $ulkeKodu = $this->metindenUlkeCikar($kucuk) ?? $varsayilanUlkeKodu;
+
+            return [
+                'niyet' => 'ilan',
+                'ulke_kodu' => $ulkeKodu,
+                'sehir' => null,
+                'islem_turu_slug' => null,
+                'yasam_kategori_slug' => null,
+                'anahtar_kelimeler' => $this->kabaKelimelerAyikla($sorgu),
+            ];
+        }
+
+        // 5. Konsolosluk & Pasaport doğrudan terimleri (ör. "pasaport", "pasaportum", "askerlik", "noter")
+        if (preg_match('/^(\s*pasaport\s*|\s*pasaportum\s*|\s*askerlik\s*|\s*tecil\s*|\s*apostil\s*|\s*noter\s*|\s*noterlik\s*|\s*konsolosluk\s*|\s*e-konsolosluk\s*)$/ui', $kucuk)) {
+            $ulkeKodu = $this->metindenUlkeCikar($kucuk) ?? $varsayilanUlkeKodu;
+            $slug = match (true) {
+                str_contains($kucuk, 'pasaport') => 'pasaport',
+                str_contains($kucuk, 'askerlik') || str_contains($kucuk, 'tecil') => 'askerlik',
+                str_contains($kucuk, 'noter') => 'noterlik',
+                str_contains($kucuk, 'apostil') => 'apostil',
+                default => null,
+            };
+
+            return [
+                'niyet' => 'rehber',
+                'ulke_kodu' => $ulkeKodu,
+                'sehir' => null,
+                'islem_turu_slug' => $slug,
                 'yasam_kategori_slug' => null,
                 'anahtar_kelimeler' => $this->kabaKelimelerAyikla($sorgu),
             ];

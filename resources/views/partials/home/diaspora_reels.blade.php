@@ -20,6 +20,12 @@
                 this.modalOpen = false;
                 this.selectedReel = null;
                 document.body.classList.remove('overflow-hidden');
+            },
+            scrollLeft() {
+                this.$refs.reelsTrack.scrollBy({ left: -280, behavior: 'smooth' });
+            },
+            scrollRight() {
+                this.$refs.reelsTrack.scrollBy({ left: 280, behavior: 'smooth' });
             }
         }"
         @keydown.escape.window="closeReel()"
@@ -43,13 +49,30 @@
                 </p>
             </div>
 
-            {{-- Sağ sayaç rozeti --}}
-            <div class="hidden sm:flex items-center gap-2">
-                <span class="text-xs text-stone-500 dark:text-stone-400">Topluluk Hikayeleri</span>
+            {{-- Sağ taraf: Sayaç & Mobil Navigasyon Butonları --}}
+            <div class="flex items-center justify-between sm:justify-end gap-2">
                 <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-700 dark:bg-stone-800 dark:text-stone-300">
                     <x-heroicon-m-sparkles class="h-3.5 w-3.5 text-amber-500" />
                     {{ $reels->count() }} Paylaşım
                 </span>
+                <div class="flex items-center gap-1 sm:hidden">
+                    <button
+                        type="button"
+                        @click="scrollLeft()"
+                        aria-label="Önceki reels"
+                        class="grid h-8 w-8 place-items-center rounded-full bg-stone-100 text-stone-700 active:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 cursor-pointer"
+                    >
+                        <x-heroicon-m-chevron-left class="h-4 w-4" />
+                    </button>
+                    <button
+                        type="button"
+                        @click="scrollRight()"
+                        aria-label="Sonraki reels"
+                        class="grid h-8 w-8 place-items-center rounded-full bg-stone-100 text-stone-700 active:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 cursor-pointer"
+                    >
+                        <x-heroicon-m-chevron-right class="h-4 w-4" />
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -86,15 +109,18 @@
             </div>
         @endif
 
-        {{-- Reels Kartları Grid'i --}}
-        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        {{-- Reels Kartları: Mobilde Kaydırmalı Akış (Snap Carousel), Masaüstünde Grid --}}
+        <div
+            x-ref="reelsTrack"
+            class="mt-6 flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-3.5 pb-3 pt-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-6 sm:overflow-visible"
+        >
             @foreach ($reels as $reel)
                 <div
                     x-show="activeCountry === 'all' || activeCountry === '{{ $reel->country_code }}'"
                     x-transition:enter="transition ease-out duration-300"
                     x-transition:enter-start="opacity-0 scale-95"
                     x-transition:enter-end="opacity-100 scale-100"
-                    class="group relative flex flex-col justify-between overflow-hidden rounded-3xl bg-stone-900 aspect-[9/16] shadow-brand-lg border border-stone-800/80 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:border-rose-500/50 cursor-pointer"
+                    class="group relative flex flex-col justify-between shrink-0 w-[74vw] max-w-[270px] sm:w-auto snap-center sm:snap-align-none overflow-hidden rounded-3xl bg-stone-900 aspect-[9/16] shadow-brand-lg border border-stone-800/80 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:border-rose-500/50 cursor-pointer"
                     @click="openReel({{ Js::from([
                         'id' => $reel->id,
                         'title' => $reel->title,
@@ -196,6 +222,17 @@
                     </div>
                 </div>
             @endforeach
+        </div>
+
+        {{-- Mobilde Yana Kaydırma İpucu --}}
+        <div class="mt-2 flex items-center justify-between px-1 text-2xs text-stone-500 dark:text-stone-400 sm:hidden">
+            <span class="inline-flex items-center gap-1.5">
+                <svg class="h-3.5 w-3.5 animate-pulse text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+                <span>Yana kaydırarak izleyin</span>
+            </span>
+            <span class="font-medium text-stone-400">9:16 Video</span>
         </div>
 
         {{-- Alpine.js Instagram Reels Oynatıcı Modalı --}}
