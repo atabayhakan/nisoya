@@ -35,6 +35,11 @@ return [
         ],
     ],
 
+    'rapidapi' => [
+        'key' => env('RAPIDAPI_KEY'),
+        'instagram_host' => env('RAPIDAPI_INSTAGRAM_HOST', 'instagram-scraper-api2.p.rapidapi.com'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Google ile giriş (Socialite)
