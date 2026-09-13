@@ -6,6 +6,7 @@ use App\Enums\DealStatus;
 use App\Filament\Concerns\RestrictsToAdmins;
 use App\Filament\Resources\Deals\Pages\ListDeals;
 use App\Filament\Resources\Deals\Tables\DealsTable;
+use App\Filament\Resources\Deals\Widgets\DealStatsWidget;
 use App\Models\Deal;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -33,11 +34,20 @@ class DealResource extends Resource
         return 'Pazaryeri & Ticaret';
     }
 
-    protected static ?string $navigationLabel = 'Anlaşmalar';
+    public static function getNavigationLabel(): string
+    {
+        return 'Anlaşmalar';
+    }
 
-    protected static ?string $modelLabel = 'anlaşma';
+    public static function getModelLabel(): string
+    {
+        return 'Anlaşma';
+    }
 
-    protected static ?string $pluralModelLabel = 'Anlaşmalar';
+    public static function getPluralModelLabel(): string
+    {
+        return 'Anlaşmalar';
+    }
 
     public static function getNavigationBadge(): ?string
     {
@@ -59,6 +69,13 @@ class DealResource extends Resource
     public static function table(Table $table): Table
     {
         return DealsTable::configure($table);
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            DealStatsWidget::class,
+        ];
     }
 
     public static function getPages(): array
