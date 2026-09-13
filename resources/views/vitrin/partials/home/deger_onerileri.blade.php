@@ -3,8 +3,11 @@
          Klasik ana sayfayla AYNI veriyi (bigHighlights/smallHighlights) ve
          aynı HomeSections kapısını kullanır; backend'e dokunulmaz. --}}
     @if (\App\Support\HomeSections::visible('deger_onerileri'))
-        <section class="mx-auto max-w-6xl px-4 pt-14" x-data x-reveal>
-            <div class="grid gap-3.5 lg:grid-cols-4 lg:grid-rows-2">
+        @if (isset($diasporaReels) && $diasporaReels->isNotEmpty())
+            @include('partials.home.diaspora_reels')
+        @else
+            <section class="mx-auto max-w-6xl px-4 pt-14" x-data x-reveal>
+                <div class="grid gap-3.5 lg:grid-cols-4 lg:grid-rows-2">
                 <x-vitrin.vurgu-karti
                     :highlights="$bigHighlights"
                     :buyuk="true"
@@ -49,4 +52,5 @@
                 </div>
             </div>
         </section>
+        @endif
     @endif

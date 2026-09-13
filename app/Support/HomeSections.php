@@ -29,7 +29,7 @@ class HomeSections
     /** Yönetilebilir bölümler: anahtar => insan-okunur etiket. */
     public const SECTIONS = [
         'canli_akis' => 'Canlı akış şeridi (son ilanlar)',
-        'deger_onerileri' => 'Değer önerileri + öne çıkanlar',
+        'deger_onerileri' => '📸 Diaspora Reels & Hikayeleri (Topluluk Vitrini)',
         'kategoriler' => 'Kategoriler',
         'ulkeler' => 'Ülkeler',
         'rehber' => 'Ülke rehberi (konsolosluk işlemleri)',

@@ -45,7 +45,7 @@ class HeroYoneticisi extends Page
 
     protected static ?string $navigationLabel = 'Hero Yöneticisi';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 2;
 
     protected string $view = 'filament.pages.hero-yoneticisi';
 

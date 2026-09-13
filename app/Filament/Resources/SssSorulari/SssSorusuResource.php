@@ -40,7 +40,7 @@ class SssSorusuResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'İçerik & Tasarım (CMS)';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 9;
 
     public static function getNavigationLabel(): string
     {

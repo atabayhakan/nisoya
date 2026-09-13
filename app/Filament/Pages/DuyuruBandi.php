@@ -34,7 +34,7 @@ class DuyuruBandi extends Page
 
     protected static ?string $navigationLabel = 'Duyuru Bandı';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 6;
 
     protected string $view = 'filament.pages.duyuru-bandi';
 

@@ -64,7 +64,6 @@
         @if ($videoUrl)
             <video
                 class="h-full w-full object-cover"
-                controls
                 preload="metadata"
                 @if ($autoplay) autoplay @endif
                 @if ($muted) muted @endif

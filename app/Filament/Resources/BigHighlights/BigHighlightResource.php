@@ -14,13 +14,13 @@ use UnitEnum;
 /** Ana sayfadaki büyük (2x2) öne çıkan kartın dönen mesajları. */
 class BigHighlightResource extends HomeHighlightResourceBase
 {
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleGroup;
 
     protected static string|UnitEnum|null $navigationGroup = 'İçerik & Tasarım (CMS)';
 
     protected static ?string $navigationLabel = 'Ana Sayfa — Büyük Kart';
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 4;
 
     protected static function slot(): string
     {

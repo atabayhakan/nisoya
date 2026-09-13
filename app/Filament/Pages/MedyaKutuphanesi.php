@@ -29,7 +29,7 @@ class MedyaKutuphanesi extends Page
 
     protected static ?string $navigationLabel = 'Medya Kütüphanesi';
 
-    protected static ?int $navigationSort = 11;
+    protected static ?int $navigationSort = 12;
 
     protected string $view = 'filament.pages.medya-kutuphanesi';
 

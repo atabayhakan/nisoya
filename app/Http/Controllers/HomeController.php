@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\DiasporaReel;
 use App\Models\FootballMatch;
 use App\Models\FootballPlayerProfile;
 use App\Models\FootballTeam;
@@ -156,6 +157,7 @@ class HomeController extends Controller
             'pulseCountries' => $nabiz->countryActivity(),
             'bigHighlights' => HomeHighlight::forSlot(HomeHighlight::SLOT_BIG),
             'smallHighlights' => HomeHighlight::forSlot(HomeHighlight::SLOT_SMALL),
+            'diasporaReels' => DiasporaReel::query()->active()->with('country')->orderBy('sort_order')->get(),
             'rehber' => $rehber,
             'spor' => $this->sporVerisi($request),
         ]);

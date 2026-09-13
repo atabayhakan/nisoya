@@ -34,7 +34,7 @@ class NavigationLinkResource extends Resource
 
     protected static ?string $model = NavigationLink::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBars3;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBars3BottomLeft;
 
     protected static string|UnitEnum|null $navigationGroup = 'İçerik & Tasarım (CMS)';
 

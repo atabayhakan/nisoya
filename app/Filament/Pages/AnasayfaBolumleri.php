@@ -29,13 +29,13 @@ class AnasayfaBolumleri extends Page
 {
     use RestrictsToAdmins;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWindow;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedViewColumns;
 
     protected static string|UnitEnum|null $navigationGroup = 'İçerik & Tasarım (CMS)';
 
     protected static ?string $navigationLabel = 'Anasayfa Bölümleri';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     protected string $view = 'filament.pages.anasayfa-bolumleri';
 

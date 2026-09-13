@@ -1,7 +1,10 @@
     @if (\App\Support\HomeSections::visible('deger_onerileri'))
-    {{-- Değer önerileri + istatistik şeridi (Konteyner İçinde Bento Grid) --}}
-    <section class="mx-auto max-w-6xl px-4 py-8 sm:py-12" x-data x-reveal>
-        <div class="grid gap-4 lg:grid-cols-4 lg:grid-rows-2">
+        @if (isset($diasporaReels) && $diasporaReels->isNotEmpty())
+            @include('partials.home.diaspora_reels')
+        @else
+            {{-- Değer önerileri + istatistik şeridi (Konteyner İçinde Bento Grid) --}}
+            <section class="mx-auto max-w-6xl px-4 py-8 sm:py-12" x-data x-reveal>
+                <div class="grid gap-4 lg:grid-cols-4 lg:grid-rows-2">
                 {{-- Öne çıkan büyük kutu — otomatik dönen vurgu mesajları (bkz.
                      App\Models\HomeHighlight, admin: Site Yönetimi → Ana Sayfa —
                      Büyük Kart). activityTicker "Canlı Akış" şeridiyle aynı Alpine
@@ -191,7 +194,8 @@
                     <p class="mt-2 text-sm text-stone-600 dark:text-stone-300 leading-relaxed">Ülkeni seç, şehrindeki Türkçe konuşan esnafa, ustaya ve topluluğa anında ulaş.</p>
                 </div>
             </div>
-    </section>
+        </section>
+        @endif
     @endif
 
     {{-- Faz İ2 ("2. Tasarım" pilotu): istatistik kartındaki "22 ülke" metnini

@@ -1,4 +1,44 @@
 <x-filament-panels::page>
+    {{-- Hızlı Yönetim ve İlgili CMS Modülleri Köprüsü --}}
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-stone-50 border border-stone-200 rounded-2xl dark:bg-stone-900/60 dark:border-stone-800">
+        <a href="{{ url('/yonetim/hero-yoneticisi') }}" class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white border border-stone-200/80 shadow-xs hover:border-emerald-500 hover:shadow-sm transition dark:bg-stone-800 dark:border-stone-700">
+            <span class="p-1.5 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
+                <x-heroicon-o-sparkles class="w-4 h-4" />
+            </span>
+            <div class="truncate">
+                <div class="text-xs font-bold text-stone-800 dark:text-stone-200">Hero Yöneticisi</div>
+                <div class="text-2xs text-stone-400">Üst manşet & CTA</div>
+            </div>
+        </a>
+        <a href="{{ url('/yonetim/diaspora-reels') }}" class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white border border-stone-200/80 shadow-xs hover:border-emerald-500 hover:shadow-sm transition dark:bg-stone-800 dark:border-stone-700">
+            <span class="p-1.5 rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400">
+                <x-heroicon-o-play-circle class="w-4 h-4" />
+            </span>
+            <div class="truncate">
+                <div class="text-xs font-bold text-stone-800 dark:text-stone-200">Diaspora Reels</div>
+                <div class="text-2xs text-stone-400">Topluluk videoları</div>
+            </div>
+        </a>
+        <a href="{{ url('/yonetim/big-highlights') }}" class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white border border-stone-200/80 shadow-xs hover:border-emerald-500 hover:shadow-sm transition dark:bg-stone-800 dark:border-stone-700">
+            <span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+                <x-heroicon-o-rectangle-group class="w-4 h-4" />
+            </span>
+            <div class="truncate">
+                <div class="text-xs font-bold text-stone-800 dark:text-stone-200">Büyük Kartlar</div>
+                <div class="text-2xs text-stone-400">Vurgu mesajları</div>
+            </div>
+        </a>
+        <a href="{{ url('/yonetim/tasarim-ayarlari') }}" class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white border border-stone-200/80 shadow-xs hover:border-emerald-500 hover:shadow-sm transition dark:bg-stone-800 dark:border-stone-700">
+            <span class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                <x-heroicon-o-paint-brush class="w-4 h-4" />
+            </span>
+            <div class="truncate">
+                <div class="text-xs font-bold text-stone-800 dark:text-stone-200">Görünüm & Tema</div>
+                <div class="text-2xs text-stone-400">Renkler & fontlar</div>
+            </div>
+        </a>
+    </div>
+
     <form wire:submit="save" class="space-y-6">
         {{ $this->form }}
 

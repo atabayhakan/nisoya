@@ -26,7 +26,7 @@ class PageResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'İçerik & Tasarım (CMS)';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 8;
 
     public static function getNavigationLabel(): string
     {

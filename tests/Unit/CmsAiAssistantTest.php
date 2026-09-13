@@ -62,6 +62,27 @@ class CmsAiAssistantTest extends TestCase
         $this->assertSame('Nisoya tamamen ücretsizdir.', $result['cevap']);
     }
 
+    public function test_diaspora_story_generation(): void
+    {
+        $mockAi = $this->createMock(AiProvider::class);
+        $mockAi->method('isConfigured')->willReturn(true);
+        $mockAi->method('analyzeText')->willReturn([
+            'title' => 'Berlin Kreuzberg Kültür Şenliği',
+            'caption' => 'Gurbette birlik ve beraberliğin en güzel anları.',
+            'suggested_city' => 'Berlin',
+            'country_code' => 'DE',
+            'suggested_username' => '@berlin_turkleri',
+        ]);
+
+        $assistant = new CmsAiAssistant($mockAi);
+        $result = $assistant->generateDiasporaStory('Berlin 23 Nisan Şenliği', 'DE', 'Berlin');
+
+        $this->assertNotNull($result);
+        $this->assertSame('Berlin Kreuzberg Kültür Şenliği', $result['title']);
+        $this->assertSame('DE', $result['country_code']);
+        $this->assertSame('@berlin_turkleri', $result['suggested_username']);
+    }
+
     public function test_unconfigured_provider_returns_null(): void
     {
         $mockAi = $this->createMock(AiProvider::class);
@@ -73,5 +94,6 @@ class CmsAiAssistantTest extends TestCase
         $this->assertNull($assistant->generateFaqAnswer('test'));
         $this->assertNull($assistant->generatePageSeo('test'));
         $this->assertNull($assistant->generateHighlight('test'));
+        $this->assertNull($assistant->generateDiasporaStory('test'));
     }
 }

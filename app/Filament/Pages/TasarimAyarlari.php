@@ -61,7 +61,7 @@ class TasarimAyarlari extends Page
         'gorunum.header_cta_metni' => 'İlan Ver',
     ];
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSwatch;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPaintBrush;
 
     protected static string|UnitEnum|null $navigationGroup = 'İçerik & Tasarım (CMS)';
 
@@ -75,7 +75,7 @@ class TasarimAyarlari extends Page
      */
     protected static ?string $navigationLabel = 'Görünüm ve Tema';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 10;
 
     protected string $view = 'filament.pages.tasarim-ayarlari';
 

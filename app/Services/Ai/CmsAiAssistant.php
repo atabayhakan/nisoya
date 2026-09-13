@@ -291,4 +291,69 @@ PROMPT;
 
         return null;
     }
+
+    /**
+     * Diaspora Instagram Reels & Video vitrini için kültürel bağlamlı başlık ve hikaye metni üretir.
+     *
+     * @return array{title: string, caption: string, suggested_city: string, country_code: string, suggested_username: string}|null
+     */
+    public function generateDiasporaStory(string $topic, ?string $countryCode = null, ?string $city = null): ?array
+    {
+        if (! $this->isConfigured()) {
+            return null;
+        }
+
+        $locationInfo = array_filter([
+            $city ? "Şehir: {$city}" : null,
+            $countryCode ? "Ülke Kodu: {$countryCode}" : null,
+        ]);
+        $locationStr = ! empty($locationInfo) ? ' ('.implode(', ', $locationInfo).')' : '';
+
+        $prompt = <<<PROMPT
+Sen Nisoya (nisoya.com) platformu için yurtdışındaki Türk diasporasının (Almanya, Kırgızistan, Hollanda, İngiltere, Fransa vb.) kültürel, sosyal ve ticari anlarını aktaran uzman bir sosyal medya editörüsün.
+Kullanıcının belirttiği konu ve odak doğrultusunda, ana sayfada dikey Reels formatında sergilenecek etkileyici, samimi ve gurbetteki dayanışmayı hissettiren bir başlık ve hikaye metni üret.
+
+Konu: "{$topic}"{$locationStr}
+
+İstenen JSON formatı:
+{
+  "title": "Kısa, enerjik ve dikkat çekici etkinlik/Reels başlığı (maksimum 60 karakter)",
+  "caption": "Samimi, sıcak ve Türkçe konuşan topluluğun ruhunu yansıtan kısa hikaye açıklaması (maksimum 180 karakter)",
+  "suggested_city": "Konuya veya belirtilen konuma uygun şehir adı (ör: Berlin, Bişkek, Köln, Amsterdam, Londra)",
+  "country_code": "Ülke ISO kodu (ör: DE, KG, NL, GB, FR, AT, BE)",
+  "suggested_username": "Topluluk sayfası için önerilen Instagram kullanıcı adı (ör: @berlin_turkleri, @biskey_lezzetleri)"
+}
+Yanıtını SADECE geçerli bir JSON nesnesi olarak ver. Başka hiçbir metin veya açıklama ekleme.
+PROMPT;
+
+        $schema = [
+            'type' => 'object',
+            'properties' => [
+                'title' => ['type' => 'string'],
+                'caption' => ['type' => 'string'],
+                'suggested_city' => ['type' => 'string'],
+                'country_code' => ['type' => 'string'],
+                'suggested_username' => ['type' => 'string'],
+            ],
+            'required' => ['title', 'caption', 'suggested_city', 'country_code', 'suggested_username'],
+        ];
+
+        try {
+            $res = $this->ai->analyzeText($prompt, $schema, 20);
+
+            if (is_array($res) && filled($res['title'] ?? null)) {
+                return [
+                    'title' => (string) $res['title'],
+                    'caption' => (string) ($res['caption'] ?? ''),
+                    'suggested_city' => (string) ($res['suggested_city'] ?? ($city ?: 'Berlin')),
+                    'country_code' => strtoupper((string) ($res['country_code'] ?? ($countryCode ?: 'DE'))),
+                    'suggested_username' => (string) ($res['suggested_username'] ?? '@diaspora_turkleri'),
+                ];
+            }
+        } catch (\Throwable $e) {
+            Log::warning('CmsAiAssistant: Diaspora Reels hikaye üretimi başarısız', ['error' => $e->getMessage()]);
+        }
+
+        return null;
+    }
 }

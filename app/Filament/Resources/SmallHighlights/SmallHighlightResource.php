@@ -14,13 +14,13 @@ use UnitEnum;
 /** Ana sayfadaki küçük (1x1) kartın dönen mesajları. */
 class SmallHighlightResource extends HomeHighlightResourceBase
 {
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMegaphone;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquare2Stack;
 
     protected static string|UnitEnum|null $navigationGroup = 'İçerik & Tasarım (CMS)';
 
     protected static ?string $navigationLabel = 'Ana Sayfa — Küçük Kart';
 
-    protected static ?int $navigationSort = 9;
+    protected static ?int $navigationSort = 5;
 
     protected static function slot(): string
     {
