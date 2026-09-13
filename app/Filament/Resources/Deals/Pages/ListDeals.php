@@ -42,22 +42,22 @@ class ListDeals extends ListRecords
             'acik' => Tab::make('Açık & Bekleyenler')
                 ->badge($acik > 0 ? (string) $acik : null)
                 ->badgeColor('info')
-                ->modifyQueryUsing(fn (Builder $q) => $q->whereIn('status', [DealStatus::Teklif, DealStatus::Kabul])),
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereIn('status', [DealStatus::Teklif, DealStatus::Kabul])),
 
             'tamamlandi' => Tab::make('Tamamlananlar')
                 ->badge($tamamlandi > 0 ? (string) $tamamlandi : null)
                 ->badgeColor('success')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('status', DealStatus::Tamamlandi)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', DealStatus::Tamamlandi)),
 
             'sorunlu' => Tab::make('Sorunlu & İtirazlar')
                 ->badge($sorunlu > 0 ? (string) $sorunlu : null)
                 ->badgeColor('danger')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where(fn (Builder $sq) => $sq->where('status', DealStatus::Sorunlu)->orWhereNotNull('dispute_note'))),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where(fn (Builder $sq) => $sq->where('status', DealStatus::Sorunlu)->orWhereNotNull('dispute_note'))),
 
             'iptal' => Tab::make('İptal Edilenler')
                 ->badge($iptal > 0 ? (string) $iptal : null)
                 ->badgeColor('gray')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('status', DealStatus::Iptal)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', DealStatus::Iptal)),
         ];
     }
 

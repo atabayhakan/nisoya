@@ -47,27 +47,27 @@ class ListJobListings extends ListRecords
             'aktif' => Tab::make('Aktif Yayında')
                 ->badge($aktif > 0 ? (string) $aktif : null)
                 ->badgeColor('success')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('status', JobStatus::Aktif)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', JobStatus::Aktif)),
 
             'beklemede' => Tab::make('Onay / Beklemede')
                 ->badge($beklemede > 0 ? (string) $beklemede : null)
                 ->badgeColor('warning')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('status', JobStatus::Beklemede)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', JobStatus::Beklemede)),
 
             'one_cikan' => Tab::make('Öne Çıkanlar')
                 ->badge($oneCikan > 0 ? (string) $oneCikan : null)
                 ->badgeColor('amber')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('is_featured', true)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('is_featured', true)),
 
             'basvurulu' => Tab::make('Başvuru Alanlar')
                 ->badge($basvurulu > 0 ? (string) $basvurulu : null)
                 ->badgeColor('info')
-                ->modifyQueryUsing(fn (Builder $q) => $q->has('applications')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->has('applications')),
 
             'kapali' => Tab::make('Kapalı / Dolu')
                 ->badge($kapali > 0 ? (string) $kapali : null)
                 ->badgeColor('gray')
-                ->modifyQueryUsing(fn (Builder $q) => $q->whereIn('status', [JobStatus::Kapali, JobStatus::Dolu])),
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereIn('status', [JobStatus::Kapali, JobStatus::Dolu])),
         ];
     }
 

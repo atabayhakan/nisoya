@@ -46,22 +46,22 @@ class ListCompanies extends ListRecords
             'dogrulanmis' => Tab::make('Doğrulanmış Kurumsal')
                 ->badge($dogrulanmis > 0 ? (string) $dogrulanmis : null)
                 ->badgeColor('success')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('is_verified', true)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('is_verified', true)),
 
             'bekleyen' => Tab::make('Doğrulama Bekleyen')
                 ->badge($bekleyen > 0 ? (string) $bekleyen : null)
                 ->badgeColor('warning')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('is_verified', false)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('is_verified', false)),
 
             'ilanli' => Tab::make('Aktif İlanı Olanlar')
                 ->badge($ilanli > 0 ? (string) $ilanli : null)
                 ->badgeColor('info')
-                ->modifyQueryUsing(fn (Builder $q) => $q->has('jobListings')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->has('jobListings')),
 
             'yorumlu' => Tab::make('Değerlendirmesi Olanlar')
                 ->badge($yorumlu > 0 ? (string) $yorumlu : null)
                 ->badgeColor('gray')
-                ->modifyQueryUsing(fn (Builder $q) => $q->has('reviews')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->has('reviews')),
         ];
     }
 

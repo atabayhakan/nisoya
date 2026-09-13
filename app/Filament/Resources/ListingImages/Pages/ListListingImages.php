@@ -41,22 +41,22 @@ class ListListingImages extends ListRecords
             'kapak' => Tab::make('Kapak Görselleri')
                 ->badge($kapak > 0 ? (string) $kapak : null)
                 ->badgeColor('warning')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('is_cover', true)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('is_cover', true)),
 
             'gps' => Tab::make('GPS Konumlular')
                 ->badge($gps > 0 ? (string) $gps : null)
                 ->badgeColor('info')
-                ->modifyQueryUsing(fn (Builder $q) => $q->whereNotNull('gps_lat')->whereNotNull('gps_lng')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereNotNull('gps_lat')->whereNotNull('gps_lng')),
 
             'isaretli' => Tab::make('AI Moderasyon Uyarısı')
                 ->badge($isaretli > 0 ? (string) $isaretli : null)
                 ->badgeColor('danger')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('is_flagged', true)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('is_flagged', true)),
 
             'hassas_exif' => Tab::make('Hassas EXIF')
                 ->badge($hassasExif > 0 ? (string) $hassasExif : null)
                 ->badgeColor('gray')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('has_sensitive_exif', true)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('has_sensitive_exif', true)),
         ];
     }
 

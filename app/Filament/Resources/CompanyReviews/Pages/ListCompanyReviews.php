@@ -45,22 +45,22 @@ class ListCompanyReviews extends ListRecords
             'yayinda' => Tab::make('Yayında (Onaylı)')
                 ->badge($yayinda > 0 ? (string) $yayinda : null)
                 ->badgeColor('success')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('status', ReviewStatus::Yayinda)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', ReviewStatus::Yayinda)),
 
             'gizli' => Tab::make('Gizli / Moderasyon')
                 ->badge($gizli > 0 ? (string) $gizli : null)
                 ->badgeColor('danger')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('status', ReviewStatus::Gizli)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', ReviewStatus::Gizli)),
 
             'yuksek_puan' => Tab::make('Yüksek Puan (4-5 ⭐)')
                 ->badge($yuksek > 0 ? (string) $yuksek : null)
                 ->badgeColor('amber')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('rating', '>=', 4)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('rating', '>=', 4)),
 
             'dusuk_puan' => Tab::make('Düşük Puan (1-2 ⭐)')
                 ->badge($dusuk > 0 ? (string) $dusuk : null)
                 ->badgeColor('gray')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('rating', '<=', 2)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('rating', '<=', 2)),
         ];
     }
 

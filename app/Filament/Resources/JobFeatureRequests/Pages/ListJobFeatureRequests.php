@@ -43,17 +43,17 @@ class ListJobFeatureRequests extends ListRecords
             'beklemede' => Tab::make('Beklemede (İnceleme)')
                 ->badge($bekleyen > 0 ? (string) $bekleyen : null)
                 ->badgeColor('warning')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('status', FeatureRequestStatus::Beklemede)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', FeatureRequestStatus::Beklemede)),
 
             'onaylandi' => Tab::make('Onaylananlar (Vitrinde)')
                 ->badge($onaylanan > 0 ? (string) $onaylanan : null)
                 ->badgeColor('success')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('status', FeatureRequestStatus::Onaylandi)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', FeatureRequestStatus::Onaylandi)),
 
             'reddedildi' => Tab::make('Reddedilenler')
                 ->badge($reddedilen > 0 ? (string) $reddedilen : null)
                 ->badgeColor('danger')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('status', FeatureRequestStatus::Reddedildi)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', FeatureRequestStatus::Reddedildi)),
         ];
     }
 

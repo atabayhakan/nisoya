@@ -47,22 +47,22 @@ class ListCategories extends ListRecords
             'ana_kategoriler' => Tab::make('Ana Kategoriler')
                 ->badge((string) $anaKategoriler)
                 ->badgeColor('primary')
-                ->modifyQueryUsing(fn (Builder $q) => $q->whereNull('parent_id')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereNull('parent_id')),
 
             'alt_kategoriler' => Tab::make('Alt Kategoriler')
                 ->badge((string) $altKategoriler)
                 ->badgeColor('gray')
-                ->modifyQueryUsing(fn (Builder $q) => $q->whereNotNull('parent_id')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereNotNull('parent_id')),
 
             'hizmet' => Tab::make('Hizmet')
                 ->badge((string) $hizmetSayisi)
                 ->badgeColor('info')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('type', CategoryType::Hizmet)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('type', CategoryType::Hizmet)),
 
             'urun' => Tab::make('Ürün & Ticaret')
                 ->badge((string) $urunSayisi)
                 ->badgeColor('success')
-                ->modifyQueryUsing(fn (Builder $q) => $q->whereIn('type', [
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereIn('type', [
                     CategoryType::Urun,
                     CategoryType::Ikisi,
                     CategoryType::Emlak,
@@ -72,7 +72,7 @@ class ListCategories extends ListRecords
             'bos' => Tab::make('İçeriksiz (0 İlan)')
                 ->badge($bosKategoriler > 0 ? (string) $bosKategoriler : null)
                 ->badgeColor('warning')
-                ->modifyQueryUsing(fn (Builder $q) => $q->doesntHave('listings')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->doesntHave('listings')),
         ];
     }
 

@@ -40,16 +40,16 @@ class ListTags extends ListRecords
             'ilanli' => Tab::make('İlanı Olanlar')
                 ->badge((string) $ilanli)
                 ->badgeColor('success')
-                ->modifyQueryUsing(fn (Builder $q) => $q->has('listings')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->has('listings')),
 
             'bosta' => Tab::make('Boşta Kalanlar (0 İlan)')
                 ->badge($bosta > 0 ? (string) $bosta : null)
                 ->badgeColor('warning')
-                ->modifyQueryUsing(fn (Builder $q) => $q->doesntHave('listings')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->doesntHave('listings')),
 
             'populer' => Tab::make('En Çok Kullanılanlar')
                 ->badgeColor('info')
-                ->modifyQueryUsing(fn (Builder $q) => $q->withCount('listings')->having('listings_count', '>', 0)->orderByDesc('listings_count')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->has('listings')->withCount('listings')->orderByDesc('listings_count')),
         ];
     }
 

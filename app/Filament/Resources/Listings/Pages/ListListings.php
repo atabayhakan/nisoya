@@ -43,25 +43,25 @@ class ListListings extends ListRecords
             'aktif' => Tab::make('Yayında (Aktif)')
                 ->badge((string) $aktif)
                 ->badgeColor('success')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('status', ListingStatus::Aktif)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', ListingStatus::Aktif)),
 
             'beklemede' => Tab::make('Onay Bekleyenler')
                 ->badge($beklemede > 0 ? (string) $beklemede : null)
                 ->badgeColor('warning')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('status', ListingStatus::Beklemede)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', ListingStatus::Beklemede)),
 
             'one_cikanlar' => Tab::make('Öne Çıkanlar')
                 ->badge($oneCikan > 0 ? (string) $oneCikan : null)
                 ->badgeColor('info')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('is_featured', true)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('is_featured', true)),
 
             'guvenlik' => Tab::make('Risk / Denetim')
                 ->badge($riskli > 0 ? (string) $riskli : null)
                 ->badgeColor('danger')
-                ->modifyQueryUsing(fn (Builder $q) => $q->whereNotNull('fraud_reason')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereNotNull('fraud_reason')),
 
             'pasif' => Tab::make('Pasif / Arşiv')
-                ->modifyQueryUsing(fn (Builder $q) => $q->whereIn('status', [
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereIn('status', [
                     ListingStatus::Pasif,
                     ListingStatus::Reddedildi,
                     ListingStatus::Taslak,

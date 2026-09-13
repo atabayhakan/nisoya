@@ -44,22 +44,22 @@ class ListJobCategories extends ListRecords
             'aktif' => Tab::make('Aktif Sektörler')
                 ->badge($aktif > 0 ? (string) $aktif : null)
                 ->badgeColor('success')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('is_active', true)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('is_active', true)),
 
             'pasif' => Tab::make('Pasif / Gizli')
                 ->badge($pasif > 0 ? (string) $pasif : null)
                 ->badgeColor('gray')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('is_active', false)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('is_active', false)),
 
             'ilanli' => Tab::make('İlan Bulunanlar')
                 ->badge($ilanli > 0 ? (string) $ilanli : null)
                 ->badgeColor('info')
-                ->modifyQueryUsing(fn (Builder $q) => $q->has('jobListings')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->has('jobListings')),
 
             'bos' => Tab::make('Boş Sektörler')
                 ->badge($bos > 0 ? (string) $bos : null)
                 ->badgeColor('warning')
-                ->modifyQueryUsing(fn (Builder $q) => $q->doesntHave('jobListings')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->doesntHave('jobListings')),
         ];
     }
 
