@@ -5,7 +5,20 @@ namespace App\Models;
 use App\Enums\FeatureRequestStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $job_listing_id
+ * @property int $user_id
+ * @property int $days
+ * @property FeatureRequestStatus $status
+ * @property Carbon|null $processed_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read JobListing|null $jobListing
+ * @property-read User|null $user
+ */
 class JobFeatureRequest extends Model
 {
     protected $fillable = [

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\JobFeatureRequests;
 
 use App\Enums\FeatureRequestStatus;
@@ -7,15 +9,14 @@ use App\Filament\Concerns\RestrictsToAdmins;
 use App\Filament\Resources\JobFeatureRequests\Pages\CreateJobFeatureRequest;
 use App\Filament\Resources\JobFeatureRequests\Pages\EditJobFeatureRequest;
 use App\Filament\Resources\JobFeatureRequests\Pages\ListJobFeatureRequests;
+use App\Filament\Resources\JobFeatureRequests\Schemas\JobFeatureRequestForm;
+use App\Filament\Resources\JobFeatureRequests\Tables\JobFeatureRequestsTable;
+use App\Filament\Resources\JobFeatureRequests\Widgets\JobFeatureRequestStatsWidget;
 use App\Models\JobFeatureRequest;
 use BackedEnum;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use UnitEnum;
 
@@ -38,7 +39,7 @@ class JobFeatureRequestResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return 'iş ilanı öne çıkarma talebi';
+        return 'İş İlanı Öne Çıkarma Talebi';
     }
 
     public static function getPluralModelLabel(): string
@@ -48,49 +49,31 @@ class JobFeatureRequestResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return (string) (JobFeatureRequest::query()->where('status', 'beklemede')->count() ?: '');
+        $bekleyen = JobFeatureRequest::query()->where('status', FeatureRequestStatus::Beklemede)->count();
+
+        return $bekleyen > 0 ? (string) $bekleyen : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
     }
 
     public static function form(Schema $schema): Schema
     {
-        return $schema->components([
-            Select::make('job_listing_id')
-                ->label('İş ilanı')
-                ->relationship('jobListing', 'title')
-                ->required()
-                ->searchable(),
-            Select::make('user_id')
-                ->label('Talep eden')
-                ->relationship('user', 'name')
-                ->required()
-                ->searchable(),
-            TextInput::make('days')
-                ->label('Gün')
-                ->numeric()
-                ->default(7)
-                ->required(),
-            Select::make('status')
-                ->label('Durum')
-                ->options(FeatureRequestStatus::class)
-                ->default('beklemede')
-                ->required(),
-            DateTimePicker::make('processed_at')
-                ->label('İşlenme tarihi'),
-        ]);
+        return JobFeatureRequestForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('jobListing.title')->label('İş ilanı')->searchable(),
-                TextColumn::make('user.name')->label('Talep eden')->searchable(),
-                TextColumn::make('days')->label('Gün')->numeric(),
-                TextColumn::make('status')->label('Durum')->badge(),
-                TextColumn::make('processed_at')->label('İşlendi')->dateTime('d.m.Y H:i')->placeholder('—'),
-                TextColumn::make('created_at')->label('Tarih')->dateTime('d.m.Y')->sortable(),
-            ])
-            ->defaultSort('created_at', 'desc');
+        return JobFeatureRequestsTable::configure($table);
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            JobFeatureRequestStatsWidget::class,
+        ];
     }
 
     public static function getPages(): array
