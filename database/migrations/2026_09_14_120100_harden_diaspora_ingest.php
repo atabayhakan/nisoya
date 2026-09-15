@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (DB::table('diaspora_reels')->whereNotNull('shortcode')->groupBy('shortcode')->havingRaw('COUNT(*) > 1')->exists()) {
+        if (DB::table('diaspora_reels')->whereNotNull('shortcode')->select('shortcode')->groupBy('shortcode')->havingRaw('COUNT(*) > 1')->exists()) {
             throw new RuntimeException('Tekrarlanan shortcode kayıtlarını inceleyip birleştirmeden unique index eklenemez.');
         }
         if (DB::getDriverName() === 'mysql') {
