@@ -69,7 +69,7 @@ class KahyaSohbeti
     {
         $kuyruklar = $this->bekleyen->topla();
         $envanter = $this->teshis->gercekEnvanter();
-        $sonKonusma = $this->sonKonusmaOzeti();
+        $sonKonusma = $this->sonKonusmaOzeti($sahip);
 
         $ad = trim(explode(' ', trim($sahip->name))[0] ?? '');
         $selam = $this->gunAralikSelami().($ad !== '' ? ' '.$ad : '');
@@ -119,6 +119,7 @@ class KahyaSohbeti
          * okur ve "az önce sordun" diye şaşırır.
          */
         $gecmis = KahyaMesaji::query()
+            ->where('user_id', $sahip->id)
             ->latest('id')
             ->limit(self::GECMIS_SINIRI)
             ->get()
@@ -252,9 +253,10 @@ class KahyaSohbeti
      * Sahibin kendi ifadesiyle: birden çok projeyle çalışıyor ve hafızasında
      * bazı şeyler kalmıyor. Kâhya'nın en somut faydası bu satır.
      */
-    private function sonKonusmaOzeti(): string
+    private function sonKonusmaOzeti(User $sahip): string
     {
         $son = KahyaMesaji::query()
+            ->where('user_id', $sahip->id)
             ->where('rol', KahyaMesaji::ROL_SAHIP)
             ->latest('id')
             ->first();

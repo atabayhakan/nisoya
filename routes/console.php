@@ -4,6 +4,14 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
+Schedule::command('global-command:plan-cold-start')->dailyAt('00:10')->timezone('UTC')->withoutOverlapping(10)->onOneServer();
+Schedule::command('global-command:assess-content')->everyFiveMinutes()->withoutOverlapping(10)->onOneServer();
+Schedule::command('queue:work '.config('global-command.diaspora_sync_queue_connection', 'database').' --queue=global-command,diaspora-sync --stop-when-empty --max-time=55 --timeout=120 --tries=3')
+    ->everyMinute()->withoutOverlapping(5)
+    ->when(fn () => config('global-command.enabled'));
+Schedule::command('diaspora:sync')->hourly()->withoutOverlapping(10)->onOneServer()
+    ->when(fn () => config('global-command.diaspora_sync_enabled') && config('global-command.scheduler_actor_id'));
+
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');

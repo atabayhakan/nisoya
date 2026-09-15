@@ -10,6 +10,7 @@ use App\Services\Diaspora\DiasporaSyncEngine;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class DiasporaSyncTest extends TestCase
@@ -20,6 +21,14 @@ class DiasporaSyncTest extends TestCase
     {
         parent::setUp();
         $this->seed([CurrencySeeder::class, CountrySeeder::class]);
+        config(['services.rapidapi.key' => 'test-placeholder']);
+        Http::fake([
+            '*' => Http::response([
+                'data' => ['items' => [
+                    ['code' => 'C8xABC12345', 'caption' => ['text' => 'Kaynak içerik']],
+                ]],
+            ]),
+        ]);
     }
 
     public function test_sync_engine_saves_drafts_when_autopilot_is_disabled(): void
@@ -30,7 +39,7 @@ class DiasporaSyncTest extends TestCase
             'country_code' => 'DE',
             'city' => 'Berlin',
             'autopilot' => false,
-            'is_active' => true,
+            'is_active' => true, 'is_verified' => true,
         ]);
 
         $syncEngine = app(DiasporaSyncEngine::class);
@@ -50,7 +59,7 @@ class DiasporaSyncTest extends TestCase
         $this->assertNotNull($account->last_synced_at);
     }
 
-    public function test_sync_engine_publishes_directly_when_autopilot_is_enabled(): void
+    public function test_sync_engine_still_requires_review_when_legacy_autopilot_is_enabled(): void
     {
         $account = DiasporaAccount::create([
             'username' => '@berlinturkleri',
@@ -58,19 +67,19 @@ class DiasporaSyncTest extends TestCase
             'country_code' => 'DE',
             'city' => 'Berlin',
             'autopilot' => true,
-            'is_active' => true,
+            'is_active' => true, 'is_verified' => true,
         ]);
 
         $syncEngine = app(DiasporaSyncEngine::class);
         $result = $syncEngine->syncAccount($account);
 
         $this->assertGreaterThan(0, $result['created']);
-        $this->assertSame($result['created'], $result['autopilot_published']);
+        $this->assertSame(0, $result['autopilot_published']);
 
         $this->assertDatabaseHas('diaspora_reels', [
             'account_id' => $account->id,
-            'status' => DiasporaReel::STATUS_PUBLISHED,
-            'is_active' => true,
+            'status' => DiasporaReel::STATUS_DRAFT,
+            'is_active' => false,
         ]);
     }
 
@@ -82,7 +91,7 @@ class DiasporaSyncTest extends TestCase
             'country_code' => 'KG',
             'city' => 'Bişkek',
             'autopilot' => false,
-            'is_active' => true,
+            'is_active' => true, 'is_verified' => true,
         ]);
 
         $syncEngine = app(DiasporaSyncEngine::class);
@@ -91,7 +100,7 @@ class DiasporaSyncTest extends TestCase
 
         $secondRun = $syncEngine->syncAccount($account);
         $this->assertSame(0, $secondRun['created']);
-        $this->assertGreaterThan(0, $secondRun['skipped']);
+        $this->assertSame(1, $account->reels()->count());
     }
 
     public function test_admin_can_access_diaspora_accounts_management(): void

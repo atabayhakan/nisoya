@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\JobListings\Pages;
 
+use App\Filament\Concerns\GuardsAdminGeoContext;
 use App\Filament\Resources\JobListings\JobListingResource;
 use App\Models\JobListing;
 use Filament\Resources\Pages\CreateRecord;
@@ -11,6 +12,8 @@ use Illuminate\Support\Str;
 
 class CreateJobListing extends CreateRecord
 {
+    use GuardsAdminGeoContext;
+
     protected static string $resource = JobListingResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array

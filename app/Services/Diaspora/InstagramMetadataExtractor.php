@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Diaspora;
 
+use App\Support\GlobalCommand\RadarMediaUrl;
 use App\Support\InstagramMedia;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -36,11 +37,11 @@ class InstagramMetadataExtractor
      */
     public function extract(string $url): array
     {
-        $shortcode = InstagramMedia::extractShortcode($url);
-        $cleanUrl = $shortcode ? "https://www.instagram.com/reel/{$shortcode}/" : trim($url);
+        $cleanUrl = RadarMediaUrl::instagram($url);
+        $shortcode = $cleanUrl ? InstagramMedia::extractShortcode($cleanUrl) : null;
 
         $data = [
-            'url' => $cleanUrl,
+            'url' => $cleanUrl ?? '',
             'shortcode' => $shortcode,
             'author_name' => null,
             'author_username' => null,
@@ -51,6 +52,10 @@ class InstagramMetadataExtractor
             'embed_url' => $shortcode ? "https://www.instagram.com/reel/{$shortcode}/embed" : null,
             'success' => false,
         ];
+
+        if ($cleanUrl === null) {
+            return $data;
+        }
 
         // 1. Aşama: Instagram oEmbed API sorgusu
         $oembedData = $this->fetchFromOembed($cleanUrl);
@@ -82,7 +87,7 @@ class InstagramMetadataExtractor
 
         // 3. Aşama: Yerel Heuristic Fallback
         if ($shortcode) {
-            $data['success'] = true;
+            $data['success'] = false;
             $data['title'] = "Diaspora Reels (#{$shortcode})";
         }
 
@@ -98,7 +103,7 @@ class InstagramMetadataExtractor
     {
         try {
             $endpoint = 'https://api.instagram.com/oembed/';
-            $response = Http::timeout(4)
+            $response = Http::connectTimeout(2)->timeout(4)->withoutRedirecting()
                 ->withHeaders([
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 ])
@@ -129,7 +134,7 @@ class InstagramMetadataExtractor
     protected function fetchFromOpenGraph(string $url): ?array
     {
         try {
-            $response = Http::timeout(5)
+            $response = Http::connectTimeout(2)->timeout(5)->withoutRedirecting()
                 ->withHeaders([
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; Googlebot/2.1; +http://www.google.com/bot.html)',
                     'Accept-Language' => 'tr,en;q=0.9',

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Listings\Pages;
 
 use App\Enums\ListingStatus;
+use App\Filament\Concerns\GuardsAdminGeoContext;
 use App\Filament\Resources\ListingImages\ListingImageResource;
 use App\Filament\Resources\Listings\ListingResource;
 use App\Filament\Resources\Listings\Widgets\ListingsStatsWidget;
@@ -19,6 +20,8 @@ use Illuminate\Support\HtmlString;
 
 class ListListings extends ListRecords
 {
+    use GuardsAdminGeoContext;
+
     protected static string $resource = ListingResource::class;
 
     protected function getHeaderWidgets(): array

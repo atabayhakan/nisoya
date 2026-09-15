@@ -6,6 +6,7 @@ use App\Enums\ListingStatus;
 use App\Enums\ListingType;
 use App\Enums\PriceUnit;
 use App\Jobs\IlanMetniniDenetle;
+use App\Models\Concerns\NormalizesCityName;
 use App\Notifications\ListingStatusNotification;
 use App\Services\DolandiricilikTespiti;
 use App\Support\Para;
@@ -55,6 +56,8 @@ class Listing extends Model
 {
     /** @use HasFactory<ListingFactory> */
     use HasFactory, LogsActivity;
+
+    use NormalizesCityName;
 
     protected $fillable = [
         'user_id',

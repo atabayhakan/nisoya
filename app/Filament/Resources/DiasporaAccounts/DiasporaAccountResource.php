@@ -3,12 +3,14 @@
 namespace App\Filament\Resources\DiasporaAccounts;
 
 use App\Filament\Concerns\RestrictsToAdmins;
+use App\Filament\Concerns\UsesAdminGeoContext;
 use App\Filament\Resources\DiasporaAccounts\Pages\CreateDiasporaAccount;
 use App\Filament\Resources\DiasporaAccounts\Pages\EditDiasporaAccount;
 use App\Filament\Resources\DiasporaAccounts\Pages\ListDiasporaAccounts;
 use App\Models\Country;
 use App\Models\DiasporaAccount;
-use App\Services\Diaspora\DiasporaSyncEngine;
+use App\Support\GlobalCommand\DiasporaDispatch;
+use App\Support\GlobalCommand\GeoContext;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -40,6 +42,7 @@ use UnitEnum;
 class DiasporaAccountResource extends Resource
 {
     use RestrictsToAdmins;
+    use UsesAdminGeoContext;
 
     protected static ?string $model = DiasporaAccount::class;
 
@@ -112,7 +115,9 @@ class DiasporaAccountResource extends Resource
 
             Toggle::make('autopilot')
                 ->label('Otopilot Modu')
-                ->helperText('Açık ise; bu hesaptan çekilen güvenli içerikler admin onayına düşmeden otomatik yayına alınır.')
+                ->helperText('Otomatik yayın kapalıdır. Çekilen yeni içerikler inceleme için taslak olarak kaydedilir.')
+                ->disabled()
+                ->dehydrated(false)
                 ->default(false),
 
             Toggle::make('is_active')
@@ -197,12 +202,12 @@ class DiasporaAccountResource extends Resource
                     ->label('Şimdi Tara')
                     ->icon(Heroicon::OutlinedArrowPath)
                     ->color('primary')
-                    ->action(function (DiasporaAccount $record, DiasporaSyncEngine $syncEngine): void {
-                        $res = $syncEngine->syncAccount($record);
+                    ->action(function (DiasporaAccount $record, DiasporaDispatch $dispatch): void {
+                        $count = $dispatch->enqueue(auth()->user(), app(GeoContext::class)->apply(DiasporaAccount::query())->whereKey($record->id));
 
                         Notification::make()
-                            ->title("{$record->username} Tarandı")
-                            ->body("{$res['created']} yeni video aktarıldı ({$res['autopilot_published']} otopilot yayında, kalanı onay bekliyor). {$res['skipped']} içerik zaten mevcuttu.")
+                            ->title('Tarama talebi alındı')
+                            ->body($count.' aktif ve doğrulanmış hesap için kuyruk talebi oluşturuldu.')
                             ->success()
                             ->send();
                     }),

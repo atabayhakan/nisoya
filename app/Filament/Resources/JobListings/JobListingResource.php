@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\JobListings;
 
 use App\Enums\JobStatus;
+use App\Filament\Concerns\UsesAdminGeoContext;
 use App\Filament\Resources\JobListings\Pages\CreateJobListing;
 use App\Filament\Resources\JobListings\Pages\EditJobListing;
 use App\Filament\Resources\JobListings\Pages\ListJobListings;
@@ -20,6 +21,8 @@ use Filament\Tables\Table;
 
 class JobListingResource extends Resource
 {
+    use UsesAdminGeoContext;
+
     protected static ?string $model = JobListing::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBriefcase;
@@ -48,7 +51,7 @@ class JobListingResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $pending = JobListing::query()->where('status', JobStatus::Beklemede)->count();
+        $pending = static::getEloquentQuery()->where('status', JobStatus::Beklemede)->count();
 
         return $pending > 0 ? (string) $pending : null;
     }

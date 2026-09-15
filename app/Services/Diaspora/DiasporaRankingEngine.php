@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Diaspora;
 
 use App\Models\DiasporaReel;
+use App\Support\GlobalCommand\GeoContext;
 
 /**
  * Diaspora Reels etkileşim, popülerlik ve vitrin sıralama motoru.
@@ -20,29 +21,32 @@ class DiasporaRankingEngine
      *
      * @return array{recalculated_count: int, promoted_featured: int, demoted_featured: int}
      */
-    public function recalculateAndRank(): array
+    public function recalculateAndRank(?GeoContext $context = null): array
     {
-        $reels = DiasporaReel::query()
+        $context ??= GeoContext::global();
+        $reels = $context->apply(DiasporaReel::query())
             ->where('status', DiasporaReel::STATUS_PUBLISHED)
             ->where('is_active', true)
-            ->get();
+            ->lazyById(200);
 
         $promoted = 0;
         $demoted = 0;
+        $recalculated = 0;
 
         foreach ($reels as $reel) {
             $score = $this->calculateScore($reel);
             $reel->engagement_score = $score;
             $reel->saveQuietly();
+            $recalculated++;
         }
 
         // Sıralamayı engagement_score azalan ve en son eklenenlere göre güncelle
-        $sorted = DiasporaReel::query()
+        $sorted = $context->apply(DiasporaReel::query())
             ->where('status', DiasporaReel::STATUS_PUBLISHED)
             ->where('is_active', true)
             ->orderByDesc('engagement_score')
             ->orderByDesc('id')
-            ->get();
+            ->lazy(200);
 
         $order = 1;
         foreach ($sorted as $index => $reel) {
@@ -54,7 +58,7 @@ class DiasporaRankingEngine
             if ($shouldBeFeatured && ! $reel->is_featured) {
                 $reel->is_featured = true;
                 $promoted++;
-            } elseif (! $shouldBeFeatured && $reel->is_featured && $index >= 3) {
+            } elseif (! $shouldBeFeatured && $reel->is_featured) {
                 $reel->is_featured = false;
                 $demoted++;
             }
@@ -63,7 +67,7 @@ class DiasporaRankingEngine
         }
 
         return [
-            'recalculated_count' => $reels->count(),
+            'recalculated_count' => $recalculated,
             'promoted_featured' => $promoted,
             'demoted_featured' => $demoted,
         ];

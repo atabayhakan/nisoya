@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\JobListings\Pages;
 
 use App\Enums\JobStatus;
+use App\Filament\Concerns\GuardsAdminGeoContext;
 use App\Filament\Resources\Companies\CompanyResource;
 use App\Filament\Resources\JobCategories\JobCategoryResource;
 use App\Filament\Resources\JobFeatureRequests\JobFeatureRequestResource;
@@ -22,6 +23,8 @@ use Illuminate\Support\HtmlString;
 
 class ListJobListings extends ListRecords
 {
+    use GuardsAdminGeoContext;
+
     protected static string $resource = JobListingResource::class;
 
     protected function getHeaderWidgets(): array

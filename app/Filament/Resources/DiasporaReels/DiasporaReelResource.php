@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\DiasporaReels;
 
 use App\Filament\Concerns\RestrictsToAdmins;
+use App\Filament\Concerns\UsesAdminGeoContext;
 use App\Filament\Resources\DiasporaReels\Pages\CreateDiasporaReel;
 use App\Filament\Resources\DiasporaReels\Pages\EditDiasporaReel;
 use App\Filament\Resources\DiasporaReels\Pages\ListDiasporaReels;
@@ -44,6 +45,7 @@ use UnitEnum;
 class DiasporaReelResource extends Resource
 {
     use RestrictsToAdmins;
+    use UsesAdminGeoContext;
 
     protected static ?string $model = DiasporaReel::class;
 

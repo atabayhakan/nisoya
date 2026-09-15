@@ -6,6 +6,7 @@ use App\Models\Listing;
 use App\Models\Message;
 use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
+use App\Support\GlobalCommand\GeoContext;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -24,6 +25,8 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  */
 class StatsOverview extends BaseWidget
 {
+    protected ?string $pollingInterval = '30s';
+
     /** Sıra merdiveni {@see AdminPanelProvider} içinde. */
     protected static ?int $sort = 40;
 
@@ -32,20 +35,20 @@ class StatsOverview extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Üyeler', User::query()->count())
-                ->description(User::query()->where('created_at', '>=', now()->subWeek())->count().' bu hafta')
+            Stat::make('Üyeler', app(GeoContext::class)->apply(User::query())->count())
+                ->description(app(GeoContext::class)->apply(User::query())->where('created_at', '>=', now()->subWeek())->count().' bu hafta')
                 ->descriptionIcon('heroicon-m-user-plus')
                 ->color('success'),
 
-            Stat::make('Aktif ilanlar', Listing::query()->where('status', 'aktif')->count())
-                ->description(Listing::query()->count().' toplam ilan')
+            Stat::make('Aktif ilanlar', app(GeoContext::class)->apply(Listing::query())->where('status', 'aktif')->count())
+                ->description(app(GeoContext::class)->apply(Listing::query())->count().' toplam ilan')
                 ->descriptionIcon('heroicon-m-rectangle-stack'),
 
-            Stat::make('Mesajlar', Message::query()->count())
-                ->description('Toplam mesaj sayısı')
+            Stat::make('Mesajlar', Message::query()->whereHas('sender', fn ($query) => app(GeoContext::class)->apply($query))->count())
+                ->description('Gönderenin konumuna göre mesajlar')
                 ->descriptionIcon('heroicon-m-chat-bubble-left-right'),
 
-            Stat::make('Öne çıkan ilanlar', Listing::query()->where('is_featured', true)->count())
+            Stat::make('Öne çıkan ilanlar', app(GeoContext::class)->apply(Listing::query())->where('is_featured', true)->count())
                 ->description('Yayındaki öne çıkanlar')
                 ->color('warning'),
         ];

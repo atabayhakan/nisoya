@@ -26,6 +26,8 @@ class AdminPanelTest extends TestCase
 
         $pages = [
             '/yonetim',
+            '/yonetim/global-command-center',
+            '/yonetim/diaspora-medya-radari',
             '/yonetim/categories',
             '/yonetim/categories/create',
             '/yonetim/listings',

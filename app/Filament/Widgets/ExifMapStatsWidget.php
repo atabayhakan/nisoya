@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\DB;
  */
 class ExifMapStatsWidget extends BaseWidget
 {
+    protected static bool $isDiscovered = false;
+
     protected static ?int $sort = 1;
 
     protected static bool $isLazy = false;

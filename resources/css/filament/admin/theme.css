@@ -12,6 +12,20 @@
    satır olmadan balonun sınıfları (w-[24rem], z-30, ...) derlenmez ve balon
    sessizce şekilsiz kalırdı. */
 @source '../../../../resources/views/livewire/**/*';
+@source '../../../../resources/views/components/intelligence-score-badge.blade.php';
+
+/* Command center touch targets remain usable on small screens. */
+.gcc-surface .fi-btn { min-height: 2.75rem; }
+.gcc-surface input:not([type="checkbox"]):not([type="radio"]),
+.gcc-surface select, .gcc-surface textarea { min-height: 2.75rem; }
+.gcc-surface .fi-input-wrp { min-width: 0; }
+.gcc-surface .fi-badge { white-space: normal; overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) {
+    .gcc-surface *, .gcc-surface *::before, .gcc-surface *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
 @source '../../../../resources/views/kahya/**/*';
 
 @theme {

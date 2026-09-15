@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Enums\UserStatus;
 use App\Filament\Responses\PanelCikisYaniti;
 use App\Filament\Widgets\BekleyenIslerWidget;
 use App\Filament\Widgets\EntegrasyonlarWidget;
@@ -12,6 +13,7 @@ use App\Filament\Widgets\KategoriDagilimiWidget;
 use App\Filament\Widgets\KesifIlerlemeWidget;
 use App\Filament\Widgets\StatsOverview;
 use App\Filament\Widgets\SystemHealthWidget;
+use App\Http\Middleware\ResolveAdminGeoContext;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\YonetimIkiFaktorZorunlu;
 use App\Support\Settings;
@@ -182,7 +184,15 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                 YonetimIkiFaktorZorunlu::class,
-            ])
+                ...(config('global-command.enabled') ? [ResolveAdminGeoContext::class] : []),
+            ], isPersistent: true)
+            ->renderHook(
+                PanelsRenderHook::TOPBAR_AFTER,
+                fn (): string => config('global-command.enabled') && auth()->user()?->isAdmin()
+                    && auth()->user()->status === UserStatus::Aktif
+                    ? Blade::render("@livewire('admin.geo-switcher')")
+                    : '',
+            )
             /*
              * Kâhya balonu — panelin HER sayfasında sağ altta duran sohbet
              * düğmesi. Sahip "etiketler nerede?" diye sormak için Kâhya

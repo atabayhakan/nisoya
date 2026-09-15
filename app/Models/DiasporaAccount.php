@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\NormalizesCityName;
 use App\Support\InstagramMedia;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,6 +31,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class DiasporaAccount extends Model
 {
     use HasFactory;
+    use NormalizesCityName;
 
     protected $fillable = [
         'username',

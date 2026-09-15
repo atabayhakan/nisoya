@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Listing;
 use App\Providers\Filament\AdminPanelProvider;
+use App\Support\GlobalCommand\GeoContext;
 use Filament\Widgets\Widget;
 
 /**
@@ -47,7 +48,7 @@ class KategoriDagilimiWidget extends Widget
      */
     public function getVeri(): array
     {
-        $sayilar = Listing::query()->where('status', 'aktif')
+        $sayilar = app(GeoContext::class)->apply(Listing::query())->where('status', 'aktif')
             ->selectRaw('type, count(*) as adet')
             ->groupBy('type')
             ->pluck('adet', 'type')

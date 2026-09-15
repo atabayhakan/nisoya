@@ -22,6 +22,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\HtmlString;
 
@@ -30,6 +31,7 @@ class JobListingsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['category', 'country']))
             ->defaultSort('created_at', 'desc')
             ->columns([
                 ImageColumn::make('company.logo_path')
@@ -238,7 +240,7 @@ class JobListingsTable
                     ->label('Adaylar')
                     ->icon(Heroicon::OutlinedUserGroup)
                     ->color('info')
-                    ->visible(fn (JobListing $record): bool => $record->applications()->count() > 0)
+                    ->visible(fn (JobListing $record): bool => $record->applications_count > 0)
                     ->modalHeading(fn (JobListing $record): string => "Başvuran Adaylar: {$record->title}")
                     ->modalDescription(function (JobListing $record): HtmlString {
                         $apps = $record->applications()->with('applicant')->latest()->limit(20)->get();

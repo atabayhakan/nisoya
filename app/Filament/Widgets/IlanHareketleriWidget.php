@@ -4,8 +4,10 @@ namespace App\Filament\Widgets;
 
 use App\Models\Listing;
 use App\Providers\Filament\AdminPanelProvider;
+use App\Support\GlobalCommand\GeoContext;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Son 8 ayın ilan hareketi (Vitrin Faz P4b): ay başına açılan ve
@@ -15,8 +17,8 @@ use Illuminate\Support\Carbon;
  * eklenmez (handoff kuralı). Filament'in ChartWidget'ı yerine özel Blade
  * kullanılmasının sebebi budur.
  *
- * Sorgu maliyeti: 2 (açılan + kapanan). Aylar PHP'de gruplanır ki
- * SQLite/MySQL tarih fonksiyonu farkına takılmayalım.
+ * Sorgu maliyeti: 2 (açılan + kapanan). Veritabanı ay bazında sayar;
+ * SQLite ve MySQL için ilgili tarih fonksiyonu seçilir.
  */
 class IlanHareketleriWidget extends Widget
 {
@@ -36,18 +38,19 @@ class IlanHareketleriWidget extends Widget
     {
         $baslangic = now()->startOfMonth()->subMonths(7);
 
-        $acilanlar = Listing::query()
+        $driver = DB::getDriverName();
+        $createdMonth = $driver === 'sqlite' ? "strftime('%Y-%m', created_at)" : "DATE_FORMAT(created_at, '%Y-%m')";
+        $updatedMonth = $driver === 'sqlite' ? "strftime('%Y-%m', updated_at)" : "DATE_FORMAT(updated_at, '%Y-%m')";
+        $acilanlar = app(GeoContext::class)->apply(Listing::query())
             ->where('created_at', '>=', $baslangic)
-            ->get(['created_at'])
-            ->groupBy(fn ($l) => $l->created_at->format('Y-m'))
-            ->map->count();
+            ->selectRaw($createdMonth.' AS month_key, COUNT(*) AS aggregate')
+            ->groupBy('month_key')->pluck('aggregate', 'month_key');
 
-        $kapananlar = Listing::query()
+        $kapananlar = app(GeoContext::class)->apply(Listing::query())
             ->whereIn('status', ['pasif', 'reddedildi'])
             ->where('updated_at', '>=', $baslangic)
-            ->get(['updated_at'])
-            ->groupBy(fn ($l) => $l->updated_at->format('Y-m'))
-            ->map->count();
+            ->selectRaw($updatedMonth.' AS month_key, COUNT(*) AS aggregate')
+            ->groupBy('month_key')->pluck('aggregate', 'month_key');
 
         $aylar = [];
         for ($i = 0; $i < 8; $i++) {

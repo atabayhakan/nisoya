@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Listings;
 
 use App\Enums\ListingStatus;
+use App\Filament\Concerns\UsesAdminGeoContext;
 use App\Filament\Resources\Listings\Pages\CreateListing;
 use App\Filament\Resources\Listings\Pages\EditListing;
 use App\Filament\Resources\Listings\Pages\ListListings;
@@ -18,6 +19,8 @@ use Filament\Tables\Table;
 
 class ListingResource extends Resource
 {
+    use UsesAdminGeoContext;
+
     protected static ?string $model = Listing::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
@@ -46,7 +49,7 @@ class ListingResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $count = Listing::query()->where('status', ListingStatus::Beklemede)->count();
+        $count = static::getEloquentQuery()->where('status', ListingStatus::Beklemede)->count();
 
         return $count > 0 ? (string) $count : null;
     }

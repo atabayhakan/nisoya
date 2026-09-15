@@ -54,6 +54,7 @@ trait KahyaSohbetiYurutur
         // Son 30 mesaj, eskiden yeniye. Sohbetin tamamı DB'de duruyor;
         // ekranda son sayfa yeter, gerisi kaydırma değil arşiv işidir.
         return KahyaMesaji::query()
+            ->where('user_id', auth()->id())
             ->with('eylem')
             ->latest('id')
             ->limit(30)

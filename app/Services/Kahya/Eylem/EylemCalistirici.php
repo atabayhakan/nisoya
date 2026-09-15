@@ -152,7 +152,19 @@ class EylemCalistirici
              * İşlem (transaction) içinde: bir eylem birden çok satıra
              * dokunuyorsa yarım kalması, geri alma izini de yanlış yapar.
              */
-            $sonuc = DB::transaction(fn (): array => $eylem->uygula($kayit->parametreler));
+            DB::transaction(function () use ($eylem, $kayit): void {
+                $locked = KahyaEylemKaydi::query()->lockForUpdate()->findOrFail($kayit->id);
+                if ($locked->durum !== KahyaEylemKaydi::DURUM_BEKLEMEDE) {
+                    return;
+                }
+                $sonuc = $eylem->uygula($locked->parametreler);
+                $locked->update([
+                    'durum' => KahyaEylemKaydi::DURUM_UYGULANDI,
+                    'uygulandi_at' => now(),
+                    'sonuc' => $sonuc['sonuc'],
+                    'geri_alma' => $sonuc['geri_alma'],
+                ]);
+            });
         } catch (Throwable $e) {
             report($e);
 
@@ -166,13 +178,6 @@ class EylemCalistirici
             return $kayit;
         }
 
-        $kayit->update([
-            'durum' => KahyaEylemKaydi::DURUM_UYGULANDI,
-            'uygulandi_at' => now(),
-            'sonuc' => $sonuc['sonuc'],
-            'geri_alma' => $sonuc['geri_alma'],
-        ]);
-
-        return $kayit;
+        return $kayit->refresh();
     }
 }

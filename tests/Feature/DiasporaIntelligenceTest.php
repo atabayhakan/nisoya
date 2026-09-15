@@ -2,14 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Models\City;
 use App\Models\DiasporaReel;
-use App\Services\Ai\CmsAiAssistant;
 use App\Services\Diaspora\DiasporaIntelligenceService;
 use App\Services\Diaspora\DiasporaRankingEngine;
 use App\Services\Diaspora\InstagramMetadataExtractor;
+use Database\Seeders\CitySeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class DiasporaIntelligenceTest extends TestCase
@@ -20,6 +22,9 @@ class DiasporaIntelligenceTest extends TestCase
     {
         parent::setUp();
         $this->seed([CurrencySeeder::class, CountrySeeder::class]);
+        $this->seed(CitySeeder::class);
+        City::firstOrCreate(['country_code' => 'DE', 'name' => 'Frankfurt'], ['is_active' => true]);
+        Http::fake(['*' => Http::response(['title' => 'Gerçek kaynak yanıtı', 'author_name' => 'test_account'])]);
     }
 
     public function test_instagram_metadata_extractor_parses_shortcode_and_generates_structure(): void

@@ -7,6 +7,7 @@ namespace App\Filament\Resources\JobListings\Widgets;
 use App\Enums\JobStatus;
 use App\Models\JobApplication;
 use App\Models\JobListing;
+use App\Support\GlobalCommand\GeoContext;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -15,19 +16,21 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  */
 class JobListingStatsWidget extends BaseWidget
 {
+    protected ?string $pollingInterval = '30s';
+
     protected static ?int $sort = 1;
 
     protected static bool $isLazy = false;
 
     protected function getStats(): array
     {
-        $toplam = JobListing::query()->count();
-        $aktif = JobListing::query()->where('status', JobStatus::Aktif)->count();
+        $toplam = app(GeoContext::class)->apply(JobListing::query())->count();
+        $aktif = app(GeoContext::class)->apply(JobListing::query())->where('status', JobStatus::Aktif)->count();
         $oran = $toplam > 0 ? (int) round(($aktif / $toplam) * 100) : 0;
 
-        $oneCikan = JobListing::query()->where('is_featured', true)->count();
-        $toplamBasvuru = JobApplication::query()->count();
-        $toplamPozisyon = (int) JobListing::query()->sum('positions');
+        $oneCikan = app(GeoContext::class)->apply(JobListing::query())->where('is_featured', true)->count();
+        $toplamBasvuru = JobApplication::query()->whereHas('jobListing', fn ($query) => app(GeoContext::class)->apply($query))->count();
+        $toplamPozisyon = (int) app(GeoContext::class)->apply(JobListing::query())->sum('positions');
 
         return [
             Stat::make('Toplam İş İlanı', (string) $toplam)
@@ -46,7 +49,7 @@ class JobListingStatsWidget extends BaseWidget
                 ->color('warning'),
 
             Stat::make('Toplam Aday Başvurusu', (string) $toplamBasvuru)
-                ->description($toplamBasvuru > 0 ? "Platform genelinde {$toplamBasvuru} başvuru alındı" : 'Henüz aday başvurusu yapılmadı')
+                ->description($toplamBasvuru > 0 ? "Bu görünümde {$toplamBasvuru} başvuru alındı" : 'Henüz aday başvurusu yapılmadı')
                 ->descriptionIcon('heroicon-m-user-group')
                 ->color('info'),
         ];

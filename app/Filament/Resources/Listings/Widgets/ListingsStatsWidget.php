@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Listings\Widgets;
 use App\Enums\ListingStatus;
 use App\Enums\ListingType;
 use App\Models\Listing;
+use App\Support\GlobalCommand\GeoContext;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -15,20 +16,22 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  */
 class ListingsStatsWidget extends BaseWidget
 {
+    protected ?string $pollingInterval = '30s';
+
     protected static ?int $sort = 1;
 
     protected static bool $isLazy = false;
 
     protected function getStats(): array
     {
-        $toplam = Listing::query()->count();
-        $aktif = Listing::query()->where('status', ListingStatus::Aktif)->count();
-        $beklemede = Listing::query()->where('status', ListingStatus::Beklemede)->count();
-        $oneCikan = Listing::query()->where('is_featured', true)->count();
-        $riskli = Listing::query()->whereNotNull('fraud_reason')->count();
+        $toplam = app(GeoContext::class)->apply(Listing::query())->count();
+        $aktif = app(GeoContext::class)->apply(Listing::query())->where('status', ListingStatus::Aktif)->count();
+        $beklemede = app(GeoContext::class)->apply(Listing::query())->where('status', ListingStatus::Beklemede)->count();
+        $oneCikan = app(GeoContext::class)->apply(Listing::query())->where('is_featured', true)->count();
+        $riskli = app(GeoContext::class)->apply(Listing::query())->whereNotNull('fraud_reason')->count();
 
-        $urun = Listing::query()->where('type', ListingType::Urun)->count();
-        $hizmet = Listing::query()->where('type', ListingType::Hizmet)->count();
+        $urun = app(GeoContext::class)->apply(Listing::query())->where('type', ListingType::Urun)->count();
+        $hizmet = app(GeoContext::class)->apply(Listing::query())->where('type', ListingType::Hizmet)->count();
 
         $aktifOran = $toplam > 0 ? (int) round(($aktif / $toplam) * 100) : 0;
 

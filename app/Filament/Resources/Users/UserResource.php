@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users;
 
 use App\Filament\Concerns\RestrictsToAdmins;
+use App\Filament\Concerns\UsesAdminGeoContext;
 use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
@@ -20,6 +21,7 @@ class UserResource extends Resource
     // Yalnızca Admin: Moderatör hesap yönetimi yapamaz (parola/e-posta değiştirip
     // hesap ele geçirme koruması — alan kilidi yetmez, kaynak-seviyesi yetki şart).
     use RestrictsToAdmins;
+    use UsesAdminGeoContext;
 
     protected static ?string $model = User::class;
 

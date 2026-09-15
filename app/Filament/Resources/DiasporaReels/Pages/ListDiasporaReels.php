@@ -2,15 +2,17 @@
 
 namespace App\Filament\Resources\DiasporaReels\Pages;
 
+use App\Filament\Concerns\GuardsAdminGeoContext;
 use App\Filament\Resources\DiasporaReels\DiasporaReelResource;
 use App\Filament\Resources\DiasporaReels\Widgets\DiasporaReelsStatsWidget;
+use App\Jobs\GlobalCommand\RecalculateDiasporaRanking;
 use App\Models\Country;
+use App\Models\DiasporaAccount;
 use App\Models\DiasporaReel;
 use App\Services\Ai\CmsAiAssistant;
 use App\Services\Diaspora\DiasporaIntelligenceService;
-use App\Services\Diaspora\DiasporaRankingEngine;
-use App\Services\Diaspora\DiasporaSyncEngine;
-use Database\Seeders\DiasporaReelSeeder;
+use App\Support\GlobalCommand\DiasporaDispatch;
+use App\Support\GlobalCommand\GeoContext;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\Select;
@@ -23,6 +25,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ListDiasporaReels extends ListRecords
 {
+    use GuardsAdminGeoContext;
+
     protected static string $resource = DiasporaReelResource::class;
 
     protected function getHeaderWidgets(): array
@@ -40,12 +44,12 @@ class ListDiasporaReels extends ListRecords
                 ->icon(Heroicon::OutlinedArrowPath)
                 ->color('primary')
                 ->tooltip('Kayıtlı tüm diaspora hesaplarını tarayıp yeni reels videolarını aktarır.')
-                ->action(function (DiasporaSyncEngine $syncEngine): void {
-                    $res = $syncEngine->syncAll();
+                ->action(function (DiasporaDispatch $dispatch): void {
+                    $count = $dispatch->enqueue(auth()->user(), app(GeoContext::class)->apply(DiasporaAccount::query()));
 
                     Notification::make()
-                        ->title('Senkronizasyon Tamamlandı')
-                        ->body("{$res['accounts_count']} hesap tarandı, {$res['total_created']} yeni içerik aktarıldı ({$res['autopilot_published']} otopilot yayında).")
+                        ->title('Tarama talepleri alındı')
+                        ->body($count.' aktif ve doğrulanmış hesap kuyruğa alındı.')
                         ->success()
                         ->send();
                 }),
@@ -55,12 +59,14 @@ class ListDiasporaReels extends ListRecords
                 ->icon(Heroicon::OutlinedSparkles)
                 ->color('amber')
                 ->tooltip('Beğeni, izlenme ve güncellik puanlarını hesaplayarak vitrin sıralamasını günceller.')
-                ->action(function (DiasporaRankingEngine $rankingEngine): void {
-                    $res = $rankingEngine->recalculateAndRank();
+                ->action(function (): void {
+                    abort_unless(auth()->user()?->isAdmin(), 403);
+                    RecalculateDiasporaRanking::dispatch(auth()->id(), app(GeoContext::class)->selection())
+                        ->onConnection(config('global-command.diaspora_sync_queue_connection', 'database'))->onQueue('diaspora-sync');
 
                     Notification::make()
-                        ->title('Etkileşim Sıralaması Güncellendi')
-                        ->body("{$res['recalculated_count']} içerik puanlandı. {$res['promoted_featured']} içerik öne çıkan geniş bento karta yükseltildi.")
+                        ->title('Sıralama kuyruğa alındı')
+                        ->body('Seçili coğrafi görünüm arka planda puanlanacak.')
                         ->success()
                         ->send();
                 }),
@@ -104,7 +110,7 @@ class ListDiasporaReels extends ListRecords
 
                     $countryCode = filled($data['country_code'] ?? null)
                         ? (string) $data['country_code']
-                        : ($story['country_code'] ?? 'DE');
+                        : ($story['country_code'] ?? null);
 
                     $city = filled($data['city'] ?? null)
                         ? (string) $data['city']
@@ -129,27 +135,13 @@ class ListDiasporaReels extends ListRecords
                         'safety_score' => $enriched['safety_score'] ?? 100,
                         'safety_status' => $enriched['safety_status'] ?? 'safe',
                         'instagram_username' => $enriched['instagram_username'] ?? ($story['suggested_username'] ?? null),
-                        'status' => DiasporaReel::STATUS_PUBLISHED,
-                        'is_active' => true,
+                        'status' => DiasporaReel::STATUS_DRAFT,
+                        'is_active' => false,
                     ]);
 
                     Notification::make()
                         ->title('Diaspora Reel hikayesi oluşturuldu')
-                        ->body('Claude AI başlık ve açıklamayı başarıyla hazırladı ve vitrine ekledi.')
-                        ->success()
-                        ->send();
-                }),
-
-            Action::make('ornekleriYukle')
-                ->label('Örnekleri Yükle (Seed)')
-                ->icon(Heroicon::OutlinedArrowDownTray)
-                ->color('gray')
-                ->tooltip('Ana sayfa için 6 adet örnek diaspora reels ve etkinlik kaydını yükler')
-                ->action(function (): void {
-                    (new DiasporaReelSeeder)->run();
-                    Notification::make()
-                        ->title('Örnek Diaspora Reels Yüklendi')
-                        ->body('Almanya, Kırgızistan, Hollanda ve İngiltere için 6 adet örnek diaspora içeriği başarıyla kaydedildi.')
+                        ->body('Başlık ve açıklama taslak olarak hazırlandı. Yayınlamadan önce kaynak bilgilerini inceleyin.')
                         ->success()
                         ->send();
                 }),
@@ -165,11 +157,11 @@ class ListDiasporaReels extends ListRecords
      */
     public function getTabs(): array
     {
-        $draftCount = DiasporaReel::query()->where('status', DiasporaReel::STATUS_DRAFT)->count();
+        $draftCount = app(GeoContext::class)->apply(DiasporaReel::query())->where('status', DiasporaReel::STATUS_DRAFT)->count();
 
         return [
             'hepsi' => Tab::make('Tüm Paylaşımlar')
-                ->badge(DiasporaReel::query()->count() ?: null),
+                ->badge(app(GeoContext::class)->apply(DiasporaReel::query())->count() ?: null),
 
             'onay_bekleyen' => Tab::make('📥 Onay Bekleyenler (Taslak)')
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', DiasporaReel::STATUS_DRAFT))
@@ -178,25 +170,14 @@ class ListDiasporaReels extends ListRecords
 
             'yayinda' => Tab::make('Yayında (Aktif)')
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('is_active', true)->where('status', DiasporaReel::STATUS_PUBLISHED))
-                ->badge(DiasporaReel::query()->where('is_active', true)->where('status', DiasporaReel::STATUS_PUBLISHED)->count() ?: null)
+                ->badge(app(GeoContext::class)->apply(DiasporaReel::query())->where('is_active', true)->where('status', DiasporaReel::STATUS_PUBLISHED)->count() ?: null)
                 ->badgeColor('success'),
 
             'one_cikan' => Tab::make('Öne Çıkanlar')
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('is_featured', true))
-                ->badge(DiasporaReel::query()->where('is_featured', true)->count() ?: null)
+                ->badge(app(GeoContext::class)->apply(DiasporaReel::query())->where('is_featured', true)->count() ?: null)
                 ->badgeColor('warning'),
 
-            'de' => Tab::make('🇩🇪 Almanya')
-                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('country_code', 'DE'))
-                ->badge(DiasporaReel::query()->where('country_code', 'DE')->count() ?: null),
-
-            'kg' => Tab::make('🇰🇬 Kırgızistan')
-                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('country_code', 'KG'))
-                ->badge(DiasporaReel::query()->where('country_code', 'KG')->count() ?: null),
-
-            'diger' => Tab::make('🌍 Diğer')
-                ->modifyQueryUsing(fn (Builder $query): Builder => $query->whereNotIn('country_code', ['DE', 'KG']))
-                ->badge(DiasporaReel::query()->whereNotIn('country_code', ['DE', 'KG'])->count() ?: null),
         ];
     }
 }

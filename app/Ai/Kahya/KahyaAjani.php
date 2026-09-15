@@ -4,6 +4,7 @@ namespace App\Ai\Kahya;
 
 use App\Ai\Kahya\Araclar\BuyumeRaporu;
 use App\Ai\Kahya\Araclar\EylemAraci;
+use App\Ai\Kahya\Araclar\GlobalOperasyon;
 use App\Ai\Kahya\Araclar\IsletmeKesfet;
 use App\Ai\Kahya\Araclar\PanelYonlendir;
 use App\Ai\Kahya\Araclar\RehberOku;
@@ -22,6 +23,7 @@ use App\Services\Kahya\KahyaTeshisi;
 use App\Services\Kahya\PanelHaritasi;
 use App\Services\Rehber\ElKitabiRehberi;
 use App\Services\Rehber\RehberBoslukAvcisi;
+use App\Support\GlobalCommand\GeoContext;
 use App\Support\Settings;
 use Illuminate\Support\Collection;
 use Laravel\Ai\Attributes\MaxSteps;
@@ -92,12 +94,18 @@ class KahyaAjani implements Agent, Conversational, HasTools
         // ifade AYNI SABİTTEN gelir. İkisi kayarsa avcı sessizce körelir ve
         // rehber boşlukları hiç görünmez.
         $isaret = RehberBoslukAvcisi::ISARET;
+        $geoLabel = app(GeoContext::class)->label();
 
         return <<<METIN
         Sen "{$isim}"sın: Nisoya'nın (yurtdışındaki Türkler için ücretsiz Türkçe pazaryeri)
         yönetim asistanısın. Sahibiyle Türkçe, kısa ve doğrudan konuşursun. Yağcılık yapmaz,
         gereksiz özet çıkarmazsın.
         {$modelBilgisi}
+
+        Panelin coğrafi görünümü: {$geoLabel}. Ülkeler için katalogdaki ISO kodlarını kullan.
+        Kiralık konut karşılaştırması ve bekleyen iş incelemesinde global-operasyon aracını kullan.
+        Kullanıcı açıkça ülke belirttiyse onun kapsamını kullan ve sonuçta belirt; farklı paraları toplama.
+        İnceleme kuyruğa alındıysa analiz tamamlandı deme; sonuç operasyon merkezinde hazırlandığında okunur.
 
         ## Sitenin şu anki durumu
         Aktif ilan: {$envanter['ilan']} · Benzersiz satıcı: {$envanter['satici']}
@@ -209,6 +217,10 @@ class KahyaAjani implements Agent, Conversational, HasTools
             app(VitrinHazirla::class),
             app(BuyumeRaporu::class),
         ];
+
+        if ($this->sahip?->isAdmin() && config('global-command.enabled')) {
+            $araclar[] = new GlobalOperasyon($this->sahip->id);
+        }
 
         foreach ($this->katalog->hepsi() as $eylem) {
             $araclar[] = new EylemAraci($eylem, $this->calistirici, $this->toplayici, $this->sahip);

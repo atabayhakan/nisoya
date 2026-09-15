@@ -173,7 +173,7 @@ class DiasporaReelsTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_trigger_seed_action_from_list_page(): void
+    public function test_admin_cannot_load_fabricated_sample_reels_from_list_page(): void
     {
         $admin = User::factory()->create([
             'role' => UserRole::Admin,
@@ -184,10 +184,9 @@ class DiasporaReelsTest extends TestCase
 
         Livewire::actingAs($admin)
             ->test(ListDiasporaReels::class)
-            ->callAction('ornekleriYukle')
-            ->assertHasNoActionErrors();
+            ->assertActionDoesNotExist('ornekleriYukle');
 
-        $this->assertDatabaseCount('diaspora_reels', 6);
+        $this->assertDatabaseCount('diaspora_reels', 0);
     }
 
     public function test_tabs_and_stats_widget_work_properly(): void
@@ -199,6 +198,7 @@ class DiasporaReelsTest extends TestCase
 
         DiasporaReel::create([
             'title' => 'Berlin Etkinlik',
+            'status' => DiasporaReel::STATUS_PUBLISHED,
             'instagram_url' => 'https://www.instagram.com/reel/C1111111111/',
             'country_code' => 'DE',
             'city' => 'Berlin',
@@ -208,6 +208,7 @@ class DiasporaReelsTest extends TestCase
 
         DiasporaReel::create([
             'title' => 'Bişkek Buluşma',
+            'status' => DiasporaReel::STATUS_DRAFT,
             'instagram_url' => 'https://www.instagram.com/reel/C2222222222/',
             'country_code' => 'KG',
             'city' => 'Bişkek',
@@ -221,7 +222,7 @@ class DiasporaReelsTest extends TestCase
             ->set('activeTab', 'yayinda')
             ->assertSee('Berlin Etkinlik')
             ->assertDontSee('Bişkek Buluşma')
-            ->set('activeTab', 'kg')
+            ->set('activeTab', 'onay_bekleyen')
             ->assertSee('Bişkek Buluşma')
             ->assertDontSee('Berlin Etkinlik');
     }

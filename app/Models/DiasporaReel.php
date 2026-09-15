@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\NormalizesCityName;
 use App\Support\InstagramMedia;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -36,6 +38,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DiasporaReel extends Model
 {
     use HasFactory;
+    use NormalizesCityName;
 
     public const STATUS_PUBLISHED = 'published';
 
@@ -107,6 +110,13 @@ class DiasporaReel extends Model
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class, 'country_code', 'code');
+    }
+
+    /** @return HasOne<ContentAssessment, $this> */
+    public function latestAssessment(): HasOne
+    {
+        return $this->hasOne(ContentAssessment::class, 'source_id')
+            ->ofMany(['id' => 'max'], fn ($query) => $query->where('kind', 'reel'));
     }
 
     public function account(): BelongsTo

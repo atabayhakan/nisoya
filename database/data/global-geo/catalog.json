@@ -1,0 +1,6161 @@
+{
+    "version": "iso-cldr48-2026-09-15",
+    "as_of": "2026-09-15",
+    "sources": {
+        "iso": "https://github.com/pycountry/pycountry/tree/main/src/pycountry/databases",
+        "cldr": "https://github.com/unicode-org/cldr-json/tree/main/cldr-json",
+        "sha256": {
+            "ISO-LICENSE.txt": "3fa39c6e18a3a4411082b64c164deae1d8f47b03a4d45304c1f0ae478626e382",
+            "UNICODE-LICENSE.txt": "220ba0e1c43b99530d2d5bdb892a99dca0989414f51ab695ecd90163eaa1ec3b",
+            "currencies.json": "daa774d3dbdd6f5f33e91c69ace63e2b3f79b670f1a457e3b74cfc159c88a699",
+            "currencyData.json": "e50315091b1f34428480f82970be64159ad207af0bdcebe7faa6260d3e34c8a6",
+            "iso.json": "f01b812b57fba9f31ff621bf33e7c7570a01964dbeb5be2167e94decf538c89f",
+            "languages.json": "d288817b707464b59a566ce058feef127eead2c18f2eebfca7f90607e48c29ad",
+            "territories.json": "4b9b52e756c79f8b4c81e7c2c5bd2c2ba9338f0c80f2dceeee53ba4561d872b5",
+            "territoryContainment.json": "9f7d2eed5278ebb7c302b7536e391708b237945c314d09a206c632c2fab45ee2",
+            "territoryInfo.json": "b50369a0e1f5434c942dfe45064b39f488604ca0cedac5117e993248c19f2c0a"
+        }
+    },
+    "countries": [
+        {
+            "code": "AD",
+            "alpha3": "AND",
+            "numeric": "020",
+            "name_tr": "Andorra",
+            "name_en": "Andorra",
+            "emoji": "🇦🇩",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "ca"
+            ]
+        },
+        {
+            "code": "AE",
+            "alpha3": "ARE",
+            "numeric": "784",
+            "name_tr": "Birleşik Arap Emirlikleri",
+            "name_en": "United Arab Emirates",
+            "emoji": "🇦🇪",
+            "currencies": [
+                "AED"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "AF",
+            "alpha3": "AFG",
+            "numeric": "004",
+            "name_tr": "Afganistan",
+            "name_en": "Afghanistan",
+            "emoji": "🇦🇫",
+            "currencies": [
+                "AFN"
+            ],
+            "languages": [
+                "fa",
+                "ps",
+                "uz-Arab",
+                "tk"
+            ]
+        },
+        {
+            "code": "AG",
+            "alpha3": "ATG",
+            "numeric": "028",
+            "name_tr": "Antigua ve Barbuda",
+            "name_en": "Antigua and Barbuda",
+            "emoji": "🇦🇬",
+            "currencies": [
+                "XCD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "AI",
+            "alpha3": "AIA",
+            "numeric": "660",
+            "name_tr": "Anguilla",
+            "name_en": "Anguilla",
+            "emoji": "🇦🇮",
+            "currencies": [
+                "XCD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "AL",
+            "alpha3": "ALB",
+            "numeric": "008",
+            "name_tr": "Arnavutluk",
+            "name_en": "Albania",
+            "emoji": "🇦🇱",
+            "currencies": [
+                "ALL"
+            ],
+            "languages": [
+                "sq"
+            ]
+        },
+        {
+            "code": "AM",
+            "alpha3": "ARM",
+            "numeric": "051",
+            "name_tr": "Ermenistan",
+            "name_en": "Armenia",
+            "emoji": "🇦🇲",
+            "currencies": [
+                "AMD"
+            ],
+            "languages": [
+                "hy"
+            ]
+        },
+        {
+            "code": "AO",
+            "alpha3": "AGO",
+            "numeric": "024",
+            "name_tr": "Angola",
+            "name_en": "Angola",
+            "emoji": "🇦🇴",
+            "currencies": [
+                "AOA"
+            ],
+            "languages": [
+                "pt"
+            ]
+        },
+        {
+            "code": "AQ",
+            "alpha3": "ATA",
+            "numeric": "010",
+            "name_tr": "Antarktika",
+            "name_en": "Antarctica",
+            "emoji": "🇦🇶",
+            "currencies": [],
+            "languages": []
+        },
+        {
+            "code": "AR",
+            "alpha3": "ARG",
+            "numeric": "032",
+            "name_tr": "Arjantin",
+            "name_en": "Argentina",
+            "emoji": "🇦🇷",
+            "currencies": [
+                "ARS"
+            ],
+            "languages": [
+                "es"
+            ]
+        },
+        {
+            "code": "AS",
+            "alpha3": "ASM",
+            "numeric": "016",
+            "name_tr": "Amerikan Samoası",
+            "name_en": "American Samoa",
+            "emoji": "🇦🇸",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "sm",
+                "en"
+            ]
+        },
+        {
+            "code": "AT",
+            "alpha3": "AUT",
+            "numeric": "040",
+            "name_tr": "Avusturya",
+            "name_en": "Austria",
+            "emoji": "🇦🇹",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "de",
+                "hr",
+                "sl",
+                "hu"
+            ]
+        },
+        {
+            "code": "AU",
+            "alpha3": "AUS",
+            "numeric": "036",
+            "name_tr": "Avustralya",
+            "name_en": "Australia",
+            "emoji": "🇦🇺",
+            "currencies": [
+                "AUD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "AW",
+            "alpha3": "ABW",
+            "numeric": "533",
+            "name_tr": "Aruba",
+            "name_en": "Aruba",
+            "emoji": "🇦🇼",
+            "currencies": [
+                "AWG"
+            ],
+            "languages": [
+                "nl",
+                "pap"
+            ]
+        },
+        {
+            "code": "AX",
+            "alpha3": "ALA",
+            "numeric": "248",
+            "name_tr": "Åland Adaları",
+            "name_en": "Åland Islands",
+            "emoji": "🇦🇽",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "sv"
+            ]
+        },
+        {
+            "code": "AZ",
+            "alpha3": "AZE",
+            "numeric": "031",
+            "name_tr": "Azerbaycan",
+            "name_en": "Azerbaijan",
+            "emoji": "🇦🇿",
+            "currencies": [
+                "AZN"
+            ],
+            "languages": [
+                "az",
+                "az-Cyrl"
+            ]
+        },
+        {
+            "code": "BA",
+            "alpha3": "BIH",
+            "numeric": "070",
+            "name_tr": "Bosna-Hersek",
+            "name_en": "Bosnia and Herzegovina",
+            "emoji": "🇧🇦",
+            "currencies": [
+                "BAM"
+            ],
+            "languages": [
+                "bs",
+                "bs-Cyrl",
+                "hr",
+                "sr",
+                "sr-Latn"
+            ]
+        },
+        {
+            "code": "BB",
+            "alpha3": "BRB",
+            "numeric": "052",
+            "name_tr": "Barbados",
+            "name_en": "Barbados",
+            "emoji": "🇧🇧",
+            "currencies": [
+                "BBD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "BD",
+            "alpha3": "BGD",
+            "numeric": "050",
+            "name_tr": "Bangladeş",
+            "name_en": "Bangladesh",
+            "emoji": "🇧🇩",
+            "currencies": [
+                "BDT"
+            ],
+            "languages": [
+                "bn"
+            ]
+        },
+        {
+            "code": "BE",
+            "alpha3": "BEL",
+            "numeric": "056",
+            "name_tr": "Belçika",
+            "name_en": "Belgium",
+            "emoji": "🇧🇪",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "nl",
+                "fr",
+                "de"
+            ]
+        },
+        {
+            "code": "BF",
+            "alpha3": "BFA",
+            "numeric": "854",
+            "name_tr": "Burkina Faso",
+            "name_en": "Burkina Faso",
+            "emoji": "🇧🇫",
+            "currencies": [
+                "XOF"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "BG",
+            "alpha3": "BGR",
+            "numeric": "100",
+            "name_tr": "Bulgaristan",
+            "name_en": "Bulgaria",
+            "emoji": "🇧🇬",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "bg"
+            ]
+        },
+        {
+            "code": "BH",
+            "alpha3": "BHR",
+            "numeric": "048",
+            "name_tr": "Bahreyn",
+            "name_en": "Bahrain",
+            "emoji": "🇧🇭",
+            "currencies": [
+                "BHD"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "BI",
+            "alpha3": "BDI",
+            "numeric": "108",
+            "name_tr": "Burundi",
+            "name_en": "Burundi",
+            "emoji": "🇧🇮",
+            "currencies": [
+                "BIF"
+            ],
+            "languages": [
+                "rn",
+                "fr",
+                "en"
+            ]
+        },
+        {
+            "code": "BJ",
+            "alpha3": "BEN",
+            "numeric": "204",
+            "name_tr": "Benin",
+            "name_en": "Benin",
+            "emoji": "🇧🇯",
+            "currencies": [
+                "XOF"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "BL",
+            "alpha3": "BLM",
+            "numeric": "652",
+            "name_tr": "Saint Barthelemy",
+            "name_en": "Saint Barthélemy",
+            "emoji": "🇧🇱",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "BM",
+            "alpha3": "BMU",
+            "numeric": "060",
+            "name_tr": "Bermuda",
+            "name_en": "Bermuda",
+            "emoji": "🇧🇲",
+            "currencies": [
+                "BMD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "BN",
+            "alpha3": "BRN",
+            "numeric": "096",
+            "name_tr": "Brunei",
+            "name_en": "Brunei Darussalam",
+            "emoji": "🇧🇳",
+            "currencies": [
+                "BND"
+            ],
+            "languages": [
+                "ms",
+                "ms-Arab"
+            ]
+        },
+        {
+            "code": "BO",
+            "alpha3": "BOL",
+            "numeric": "068",
+            "name_tr": "Bolivya",
+            "name_en": "Bolivia, Plurinational State of",
+            "emoji": "🇧🇴",
+            "currencies": [
+                "BOB"
+            ],
+            "languages": [
+                "es",
+                "qu",
+                "ay"
+            ]
+        },
+        {
+            "code": "BQ",
+            "alpha3": "BES",
+            "numeric": "535",
+            "name_tr": "Karayip Hollandası",
+            "name_en": "Bonaire, Sint Eustatius and Saba",
+            "emoji": "🇧🇶",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "nl"
+            ]
+        },
+        {
+            "code": "BR",
+            "alpha3": "BRA",
+            "numeric": "076",
+            "name_tr": "Brezilya",
+            "name_en": "Brazil",
+            "emoji": "🇧🇷",
+            "currencies": [
+                "BRL"
+            ],
+            "languages": [
+                "pt",
+                "vec"
+            ]
+        },
+        {
+            "code": "BS",
+            "alpha3": "BHS",
+            "numeric": "044",
+            "name_tr": "Bahamalar",
+            "name_en": "Bahamas",
+            "emoji": "🇧🇸",
+            "currencies": [
+                "BSD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "BT",
+            "alpha3": "BTN",
+            "numeric": "064",
+            "name_tr": "Butan",
+            "name_en": "Bhutan",
+            "emoji": "🇧🇹",
+            "currencies": [
+                "BTN",
+                "INR"
+            ],
+            "languages": [
+                "dz"
+            ]
+        },
+        {
+            "code": "BV",
+            "alpha3": "BVT",
+            "numeric": "074",
+            "name_tr": "Bouvet Adası",
+            "name_en": "Bouvet Island",
+            "emoji": "🇧🇻",
+            "currencies": [
+                "NOK"
+            ],
+            "languages": [
+                "no"
+            ]
+        },
+        {
+            "code": "BW",
+            "alpha3": "BWA",
+            "numeric": "072",
+            "name_tr": "Botsvana",
+            "name_en": "Botswana",
+            "emoji": "🇧🇼",
+            "currencies": [
+                "BWP"
+            ],
+            "languages": [
+                "en",
+                "tn"
+            ]
+        },
+        {
+            "code": "BY",
+            "alpha3": "BLR",
+            "numeric": "112",
+            "name_tr": "Belarus",
+            "name_en": "Belarus",
+            "emoji": "🇧🇾",
+            "currencies": [
+                "BYN"
+            ],
+            "languages": [
+                "ru",
+                "be"
+            ]
+        },
+        {
+            "code": "BZ",
+            "alpha3": "BLZ",
+            "numeric": "084",
+            "name_tr": "Belize",
+            "name_en": "Belize",
+            "emoji": "🇧🇿",
+            "currencies": [
+                "BZD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "CA",
+            "alpha3": "CAN",
+            "numeric": "124",
+            "name_tr": "Kanada",
+            "name_en": "Canada",
+            "emoji": "🇨🇦",
+            "currencies": [
+                "CAD"
+            ],
+            "languages": [
+                "en",
+                "fr",
+                "iu",
+                "iu-Latn",
+                "crk",
+                "chp",
+                "den",
+                "dgr",
+                "gwi"
+            ]
+        },
+        {
+            "code": "CC",
+            "alpha3": "CCK",
+            "numeric": "166",
+            "name_tr": "Cocos (Keeling) Adaları",
+            "name_en": "Cocos (Keeling) Islands",
+            "emoji": "🇨🇨",
+            "currencies": [
+                "AUD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "CD",
+            "alpha3": "COD",
+            "numeric": "180",
+            "name_tr": "Kongo - Kinşasa",
+            "name_en": "Congo, The Democratic Republic of the",
+            "emoji": "🇨🇩",
+            "currencies": [
+                "CDF"
+            ],
+            "languages": [
+                "fr",
+                "sw",
+                "lua",
+                "ln",
+                "kg"
+            ]
+        },
+        {
+            "code": "CF",
+            "alpha3": "CAF",
+            "numeric": "140",
+            "name_tr": "Orta Afrika Cumhuriyeti",
+            "name_en": "Central African Republic",
+            "emoji": "🇨🇫",
+            "currencies": [
+                "XAF"
+            ],
+            "languages": [
+                "sg",
+                "fr"
+            ]
+        },
+        {
+            "code": "CG",
+            "alpha3": "COG",
+            "numeric": "178",
+            "name_tr": "Kongo - Brazavil",
+            "name_en": "Congo",
+            "emoji": "🇨🇬",
+            "currencies": [
+                "XAF"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "CH",
+            "alpha3": "CHE",
+            "numeric": "756",
+            "name_tr": "İsviçre",
+            "name_en": "Switzerland",
+            "emoji": "🇨🇭",
+            "currencies": [
+                "CHF"
+            ],
+            "languages": [
+                "de",
+                "gsw",
+                "fr",
+                "it",
+                "rm"
+            ]
+        },
+        {
+            "code": "CI",
+            "alpha3": "CIV",
+            "numeric": "384",
+            "name_tr": "Côte d’Ivoire",
+            "name_en": "Côte d'Ivoire",
+            "emoji": "🇨🇮",
+            "currencies": [
+                "XOF"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "CK",
+            "alpha3": "COK",
+            "numeric": "184",
+            "name_tr": "Cook Adaları",
+            "name_en": "Cook Islands",
+            "emoji": "🇨🇰",
+            "currencies": [
+                "NZD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "CL",
+            "alpha3": "CHL",
+            "numeric": "152",
+            "name_tr": "Şili",
+            "name_en": "Chile",
+            "emoji": "🇨🇱",
+            "currencies": [
+                "CLP"
+            ],
+            "languages": [
+                "es"
+            ]
+        },
+        {
+            "code": "CM",
+            "alpha3": "CMR",
+            "numeric": "120",
+            "name_tr": "Kamerun",
+            "name_en": "Cameroon",
+            "emoji": "🇨🇲",
+            "currencies": [
+                "XAF"
+            ],
+            "languages": [
+                "fr",
+                "en"
+            ]
+        },
+        {
+            "code": "CN",
+            "alpha3": "CHN",
+            "numeric": "156",
+            "name_tr": "Çin",
+            "name_en": "China",
+            "emoji": "🇨🇳",
+            "currencies": [
+                "CNY"
+            ],
+            "languages": [
+                "zh",
+                "ug",
+                "za",
+                "mn-Mong",
+                "bo",
+                "ko"
+            ]
+        },
+        {
+            "code": "CO",
+            "alpha3": "COL",
+            "numeric": "170",
+            "name_tr": "Kolombiya",
+            "name_en": "Colombia",
+            "emoji": "🇨🇴",
+            "currencies": [
+                "COP"
+            ],
+            "languages": [
+                "es"
+            ]
+        },
+        {
+            "code": "CR",
+            "alpha3": "CRI",
+            "numeric": "188",
+            "name_tr": "Kosta Rika",
+            "name_en": "Costa Rica",
+            "emoji": "🇨🇷",
+            "currencies": [
+                "CRC"
+            ],
+            "languages": [
+                "es"
+            ]
+        },
+        {
+            "code": "CU",
+            "alpha3": "CUB",
+            "numeric": "192",
+            "name_tr": "Küba",
+            "name_en": "Cuba",
+            "emoji": "🇨🇺",
+            "currencies": [
+                "CUP"
+            ],
+            "languages": [
+                "es"
+            ]
+        },
+        {
+            "code": "CV",
+            "alpha3": "CPV",
+            "numeric": "132",
+            "name_tr": "Cabo Verde",
+            "name_en": "Cabo Verde",
+            "emoji": "🇨🇻",
+            "currencies": [
+                "CVE"
+            ],
+            "languages": [
+                "pt"
+            ]
+        },
+        {
+            "code": "CW",
+            "alpha3": "CUW",
+            "numeric": "531",
+            "name_tr": "Curaçao",
+            "name_en": "Curaçao",
+            "emoji": "🇨🇼",
+            "currencies": [
+                "XCG"
+            ],
+            "languages": [
+                "pap",
+                "nl"
+            ]
+        },
+        {
+            "code": "CX",
+            "alpha3": "CXR",
+            "numeric": "162",
+            "name_tr": "Christmas Adası",
+            "name_en": "Christmas Island",
+            "emoji": "🇨🇽",
+            "currencies": [
+                "AUD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "CY",
+            "alpha3": "CYP",
+            "numeric": "196",
+            "name_tr": "Kıbrıs",
+            "name_en": "Cyprus",
+            "emoji": "🇨🇾",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "el",
+                "tr"
+            ]
+        },
+        {
+            "code": "CZ",
+            "alpha3": "CZE",
+            "numeric": "203",
+            "name_tr": "Çekya",
+            "name_en": "Czechia",
+            "emoji": "🇨🇿",
+            "currencies": [
+                "CZK"
+            ],
+            "languages": [
+                "cs"
+            ]
+        },
+        {
+            "code": "DE",
+            "alpha3": "DEU",
+            "numeric": "276",
+            "name_tr": "Almanya",
+            "name_en": "Germany",
+            "emoji": "🇩🇪",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "de",
+                "frr"
+            ]
+        },
+        {
+            "code": "DJ",
+            "alpha3": "DJI",
+            "numeric": "262",
+            "name_tr": "Cibuti",
+            "name_en": "Djibouti",
+            "emoji": "🇩🇯",
+            "currencies": [
+                "DJF"
+            ],
+            "languages": [
+                "fr",
+                "ar"
+            ]
+        },
+        {
+            "code": "DK",
+            "alpha3": "DNK",
+            "numeric": "208",
+            "name_tr": "Danimarka",
+            "name_en": "Denmark",
+            "emoji": "🇩🇰",
+            "currencies": [
+                "DKK"
+            ],
+            "languages": [
+                "da",
+                "de",
+                "kl"
+            ]
+        },
+        {
+            "code": "DM",
+            "alpha3": "DMA",
+            "numeric": "212",
+            "name_tr": "Dominika",
+            "name_en": "Dominica",
+            "emoji": "🇩🇲",
+            "currencies": [
+                "XCD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "DO",
+            "alpha3": "DOM",
+            "numeric": "214",
+            "name_tr": "Dominik Cumhuriyeti",
+            "name_en": "Dominican Republic",
+            "emoji": "🇩🇴",
+            "currencies": [
+                "DOP"
+            ],
+            "languages": [
+                "es"
+            ]
+        },
+        {
+            "code": "DZ",
+            "alpha3": "DZA",
+            "numeric": "012",
+            "name_tr": "Cezayir",
+            "name_en": "Algeria",
+            "emoji": "🇩🇿",
+            "currencies": [
+                "DZD"
+            ],
+            "languages": [
+                "ar",
+                "fr"
+            ]
+        },
+        {
+            "code": "EC",
+            "alpha3": "ECU",
+            "numeric": "218",
+            "name_tr": "Ekvador",
+            "name_en": "Ecuador",
+            "emoji": "🇪🇨",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "es",
+                "qu"
+            ]
+        },
+        {
+            "code": "EE",
+            "alpha3": "EST",
+            "numeric": "233",
+            "name_tr": "Estonya",
+            "name_en": "Estonia",
+            "emoji": "🇪🇪",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "et"
+            ]
+        },
+        {
+            "code": "EG",
+            "alpha3": "EGY",
+            "numeric": "818",
+            "name_tr": "Mısır",
+            "name_en": "Egypt",
+            "emoji": "🇪🇬",
+            "currencies": [
+                "EGP"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "EH",
+            "alpha3": "ESH",
+            "numeric": "732",
+            "name_tr": "Batı Sahra",
+            "name_en": "Western Sahara",
+            "emoji": "🇪🇭",
+            "currencies": [
+                "MAD"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "ER",
+            "alpha3": "ERI",
+            "numeric": "232",
+            "name_tr": "Eritre",
+            "name_en": "Eritrea",
+            "emoji": "🇪🇷",
+            "currencies": [
+                "ERN"
+            ],
+            "languages": [
+                "ti",
+                "en",
+                "ar"
+            ]
+        },
+        {
+            "code": "ES",
+            "alpha3": "ESP",
+            "numeric": "724",
+            "name_tr": "İspanya",
+            "name_en": "Spain",
+            "emoji": "🇪🇸",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "es",
+                "ca",
+                "gl",
+                "eu",
+                "ast",
+                "oc"
+            ]
+        },
+        {
+            "code": "ET",
+            "alpha3": "ETH",
+            "numeric": "231",
+            "name_tr": "Etiyopya",
+            "name_en": "Ethiopia",
+            "emoji": "🇪🇹",
+            "currencies": [
+                "ETB"
+            ],
+            "languages": [
+                "am"
+            ]
+        },
+        {
+            "code": "FI",
+            "alpha3": "FIN",
+            "numeric": "246",
+            "name_tr": "Finlandiya",
+            "name_en": "Finland",
+            "emoji": "🇫🇮",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "fi",
+                "sv",
+                "sms"
+            ]
+        },
+        {
+            "code": "FJ",
+            "alpha3": "FJI",
+            "numeric": "242",
+            "name_tr": "Fiji",
+            "name_en": "Fiji",
+            "emoji": "🇫🇯",
+            "currencies": [
+                "FJD"
+            ],
+            "languages": [
+                "en",
+                "hif",
+                "fj"
+            ]
+        },
+        {
+            "code": "FK",
+            "alpha3": "FLK",
+            "numeric": "238",
+            "name_tr": "Falkland Adaları",
+            "name_en": "Falkland Islands (Malvinas)",
+            "emoji": "🇫🇰",
+            "currencies": [
+                "FKP"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "FM",
+            "alpha3": "FSM",
+            "numeric": "583",
+            "name_tr": "Mikronezya",
+            "name_en": "Micronesia, Federated States of",
+            "emoji": "🇫🇲",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "FO",
+            "alpha3": "FRO",
+            "numeric": "234",
+            "name_tr": "Faroe Adaları",
+            "name_en": "Faroe Islands",
+            "emoji": "🇫🇴",
+            "currencies": [
+                "DKK"
+            ],
+            "languages": [
+                "fo"
+            ]
+        },
+        {
+            "code": "FR",
+            "alpha3": "FRA",
+            "numeric": "250",
+            "name_tr": "Fransa",
+            "name_en": "France",
+            "emoji": "🇫🇷",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "GA",
+            "alpha3": "GAB",
+            "numeric": "266",
+            "name_tr": "Gabon",
+            "name_en": "Gabon",
+            "emoji": "🇬🇦",
+            "currencies": [
+                "XAF"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "GB",
+            "alpha3": "GBR",
+            "numeric": "826",
+            "name_tr": "Birleşik Krallık",
+            "name_en": "United Kingdom",
+            "emoji": "🇬🇧",
+            "currencies": [
+                "GBP"
+            ],
+            "languages": [
+                "en",
+                "cy",
+                "ga",
+                "gd"
+            ]
+        },
+        {
+            "code": "GD",
+            "alpha3": "GRD",
+            "numeric": "308",
+            "name_tr": "Grenada",
+            "name_en": "Grenada",
+            "emoji": "🇬🇩",
+            "currencies": [
+                "XCD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "GE",
+            "alpha3": "GEO",
+            "numeric": "268",
+            "name_tr": "Gürcistan",
+            "name_en": "Georgia",
+            "emoji": "🇬🇪",
+            "currencies": [
+                "GEL"
+            ],
+            "languages": [
+                "ka",
+                "ab",
+                "os"
+            ]
+        },
+        {
+            "code": "GF",
+            "alpha3": "GUF",
+            "numeric": "254",
+            "name_tr": "Fransız Guyanası",
+            "name_en": "French Guiana",
+            "emoji": "🇬🇫",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "GG",
+            "alpha3": "GGY",
+            "numeric": "831",
+            "name_tr": "Guernsey",
+            "name_en": "Guernsey",
+            "emoji": "🇬🇬",
+            "currencies": [
+                "GBP"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "GH",
+            "alpha3": "GHA",
+            "numeric": "288",
+            "name_tr": "Gana",
+            "name_en": "Ghana",
+            "emoji": "🇬🇭",
+            "currencies": [
+                "GHS"
+            ],
+            "languages": [
+                "ak",
+                "en",
+                "ee",
+                "gaa"
+            ]
+        },
+        {
+            "code": "GI",
+            "alpha3": "GIB",
+            "numeric": "292",
+            "name_tr": "Cebelitarık",
+            "name_en": "Gibraltar",
+            "emoji": "🇬🇮",
+            "currencies": [
+                "GIP"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "GL",
+            "alpha3": "GRL",
+            "numeric": "304",
+            "name_tr": "Grönland",
+            "name_en": "Greenland",
+            "emoji": "🇬🇱",
+            "currencies": [
+                "DKK"
+            ],
+            "languages": [
+                "kl"
+            ]
+        },
+        {
+            "code": "GM",
+            "alpha3": "GMB",
+            "numeric": "270",
+            "name_tr": "Gambiya",
+            "name_en": "Gambia",
+            "emoji": "🇬🇲",
+            "currencies": [
+                "GMD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "GN",
+            "alpha3": "GIN",
+            "numeric": "324",
+            "name_tr": "Gine",
+            "name_en": "Guinea",
+            "emoji": "🇬🇳",
+            "currencies": [
+                "GNF"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "GP",
+            "alpha3": "GLP",
+            "numeric": "312",
+            "name_tr": "Guadeloupe",
+            "name_en": "Guadeloupe",
+            "emoji": "🇬🇵",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "GQ",
+            "alpha3": "GNQ",
+            "numeric": "226",
+            "name_tr": "Ekvator Ginesi",
+            "name_en": "Equatorial Guinea",
+            "emoji": "🇬🇶",
+            "currencies": [
+                "XAF"
+            ],
+            "languages": [
+                "es",
+                "fr",
+                "pt"
+            ]
+        },
+        {
+            "code": "GR",
+            "alpha3": "GRC",
+            "numeric": "300",
+            "name_tr": "Yunanistan",
+            "name_en": "Greece",
+            "emoji": "🇬🇷",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "el"
+            ]
+        },
+        {
+            "code": "GS",
+            "alpha3": "SGS",
+            "numeric": "239",
+            "name_tr": "Güney Georgia ve Güney Sandwich Adaları",
+            "name_en": "South Georgia and the South Sandwich Islands",
+            "emoji": "🇬🇸",
+            "currencies": [
+                "GBP"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "GT",
+            "alpha3": "GTM",
+            "numeric": "320",
+            "name_tr": "Guatemala",
+            "name_en": "Guatemala",
+            "emoji": "🇬🇹",
+            "currencies": [
+                "GTQ"
+            ],
+            "languages": [
+                "es",
+                "cak",
+                "quc",
+                "ixl",
+                "caa",
+                "quv",
+                "usp",
+                "xin"
+            ]
+        },
+        {
+            "code": "GU",
+            "alpha3": "GUM",
+            "numeric": "316",
+            "name_tr": "Guam",
+            "name_en": "Guam",
+            "emoji": "🇬🇺",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "en",
+                "ch"
+            ]
+        },
+        {
+            "code": "GW",
+            "alpha3": "GNB",
+            "numeric": "624",
+            "name_tr": "Gine-Bissau",
+            "name_en": "Guinea-Bissau",
+            "emoji": "🇬🇼",
+            "currencies": [
+                "XOF"
+            ],
+            "languages": [
+                "pt"
+            ]
+        },
+        {
+            "code": "GY",
+            "alpha3": "GUY",
+            "numeric": "328",
+            "name_tr": "Guyana",
+            "name_en": "Guyana",
+            "emoji": "🇬🇾",
+            "currencies": [
+                "GYD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "HK",
+            "alpha3": "HKG",
+            "numeric": "344",
+            "name_tr": "Çin Hong Kong ÖİB",
+            "name_en": "Hong Kong",
+            "emoji": "🇭🇰",
+            "currencies": [
+                "HKD"
+            ],
+            "languages": [
+                "zh-Hant",
+                "en"
+            ]
+        },
+        {
+            "code": "HM",
+            "alpha3": "HMD",
+            "numeric": "334",
+            "name_tr": "Heard Adası ve McDonald Adaları",
+            "name_en": "Heard Island and McDonald Islands",
+            "emoji": "🇭🇲",
+            "currencies": [
+                "AUD"
+            ],
+            "languages": []
+        },
+        {
+            "code": "HN",
+            "alpha3": "HND",
+            "numeric": "340",
+            "name_tr": "Honduras",
+            "name_en": "Honduras",
+            "emoji": "🇭🇳",
+            "currencies": [
+                "HNL"
+            ],
+            "languages": [
+                "es"
+            ]
+        },
+        {
+            "code": "HR",
+            "alpha3": "HRV",
+            "numeric": "191",
+            "name_tr": "Hırvatistan",
+            "name_en": "Croatia",
+            "emoji": "🇭🇷",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "hr",
+                "it",
+                "vec"
+            ]
+        },
+        {
+            "code": "HT",
+            "alpha3": "HTI",
+            "numeric": "332",
+            "name_tr": "Haiti",
+            "name_en": "Haiti",
+            "emoji": "🇭🇹",
+            "currencies": [
+                "HTG",
+                "USD"
+            ],
+            "languages": [
+                "ht",
+                "fr"
+            ]
+        },
+        {
+            "code": "HU",
+            "alpha3": "HUN",
+            "numeric": "348",
+            "name_tr": "Macaristan",
+            "name_en": "Hungary",
+            "emoji": "🇭🇺",
+            "currencies": [
+                "HUF"
+            ],
+            "languages": [
+                "hu"
+            ]
+        },
+        {
+            "code": "ID",
+            "alpha3": "IDN",
+            "numeric": "360",
+            "name_tr": "Endonezya",
+            "name_en": "Indonesia",
+            "emoji": "🇮🇩",
+            "currencies": [
+                "IDR"
+            ],
+            "languages": [
+                "id"
+            ]
+        },
+        {
+            "code": "IE",
+            "alpha3": "IRL",
+            "numeric": "372",
+            "name_tr": "İrlanda",
+            "name_en": "Ireland",
+            "emoji": "🇮🇪",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "en",
+                "ga"
+            ]
+        },
+        {
+            "code": "IL",
+            "alpha3": "ISR",
+            "numeric": "376",
+            "name_tr": "İsrail",
+            "name_en": "Israel",
+            "emoji": "🇮🇱",
+            "currencies": [
+                "ILS"
+            ],
+            "languages": [
+                "he",
+                "ar"
+            ]
+        },
+        {
+            "code": "IM",
+            "alpha3": "IMN",
+            "numeric": "833",
+            "name_tr": "Man Adası",
+            "name_en": "Isle of Man",
+            "emoji": "🇮🇲",
+            "currencies": [
+                "GBP"
+            ],
+            "languages": [
+                "en",
+                "gv"
+            ]
+        },
+        {
+            "code": "IN",
+            "alpha3": "IND",
+            "numeric": "356",
+            "name_tr": "Hindistan",
+            "name_en": "India",
+            "emoji": "🇮🇳",
+            "currencies": [
+                "INR"
+            ],
+            "languages": [
+                "hi",
+                "en",
+                "bn",
+                "te",
+                "mr",
+                "ta",
+                "ur",
+                "gu",
+                "kn",
+                "ml"
+            ]
+        },
+        {
+            "code": "IO",
+            "alpha3": "IOT",
+            "numeric": "086",
+            "name_tr": "Britanya Hint Okyanusu Toprakları",
+            "name_en": "British Indian Ocean Territory",
+            "emoji": "🇮🇴",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "IQ",
+            "alpha3": "IRQ",
+            "numeric": "368",
+            "name_tr": "Irak",
+            "name_en": "Iraq",
+            "emoji": "🇮🇶",
+            "currencies": [
+                "IQD"
+            ],
+            "languages": [
+                "ar",
+                "ckb",
+                "az-Arab"
+            ]
+        },
+        {
+            "code": "IR",
+            "alpha3": "IRN",
+            "numeric": "364",
+            "name_tr": "İran",
+            "name_en": "Iran, Islamic Republic of",
+            "emoji": "🇮🇷",
+            "currencies": [
+                "IRR"
+            ],
+            "languages": [
+                "fa"
+            ]
+        },
+        {
+            "code": "IS",
+            "alpha3": "ISL",
+            "numeric": "352",
+            "name_tr": "İzlanda",
+            "name_en": "Iceland",
+            "emoji": "🇮🇸",
+            "currencies": [
+                "ISK"
+            ],
+            "languages": [
+                "is"
+            ]
+        },
+        {
+            "code": "IT",
+            "alpha3": "ITA",
+            "numeric": "380",
+            "name_tr": "İtalya",
+            "name_en": "Italy",
+            "emoji": "🇮🇹",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "it",
+                "fr",
+                "vec"
+            ]
+        },
+        {
+            "code": "JE",
+            "alpha3": "JEY",
+            "numeric": "832",
+            "name_tr": "Jersey",
+            "name_en": "Jersey",
+            "emoji": "🇯🇪",
+            "currencies": [
+                "GBP"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "JM",
+            "alpha3": "JAM",
+            "numeric": "388",
+            "name_tr": "Jamaika",
+            "name_en": "Jamaica",
+            "emoji": "🇯🇲",
+            "currencies": [
+                "JMD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "JO",
+            "alpha3": "JOR",
+            "numeric": "400",
+            "name_tr": "Ürdün",
+            "name_en": "Jordan",
+            "emoji": "🇯🇴",
+            "currencies": [
+                "JOD"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "JP",
+            "alpha3": "JPN",
+            "numeric": "392",
+            "name_tr": "Japonya",
+            "name_en": "Japan",
+            "emoji": "🇯🇵",
+            "currencies": [
+                "JPY"
+            ],
+            "languages": [
+                "ja"
+            ]
+        },
+        {
+            "code": "KE",
+            "alpha3": "KEN",
+            "numeric": "404",
+            "name_tr": "Kenya",
+            "name_en": "Kenya",
+            "emoji": "🇰🇪",
+            "currencies": [
+                "KES"
+            ],
+            "languages": [
+                "sw",
+                "en"
+            ]
+        },
+        {
+            "code": "KG",
+            "alpha3": "KGZ",
+            "numeric": "417",
+            "name_tr": "Kırgızistan",
+            "name_en": "Kyrgyzstan",
+            "emoji": "🇰🇬",
+            "currencies": [
+                "KGS"
+            ],
+            "languages": [
+                "ky",
+                "ru"
+            ]
+        },
+        {
+            "code": "KH",
+            "alpha3": "KHM",
+            "numeric": "116",
+            "name_tr": "Kamboçya",
+            "name_en": "Cambodia",
+            "emoji": "🇰🇭",
+            "currencies": [
+                "KHR"
+            ],
+            "languages": [
+                "km"
+            ]
+        },
+        {
+            "code": "KI",
+            "alpha3": "KIR",
+            "numeric": "296",
+            "name_tr": "Kiribati",
+            "name_en": "Kiribati",
+            "emoji": "🇰🇮",
+            "currencies": [
+                "AUD"
+            ],
+            "languages": [
+                "en",
+                "gil"
+            ]
+        },
+        {
+            "code": "KM",
+            "alpha3": "COM",
+            "numeric": "174",
+            "name_tr": "Komorlar",
+            "name_en": "Comoros",
+            "emoji": "🇰🇲",
+            "currencies": [
+                "KMF"
+            ],
+            "languages": [
+                "ar",
+                "zdj",
+                "wni",
+                "fr"
+            ]
+        },
+        {
+            "code": "KN",
+            "alpha3": "KNA",
+            "numeric": "659",
+            "name_tr": "Saint Kitts ve Nevis",
+            "name_en": "Saint Kitts and Nevis",
+            "emoji": "🇰🇳",
+            "currencies": [
+                "XCD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "KP",
+            "alpha3": "PRK",
+            "numeric": "408",
+            "name_tr": "Kuzey Kore",
+            "name_en": "Korea, Democratic People's Republic of",
+            "emoji": "🇰🇵",
+            "currencies": [
+                "KPW"
+            ],
+            "languages": [
+                "ko"
+            ]
+        },
+        {
+            "code": "KR",
+            "alpha3": "KOR",
+            "numeric": "410",
+            "name_tr": "Güney Kore",
+            "name_en": "Korea, Republic of",
+            "emoji": "🇰🇷",
+            "currencies": [
+                "KRW"
+            ],
+            "languages": [
+                "ko"
+            ]
+        },
+        {
+            "code": "KW",
+            "alpha3": "KWT",
+            "numeric": "414",
+            "name_tr": "Kuveyt",
+            "name_en": "Kuwait",
+            "emoji": "🇰🇼",
+            "currencies": [
+                "KWD"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "KY",
+            "alpha3": "CYM",
+            "numeric": "136",
+            "name_tr": "Cayman Adaları",
+            "name_en": "Cayman Islands",
+            "emoji": "🇰🇾",
+            "currencies": [
+                "KYD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "KZ",
+            "alpha3": "KAZ",
+            "numeric": "398",
+            "name_tr": "Kazakistan",
+            "name_en": "Kazakhstan",
+            "emoji": "🇰🇿",
+            "currencies": [
+                "KZT"
+            ],
+            "languages": [
+                "ru",
+                "kk"
+            ]
+        },
+        {
+            "code": "LA",
+            "alpha3": "LAO",
+            "numeric": "418",
+            "name_tr": "Laos",
+            "name_en": "Lao People's Democratic Republic",
+            "emoji": "🇱🇦",
+            "currencies": [
+                "LAK"
+            ],
+            "languages": [
+                "lo"
+            ]
+        },
+        {
+            "code": "LB",
+            "alpha3": "LBN",
+            "numeric": "422",
+            "name_tr": "Lübnan",
+            "name_en": "Lebanon",
+            "emoji": "🇱🇧",
+            "currencies": [
+                "LBP"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "LC",
+            "alpha3": "LCA",
+            "numeric": "662",
+            "name_tr": "Saint Lucia",
+            "name_en": "Saint Lucia",
+            "emoji": "🇱🇨",
+            "currencies": [
+                "XCD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "LI",
+            "alpha3": "LIE",
+            "numeric": "438",
+            "name_tr": "Liechtenstein",
+            "name_en": "Liechtenstein",
+            "emoji": "🇱🇮",
+            "currencies": [
+                "CHF"
+            ],
+            "languages": [
+                "de",
+                "gsw"
+            ]
+        },
+        {
+            "code": "LK",
+            "alpha3": "LKA",
+            "numeric": "144",
+            "name_tr": "Sri Lanka",
+            "name_en": "Sri Lanka",
+            "emoji": "🇱🇰",
+            "currencies": [
+                "LKR"
+            ],
+            "languages": [
+                "si",
+                "ta"
+            ]
+        },
+        {
+            "code": "LR",
+            "alpha3": "LBR",
+            "numeric": "430",
+            "name_tr": "Liberya",
+            "name_en": "Liberia",
+            "emoji": "🇱🇷",
+            "currencies": [
+                "LRD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "LS",
+            "alpha3": "LSO",
+            "numeric": "426",
+            "name_tr": "Lesotho",
+            "name_en": "Lesotho",
+            "emoji": "🇱🇸",
+            "currencies": [
+                "ZAR",
+                "LSL"
+            ],
+            "languages": [
+                "st",
+                "en"
+            ]
+        },
+        {
+            "code": "LT",
+            "alpha3": "LTU",
+            "numeric": "440",
+            "name_tr": "Litvanya",
+            "name_en": "Lithuania",
+            "emoji": "🇱🇹",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "lt"
+            ]
+        },
+        {
+            "code": "LU",
+            "alpha3": "LUX",
+            "numeric": "442",
+            "name_tr": "Lüksemburg",
+            "name_en": "Luxembourg",
+            "emoji": "🇱🇺",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "fr",
+                "lb",
+                "de"
+            ]
+        },
+        {
+            "code": "LV",
+            "alpha3": "LVA",
+            "numeric": "428",
+            "name_tr": "Letonya",
+            "name_en": "Latvia",
+            "emoji": "🇱🇻",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "lv"
+            ]
+        },
+        {
+            "code": "LY",
+            "alpha3": "LBY",
+            "numeric": "434",
+            "name_tr": "Libya",
+            "name_en": "Libya",
+            "emoji": "🇱🇾",
+            "currencies": [
+                "LYD"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "MA",
+            "alpha3": "MAR",
+            "numeric": "504",
+            "name_tr": "Fas",
+            "name_en": "Morocco",
+            "emoji": "🇲🇦",
+            "currencies": [
+                "MAD"
+            ],
+            "languages": [
+                "ar",
+                "fr",
+                "tzm"
+            ]
+        },
+        {
+            "code": "MC",
+            "alpha3": "MCO",
+            "numeric": "492",
+            "name_tr": "Monako",
+            "name_en": "Monaco",
+            "emoji": "🇲🇨",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "MD",
+            "alpha3": "MDA",
+            "numeric": "498",
+            "name_tr": "Moldova",
+            "name_en": "Moldova, Republic of",
+            "emoji": "🇲🇩",
+            "currencies": [
+                "MDL"
+            ],
+            "languages": [
+                "ro"
+            ]
+        },
+        {
+            "code": "ME",
+            "alpha3": "MNE",
+            "numeric": "499",
+            "name_tr": "Karadağ",
+            "name_en": "Montenegro",
+            "emoji": "🇲🇪",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "sr-Latn"
+            ]
+        },
+        {
+            "code": "MF",
+            "alpha3": "MAF",
+            "numeric": "663",
+            "name_tr": "Saint Martin",
+            "name_en": "Saint Martin (French part)",
+            "emoji": "🇲🇫",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "MG",
+            "alpha3": "MDG",
+            "numeric": "450",
+            "name_tr": "Madagaskar",
+            "name_en": "Madagascar",
+            "emoji": "🇲🇬",
+            "currencies": [
+                "MGA"
+            ],
+            "languages": [
+                "mg",
+                "fr",
+                "en"
+            ]
+        },
+        {
+            "code": "MH",
+            "alpha3": "MHL",
+            "numeric": "584",
+            "name_tr": "Marshall Adaları",
+            "name_en": "Marshall Islands",
+            "emoji": "🇲🇭",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "en",
+                "mh"
+            ]
+        },
+        {
+            "code": "MK",
+            "alpha3": "MKD",
+            "numeric": "807",
+            "name_tr": "Kuzey Makedonya",
+            "name_en": "North Macedonia",
+            "emoji": "🇲🇰",
+            "currencies": [
+                "MKD"
+            ],
+            "languages": [
+                "mk",
+                "sq"
+            ]
+        },
+        {
+            "code": "ML",
+            "alpha3": "MLI",
+            "numeric": "466",
+            "name_tr": "Mali",
+            "name_en": "Mali",
+            "emoji": "🇲🇱",
+            "currencies": [
+                "XOF"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "MM",
+            "alpha3": "MMR",
+            "numeric": "104",
+            "name_tr": "Myanmar (Burma)",
+            "name_en": "Myanmar",
+            "emoji": "🇲🇲",
+            "currencies": [
+                "MMK"
+            ],
+            "languages": [
+                "my"
+            ]
+        },
+        {
+            "code": "MN",
+            "alpha3": "MNG",
+            "numeric": "496",
+            "name_tr": "Moğolistan",
+            "name_en": "Mongolia",
+            "emoji": "🇲🇳",
+            "currencies": [
+                "MNT"
+            ],
+            "languages": [
+                "mn"
+            ]
+        },
+        {
+            "code": "MO",
+            "alpha3": "MAC",
+            "numeric": "446",
+            "name_tr": "Çin Makao ÖİB",
+            "name_en": "Macao",
+            "emoji": "🇲🇴",
+            "currencies": [
+                "MOP"
+            ],
+            "languages": [
+                "zh-Hant",
+                "yue",
+                "pt"
+            ]
+        },
+        {
+            "code": "MP",
+            "alpha3": "MNP",
+            "numeric": "580",
+            "name_tr": "Kuzey Mariana Adaları",
+            "name_en": "Northern Mariana Islands",
+            "emoji": "🇲🇵",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "MQ",
+            "alpha3": "MTQ",
+            "numeric": "474",
+            "name_tr": "Martinik",
+            "name_en": "Martinique",
+            "emoji": "🇲🇶",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "MR",
+            "alpha3": "MRT",
+            "numeric": "478",
+            "name_tr": "Moritanya",
+            "name_en": "Mauritania",
+            "emoji": "🇲🇷",
+            "currencies": [
+                "MRU"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "MS",
+            "alpha3": "MSR",
+            "numeric": "500",
+            "name_tr": "Montserrat",
+            "name_en": "Montserrat",
+            "emoji": "🇲🇸",
+            "currencies": [
+                "XCD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "MT",
+            "alpha3": "MLT",
+            "numeric": "470",
+            "name_tr": "Malta",
+            "name_en": "Malta",
+            "emoji": "🇲🇹",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "mt",
+                "en"
+            ]
+        },
+        {
+            "code": "MU",
+            "alpha3": "MUS",
+            "numeric": "480",
+            "name_tr": "Mauritius",
+            "name_en": "Mauritius",
+            "emoji": "🇲🇺",
+            "currencies": [
+                "MUR"
+            ],
+            "languages": [
+                "fr",
+                "en"
+            ]
+        },
+        {
+            "code": "MV",
+            "alpha3": "MDV",
+            "numeric": "462",
+            "name_tr": "Maldivler",
+            "name_en": "Maldives",
+            "emoji": "🇲🇻",
+            "currencies": [
+                "MVR"
+            ],
+            "languages": [
+                "dv"
+            ]
+        },
+        {
+            "code": "MW",
+            "alpha3": "MWI",
+            "numeric": "454",
+            "name_tr": "Malavi",
+            "name_en": "Malawi",
+            "emoji": "🇲🇼",
+            "currencies": [
+                "MWK"
+            ],
+            "languages": [
+                "en",
+                "ny"
+            ]
+        },
+        {
+            "code": "MX",
+            "alpha3": "MEX",
+            "numeric": "484",
+            "name_tr": "Meksika",
+            "name_en": "Mexico",
+            "emoji": "🇲🇽",
+            "currencies": [
+                "MXN"
+            ],
+            "languages": [
+                "es"
+            ]
+        },
+        {
+            "code": "MY",
+            "alpha3": "MYS",
+            "numeric": "458",
+            "name_tr": "Malezya",
+            "name_en": "Malaysia",
+            "emoji": "🇲🇾",
+            "currencies": [
+                "MYR"
+            ],
+            "languages": [
+                "ms"
+            ]
+        },
+        {
+            "code": "MZ",
+            "alpha3": "MOZ",
+            "numeric": "508",
+            "name_tr": "Mozambik",
+            "name_en": "Mozambique",
+            "emoji": "🇲🇿",
+            "currencies": [
+                "MZN"
+            ],
+            "languages": [
+                "pt"
+            ]
+        },
+        {
+            "code": "NA",
+            "alpha3": "NAM",
+            "numeric": "516",
+            "name_tr": "Namibya",
+            "name_en": "Namibia",
+            "emoji": "🇳🇦",
+            "currencies": [
+                "NAD",
+                "ZAR"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "NC",
+            "alpha3": "NCL",
+            "numeric": "540",
+            "name_tr": "Yeni Kaledonya",
+            "name_en": "New Caledonia",
+            "emoji": "🇳🇨",
+            "currencies": [
+                "XPF"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "NE",
+            "alpha3": "NER",
+            "numeric": "562",
+            "name_tr": "Nijer",
+            "name_en": "Niger",
+            "emoji": "🇳🇪",
+            "currencies": [
+                "XOF"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "NF",
+            "alpha3": "NFK",
+            "numeric": "574",
+            "name_tr": "Norfolk Adası",
+            "name_en": "Norfolk Island",
+            "emoji": "🇳🇫",
+            "currencies": [
+                "AUD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "NG",
+            "alpha3": "NGA",
+            "numeric": "566",
+            "name_tr": "Nijerya",
+            "name_en": "Nigeria",
+            "emoji": "🇳🇬",
+            "currencies": [
+                "NGN"
+            ],
+            "languages": [
+                "en",
+                "yo"
+            ]
+        },
+        {
+            "code": "NI",
+            "alpha3": "NIC",
+            "numeric": "558",
+            "name_tr": "Nikaragua",
+            "name_en": "Nicaragua",
+            "emoji": "🇳🇮",
+            "currencies": [
+                "NIO"
+            ],
+            "languages": [
+                "es"
+            ]
+        },
+        {
+            "code": "NL",
+            "alpha3": "NLD",
+            "numeric": "528",
+            "name_tr": "Hollanda",
+            "name_en": "Netherlands",
+            "emoji": "🇳🇱",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "nl",
+                "fy"
+            ]
+        },
+        {
+            "code": "NO",
+            "alpha3": "NOR",
+            "numeric": "578",
+            "name_tr": "Norveç",
+            "name_en": "Norway",
+            "emoji": "🇳🇴",
+            "currencies": [
+                "NOK"
+            ],
+            "languages": [
+                "nb",
+                "no",
+                "nn",
+                "se"
+            ]
+        },
+        {
+            "code": "NP",
+            "alpha3": "NPL",
+            "numeric": "524",
+            "name_tr": "Nepal",
+            "name_en": "Nepal",
+            "emoji": "🇳🇵",
+            "currencies": [
+                "NPR"
+            ],
+            "languages": [
+                "ne"
+            ]
+        },
+        {
+            "code": "NR",
+            "alpha3": "NRU",
+            "numeric": "520",
+            "name_tr": "Nauru",
+            "name_en": "Nauru",
+            "emoji": "🇳🇷",
+            "currencies": [
+                "AUD"
+            ],
+            "languages": [
+                "en",
+                "na"
+            ]
+        },
+        {
+            "code": "NU",
+            "alpha3": "NIU",
+            "numeric": "570",
+            "name_tr": "Niue",
+            "name_en": "Niue",
+            "emoji": "🇳🇺",
+            "currencies": [
+                "NZD"
+            ],
+            "languages": [
+                "en",
+                "niu"
+            ]
+        },
+        {
+            "code": "NZ",
+            "alpha3": "NZL",
+            "numeric": "554",
+            "name_tr": "Yeni Zelanda",
+            "name_en": "New Zealand",
+            "emoji": "🇳🇿",
+            "currencies": [
+                "NZD"
+            ],
+            "languages": [
+                "en",
+                "mi"
+            ]
+        },
+        {
+            "code": "OM",
+            "alpha3": "OMN",
+            "numeric": "512",
+            "name_tr": "Umman",
+            "name_en": "Oman",
+            "emoji": "🇴🇲",
+            "currencies": [
+                "OMR"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "PA",
+            "alpha3": "PAN",
+            "numeric": "591",
+            "name_tr": "Panama",
+            "name_en": "Panama",
+            "emoji": "🇵🇦",
+            "currencies": [
+                "PAB",
+                "USD"
+            ],
+            "languages": [
+                "es"
+            ]
+        },
+        {
+            "code": "PE",
+            "alpha3": "PER",
+            "numeric": "604",
+            "name_tr": "Peru",
+            "name_en": "Peru",
+            "emoji": "🇵🇪",
+            "currencies": [
+                "PEN"
+            ],
+            "languages": [
+                "es",
+                "qu"
+            ]
+        },
+        {
+            "code": "PF",
+            "alpha3": "PYF",
+            "numeric": "258",
+            "name_tr": "Fransız Polinezyası",
+            "name_en": "French Polynesia",
+            "emoji": "🇵🇫",
+            "currencies": [
+                "XPF"
+            ],
+            "languages": [
+                "fr",
+                "ty"
+            ]
+        },
+        {
+            "code": "PG",
+            "alpha3": "PNG",
+            "numeric": "598",
+            "name_tr": "Papua Yeni Gine",
+            "name_en": "Papua New Guinea",
+            "emoji": "🇵🇬",
+            "currencies": [
+                "PGK"
+            ],
+            "languages": [
+                "tpi",
+                "en",
+                "ho"
+            ]
+        },
+        {
+            "code": "PH",
+            "alpha3": "PHL",
+            "numeric": "608",
+            "name_tr": "Filipinler",
+            "name_en": "Philippines",
+            "emoji": "🇵🇭",
+            "currencies": [
+                "PHP"
+            ],
+            "languages": [
+                "en",
+                "fil",
+                "ceb",
+                "ilo",
+                "hil",
+                "war",
+                "pag",
+                "mdh",
+                "tsg"
+            ]
+        },
+        {
+            "code": "PK",
+            "alpha3": "PAK",
+            "numeric": "586",
+            "name_tr": "Pakistan",
+            "name_en": "Pakistan",
+            "emoji": "🇵🇰",
+            "currencies": [
+                "PKR"
+            ],
+            "languages": [
+                "ur",
+                "en"
+            ]
+        },
+        {
+            "code": "PL",
+            "alpha3": "POL",
+            "numeric": "616",
+            "name_tr": "Polonya",
+            "name_en": "Poland",
+            "emoji": "🇵🇱",
+            "currencies": [
+                "PLN"
+            ],
+            "languages": [
+                "pl",
+                "de",
+                "csb",
+                "lt"
+            ]
+        },
+        {
+            "code": "PM",
+            "alpha3": "SPM",
+            "numeric": "666",
+            "name_tr": "Saint Pierre ve Miquelon",
+            "name_en": "Saint Pierre and Miquelon",
+            "emoji": "🇵🇲",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "PN",
+            "alpha3": "PCN",
+            "numeric": "612",
+            "name_tr": "Pitcairn Adaları",
+            "name_en": "Pitcairn",
+            "emoji": "🇵🇳",
+            "currencies": [
+                "NZD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "PR",
+            "alpha3": "PRI",
+            "numeric": "630",
+            "name_tr": "Porto Riko",
+            "name_en": "Puerto Rico",
+            "emoji": "🇵🇷",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "es",
+                "en"
+            ]
+        },
+        {
+            "code": "PS",
+            "alpha3": "PSE",
+            "numeric": "275",
+            "name_tr": "Filistin Bölgeleri",
+            "name_en": "Palestine, State of",
+            "emoji": "🇵🇸",
+            "currencies": [
+                "ILS",
+                "JOD"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "PT",
+            "alpha3": "PRT",
+            "numeric": "620",
+            "name_tr": "Portekiz",
+            "name_en": "Portugal",
+            "emoji": "🇵🇹",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "pt"
+            ]
+        },
+        {
+            "code": "PW",
+            "alpha3": "PLW",
+            "numeric": "585",
+            "name_tr": "Palau",
+            "name_en": "Palau",
+            "emoji": "🇵🇼",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "pau",
+                "en"
+            ]
+        },
+        {
+            "code": "PY",
+            "alpha3": "PRY",
+            "numeric": "600",
+            "name_tr": "Paraguay",
+            "name_en": "Paraguay",
+            "emoji": "🇵🇾",
+            "currencies": [
+                "PYG"
+            ],
+            "languages": [
+                "gn",
+                "es"
+            ]
+        },
+        {
+            "code": "QA",
+            "alpha3": "QAT",
+            "numeric": "634",
+            "name_tr": "Katar",
+            "name_en": "Qatar",
+            "emoji": "🇶🇦",
+            "currencies": [
+                "QAR"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "RE",
+            "alpha3": "REU",
+            "numeric": "638",
+            "name_tr": "Reunion",
+            "name_en": "Réunion",
+            "emoji": "🇷🇪",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "RO",
+            "alpha3": "ROU",
+            "numeric": "642",
+            "name_tr": "Romanya",
+            "name_en": "Romania",
+            "emoji": "🇷🇴",
+            "currencies": [
+                "RON"
+            ],
+            "languages": [
+                "ro"
+            ]
+        },
+        {
+            "code": "RS",
+            "alpha3": "SRB",
+            "numeric": "688",
+            "name_tr": "Sırbistan",
+            "name_en": "Serbia",
+            "emoji": "🇷🇸",
+            "currencies": [
+                "RSD"
+            ],
+            "languages": [
+                "sr",
+                "sr-Latn",
+                "hu",
+                "ro",
+                "hr",
+                "sk",
+                "uk"
+            ]
+        },
+        {
+            "code": "RU",
+            "alpha3": "RUS",
+            "numeric": "643",
+            "name_tr": "Rusya",
+            "name_en": "Russian Federation",
+            "emoji": "🇷🇺",
+            "currencies": [
+                "RUB"
+            ],
+            "languages": [
+                "ru",
+                "tt",
+                "ba",
+                "ce",
+                "av",
+                "udm",
+                "sah",
+                "kbd",
+                "myv",
+                "bua"
+            ]
+        },
+        {
+            "code": "RW",
+            "alpha3": "RWA",
+            "numeric": "646",
+            "name_tr": "Ruanda",
+            "name_en": "Rwanda",
+            "emoji": "🇷🇼",
+            "currencies": [
+                "RWF"
+            ],
+            "languages": [
+                "rw",
+                "en",
+                "fr"
+            ]
+        },
+        {
+            "code": "SA",
+            "alpha3": "SAU",
+            "numeric": "682",
+            "name_tr": "Suudi Arabistan",
+            "name_en": "Saudi Arabia",
+            "emoji": "🇸🇦",
+            "currencies": [
+                "SAR"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "SB",
+            "alpha3": "SLB",
+            "numeric": "090",
+            "name_tr": "Solomon Adaları",
+            "name_en": "Solomon Islands",
+            "emoji": "🇸🇧",
+            "currencies": [
+                "SBD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "SC",
+            "alpha3": "SYC",
+            "numeric": "690",
+            "name_tr": "Seyşeller",
+            "name_en": "Seychelles",
+            "emoji": "🇸🇨",
+            "currencies": [
+                "SCR"
+            ],
+            "languages": [
+                "fr",
+                "en"
+            ]
+        },
+        {
+            "code": "SD",
+            "alpha3": "SDN",
+            "numeric": "729",
+            "name_tr": "Sudan",
+            "name_en": "Sudan",
+            "emoji": "🇸🇩",
+            "currencies": [
+                "SDG"
+            ],
+            "languages": [
+                "ar",
+                "en"
+            ]
+        },
+        {
+            "code": "SE",
+            "alpha3": "SWE",
+            "numeric": "752",
+            "name_tr": "İsveç",
+            "name_en": "Sweden",
+            "emoji": "🇸🇪",
+            "currencies": [
+                "SEK"
+            ],
+            "languages": [
+                "sv",
+                "fi"
+            ]
+        },
+        {
+            "code": "SG",
+            "alpha3": "SGP",
+            "numeric": "702",
+            "name_tr": "Singapur",
+            "name_en": "Singapore",
+            "emoji": "🇸🇬",
+            "currencies": [
+                "SGD"
+            ],
+            "languages": [
+                "en",
+                "zh",
+                "ms",
+                "ta"
+            ]
+        },
+        {
+            "code": "SH",
+            "alpha3": "SHN",
+            "numeric": "654",
+            "name_tr": "Saint Helena",
+            "name_en": "Saint Helena, Ascension and Tristan da Cunha",
+            "emoji": "🇸🇭",
+            "currencies": [
+                "SHP"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "SI",
+            "alpha3": "SVN",
+            "numeric": "705",
+            "name_tr": "Slovenya",
+            "name_en": "Slovenia",
+            "emoji": "🇸🇮",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "sl",
+                "vec"
+            ]
+        },
+        {
+            "code": "SJ",
+            "alpha3": "SJM",
+            "numeric": "744",
+            "name_tr": "Svalbard ve Jan Mayen",
+            "name_en": "Svalbard and Jan Mayen",
+            "emoji": "🇸🇯",
+            "currencies": [
+                "NOK"
+            ],
+            "languages": [
+                "nb"
+            ]
+        },
+        {
+            "code": "SK",
+            "alpha3": "SVK",
+            "numeric": "703",
+            "name_tr": "Slovakya",
+            "name_en": "Slovakia",
+            "emoji": "🇸🇰",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "sk"
+            ]
+        },
+        {
+            "code": "SL",
+            "alpha3": "SLE",
+            "numeric": "694",
+            "name_tr": "Sierra Leone",
+            "name_en": "Sierra Leone",
+            "emoji": "🇸🇱",
+            "currencies": [
+                "SLE"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "SM",
+            "alpha3": "SMR",
+            "numeric": "674",
+            "name_tr": "San Marino",
+            "name_en": "San Marino",
+            "emoji": "🇸🇲",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "it"
+            ]
+        },
+        {
+            "code": "SN",
+            "alpha3": "SEN",
+            "numeric": "686",
+            "name_tr": "Senegal",
+            "name_en": "Senegal",
+            "emoji": "🇸🇳",
+            "currencies": [
+                "XOF"
+            ],
+            "languages": [
+                "wo",
+                "fr",
+                "ff",
+                "srr",
+                "dyo",
+                "sav",
+                "mfv",
+                "bjt",
+                "snf",
+                "knf"
+            ]
+        },
+        {
+            "code": "SO",
+            "alpha3": "SOM",
+            "numeric": "706",
+            "name_tr": "Somali",
+            "name_en": "Somalia",
+            "emoji": "🇸🇴",
+            "currencies": [
+                "SOS"
+            ],
+            "languages": [
+                "so",
+                "ar"
+            ]
+        },
+        {
+            "code": "SR",
+            "alpha3": "SUR",
+            "numeric": "740",
+            "name_tr": "Surinam",
+            "name_en": "Suriname",
+            "emoji": "🇸🇷",
+            "currencies": [
+                "SRD"
+            ],
+            "languages": [
+                "nl"
+            ]
+        },
+        {
+            "code": "SS",
+            "alpha3": "SSD",
+            "numeric": "728",
+            "name_tr": "Güney Sudan",
+            "name_en": "South Sudan",
+            "emoji": "🇸🇸",
+            "currencies": [
+                "SSP"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "ST",
+            "alpha3": "STP",
+            "numeric": "678",
+            "name_tr": "Sao Tome ve Principe",
+            "name_en": "Sao Tome and Principe",
+            "emoji": "🇸🇹",
+            "currencies": [
+                "STN"
+            ],
+            "languages": [
+                "pt"
+            ]
+        },
+        {
+            "code": "SV",
+            "alpha3": "SLV",
+            "numeric": "222",
+            "name_tr": "El Salvador",
+            "name_en": "El Salvador",
+            "emoji": "🇸🇻",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "es"
+            ]
+        },
+        {
+            "code": "SX",
+            "alpha3": "SXM",
+            "numeric": "534",
+            "name_tr": "Sint Maarten",
+            "name_en": "Sint Maarten (Dutch part)",
+            "emoji": "🇸🇽",
+            "currencies": [
+                "XCG"
+            ],
+            "languages": [
+                "en",
+                "nl"
+            ]
+        },
+        {
+            "code": "SY",
+            "alpha3": "SYR",
+            "numeric": "760",
+            "name_tr": "Suriye",
+            "name_en": "Syrian Arab Republic",
+            "emoji": "🇸🇾",
+            "currencies": [
+                "SYP"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "SZ",
+            "alpha3": "SWZ",
+            "numeric": "748",
+            "name_tr": "Esvatini",
+            "name_en": "Eswatini",
+            "emoji": "🇸🇿",
+            "currencies": [
+                "SZL"
+            ],
+            "languages": [
+                "en",
+                "ss"
+            ]
+        },
+        {
+            "code": "TC",
+            "alpha3": "TCA",
+            "numeric": "796",
+            "name_tr": "Turks ve Caicos Adaları",
+            "name_en": "Turks and Caicos Islands",
+            "emoji": "🇹🇨",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "TD",
+            "alpha3": "TCD",
+            "numeric": "148",
+            "name_tr": "Çad",
+            "name_en": "Chad",
+            "emoji": "🇹🇩",
+            "currencies": [
+                "XAF"
+            ],
+            "languages": [
+                "ar",
+                "fr"
+            ]
+        },
+        {
+            "code": "TF",
+            "alpha3": "ATF",
+            "numeric": "260",
+            "name_tr": "Fransız Güney Toprakları",
+            "name_en": "French Southern Territories",
+            "emoji": "🇹🇫",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "TG",
+            "alpha3": "TGO",
+            "numeric": "768",
+            "name_tr": "Togo",
+            "name_en": "Togo",
+            "emoji": "🇹🇬",
+            "currencies": [
+                "XOF"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "TH",
+            "alpha3": "THA",
+            "numeric": "764",
+            "name_tr": "Tayland",
+            "name_en": "Thailand",
+            "emoji": "🇹🇭",
+            "currencies": [
+                "THB"
+            ],
+            "languages": [
+                "th"
+            ]
+        },
+        {
+            "code": "TJ",
+            "alpha3": "TJK",
+            "numeric": "762",
+            "name_tr": "Tacikistan",
+            "name_en": "Tajikistan",
+            "emoji": "🇹🇯",
+            "currencies": [
+                "TJS"
+            ],
+            "languages": [
+                "tg"
+            ]
+        },
+        {
+            "code": "TK",
+            "alpha3": "TKL",
+            "numeric": "772",
+            "name_tr": "Tokelau",
+            "name_en": "Tokelau",
+            "emoji": "🇹🇰",
+            "currencies": [
+                "NZD"
+            ],
+            "languages": [
+                "tkl",
+                "en"
+            ]
+        },
+        {
+            "code": "TL",
+            "alpha3": "TLS",
+            "numeric": "626",
+            "name_tr": "Timor-Leste",
+            "name_en": "Timor-Leste",
+            "emoji": "🇹🇱",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "pt",
+                "tet"
+            ]
+        },
+        {
+            "code": "TM",
+            "alpha3": "TKM",
+            "numeric": "795",
+            "name_tr": "Türkmenistan",
+            "name_en": "Turkmenistan",
+            "emoji": "🇹🇲",
+            "currencies": [
+                "TMT"
+            ],
+            "languages": [
+                "tk"
+            ]
+        },
+        {
+            "code": "TN",
+            "alpha3": "TUN",
+            "numeric": "788",
+            "name_tr": "Tunus",
+            "name_en": "Tunisia",
+            "emoji": "🇹🇳",
+            "currencies": [
+                "TND"
+            ],
+            "languages": [
+                "ar",
+                "fr"
+            ]
+        },
+        {
+            "code": "TO",
+            "alpha3": "TON",
+            "numeric": "776",
+            "name_tr": "Tonga",
+            "name_en": "Tonga",
+            "emoji": "🇹🇴",
+            "currencies": [
+                "TOP"
+            ],
+            "languages": [
+                "to",
+                "en"
+            ]
+        },
+        {
+            "code": "TR",
+            "alpha3": "TUR",
+            "numeric": "792",
+            "name_tr": "Türkiye",
+            "name_en": "Türkiye",
+            "emoji": "🇹🇷",
+            "currencies": [
+                "TRY"
+            ],
+            "languages": [
+                "tr"
+            ]
+        },
+        {
+            "code": "TT",
+            "alpha3": "TTO",
+            "numeric": "780",
+            "name_tr": "Trinidad ve Tobago",
+            "name_en": "Trinidad and Tobago",
+            "emoji": "🇹🇹",
+            "currencies": [
+                "TTD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "TV",
+            "alpha3": "TUV",
+            "numeric": "798",
+            "name_tr": "Tuvalu",
+            "name_en": "Tuvalu",
+            "emoji": "🇹🇻",
+            "currencies": [
+                "AUD"
+            ],
+            "languages": [
+                "tvl",
+                "en"
+            ]
+        },
+        {
+            "code": "TW",
+            "alpha3": "TWN",
+            "numeric": "158",
+            "name_tr": "Tayvan",
+            "name_en": "Taiwan, Province of China",
+            "emoji": "🇹🇼",
+            "currencies": [
+                "TWD"
+            ],
+            "languages": [
+                "zh-Hant",
+                "nan-Hant",
+                "hak-Hant"
+            ]
+        },
+        {
+            "code": "TZ",
+            "alpha3": "TZA",
+            "numeric": "834",
+            "name_tr": "Tanzanya",
+            "name_en": "Tanzania, United Republic of",
+            "emoji": "🇹🇿",
+            "currencies": [
+                "TZS"
+            ],
+            "languages": [
+                "sw",
+                "en"
+            ]
+        },
+        {
+            "code": "UA",
+            "alpha3": "UKR",
+            "numeric": "804",
+            "name_tr": "Ukrayna",
+            "name_en": "Ukraine",
+            "emoji": "🇺🇦",
+            "currencies": [
+                "UAH"
+            ],
+            "languages": [
+                "uk",
+                "ru"
+            ]
+        },
+        {
+            "code": "UG",
+            "alpha3": "UGA",
+            "numeric": "800",
+            "name_tr": "Uganda",
+            "name_en": "Uganda",
+            "emoji": "🇺🇬",
+            "currencies": [
+                "UGX"
+            ],
+            "languages": [
+                "sw",
+                "en"
+            ]
+        },
+        {
+            "code": "UM",
+            "alpha3": "UMI",
+            "numeric": "581",
+            "name_tr": "ABD Küçük Harici Adaları",
+            "name_en": "United States Minor Outlying Islands",
+            "emoji": "🇺🇲",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "US",
+            "alpha3": "USA",
+            "numeric": "840",
+            "name_tr": "Amerika Birleşik Devletleri",
+            "name_en": "United States",
+            "emoji": "🇺🇸",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "en",
+                "es",
+                "haw"
+            ]
+        },
+        {
+            "code": "UY",
+            "alpha3": "URY",
+            "numeric": "858",
+            "name_tr": "Uruguay",
+            "name_en": "Uruguay",
+            "emoji": "🇺🇾",
+            "currencies": [
+                "UYU"
+            ],
+            "languages": [
+                "es"
+            ]
+        },
+        {
+            "code": "UZ",
+            "alpha3": "UZB",
+            "numeric": "860",
+            "name_tr": "Özbekistan",
+            "name_en": "Uzbekistan",
+            "emoji": "🇺🇿",
+            "currencies": [
+                "UZS"
+            ],
+            "languages": [
+                "uz",
+                "uz-Cyrl"
+            ]
+        },
+        {
+            "code": "VA",
+            "alpha3": "VAT",
+            "numeric": "336",
+            "name_tr": "Vatikan",
+            "name_en": "Holy See (Vatican City State)",
+            "emoji": "🇻🇦",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "it"
+            ]
+        },
+        {
+            "code": "VC",
+            "alpha3": "VCT",
+            "numeric": "670",
+            "name_tr": "Saint Vincent ve Grenadinler",
+            "name_en": "Saint Vincent and the Grenadines",
+            "emoji": "🇻🇨",
+            "currencies": [
+                "XCD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "VE",
+            "alpha3": "VEN",
+            "numeric": "862",
+            "name_tr": "Venezuela",
+            "name_en": "Venezuela, Bolivarian Republic of",
+            "emoji": "🇻🇪",
+            "currencies": [
+                "VES"
+            ],
+            "languages": [
+                "es"
+            ]
+        },
+        {
+            "code": "VG",
+            "alpha3": "VGB",
+            "numeric": "092",
+            "name_tr": "Britanya Virjin Adaları",
+            "name_en": "Virgin Islands, British",
+            "emoji": "🇻🇬",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "VI",
+            "alpha3": "VIR",
+            "numeric": "850",
+            "name_tr": "ABD Virjin Adaları",
+            "name_en": "Virgin Islands, U.S.",
+            "emoji": "🇻🇮",
+            "currencies": [
+                "USD"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "VN",
+            "alpha3": "VNM",
+            "numeric": "704",
+            "name_tr": "Vietnam",
+            "name_en": "Viet Nam",
+            "emoji": "🇻🇳",
+            "currencies": [
+                "VND"
+            ],
+            "languages": [
+                "vi"
+            ]
+        },
+        {
+            "code": "VU",
+            "alpha3": "VUT",
+            "numeric": "548",
+            "name_tr": "Vanuatu",
+            "name_en": "Vanuatu",
+            "emoji": "🇻🇺",
+            "currencies": [
+                "VUV"
+            ],
+            "languages": [
+                "bi",
+                "en",
+                "fr"
+            ]
+        },
+        {
+            "code": "WF",
+            "alpha3": "WLF",
+            "numeric": "876",
+            "name_tr": "Wallis ve Futuna",
+            "name_en": "Wallis and Futuna",
+            "emoji": "🇼🇫",
+            "currencies": [
+                "XPF"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "WS",
+            "alpha3": "WSM",
+            "numeric": "882",
+            "name_tr": "Samoa",
+            "name_en": "Samoa",
+            "emoji": "🇼🇸",
+            "currencies": [
+                "WST"
+            ],
+            "languages": [
+                "sm",
+                "en"
+            ]
+        },
+        {
+            "code": "YE",
+            "alpha3": "YEM",
+            "numeric": "887",
+            "name_tr": "Yemen",
+            "name_en": "Yemen",
+            "emoji": "🇾🇪",
+            "currencies": [
+                "YER"
+            ],
+            "languages": [
+                "ar"
+            ]
+        },
+        {
+            "code": "YT",
+            "alpha3": "MYT",
+            "numeric": "175",
+            "name_tr": "Mayotte",
+            "name_en": "Mayotte",
+            "emoji": "🇾🇹",
+            "currencies": [
+                "EUR"
+            ],
+            "languages": [
+                "fr"
+            ]
+        },
+        {
+            "code": "ZA",
+            "alpha3": "ZAF",
+            "numeric": "710",
+            "name_tr": "Güney Afrika",
+            "name_en": "South Africa",
+            "emoji": "🇿🇦",
+            "currencies": [
+                "ZAR"
+            ],
+            "languages": [
+                "en",
+                "zu",
+                "xh",
+                "af",
+                "nso",
+                "tn",
+                "st",
+                "ts",
+                "ss",
+                "ve"
+            ]
+        },
+        {
+            "code": "ZM",
+            "alpha3": "ZMB",
+            "numeric": "894",
+            "name_tr": "Zambiya",
+            "name_en": "Zambia",
+            "emoji": "🇿🇲",
+            "currencies": [
+                "ZMW"
+            ],
+            "languages": [
+                "en"
+            ]
+        },
+        {
+            "code": "ZW",
+            "alpha3": "ZWE",
+            "numeric": "716",
+            "name_tr": "Zimbabve",
+            "name_en": "Zimbabwe",
+            "emoji": "🇿🇼",
+            "currencies": [
+                "ZWG",
+                "USD"
+            ],
+            "languages": [
+                "sn",
+                "en",
+                "nd"
+            ]
+        }
+    ],
+    "regions": [
+        {
+            "slug": "m49-002",
+            "name_tr": "Afrika",
+            "kind": "continent",
+            "countries": [
+                "DZ",
+                "EG",
+                "EH",
+                "LY",
+                "MA",
+                "SD",
+                "TN",
+                "BF",
+                "BJ",
+                "CI",
+                "CV",
+                "GH",
+                "GM",
+                "GN",
+                "GW",
+                "LR",
+                "ML",
+                "MR",
+                "NE",
+                "NG",
+                "SH",
+                "SL",
+                "SN",
+                "TG",
+                "AO",
+                "CD",
+                "CF",
+                "CG",
+                "CM",
+                "GA",
+                "GQ",
+                "ST",
+                "TD",
+                "BI",
+                "DJ",
+                "ER",
+                "ET",
+                "IO",
+                "KE",
+                "KM",
+                "MG",
+                "MU",
+                "MW",
+                "MZ",
+                "RE",
+                "RW",
+                "SC",
+                "SO",
+                "SS",
+                "TF",
+                "TZ",
+                "UG",
+                "YT",
+                "ZM",
+                "ZW",
+                "BW",
+                "LS",
+                "NA",
+                "SZ",
+                "ZA"
+            ]
+        },
+        {
+            "slug": "m49-003",
+            "name_tr": "Kuzey Amerika",
+            "kind": "un_m49",
+            "countries": [
+                "BM",
+                "CA",
+                "GL",
+                "PM",
+                "US",
+                "BZ",
+                "CR",
+                "GT",
+                "HN",
+                "MX",
+                "NI",
+                "PA",
+                "SV",
+                "AG",
+                "AI",
+                "AW",
+                "BB",
+                "BL",
+                "BQ",
+                "BS",
+                "CU",
+                "CW",
+                "DM",
+                "DO",
+                "GD",
+                "GP",
+                "HT",
+                "JM",
+                "KN",
+                "KY",
+                "LC",
+                "MF",
+                "MQ",
+                "MS",
+                "PR",
+                "SX",
+                "TC",
+                "TT",
+                "VC",
+                "VG",
+                "VI"
+            ]
+        },
+        {
+            "slug": "m49-005",
+            "name_tr": "Güney Amerika",
+            "kind": "un_m49",
+            "countries": [
+                "AR",
+                "BO",
+                "BR",
+                "BV",
+                "CL",
+                "CO",
+                "EC",
+                "FK",
+                "GF",
+                "GS",
+                "GY",
+                "PE",
+                "PY",
+                "SR",
+                "UY",
+                "VE"
+            ]
+        },
+        {
+            "slug": "m49-009",
+            "name_tr": "Okyanusya",
+            "kind": "continent",
+            "countries": [
+                "AU",
+                "CC",
+                "CX",
+                "HM",
+                "NF",
+                "NZ",
+                "FJ",
+                "NC",
+                "PG",
+                "SB",
+                "VU",
+                "FM",
+                "GU",
+                "KI",
+                "MH",
+                "MP",
+                "NR",
+                "PW",
+                "UM",
+                "AS",
+                "CK",
+                "NU",
+                "PF",
+                "PN",
+                "TK",
+                "TO",
+                "TV",
+                "WF",
+                "WS",
+                "AQ"
+            ]
+        },
+        {
+            "slug": "m49-011",
+            "name_tr": "Batı Afrika",
+            "kind": "un_m49",
+            "countries": [
+                "BF",
+                "BJ",
+                "CI",
+                "CV",
+                "GH",
+                "GM",
+                "GN",
+                "GW",
+                "LR",
+                "ML",
+                "MR",
+                "NE",
+                "NG",
+                "SH",
+                "SL",
+                "SN",
+                "TG"
+            ]
+        },
+        {
+            "slug": "m49-013",
+            "name_tr": "Orta Amerika",
+            "kind": "un_m49",
+            "countries": [
+                "BZ",
+                "CR",
+                "GT",
+                "HN",
+                "MX",
+                "NI",
+                "PA",
+                "SV"
+            ]
+        },
+        {
+            "slug": "m49-014",
+            "name_tr": "Doğu Afrika",
+            "kind": "un_m49",
+            "countries": [
+                "BI",
+                "DJ",
+                "ER",
+                "ET",
+                "IO",
+                "KE",
+                "KM",
+                "MG",
+                "MU",
+                "MW",
+                "MZ",
+                "RE",
+                "RW",
+                "SC",
+                "SO",
+                "SS",
+                "TF",
+                "TZ",
+                "UG",
+                "YT",
+                "ZM",
+                "ZW"
+            ]
+        },
+        {
+            "slug": "m49-015",
+            "name_tr": "Kuzey Afrika",
+            "kind": "un_m49",
+            "countries": [
+                "DZ",
+                "EG",
+                "EH",
+                "LY",
+                "MA",
+                "SD",
+                "TN"
+            ]
+        },
+        {
+            "slug": "m49-017",
+            "name_tr": "Orta Afrika",
+            "kind": "un_m49",
+            "countries": [
+                "AO",
+                "CD",
+                "CF",
+                "CG",
+                "CM",
+                "GA",
+                "GQ",
+                "ST",
+                "TD"
+            ]
+        },
+        {
+            "slug": "m49-018",
+            "name_tr": "Afrika’nın Güneyi",
+            "kind": "un_m49",
+            "countries": [
+                "BW",
+                "LS",
+                "NA",
+                "SZ",
+                "ZA"
+            ]
+        },
+        {
+            "slug": "m49-019",
+            "name_tr": "Amerika",
+            "kind": "continent",
+            "countries": [
+                "BM",
+                "CA",
+                "GL",
+                "PM",
+                "US",
+                "BZ",
+                "CR",
+                "GT",
+                "HN",
+                "MX",
+                "NI",
+                "PA",
+                "SV",
+                "AG",
+                "AI",
+                "AW",
+                "BB",
+                "BL",
+                "BQ",
+                "BS",
+                "CU",
+                "CW",
+                "DM",
+                "DO",
+                "GD",
+                "GP",
+                "HT",
+                "JM",
+                "KN",
+                "KY",
+                "LC",
+                "MF",
+                "MQ",
+                "MS",
+                "PR",
+                "SX",
+                "TC",
+                "TT",
+                "VC",
+                "VG",
+                "VI",
+                "AR",
+                "BO",
+                "BR",
+                "BV",
+                "CL",
+                "CO",
+                "EC",
+                "FK",
+                "GF",
+                "GS",
+                "GY",
+                "PE",
+                "PY",
+                "SR",
+                "UY",
+                "VE"
+            ]
+        },
+        {
+            "slug": "m49-021",
+            "name_tr": "Amerika’nın Kuzeyi",
+            "kind": "un_m49",
+            "countries": [
+                "BM",
+                "CA",
+                "GL",
+                "PM",
+                "US"
+            ]
+        },
+        {
+            "slug": "m49-029",
+            "name_tr": "Karayipler",
+            "kind": "un_m49",
+            "countries": [
+                "AG",
+                "AI",
+                "AW",
+                "BB",
+                "BL",
+                "BQ",
+                "BS",
+                "CU",
+                "CW",
+                "DM",
+                "DO",
+                "GD",
+                "GP",
+                "HT",
+                "JM",
+                "KN",
+                "KY",
+                "LC",
+                "MF",
+                "MQ",
+                "MS",
+                "PR",
+                "SX",
+                "TC",
+                "TT",
+                "VC",
+                "VG",
+                "VI"
+            ]
+        },
+        {
+            "slug": "m49-030",
+            "name_tr": "Doğu Asya",
+            "kind": "un_m49",
+            "countries": [
+                "CN",
+                "HK",
+                "JP",
+                "KP",
+                "KR",
+                "MN",
+                "MO",
+                "TW"
+            ]
+        },
+        {
+            "slug": "m49-034",
+            "name_tr": "Güney Asya",
+            "kind": "un_m49",
+            "countries": [
+                "AF",
+                "BD",
+                "BT",
+                "IN",
+                "IR",
+                "LK",
+                "MV",
+                "NP",
+                "PK"
+            ]
+        },
+        {
+            "slug": "m49-035",
+            "name_tr": "Güneydoğu Asya",
+            "kind": "un_m49",
+            "countries": [
+                "BN",
+                "ID",
+                "KH",
+                "LA",
+                "MM",
+                "MY",
+                "PH",
+                "SG",
+                "TH",
+                "TL",
+                "VN"
+            ]
+        },
+        {
+            "slug": "m49-039",
+            "name_tr": "Güney Avrupa",
+            "kind": "un_m49",
+            "countries": [
+                "AD",
+                "AL",
+                "BA",
+                "ES",
+                "GI",
+                "GR",
+                "HR",
+                "IT",
+                "ME",
+                "MK",
+                "MT",
+                "RS",
+                "PT",
+                "SI",
+                "SM",
+                "VA"
+            ]
+        },
+        {
+            "slug": "m49-053",
+            "name_tr": "Avustralasya",
+            "kind": "un_m49",
+            "countries": [
+                "AU",
+                "CC",
+                "CX",
+                "HM",
+                "NF",
+                "NZ"
+            ]
+        },
+        {
+            "slug": "m49-054",
+            "name_tr": "Melanezya",
+            "kind": "un_m49",
+            "countries": [
+                "FJ",
+                "NC",
+                "PG",
+                "SB",
+                "VU"
+            ]
+        },
+        {
+            "slug": "m49-057",
+            "name_tr": "Mikronezya Bölgesi",
+            "kind": "un_m49",
+            "countries": [
+                "FM",
+                "GU",
+                "KI",
+                "MH",
+                "MP",
+                "NR",
+                "PW",
+                "UM"
+            ]
+        },
+        {
+            "slug": "m49-061",
+            "name_tr": "Polinezya",
+            "kind": "un_m49",
+            "countries": [
+                "AS",
+                "CK",
+                "NU",
+                "PF",
+                "PN",
+                "TK",
+                "TO",
+                "TV",
+                "WF",
+                "WS"
+            ]
+        },
+        {
+            "slug": "m49-142",
+            "name_tr": "Asya",
+            "kind": "continent",
+            "countries": [
+                "AE",
+                "AM",
+                "AZ",
+                "BH",
+                "CY",
+                "GE",
+                "IL",
+                "IQ",
+                "JO",
+                "KW",
+                "LB",
+                "OM",
+                "PS",
+                "QA",
+                "SA",
+                "SY",
+                "TR",
+                "YE",
+                "TM",
+                "TJ",
+                "KG",
+                "KZ",
+                "UZ",
+                "CN",
+                "HK",
+                "JP",
+                "KP",
+                "KR",
+                "MN",
+                "MO",
+                "TW",
+                "AF",
+                "BD",
+                "BT",
+                "IN",
+                "IR",
+                "LK",
+                "MV",
+                "NP",
+                "PK",
+                "BN",
+                "ID",
+                "KH",
+                "LA",
+                "MM",
+                "MY",
+                "PH",
+                "SG",
+                "TH",
+                "TL",
+                "VN"
+            ]
+        },
+        {
+            "slug": "m49-143",
+            "name_tr": "Orta Asya",
+            "kind": "un_m49",
+            "countries": [
+                "TM",
+                "TJ",
+                "KG",
+                "KZ",
+                "UZ"
+            ]
+        },
+        {
+            "slug": "m49-145",
+            "name_tr": "Batı Asya",
+            "kind": "un_m49",
+            "countries": [
+                "AE",
+                "AM",
+                "AZ",
+                "BH",
+                "CY",
+                "GE",
+                "IL",
+                "IQ",
+                "JO",
+                "KW",
+                "LB",
+                "OM",
+                "PS",
+                "QA",
+                "SA",
+                "SY",
+                "TR",
+                "YE"
+            ]
+        },
+        {
+            "slug": "m49-150",
+            "name_tr": "Avrupa",
+            "kind": "continent",
+            "countries": [
+                "GG",
+                "IM",
+                "JE",
+                "AX",
+                "DK",
+                "EE",
+                "FI",
+                "FO",
+                "GB",
+                "IE",
+                "IS",
+                "LT",
+                "LV",
+                "NO",
+                "SE",
+                "SJ",
+                "AT",
+                "BE",
+                "CH",
+                "DE",
+                "FR",
+                "LI",
+                "LU",
+                "MC",
+                "NL",
+                "BG",
+                "BY",
+                "CZ",
+                "HU",
+                "MD",
+                "PL",
+                "RO",
+                "RU",
+                "SK",
+                "UA",
+                "AD",
+                "AL",
+                "BA",
+                "ES",
+                "GI",
+                "GR",
+                "HR",
+                "IT",
+                "ME",
+                "MK",
+                "MT",
+                "RS",
+                "PT",
+                "SI",
+                "SM",
+                "VA"
+            ]
+        },
+        {
+            "slug": "m49-151",
+            "name_tr": "Doğu Avrupa",
+            "kind": "un_m49",
+            "countries": [
+                "BG",
+                "BY",
+                "CZ",
+                "HU",
+                "MD",
+                "PL",
+                "RO",
+                "RU",
+                "SK",
+                "UA"
+            ]
+        },
+        {
+            "slug": "m49-154",
+            "name_tr": "Kuzey Avrupa",
+            "kind": "un_m49",
+            "countries": [
+                "GG",
+                "IM",
+                "JE",
+                "AX",
+                "DK",
+                "EE",
+                "FI",
+                "FO",
+                "GB",
+                "IE",
+                "IS",
+                "LT",
+                "LV",
+                "NO",
+                "SE",
+                "SJ"
+            ]
+        },
+        {
+            "slug": "m49-155",
+            "name_tr": "Batı Avrupa",
+            "kind": "un_m49",
+            "countries": [
+                "AT",
+                "BE",
+                "CH",
+                "DE",
+                "FR",
+                "LI",
+                "LU",
+                "MC",
+                "NL"
+            ]
+        },
+        {
+            "slug": "m49-202",
+            "name_tr": "Sahra Altı Afrika",
+            "kind": "un_m49",
+            "countries": [
+                "BF",
+                "BJ",
+                "CI",
+                "CV",
+                "GH",
+                "GM",
+                "GN",
+                "GW",
+                "LR",
+                "ML",
+                "MR",
+                "NE",
+                "NG",
+                "SH",
+                "SL",
+                "SN",
+                "TG",
+                "AO",
+                "CD",
+                "CF",
+                "CG",
+                "CM",
+                "GA",
+                "GQ",
+                "ST",
+                "TD",
+                "BI",
+                "DJ",
+                "ER",
+                "ET",
+                "IO",
+                "KE",
+                "KM",
+                "MG",
+                "MU",
+                "MW",
+                "MZ",
+                "RE",
+                "RW",
+                "SC",
+                "SO",
+                "SS",
+                "TF",
+                "TZ",
+                "UG",
+                "YT",
+                "ZM",
+                "ZW",
+                "BW",
+                "LS",
+                "NA",
+                "SZ",
+                "ZA"
+            ]
+        },
+        {
+            "slug": "m49-419",
+            "name_tr": "Latin Amerika",
+            "kind": "un_m49",
+            "countries": [
+                "BZ",
+                "CR",
+                "GT",
+                "HN",
+                "MX",
+                "NI",
+                "PA",
+                "SV",
+                "AG",
+                "AI",
+                "AW",
+                "BB",
+                "BL",
+                "BQ",
+                "BS",
+                "CU",
+                "CW",
+                "DM",
+                "DO",
+                "GD",
+                "GP",
+                "HT",
+                "JM",
+                "KN",
+                "KY",
+                "LC",
+                "MF",
+                "MQ",
+                "MS",
+                "PR",
+                "SX",
+                "TC",
+                "TT",
+                "VC",
+                "VG",
+                "VI",
+                "AR",
+                "BO",
+                "BR",
+                "BV",
+                "CL",
+                "CO",
+                "EC",
+                "FK",
+                "GF",
+                "GS",
+                "GY",
+                "PE",
+                "PY",
+                "SR",
+                "UY",
+                "VE"
+            ]
+        }
+    ],
+    "currencies": [
+        {
+            "code": "AWG",
+            "name": "Aruba florini",
+            "symbol": "AWG"
+        },
+        {
+            "code": "AFN",
+            "name": "Afganistan afganisi",
+            "symbol": "AFN"
+        },
+        {
+            "code": "AOA",
+            "name": "Angola kvanzası",
+            "symbol": "AOA"
+        },
+        {
+            "code": "XCD",
+            "name": "Doğu Karayip doları",
+            "symbol": "EC$"
+        },
+        {
+            "code": "EUR",
+            "name": "Euro",
+            "symbol": "€"
+        },
+        {
+            "code": "ALL",
+            "name": "Arnavutluk leki",
+            "symbol": "ALL"
+        },
+        {
+            "code": "AED",
+            "name": "Birleşik Arap Emirlikleri dirhemi",
+            "symbol": "AED"
+        },
+        {
+            "code": "ARS",
+            "name": "Arjantin pesosu",
+            "symbol": "ARS"
+        },
+        {
+            "code": "AMD",
+            "name": "Ermenistan dramı",
+            "symbol": "AMD"
+        },
+        {
+            "code": "USD",
+            "name": "ABD doları",
+            "symbol": "$"
+        },
+        {
+            "code": "AUD",
+            "name": "Avustralya doları",
+            "symbol": "AU$"
+        },
+        {
+            "code": "AZN",
+            "name": "Azerbaycan manatı",
+            "symbol": "AZN"
+        },
+        {
+            "code": "BIF",
+            "name": "Burundi frangı",
+            "symbol": "BIF"
+        },
+        {
+            "code": "XOF",
+            "name": "Batı Afrika CFA frangı",
+            "symbol": "F CFA"
+        },
+        {
+            "code": "BDT",
+            "name": "Bangladeş takası",
+            "symbol": "BDT"
+        },
+        {
+            "code": "BHD",
+            "name": "Bahreyn dinarı",
+            "symbol": "BHD"
+        },
+        {
+            "code": "BSD",
+            "name": "Bahama doları",
+            "symbol": "BSD"
+        },
+        {
+            "code": "BAM",
+            "name": "Konvertibl Bosna Hersek markı",
+            "symbol": "BAM"
+        },
+        {
+            "code": "BYN",
+            "name": "Belarus rublesi",
+            "symbol": "BYN"
+        },
+        {
+            "code": "BZD",
+            "name": "Belize doları",
+            "symbol": "BZD"
+        },
+        {
+            "code": "BMD",
+            "name": "Bermuda doları",
+            "symbol": "BMD"
+        },
+        {
+            "code": "BOB",
+            "name": "Bolivya bolivyanosu",
+            "symbol": "BOB"
+        },
+        {
+            "code": "BRL",
+            "name": "Brezilya reali",
+            "symbol": "R$"
+        },
+        {
+            "code": "BBD",
+            "name": "Barbados doları",
+            "symbol": "BBD"
+        },
+        {
+            "code": "BND",
+            "name": "Brunei doları",
+            "symbol": "BND"
+        },
+        {
+            "code": "BTN",
+            "name": "Butan ngultrumu",
+            "symbol": "BTN"
+        },
+        {
+            "code": "INR",
+            "name": "Hindistan rupisi",
+            "symbol": "₹"
+        },
+        {
+            "code": "NOK",
+            "name": "Norveç kronu",
+            "symbol": "NOK"
+        },
+        {
+            "code": "BWP",
+            "name": "Botsvana pulası",
+            "symbol": "BWP"
+        },
+        {
+            "code": "XAF",
+            "name": "Orta Afrika CFA frangı",
+            "symbol": "FCFA"
+        },
+        {
+            "code": "CAD",
+            "name": "Kanada doları",
+            "symbol": "CA$"
+        },
+        {
+            "code": "CHF",
+            "name": "İsviçre frangı",
+            "symbol": "CHF"
+        },
+        {
+            "code": "CLP",
+            "name": "Şili pesosu",
+            "symbol": "CLP"
+        },
+        {
+            "code": "CNY",
+            "name": "Çin yuanı",
+            "symbol": "CN¥"
+        },
+        {
+            "code": "CDF",
+            "name": "Kongo frangı",
+            "symbol": "CDF"
+        },
+        {
+            "code": "NZD",
+            "name": "Yeni Zelanda doları",
+            "symbol": "NZ$"
+        },
+        {
+            "code": "COP",
+            "name": "Kolombiya pesosu",
+            "symbol": "COP"
+        },
+        {
+            "code": "KMF",
+            "name": "Komorlar frangı",
+            "symbol": "KMF"
+        },
+        {
+            "code": "CVE",
+            "name": "Cape Verde esküdosu",
+            "symbol": "CVE"
+        },
+        {
+            "code": "CRC",
+            "name": "Kosta Rika kolonu",
+            "symbol": "CRC"
+        },
+        {
+            "code": "CUP",
+            "name": "Küba pesosu",
+            "symbol": "CUP"
+        },
+        {
+            "code": "XCG",
+            "name": "Karayip guldeni",
+            "symbol": "Cg."
+        },
+        {
+            "code": "KYD",
+            "name": "Cayman Adaları doları",
+            "symbol": "KYD"
+        },
+        {
+            "code": "CZK",
+            "name": "Çek korunası",
+            "symbol": "CZK"
+        },
+        {
+            "code": "DJF",
+            "name": "Cibuti frangı",
+            "symbol": "DJF"
+        },
+        {
+            "code": "DKK",
+            "name": "Danimarka kronu",
+            "symbol": "DKK"
+        },
+        {
+            "code": "DOP",
+            "name": "Dominik pesosu",
+            "symbol": "DOP"
+        },
+        {
+            "code": "DZD",
+            "name": "Cezayir dinarı",
+            "symbol": "DZD"
+        },
+        {
+            "code": "EGP",
+            "name": "Mısır lirası",
+            "symbol": "EGP"
+        },
+        {
+            "code": "ERN",
+            "name": "Eritre nakfası",
+            "symbol": "ERN"
+        },
+        {
+            "code": "MAD",
+            "name": "Fas dirhemi",
+            "symbol": "MAD"
+        },
+        {
+            "code": "ETB",
+            "name": "Etiyopya birri",
+            "symbol": "ETB"
+        },
+        {
+            "code": "FJD",
+            "name": "Fiji doları",
+            "symbol": "FJD"
+        },
+        {
+            "code": "FKP",
+            "name": "Falkland Adaları lirası",
+            "symbol": "FKP"
+        },
+        {
+            "code": "GBP",
+            "name": "İngiliz sterlini",
+            "symbol": "£"
+        },
+        {
+            "code": "GEL",
+            "name": "Gürcistan larisi",
+            "symbol": "GEL"
+        },
+        {
+            "code": "GHS",
+            "name": "Gana sedisi",
+            "symbol": "GHS"
+        },
+        {
+            "code": "GIP",
+            "name": "Cebelitarık lirası",
+            "symbol": "GIP"
+        },
+        {
+            "code": "GNF",
+            "name": "Gine frangı",
+            "symbol": "GNF"
+        },
+        {
+            "code": "GMD",
+            "name": "Gambiya dalasisi",
+            "symbol": "GMD"
+        },
+        {
+            "code": "GTQ",
+            "name": "Guatemala quetzalı",
+            "symbol": "GTQ"
+        },
+        {
+            "code": "GYD",
+            "name": "Guyana doları",
+            "symbol": "GYD"
+        },
+        {
+            "code": "HKD",
+            "name": "Hong Kong doları",
+            "symbol": "HK$"
+        },
+        {
+            "code": "HNL",
+            "name": "Honduras lempirası",
+            "symbol": "HNL"
+        },
+        {
+            "code": "HTG",
+            "name": "Haiti gurdu",
+            "symbol": "HTG"
+        },
+        {
+            "code": "HUF",
+            "name": "Macar forinti",
+            "symbol": "HUF"
+        },
+        {
+            "code": "IDR",
+            "name": "Endonezya rupisi",
+            "symbol": "IDR"
+        },
+        {
+            "code": "IRR",
+            "name": "İran riyali",
+            "symbol": "IRR"
+        },
+        {
+            "code": "IQD",
+            "name": "Irak dinarı",
+            "symbol": "IQD"
+        },
+        {
+            "code": "ISK",
+            "name": "İzlanda kronu",
+            "symbol": "ISK"
+        },
+        {
+            "code": "ILS",
+            "name": "Yeni İsrail şekeli",
+            "symbol": "₪"
+        },
+        {
+            "code": "JMD",
+            "name": "Jamaika doları",
+            "symbol": "JMD"
+        },
+        {
+            "code": "JOD",
+            "name": "Ürdün dinarı",
+            "symbol": "JOD"
+        },
+        {
+            "code": "JPY",
+            "name": "Japon yeni",
+            "symbol": "¥"
+        },
+        {
+            "code": "KZT",
+            "name": "Kazakistan tengesi",
+            "symbol": "KZT"
+        },
+        {
+            "code": "KES",
+            "name": "Kenya şilini",
+            "symbol": "KES"
+        },
+        {
+            "code": "KGS",
+            "name": "Kırgızistan somu",
+            "symbol": "KGS"
+        },
+        {
+            "code": "KHR",
+            "name": "Kamboçya rieli",
+            "symbol": "KHR"
+        },
+        {
+            "code": "KRW",
+            "name": "Güney Kore wonu",
+            "symbol": "₩"
+        },
+        {
+            "code": "KWD",
+            "name": "Kuveyt dinarı",
+            "symbol": "KWD"
+        },
+        {
+            "code": "LAK",
+            "name": "Laos kipi",
+            "symbol": "LAK"
+        },
+        {
+            "code": "LBP",
+            "name": "Lübnan lirası",
+            "symbol": "LBP"
+        },
+        {
+            "code": "LRD",
+            "name": "Liberya doları",
+            "symbol": "LRD"
+        },
+        {
+            "code": "LYD",
+            "name": "Libya dinarı",
+            "symbol": "LYD"
+        },
+        {
+            "code": "LKR",
+            "name": "Sri Lanka rupisi",
+            "symbol": "LKR"
+        },
+        {
+            "code": "ZAR",
+            "name": "Güney Afrika randı",
+            "symbol": "ZAR"
+        },
+        {
+            "code": "LSL",
+            "name": "Lesotho lotisi",
+            "symbol": "LSL"
+        },
+        {
+            "code": "MOP",
+            "name": "Makao patakası",
+            "symbol": "MOP"
+        },
+        {
+            "code": "MDL",
+            "name": "Moldova leyi",
+            "symbol": "MDL"
+        },
+        {
+            "code": "MGA",
+            "name": "Madagaskar ariarisi",
+            "symbol": "MGA"
+        },
+        {
+            "code": "MVR",
+            "name": "Maldiv rufiyaası",
+            "symbol": "MVR"
+        },
+        {
+            "code": "MXN",
+            "name": "Meksika pesosu",
+            "symbol": "MX$"
+        },
+        {
+            "code": "MKD",
+            "name": "Makedonya dinarı",
+            "symbol": "MKD"
+        },
+        {
+            "code": "MMK",
+            "name": "Myanmar kyatı",
+            "symbol": "MMK"
+        },
+        {
+            "code": "MNT",
+            "name": "Moğolistan tugriki",
+            "symbol": "MNT"
+        },
+        {
+            "code": "MZN",
+            "name": "Mozambik metikali",
+            "symbol": "MZN"
+        },
+        {
+            "code": "MRU",
+            "name": "Moritanya ugiyası",
+            "symbol": "MRU"
+        },
+        {
+            "code": "MUR",
+            "name": "Mauritius rupisi",
+            "symbol": "MUR"
+        },
+        {
+            "code": "MWK",
+            "name": "Malavi kvaçası",
+            "symbol": "MWK"
+        },
+        {
+            "code": "MYR",
+            "name": "Malezya ringgiti",
+            "symbol": "MYR"
+        },
+        {
+            "code": "NAD",
+            "name": "Namibya doları",
+            "symbol": "NAD"
+        },
+        {
+            "code": "XPF",
+            "name": "CFP frangı",
+            "symbol": "CFPF"
+        },
+        {
+            "code": "NGN",
+            "name": "Nijerya nairası",
+            "symbol": "NGN"
+        },
+        {
+            "code": "NIO",
+            "name": "Nikaragua kordobası",
+            "symbol": "NIO"
+        },
+        {
+            "code": "NPR",
+            "name": "Nepal rupisi",
+            "symbol": "NPR"
+        },
+        {
+            "code": "OMR",
+            "name": "Umman riyali",
+            "symbol": "OMR"
+        },
+        {
+            "code": "PKR",
+            "name": "Pakistan rupisi",
+            "symbol": "PKR"
+        },
+        {
+            "code": "PAB",
+            "name": "Panama balboası",
+            "symbol": "PAB"
+        },
+        {
+            "code": "PEN",
+            "name": "Peru solü",
+            "symbol": "PEN"
+        },
+        {
+            "code": "PHP",
+            "name": "Filipinler pesosu",
+            "symbol": "PHP"
+        },
+        {
+            "code": "PGK",
+            "name": "Papua Yeni Gine kinası",
+            "symbol": "PGK"
+        },
+        {
+            "code": "PLN",
+            "name": "Polonya zlotisi",
+            "symbol": "PLN"
+        },
+        {
+            "code": "KPW",
+            "name": "Kuzey Kore wonu",
+            "symbol": "KPW"
+        },
+        {
+            "code": "PYG",
+            "name": "Paraguay guaranisi",
+            "symbol": "PYG"
+        },
+        {
+            "code": "QAR",
+            "name": "Katar riyali",
+            "symbol": "QAR"
+        },
+        {
+            "code": "RON",
+            "name": "Romen leyi",
+            "symbol": "RON"
+        },
+        {
+            "code": "RUB",
+            "name": "Rus rublesi",
+            "symbol": "RUB"
+        },
+        {
+            "code": "RWF",
+            "name": "Ruanda frangı",
+            "symbol": "RWF"
+        },
+        {
+            "code": "SAR",
+            "name": "Suudi Arabistan riyali",
+            "symbol": "SAR"
+        },
+        {
+            "code": "SDG",
+            "name": "Sudan lirası",
+            "symbol": "SDG"
+        },
+        {
+            "code": "SGD",
+            "name": "Singapur doları",
+            "symbol": "SGD"
+        },
+        {
+            "code": "SHP",
+            "name": "Saint Helena lirası",
+            "symbol": "SHP"
+        },
+        {
+            "code": "SBD",
+            "name": "Solomon Adaları doları",
+            "symbol": "SBD"
+        },
+        {
+            "code": "SLE",
+            "name": "Sierra Leone leonesi",
+            "symbol": "SLE"
+        },
+        {
+            "code": "SOS",
+            "name": "Somali şilini",
+            "symbol": "SOS"
+        },
+        {
+            "code": "RSD",
+            "name": "Sırp dinarı",
+            "symbol": "RSD"
+        },
+        {
+            "code": "SSP",
+            "name": "Güney Sudan lirası",
+            "symbol": "SSP"
+        },
+        {
+            "code": "STN",
+            "name": "Sao Tome ve Principe dobrası",
+            "symbol": "STN"
+        },
+        {
+            "code": "SRD",
+            "name": "Surinam doları",
+            "symbol": "SRD"
+        },
+        {
+            "code": "SEK",
+            "name": "İsveç kronu",
+            "symbol": "SEK"
+        },
+        {
+            "code": "SZL",
+            "name": "Svaziland lilangenisi",
+            "symbol": "SZL"
+        },
+        {
+            "code": "SCR",
+            "name": "Seyşeller rupisi",
+            "symbol": "SCR"
+        },
+        {
+            "code": "SYP",
+            "name": "Suriye lirası",
+            "symbol": "SYP"
+        },
+        {
+            "code": "THB",
+            "name": "Tayland bahtı",
+            "symbol": "฿"
+        },
+        {
+            "code": "TJS",
+            "name": "Tacikistan somonisi",
+            "symbol": "TJS"
+        },
+        {
+            "code": "TMT",
+            "name": "Türkmenistan manatı",
+            "symbol": "TMT"
+        },
+        {
+            "code": "TOP",
+            "name": "Tonga paʻangası",
+            "symbol": "TOP"
+        },
+        {
+            "code": "TTD",
+            "name": "Trinidad ve Tobago doları",
+            "symbol": "TTD"
+        },
+        {
+            "code": "TND",
+            "name": "Tunus dinarı",
+            "symbol": "TND"
+        },
+        {
+            "code": "TRY",
+            "name": "Türk lirası",
+            "symbol": "₺"
+        },
+        {
+            "code": "TWD",
+            "name": "Yeni Tayvan doları",
+            "symbol": "NT$"
+        },
+        {
+            "code": "TZS",
+            "name": "Tanzanya şilini",
+            "symbol": "TZS"
+        },
+        {
+            "code": "UGX",
+            "name": "Uganda şilini",
+            "symbol": "UGX"
+        },
+        {
+            "code": "UAH",
+            "name": "Ukrayna grivnası",
+            "symbol": "UAH"
+        },
+        {
+            "code": "UYU",
+            "name": "Uruguay pesosu",
+            "symbol": "UYU"
+        },
+        {
+            "code": "UZS",
+            "name": "Özbekistan somu",
+            "symbol": "UZS"
+        },
+        {
+            "code": "VES",
+            "name": "Venezuela bolivarı",
+            "symbol": "VES"
+        },
+        {
+            "code": "VND",
+            "name": "Vietnam dongu",
+            "symbol": "₫"
+        },
+        {
+            "code": "VUV",
+            "name": "Vanuatu vatusu",
+            "symbol": "VUV"
+        },
+        {
+            "code": "WST",
+            "name": "Samoa talası",
+            "symbol": "WST"
+        },
+        {
+            "code": "YER",
+            "name": "Yemen riyali",
+            "symbol": "YER"
+        },
+        {
+            "code": "ZMW",
+            "name": "Zambiya kvaçası",
+            "symbol": "ZMW"
+        },
+        {
+            "code": "ZWG",
+            "name": "Zimbabve altını",
+            "symbol": "ZWG"
+        }
+    ],
+    "languages": [
+        {
+            "tag": "nl",
+            "name_tr": "Felemenkçe"
+        },
+        {
+            "tag": "pap",
+            "name_tr": "Papiamento"
+        },
+        {
+            "tag": "fa",
+            "name_tr": "Farsça"
+        },
+        {
+            "tag": "ps",
+            "name_tr": "Peştuca"
+        },
+        {
+            "tag": "uz-Arab",
+            "name_tr": "uz-Arab"
+        },
+        {
+            "tag": "tk",
+            "name_tr": "Türkmence"
+        },
+        {
+            "tag": "pt",
+            "name_tr": "Portekizce"
+        },
+        {
+            "tag": "en",
+            "name_tr": "İngilizce"
+        },
+        {
+            "tag": "sv",
+            "name_tr": "İsveççe"
+        },
+        {
+            "tag": "sq",
+            "name_tr": "Arnavutça"
+        },
+        {
+            "tag": "ca",
+            "name_tr": "Katalanca"
+        },
+        {
+            "tag": "ar",
+            "name_tr": "Arapça"
+        },
+        {
+            "tag": "es",
+            "name_tr": "İspanyolca"
+        },
+        {
+            "tag": "hy",
+            "name_tr": "Ermenice"
+        },
+        {
+            "tag": "sm",
+            "name_tr": "Samoa dili"
+        },
+        {
+            "tag": "fr",
+            "name_tr": "Fransızca"
+        },
+        {
+            "tag": "de",
+            "name_tr": "Almanca"
+        },
+        {
+            "tag": "hr",
+            "name_tr": "Hırvatça"
+        },
+        {
+            "tag": "sl",
+            "name_tr": "Slovence"
+        },
+        {
+            "tag": "hu",
+            "name_tr": "Macarca"
+        },
+        {
+            "tag": "az",
+            "name_tr": "Azerbaycan dili"
+        },
+        {
+            "tag": "az-Cyrl",
+            "name_tr": "az-Cyrl"
+        },
+        {
+            "tag": "rn",
+            "name_tr": "Kirundi"
+        },
+        {
+            "tag": "bn",
+            "name_tr": "Bengalce"
+        },
+        {
+            "tag": "bg",
+            "name_tr": "Bulgarca"
+        },
+        {
+            "tag": "bs",
+            "name_tr": "Boşnakça"
+        },
+        {
+            "tag": "bs-Cyrl",
+            "name_tr": "bs-Cyrl"
+        },
+        {
+            "tag": "sr",
+            "name_tr": "Sırpça"
+        },
+        {
+            "tag": "sr-Latn",
+            "name_tr": "sr-Latn"
+        },
+        {
+            "tag": "ru",
+            "name_tr": "Rusça"
+        },
+        {
+            "tag": "be",
+            "name_tr": "Belarusça"
+        },
+        {
+            "tag": "qu",
+            "name_tr": "Keçuva dili"
+        },
+        {
+            "tag": "ay",
+            "name_tr": "Aymara"
+        },
+        {
+            "tag": "vec",
+            "name_tr": "Venedikçe"
+        },
+        {
+            "tag": "ms",
+            "name_tr": "Malayca"
+        },
+        {
+            "tag": "ms-Arab",
+            "name_tr": "ms-Arab"
+        },
+        {
+            "tag": "dz",
+            "name_tr": "Dzongkha"
+        },
+        {
+            "tag": "no",
+            "name_tr": "Norveççe"
+        },
+        {
+            "tag": "tn",
+            "name_tr": "Setsvana"
+        },
+        {
+            "tag": "sg",
+            "name_tr": "Sango"
+        },
+        {
+            "tag": "iu",
+            "name_tr": "İnuktitut dili"
+        },
+        {
+            "tag": "iu-Latn",
+            "name_tr": "iu-Latn"
+        },
+        {
+            "tag": "crk",
+            "name_tr": "Ova Kricesi"
+        },
+        {
+            "tag": "chp",
+            "name_tr": "Çipevya dili"
+        },
+        {
+            "tag": "den",
+            "name_tr": "Slavey dili"
+        },
+        {
+            "tag": "dgr",
+            "name_tr": "Dogrib"
+        },
+        {
+            "tag": "gwi",
+            "name_tr": "Guçince"
+        },
+        {
+            "tag": "gsw",
+            "name_tr": "İsviçre Almancası"
+        },
+        {
+            "tag": "it",
+            "name_tr": "İtalyanca"
+        },
+        {
+            "tag": "rm",
+            "name_tr": "Romanşça"
+        },
+        {
+            "tag": "zh",
+            "name_tr": "Çince"
+        },
+        {
+            "tag": "ug",
+            "name_tr": "Uygurca"
+        },
+        {
+            "tag": "za",
+            "name_tr": "Zhuangca"
+        },
+        {
+            "tag": "mn-Mong",
+            "name_tr": "mn-Mong"
+        },
+        {
+            "tag": "bo",
+            "name_tr": "Tibetçe"
+        },
+        {
+            "tag": "ko",
+            "name_tr": "Korece"
+        },
+        {
+            "tag": "sw",
+            "name_tr": "Svahili dili"
+        },
+        {
+            "tag": "lua",
+            "name_tr": "Luba-Lulua"
+        },
+        {
+            "tag": "ln",
+            "name_tr": "Lingala"
+        },
+        {
+            "tag": "kg",
+            "name_tr": "Kongo dili"
+        },
+        {
+            "tag": "zdj",
+            "name_tr": "zdj"
+        },
+        {
+            "tag": "wni",
+            "name_tr": "wni"
+        },
+        {
+            "tag": "el",
+            "name_tr": "Yunanca"
+        },
+        {
+            "tag": "tr",
+            "name_tr": "Türkçe"
+        },
+        {
+            "tag": "cs",
+            "name_tr": "Çekçe"
+        },
+        {
+            "tag": "frr",
+            "name_tr": "Kuzey Frizce"
+        },
+        {
+            "tag": "da",
+            "name_tr": "Danca"
+        },
+        {
+            "tag": "kl",
+            "name_tr": "Grönland dili"
+        },
+        {
+            "tag": "ti",
+            "name_tr": "Tigrinya dili"
+        },
+        {
+            "tag": "gl",
+            "name_tr": "Galiçyaca"
+        },
+        {
+            "tag": "eu",
+            "name_tr": "Baskça"
+        },
+        {
+            "tag": "ast",
+            "name_tr": "Asturyasça"
+        },
+        {
+            "tag": "oc",
+            "name_tr": "Oksitan dili"
+        },
+        {
+            "tag": "et",
+            "name_tr": "Estonca"
+        },
+        {
+            "tag": "am",
+            "name_tr": "Amharca"
+        },
+        {
+            "tag": "fi",
+            "name_tr": "Fince"
+        },
+        {
+            "tag": "sms",
+            "name_tr": "Skolt Laponcası"
+        },
+        {
+            "tag": "hif",
+            "name_tr": "Fiji Hintçesi"
+        },
+        {
+            "tag": "fj",
+            "name_tr": "Fiji dili"
+        },
+        {
+            "tag": "fo",
+            "name_tr": "Faroe dili"
+        },
+        {
+            "tag": "cy",
+            "name_tr": "Galce"
+        },
+        {
+            "tag": "ga",
+            "name_tr": "İrlandaca"
+        },
+        {
+            "tag": "gd",
+            "name_tr": "İskoç Gaelcesi"
+        },
+        {
+            "tag": "ka",
+            "name_tr": "Gürcüce"
+        },
+        {
+            "tag": "ab",
+            "name_tr": "Abhazca"
+        },
+        {
+            "tag": "os",
+            "name_tr": "Osetçe"
+        },
+        {
+            "tag": "ak",
+            "name_tr": "Akan"
+        },
+        {
+            "tag": "ee",
+            "name_tr": "Ewe"
+        },
+        {
+            "tag": "gaa",
+            "name_tr": "Ga dili"
+        },
+        {
+            "tag": "cak",
+            "name_tr": "cak"
+        },
+        {
+            "tag": "quc",
+            "name_tr": "Kiçece"
+        },
+        {
+            "tag": "ixl",
+            "name_tr": "ixl"
+        },
+        {
+            "tag": "caa",
+            "name_tr": "caa"
+        },
+        {
+            "tag": "quv",
+            "name_tr": "quv"
+        },
+        {
+            "tag": "usp",
+            "name_tr": "usp"
+        },
+        {
+            "tag": "xin",
+            "name_tr": "xin"
+        },
+        {
+            "tag": "ch",
+            "name_tr": "Çamorro dili"
+        },
+        {
+            "tag": "zh-Hant",
+            "name_tr": "Geleneksel Çince"
+        },
+        {
+            "tag": "ht",
+            "name_tr": "Haiti Kreyolu"
+        },
+        {
+            "tag": "id",
+            "name_tr": "Endonezce"
+        },
+        {
+            "tag": "gv",
+            "name_tr": "Man dili"
+        },
+        {
+            "tag": "hi",
+            "name_tr": "Hintçe"
+        },
+        {
+            "tag": "te",
+            "name_tr": "Telugu dili"
+        },
+        {
+            "tag": "mr",
+            "name_tr": "Marathi dili"
+        },
+        {
+            "tag": "ta",
+            "name_tr": "Tamilce"
+        },
+        {
+            "tag": "ur",
+            "name_tr": "Urduca"
+        },
+        {
+            "tag": "gu",
+            "name_tr": "Güceratça"
+        },
+        {
+            "tag": "kn",
+            "name_tr": "Kannada dili"
+        },
+        {
+            "tag": "ml",
+            "name_tr": "Malayalam dili"
+        },
+        {
+            "tag": "ckb",
+            "name_tr": "Orta Kürtçe"
+        },
+        {
+            "tag": "az-Arab",
+            "name_tr": "Güney Azerice"
+        },
+        {
+            "tag": "is",
+            "name_tr": "İzlandaca"
+        },
+        {
+            "tag": "he",
+            "name_tr": "İbranice"
+        },
+        {
+            "tag": "ja",
+            "name_tr": "Japonca"
+        },
+        {
+            "tag": "kk",
+            "name_tr": "Kazakça"
+        },
+        {
+            "tag": "ky",
+            "name_tr": "Kırgızca"
+        },
+        {
+            "tag": "km",
+            "name_tr": "Khmer dili"
+        },
+        {
+            "tag": "gil",
+            "name_tr": "Kiribatice"
+        },
+        {
+            "tag": "lo",
+            "name_tr": "Lao dili"
+        },
+        {
+            "tag": "si",
+            "name_tr": "Sinhali dili"
+        },
+        {
+            "tag": "st",
+            "name_tr": "Güney Sotho dili"
+        },
+        {
+            "tag": "lt",
+            "name_tr": "Litvanca"
+        },
+        {
+            "tag": "lb",
+            "name_tr": "Lüksemburgca"
+        },
+        {
+            "tag": "lv",
+            "name_tr": "Letonca"
+        },
+        {
+            "tag": "yue",
+            "name_tr": "Kantonca"
+        },
+        {
+            "tag": "tzm",
+            "name_tr": "Orta Atlas Tamazigti"
+        },
+        {
+            "tag": "ro",
+            "name_tr": "Rumence"
+        },
+        {
+            "tag": "mg",
+            "name_tr": "Malgaşça"
+        },
+        {
+            "tag": "dv",
+            "name_tr": "Divehi dili"
+        },
+        {
+            "tag": "mh",
+            "name_tr": "Marshall Adaları dili"
+        },
+        {
+            "tag": "mk",
+            "name_tr": "Makedonca"
+        },
+        {
+            "tag": "mt",
+            "name_tr": "Maltaca"
+        },
+        {
+            "tag": "my",
+            "name_tr": "Birman dili"
+        },
+        {
+            "tag": "mn",
+            "name_tr": "Moğolca"
+        },
+        {
+            "tag": "ny",
+            "name_tr": "Nyanja"
+        },
+        {
+            "tag": "yo",
+            "name_tr": "Yorubaca"
+        },
+        {
+            "tag": "niu",
+            "name_tr": "Niue dili"
+        },
+        {
+            "tag": "fy",
+            "name_tr": "Batı Frizcesi"
+        },
+        {
+            "tag": "nb",
+            "name_tr": "Norveççe Bokmål"
+        },
+        {
+            "tag": "nn",
+            "name_tr": "Norveççe Nynorsk"
+        },
+        {
+            "tag": "se",
+            "name_tr": "Kuzey Laponcası"
+        },
+        {
+            "tag": "ne",
+            "name_tr": "Nepalce"
+        },
+        {
+            "tag": "na",
+            "name_tr": "Nauru dili"
+        },
+        {
+            "tag": "mi",
+            "name_tr": "Maori dili"
+        },
+        {
+            "tag": "fil",
+            "name_tr": "Filipince"
+        },
+        {
+            "tag": "ceb",
+            "name_tr": "Sebuano dili"
+        },
+        {
+            "tag": "ilo",
+            "name_tr": "Iloko"
+        },
+        {
+            "tag": "hil",
+            "name_tr": "Hiligaynon dili"
+        },
+        {
+            "tag": "war",
+            "name_tr": "Varay"
+        },
+        {
+            "tag": "pag",
+            "name_tr": "Pangasinan dili"
+        },
+        {
+            "tag": "mdh",
+            "name_tr": "mdh"
+        },
+        {
+            "tag": "tsg",
+            "name_tr": "tsg"
+        },
+        {
+            "tag": "pau",
+            "name_tr": "Palau dili"
+        },
+        {
+            "tag": "tpi",
+            "name_tr": "Tok Pisin"
+        },
+        {
+            "tag": "ho",
+            "name_tr": "Hiri Motu"
+        },
+        {
+            "tag": "pl",
+            "name_tr": "Lehçe"
+        },
+        {
+            "tag": "csb",
+            "name_tr": "Kashubian"
+        },
+        {
+            "tag": "gn",
+            "name_tr": "Guarani dili"
+        },
+        {
+            "tag": "ty",
+            "name_tr": "Tahiti dili"
+        },
+        {
+            "tag": "tt",
+            "name_tr": "Tatarca"
+        },
+        {
+            "tag": "ba",
+            "name_tr": "Başkırtça"
+        },
+        {
+            "tag": "ce",
+            "name_tr": "Çeçence"
+        },
+        {
+            "tag": "av",
+            "name_tr": "Avar dili"
+        },
+        {
+            "tag": "udm",
+            "name_tr": "Udmurtça"
+        },
+        {
+            "tag": "sah",
+            "name_tr": "Yakutça"
+        },
+        {
+            "tag": "kbd",
+            "name_tr": "Kabardeyce"
+        },
+        {
+            "tag": "myv",
+            "name_tr": "Erzya"
+        },
+        {
+            "tag": "bua",
+            "name_tr": "Buryatça"
+        },
+        {
+            "tag": "rw",
+            "name_tr": "Kinyarwanda"
+        },
+        {
+            "tag": "wo",
+            "name_tr": "Volofça"
+        },
+        {
+            "tag": "ff",
+            "name_tr": "Fula dili"
+        },
+        {
+            "tag": "srr",
+            "name_tr": "Serer dili"
+        },
+        {
+            "tag": "dyo",
+            "name_tr": "Jola-Fonyi"
+        },
+        {
+            "tag": "sav",
+            "name_tr": "sav"
+        },
+        {
+            "tag": "mfv",
+            "name_tr": "mfv"
+        },
+        {
+            "tag": "bjt",
+            "name_tr": "bjt"
+        },
+        {
+            "tag": "snf",
+            "name_tr": "snf"
+        },
+        {
+            "tag": "knf",
+            "name_tr": "knf"
+        },
+        {
+            "tag": "so",
+            "name_tr": "Somalice"
+        },
+        {
+            "tag": "sk",
+            "name_tr": "Slovakça"
+        },
+        {
+            "tag": "uk",
+            "name_tr": "Ukraynaca"
+        },
+        {
+            "tag": "ss",
+            "name_tr": "Sisvati"
+        },
+        {
+            "tag": "th",
+            "name_tr": "Tayca"
+        },
+        {
+            "tag": "tg",
+            "name_tr": "Tacikçe"
+        },
+        {
+            "tag": "tkl",
+            "name_tr": "Tokelau dili"
+        },
+        {
+            "tag": "tet",
+            "name_tr": "Tetum"
+        },
+        {
+            "tag": "to",
+            "name_tr": "Tonga dili"
+        },
+        {
+            "tag": "tvl",
+            "name_tr": "Tuvalyanca"
+        },
+        {
+            "tag": "nan-Hant",
+            "name_tr": "nan-Hant"
+        },
+        {
+            "tag": "hak-Hant",
+            "name_tr": "hak-Hant"
+        },
+        {
+            "tag": "haw",
+            "name_tr": "Hawaii dili"
+        },
+        {
+            "tag": "uz",
+            "name_tr": "Özbekçe"
+        },
+        {
+            "tag": "uz-Cyrl",
+            "name_tr": "uz-Cyrl"
+        },
+        {
+            "tag": "vi",
+            "name_tr": "Vietnamca"
+        },
+        {
+            "tag": "bi",
+            "name_tr": "Bislama"
+        },
+        {
+            "tag": "zu",
+            "name_tr": "Zuluca"
+        },
+        {
+            "tag": "xh",
+            "name_tr": "Zosa dili"
+        },
+        {
+            "tag": "af",
+            "name_tr": "Afrikaanca"
+        },
+        {
+            "tag": "nso",
+            "name_tr": "Kuzey Sotho dili"
+        },
+        {
+            "tag": "ts",
+            "name_tr": "Tsonga"
+        },
+        {
+            "tag": "ve",
+            "name_tr": "Venda dili"
+        },
+        {
+            "tag": "sn",
+            "name_tr": "Şona dili"
+        },
+        {
+            "tag": "nd",
+            "name_tr": "Kuzey Ndebele"
+        }
+    ]
+}

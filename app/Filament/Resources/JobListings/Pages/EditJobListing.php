@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\JobListings\Pages;
 
+use App\Filament\Concerns\GuardsAdminGeoContext;
 use App\Filament\Resources\JobListings\JobListingResource;
 use App\Models\JobListing;
 use Filament\Actions\Action;
@@ -13,6 +14,8 @@ use Filament\Support\Icons\Heroicon;
 
 class EditJobListing extends EditRecord
 {
+    use GuardsAdminGeoContext;
+
     protected static string $resource = JobListingResource::class;
 
     protected function getHeaderActions(): array

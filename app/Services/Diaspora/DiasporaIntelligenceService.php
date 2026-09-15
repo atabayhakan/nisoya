@@ -6,6 +6,7 @@ namespace App\Services\Diaspora;
 
 use App\Models\DiasporaReel;
 use App\Services\Ai\CmsAiAssistant;
+use App\Support\GlobalCommand\GeoNameResolver;
 
 /**
  * Diaspora Reels içerikleri için çok modlu zekâ, otomatik konum/ülke tespiti,
@@ -13,85 +14,6 @@ use App\Services\Ai\CmsAiAssistant;
  */
 class DiasporaIntelligenceService
 {
-    /**
-     * Şehir -> Ülke Haritası
-     *
-     * @var array<string, array{country: string, city: string}>
-     */
-    protected array $cityMap = [
-        // Almanya (DE)
-        'berlin' => ['country' => 'DE', 'city' => 'Berlin'],
-        'köln' => ['country' => 'DE', 'city' => 'Köln'],
-        'koln' => ['country' => 'DE', 'city' => 'Köln'],
-        'frankfurt' => ['country' => 'DE', 'city' => 'Frankfurt'],
-        'münih' => ['country' => 'DE', 'city' => 'Münih'],
-        'munih' => ['country' => 'DE', 'city' => 'Münih'],
-        'munich' => ['country' => 'DE', 'city' => 'Münih'],
-        'hamburg' => ['country' => 'DE', 'city' => 'Hamburg'],
-        'düsseldorf' => ['country' => 'DE', 'city' => 'Düsseldorf'],
-        'dusseldorf' => ['country' => 'DE', 'city' => 'Düsseldorf'],
-        'stuttgart' => ['country' => 'DE', 'city' => 'Stuttgart'],
-        'dortmund' => ['country' => 'DE', 'city' => 'Dortmund'],
-        'essen' => ['country' => 'DE', 'city' => 'Essen'],
-        'bremen' => ['country' => 'DE', 'city' => 'Bremen'],
-        'hannover' => ['country' => 'DE', 'city' => 'Hannover'],
-        'nürnberg' => ['country' => 'DE', 'city' => 'Nürnberg'],
-        'nurnberg' => ['country' => 'DE', 'city' => 'Nürnberg'],
-        'duisburg' => ['country' => 'DE', 'city' => 'Duisburg'],
-        'mannheim' => ['country' => 'DE', 'city' => 'Mannheim'],
-        'gelsenkirchen' => ['country' => 'DE', 'city' => 'Gelsenkirchen'],
-
-        // Kırgızistan (KG)
-        'bişkek' => ['country' => 'KG', 'city' => 'Bişkek'],
-        'biskek' => ['country' => 'KG', 'city' => 'Bişkek'],
-        'bishkek' => ['country' => 'KG', 'city' => 'Bişkek'],
-        'oş' => ['country' => 'KG', 'city' => 'Oş'],
-        'os' => ['country' => 'KG', 'city' => 'Oş'],
-        'osh' => ['country' => 'KG', 'city' => 'Oş'],
-        'celal-abad' => ['country' => 'KG', 'city' => 'Celal-Abad'],
-        'karakol' => ['country' => 'KG', 'city' => 'Karakol'],
-
-        // Hollanda (NL)
-        'amsterdam' => ['country' => 'NL', 'city' => 'Amsterdam'],
-        'rotterdam' => ['country' => 'NL', 'city' => 'Rotterdam'],
-        'lahey' => ['country' => 'NL', 'city' => 'Lahey'],
-        'den haag' => ['country' => 'NL', 'city' => 'Lahey'],
-        'utrecht' => ['country' => 'NL', 'city' => 'Utrecht'],
-        'eindhoven' => ['country' => 'NL', 'city' => 'Eindhoven'],
-
-        // İngiltere (GB)
-        'londra' => ['country' => 'GB', 'city' => 'Londra'],
-        'london' => ['country' => 'GB', 'city' => 'Londra'],
-        'manchester' => ['country' => 'GB', 'city' => 'Manchester'],
-        'birmingham' => ['country' => 'GB', 'city' => 'Birmingham'],
-
-        // Fransa (FR)
-        'paris' => ['country' => 'FR', 'city' => 'Paris'],
-        'lyon' => ['country' => 'FR', 'city' => 'Lyon'],
-        'marsilya' => ['country' => 'FR', 'city' => 'Marsilya'],
-        'strazburg' => ['country' => 'FR', 'city' => 'Strazburg'],
-        'strasbourg' => ['country' => 'FR', 'city' => 'Strazburg'],
-
-        // Avusturya (AT)
-        'viyana' => ['country' => 'AT', 'city' => 'Viyana'],
-        'wien' => ['country' => 'AT', 'city' => 'Viyana'],
-        'graz' => ['country' => 'AT', 'city' => 'Graz'],
-        'linz' => ['country' => 'AT', 'city' => 'Linz'],
-        'salzburg' => ['country' => 'AT', 'city' => 'Salzburg'],
-
-        // Belçika (BE)
-        'brüksel' => ['country' => 'BE', 'city' => 'Brüksel'],
-        'bruxelles' => ['country' => 'BE', 'city' => 'Brüksel'],
-        'anvers' => ['country' => 'BE', 'city' => 'Anvers'],
-        'gent' => ['country' => 'BE', 'city' => 'Gent'],
-
-        // İsviçre (CH)
-        'zürih' => ['country' => 'CH', 'city' => 'Zürih'],
-        'zurich' => ['country' => 'CH', 'city' => 'Zürih'],
-        'cenevre' => ['country' => 'CH', 'city' => 'Cenevre'],
-        'basel' => ['country' => 'CH', 'city' => 'Basel'],
-    ];
-
     public function __construct(private readonly CmsAiAssistant $aiAssistant) {}
 
     /**
@@ -101,49 +23,7 @@ class DiasporaIntelligenceService
      */
     public function detectLocation(string $text, ?string $fallbackCountry = null): array
     {
-        $normalized = mb_strtolower($text, 'UTF-8');
-
-        // Şehir eşleşmesi ara
-        foreach ($this->cityMap as $keyword => $info) {
-            $pattern = '/\b'.preg_quote($keyword, '/').'\b/u';
-            if (preg_match($pattern, $normalized) === 1) {
-                return [
-                    'country_code' => $info['country'],
-                    'city' => $info['city'],
-                ];
-            }
-        }
-
-        // Ülke adı açıkça geçiyor mu?
-        if (preg_match('/\b(almanya|germany|deutschland)\b/u', $normalized) === 1) {
-            return ['country_code' => 'DE', 'city' => null];
-        }
-        if (preg_match('/\b(kırgızistan|kirgizistan|kyrgyzstan)\b/u', $normalized) === 1) {
-            return ['country_code' => 'KG', 'city' => null];
-        }
-        if (preg_match('/\b(hollanda|netherlands|nederland)\b/u', $normalized) === 1) {
-            return ['country_code' => 'NL', 'city' => null];
-        }
-        if (preg_match('/\b(ingiltere|united kingdom|britanya)\b/u', $normalized) === 1) {
-            return ['country_code' => 'GB', 'city' => null];
-        }
-        if (preg_match('/\b(fransa|france)\b/u', $normalized) === 1) {
-            return ['country_code' => 'FR', 'city' => null];
-        }
-        if (preg_match('/\b(avusturya|austria|österreich)\b/u', $normalized) === 1) {
-            return ['country_code' => 'AT', 'city' => null];
-        }
-        if (preg_match('/\b(belçika|belgium|belgique)\b/u', $normalized) === 1) {
-            return ['country_code' => 'BE', 'city' => null];
-        }
-        if (preg_match('/\b(isviçre|switzerland|schweiz)\b/u', $normalized) === 1) {
-            return ['country_code' => 'CH', 'city' => null];
-        }
-
-        return [
-            'country_code' => $fallbackCountry,
-            'city' => null,
-        ];
+        return app(GeoNameResolver::class)->detect($text, $fallbackCountry);
     }
 
     /**

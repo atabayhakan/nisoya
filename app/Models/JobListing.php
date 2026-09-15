@@ -6,6 +6,7 @@ use App\Enums\EmploymentType;
 use App\Enums\ExperienceLevel;
 use App\Enums\JobStatus;
 use App\Enums\SalaryPeriod;
+use App\Models\Concerns\NormalizesCityName;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -29,6 +30,8 @@ use Illuminate\Support\Carbon;
  */
 class JobListing extends Model
 {
+    use NormalizesCityName;
+
     protected $fillable = [
         'company_id',
         'job_category_id',

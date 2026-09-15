@@ -284,7 +284,8 @@ class KahyaSohbetTest extends TestCase
         // + büyüme donanımı: vitrin-hazirla + buyume-raporu
         // + yol gösterme: panel-yonlendir
         // + El Kitabı: rehber-oku (M0 — "nasıl yaparım" sorularının kaynağı).
-        $this->assertCount(22, $adlar);
+        $this->assertContains('global-operasyon', $adlar);
+        $this->assertCount(23, $adlar);
     }
 
     /**

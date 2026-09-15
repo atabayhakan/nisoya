@@ -8,6 +8,7 @@ use App\Enums\ReviewStatus;
 use App\Enums\TrustTier;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
+use App\Models\Concerns\NormalizesCityName;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -41,6 +42,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasPushSubscriptions, LogsActivity, Notifiable, PasskeyAuthenticatable;
+
+    use NormalizesCityName;
 
     protected $fillable = [
         'name',
